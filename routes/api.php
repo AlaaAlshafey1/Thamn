@@ -3,9 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\Api\HomeController;
-use App\Http\Controllers\Api\QuestionController;
-use App\Http\Controllers\Api\AnswerController;
+use App\Http\Controllers\API\HomeController;
+use App\Http\Controllers\API\QuestionController;
+use App\Http\Controllers\API\AnswerController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
