@@ -10,7 +10,7 @@
     <div class="breadcrumb-header justify-content-between align-items-center">
         <div class="left-content d-flex align-items-center">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('assets/img/logo.png') }}"
+                <img src="{{ asset('assets/img/Logo.png') }}"
                      alt="Thamen Logo"
                      class="ht-50 wd-50 mg-r-2"
                      style="border-radius: 10px;">

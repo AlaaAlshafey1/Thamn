@@ -1,7 +1,7 @@
 <!-- Title -->
 <title>ثمن</title>
 <!-- Favicon -->
-<link rel="icon" href="{{URL::asset('assets/img/logo.png')}}" type="image/x-icon"/>
+<link rel="icon" href="{{URL::asset('assets/img/Logo.png')}}" type="image/x-icon"/>
 <!-- Icons css -->
 <link href="{{URL::asset('assets/css/icons.css')}}" rel="stylesheet">
 <!--  Custom Scroll bar-->
