@@ -52,6 +52,7 @@ input.form-control, select.form-select {
         <div class="form-section mb-4">
             <h6 class="form-section-title">📂 بيانات السؤال</h6>
             <div class="row g-3">
+
                 <div class="col-6">
                     <label class="form-label">الفئة</label>
                     <select name="category_id" class="form-select" required>
@@ -72,6 +73,7 @@ input.form-control, select.form-select {
                         <option value="radio" {{ $question->type == 'radio' ? 'selected' : '' }}>راديو</option>
                         <option value="checkbox" {{ $question->type == 'checkbox' ? 'selected' : '' }}>اختيارات متعددة</option>
                         <option value="image" {{ $question->type == 'image' ? 'selected' : '' }}>رفع صورة</option>
+                        <option value="slider" {{ $question->type == 'slider' ? 'selected' : '' }}>سلايدر</option>
                     </select>
                 </div>
 
@@ -84,6 +86,7 @@ input.form-control, select.form-select {
                     <label class="form-label">السؤال بالإنجليزية</label>
                     <input type="text" name="question_en" class="form-control" value="{{ $question->question_en }}">
                 </div>
+
                 <div class="col-12">
                     <label class="form-label">الوصف بالعربية</label>
                     <textarea name="description_ar" class="form-control">{{ old('description_ar', $question->description_ar ?? '') }}</textarea>
@@ -115,41 +118,85 @@ input.form-control, select.form-select {
         </div>
 
         <!-- خيارات السؤال -->
-        <div class="form-section mb-4" id="optionsSection" style="{{ in_array($question->type,['select','radio','checkbox']) ? 'display:block;' : 'display:none;' }}">
+        <div class="form-section mb-4" id="optionsSection"
+             style="{{ in_array($question->type,['select','radio','checkbox']) ? 'display:block;' : 'display:none;' }}">
             <h6 class="form-section-title">⚙️ الخيارات</h6>
             <div class="options-list" id="optionsList">
 
-
                 @foreach($question->options()->get() ?? [] as $option)
-
                     <div class="option-row d-flex align-items-center gap-2 mb-2">
                         <input type="text" name="options_ar[]" class="form-control" value="{{ $option->option_ar }}" placeholder="الخيار بالعربية">
                         <input type="text" name="options_en[]" class="form-control" value="{{ $option->option_en }}" placeholder="الخيار بالإنجليزية">
+
                         @if($option->image)
                             <img src="{{ asset('storage/'.$option->image) }}" width="40" height="40" class="rounded">
                         @endif
+
                         <input type="hidden" name="options_id[]" value="{{ $option->id }}">
 
                         <input type="file" name="options_image[]" class="form-control" accept="image/*">
                         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">حذف</button>
                     </div>
                 @endforeach
+
             </div>
             <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="addOption()">إضافة خيار آخر</button>
         </div>
 
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="submit" class="btn btn-primary"><i class="bx bx-save"></i> حفظ التغييرات</button>
-            <a href="{{ route('questions.index') }}" class="btn btn-light border"><i class="bx bx-x-circle"></i> إلغاء</a>
+        <!-- إعدادات السلايدر -->
+        <div class="form-section mb-4" id="sliderSettings"
+             style="{{ $question->type == 'slider' ? 'display:block;' : 'display:none;' }}">
+            <h6 class="form-section-title">🎚️ إعدادات السلايدر</h6>
+
+            <div class="row g-3">
+                <div class="col-4">
+                    <label class="form-label">الحد الأدنى</label>
+                    <input type="number" name="min_value" class="form-control" value="{{ $question->min_value }}">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-label">الحد الأقصى</label>
+                    <input type="number" name="max_value" class="form-control" value="{{ $question->max_value }}">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-label">الزيادة (Step)</label>
+                    <input type="number" name="step" class="form-control" value="{{ $question->step ?? 1 }}">
+                </div>
+            </div>
         </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bx bx-save"></i> حفظ التغييرات
+            </button>
+            <a href="{{ route('questions.index') }}" class="btn btn-light border">
+                <i class="bx bx-x-circle"></i> إلغاء
+            </a>
+        </div>
+
     </form>
 </div>
 
 <script>
 document.getElementById('typeSelect').addEventListener('change', function() {
-    const section = document.getElementById('optionsSection');
-    if(['select','radio','checkbox'].includes(this.value)) section.style.display = 'block';
-    else section.style.display = 'none';
+    const type = this.value;
+
+    const optionsSection = document.getElementById('optionsSection');
+    const sliderSection = document.getElementById('sliderSettings');
+
+    if (['select', 'radio', 'checkbox'].includes(type)) {
+        optionsSection.style.display = 'block';
+        sliderSection.style.display = 'none';
+    }
+    else if (type === 'slider') {
+        sliderSection.style.display = 'block';
+        optionsSection.style.display = 'none';
+    }
+    else {
+        optionsSection.style.display = 'none';
+        sliderSection.style.display = 'none';
+    }
 });
 
 function addOption() {
@@ -165,4 +212,5 @@ function addOption() {
     list.appendChild(div);
 }
 </script>
+
 @endsection

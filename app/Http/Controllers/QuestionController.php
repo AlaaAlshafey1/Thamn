@@ -28,7 +28,7 @@ class QuestionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'question_ar' => 'required|string|max:255',
             'question_en' => 'nullable|string|max:255',
-            'type' => 'required|in:text,number,select,radio,checkbox,image',
+            'type' => 'required|in:text,number,select,radio,checkbox,image,slider',
             'is_required' => 'sometimes|boolean',
             'order' => 'nullable|integer',
             'options_ar' => 'nullable|array',
@@ -40,12 +40,15 @@ class QuestionController extends Controller
             'category_id',
             'question_ar',
             'question_en',
-            'description_ar',  // جديد
-            'description_en',  // جديد
+            'description_ar',
+            'description_en',
             'type',
             'is_required',
             'is_active',
-            'order'
+            'order',
+            'min_value',
+            'max_value',
+            'step'
         ]);
         $question = Question::create($data);
 
@@ -91,58 +94,92 @@ class QuestionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'question_ar' => 'required|string|max:255',
             'question_en' => 'nullable|string|max:255',
-            'type' => 'required|in:text,number,select,radio,checkbox,image',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
+
+            // هنا ضفنا slider
+            'type' => 'required|in:text,number,select,radio,checkbox,image,slider',
+
             'is_required' => 'sometimes|boolean',
+            'is_active' => 'sometimes|boolean',
             'order' => 'nullable|integer',
+
+            // للخيارات فقط
             'options_ar' => 'nullable|array',
             'options_en' => 'nullable|array',
+            'options_id' => 'nullable|array',
             'options_image.*' => 'nullable|image|max:2048',
-            'options_id' => 'nullable|array', // hidden inputs for existing options
+
+            // للسلايدر فقط
+            'min_value' => 'nullable|numeric',
+            'max_value' => 'nullable|numeric',
+            'step' => 'nullable|numeric',
         ]);
 
+        // تجهيز البيانات الأساسية
         $data = $request->only([
             'category_id',
             'question_ar',
             'question_en',
-            'description_ar',  // جديد
-            'description_en',  // جديد
+            'description_ar',
+            'description_en',
             'type',
             'is_required',
             'is_active',
             'order'
         ]);
+
+        // إضافة قيم السلايدر
+        if ($request->type === 'slider') {
+            $data['min_value'] = $request->min_value ?? 0;
+            $data['max_value'] = $request->max_value ?? 100;
+            $data['step'] = $request->step ?? 1;
+        } else {
+            // لو النوع مش سلايدر نمسح القيم القديمة
+            $data['min_value'] = null;
+            $data['max_value'] = null;
+            $data['step'] = null;
+        }
+
         $question->update($data);
 
-        if(in_array($question->type, ['select','radio','checkbox'])) {
+        /*
+        |--------------------------------------------------------------------------
+        | معالجة الخيارات (Select - Radio - Checkbox)
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($question->type, ['select', 'radio', 'checkbox'])) {
 
             $existingOptions = $request->options_id ?? [];
 
-            // حذف الخيارات اللي مش موجودة في الفورم (المستخدمة مسحتهم)
+            // حذف اللي المستخدم مسحه
             \App\Models\QuestionOption::where('question_id', $question->id)
                 ->whereNotIn('id', $existingOptions)
                 ->delete();
 
-            foreach($request->options_ar as $index => $option_ar) {
+            // إضافة/تعديل الخيارات
+            foreach ($request->options_ar ?? [] as $index => $option_ar) {
                 $option_en = $request->options_en[$index] ?? null;
                 $imagePath = null;
 
-                // الصورة الجديدة لو تم رفعها
-                if(isset($request->options_image[$index])) {
+                // صورة جديدة؟
+                if (isset($request->options_image[$index])) {
                     $imagePath = $request->options_image[$index]->store('options', 'public');
                 }
 
-                if(isset($existingOptions[$index])) {
-                    // تعديل خيار موجود
+                if (isset($existingOptions[$index])) {
+                    // تعديل
                     $option = \App\Models\QuestionOption::find($existingOptions[$index]);
-                    if($option) {
+                    if ($option) {
                         $option->update([
                             'option_ar' => $option_ar,
                             'option_en' => $option_en,
                             'image' => $imagePath ?? $option->image,
+                            'order' => $index
                         ]);
                     }
                 } else {
-                    // إضافة خيار جديد
+                    // إضافة جديد
                     \App\Models\QuestionOption::create([
                         'question_id' => $question->id,
                         'option_ar' => $option_ar,
@@ -153,9 +190,13 @@ class QuestionController extends Controller
                     ]);
                 }
             }
+        } else {
+            // لو غير النوع إلى slider أو text → امسح الخيارات كلها
+            \App\Models\QuestionOption::where('question_id', $question->id)->delete();
         }
 
-        return redirect()->route('questions.index')->with('success', 'تم تحديث السؤال والخيارات بنجاح');
+        return redirect()->route('questions.index')
+            ->with('success', 'تم تحديث السؤال بنجاح');
     }
 
     public function destroy(Question $question)

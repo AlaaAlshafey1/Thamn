@@ -86,6 +86,8 @@ select.form-select {
                         <option value="radio">راديو</option>
                         <option value="checkbox">اختيارات متعددة</option>
                         <option value="image">رفع صورة</option>
+                        <option value="slider">سلايدر</option>
+
                     </select>
                 </div>
 
@@ -140,6 +142,27 @@ select.form-select {
             </div>
             <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="addOption()">إضافة خيار آخر</button>
         </div>
+        <div id="sliderSettings" style="display:none;">
+            <h6 class="form-section-title mt-3">🎚️ إعدادات السلايدر</h6>
+
+            <div class="row g-3">
+                <div class="col-4">
+                    <label class="form-label">الحد الأدنى</label>
+                    <input type="number" name="min_value" class="form-control">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-label">الحد الأقصى</label>
+                    <input type="number" name="max_value" class="form-control">
+                </div>
+
+                <div class="col-4">
+                    <label class="form-label">الزيادة (Step)</label>
+                    <input type="number" name="step" class="form-control" value="1">
+                </div>
+            </div>
+        </div>
+
 
         <div class="d-flex justify-content-end gap-2 mt-4">
             <button type="submit" class="btn btn-primary">
@@ -174,5 +197,25 @@ function addOption() {
     `;
     optionsList.appendChild(div);
 }
+
+document.getElementById('typeSelect').addEventListener('change', function() {
+    const type = this.value;
+    const optionsSection = document.getElementById('optionsSection');
+    const sliderSettings = document.getElementById('sliderSettings');
+
+    if(['select','radio','checkbox'].includes(type)) {
+        optionsSection.style.display = 'block';
+        sliderSettings.style.display = 'none';
+    }
+    else if (type === 'slider') {
+        sliderSettings.style.display = 'block';
+        optionsSection.style.display = 'none';
+    }
+    else {
+        optionsSection.style.display = 'none';
+        sliderSettings.style.display = 'none';
+    }
+});
+
 </script>
 @endsection
