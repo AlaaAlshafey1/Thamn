@@ -16,28 +16,24 @@ class Question extends Model
         'description_ar',
         'description_en',
         'type',
-        "min_value",
-        "max_value",
-        "step",
         'is_required',
-        'options',
         'is_active',
-        'order'
+        'order',
+        'min_value',
+        'max_value',
+        'step'
     ];
 
-    protected $casts = [
-        'options' => 'array',
-        'is_required' => 'boolean',
-        'is_active' => 'boolean',
-    ];
+    public function options()
+    {
+        return $this->hasMany(QuestionOption::class, 'question_id', 'id')
+                    ->where('is_active', 1)
+                    ->orderBy('order');
+    }
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-
-    public function options()
-    {
-        return $this->hasMany(QuestionOption::class);
-    }
 }
+    

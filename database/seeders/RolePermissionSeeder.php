@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -30,7 +31,7 @@ class RolePermissionSeeder extends Seeder
             [
                 'first_name' => 'Super Administrator',
                 'last_name' => 'Super Administrator',
-                'password' => bcrypt('12345678'),
+                'password' => Hash::make('12345678'),
             ]
         );
 

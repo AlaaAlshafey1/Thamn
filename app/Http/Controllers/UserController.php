@@ -9,14 +9,15 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        $users = User::whereHas('role',function($query){
+public function index()
+{
+    $users = User::whereDoesntHave('roles', function ($query) {
+        $query->where('name', 'superadmin');
+    })->get();
 
-            $query->where('name',"!=",'superadmin');
-        })->get();
-        return view('users.index', compact('users'));
-    }
+    return view('users.index', compact('users'));
+}
+
 
     public function create()
     {
@@ -68,7 +69,6 @@ class UserController extends Controller
             $data['image'] = $name;
         }
 
-        // ✅ لو كلمة المرور فاضية متحدثهاش
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
@@ -77,7 +77,6 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // ✅ تحديث الدور فقط لو اتغير
         if ($request->role_id) {
             $user->syncRoles(Role::find($request->role_id)->name);
         }

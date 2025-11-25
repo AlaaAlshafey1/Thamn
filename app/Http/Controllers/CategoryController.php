@@ -25,7 +25,12 @@ class CategoryController extends Controller
             'name_en' => 'nullable|string|max:255',
         ]);
 
-        Category::create($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('categories','public');
+        }
+        Category::create($data);
 
         return redirect()->route('categories.index')->with('success', 'تمت إضافة الفئة بنجاح');
     }
@@ -42,7 +47,14 @@ class CategoryController extends Controller
             'name_en' => 'nullable|string|max:255',
         ]);
 
-        $category->update($request->all());
+
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('categories','public');
+        }
+
+        $category->update($data);
 
         return redirect()->route('categories.index')->with('success', 'تم تحديث الفئة بنجاح');
     }

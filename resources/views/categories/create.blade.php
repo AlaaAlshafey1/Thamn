@@ -49,7 +49,7 @@
 
 @section('content')
 <div class="category-form-card">
-    <form action="{{ route('categories.store') }}" method="POST">
+    <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="form-section mb-4">
@@ -73,6 +73,14 @@
                     <textarea name="description_en" class="form-control" placeholder="Description in English"></textarea>
                 </div>
             </div>
+            <div class="col-md-6">
+                <label class="form-label">صورة الفئة</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+                {{-- @if(isset($category) && $category->image)
+                    <img src="{{ asset('storage/'.$category->image) }}" alt="صورة الفئة" class="mt-2" width="80" height="80">
+                @endif --}}
+            </div>
+
                 <div class="col-md-6">
                     <label class="form-label">الحالة</label>
                     <select name="is_active" class="form-select">

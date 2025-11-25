@@ -29,3 +29,15 @@ if (! function_exists('translate_permission')) {
         return "{$actionLabel} {$moduleLabel}";
     }
 }
+
+
+if (! function_exists('lang')) {
+    function lang(?string $ar, ?string $en, \Illuminate\Http\Request $request): string
+    {
+        $ar ??= '';
+        $en ??= '';
+        $locale = $request->header('Accept-Language', 'en');
+        return strtolower($locale) === 'ar' ? $ar : $en;
+    }
+}
+

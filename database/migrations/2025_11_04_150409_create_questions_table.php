@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description_ar')->nullable();
             $table->text('description_en')->nullable();
 
-            $table->enum('type', ['text', 'number', 'select', 'radio', 'checkbox', 'image']);
+            $table->enum('type', ['text', 'number', 'select', 'radio', 'checkbox', 'image','slider']);
             $table->boolean('is_required')->default(false);
             $table->json('options')->nullable(); // إذا السؤال من نوع اختيار
             $table->boolean('is_active')->default(true);
