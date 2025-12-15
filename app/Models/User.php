@@ -20,6 +20,11 @@ class User extends Authenticatable
         'password',
         'image',
         'is_active',
+        'social_id',
+        'social_provider',
+        'is_verified',
+        'fcm_token_android',
+        'fcm_token_ios',
         'role_id',
     ];
 
@@ -28,7 +33,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // علاقة مع الدور
     public function role()
     {
         return $this->belongsTo(Role::class);

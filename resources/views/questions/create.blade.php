@@ -78,17 +78,34 @@ select.form-select {
                 </div>
 
                 <div class="col-6">
-                    <label class="form-label">نوع السؤال</label>
-                    <select name="type" id="typeSelect" class="form-select" required>
-                        <option value="text">نص</option>
-                        <option value="number">رقم</option>
-                        <option value="select">اختيار واحد</option>
-                        <option value="radio">راديو</option>
-                        <option value="checkbox">اختيارات متعددة</option>
-                        <option value="image">رفع صورة</option>
-                        <option value="slider">سلايدر</option>
+                    <label class="form-label">اختر نوع السؤال</label>
 
-                    </select>
+                        <select name="type" id="typeSelect" class="form-select" required>
+                            <option value="">اختر نوع السؤال</option>
+
+                            <!-- Single choice -->
+                            <option value="singleChoiceCard">اختيار واحد - كروت</option>
+                            <option value="singleChoiceChip">اختيار واحد - Chip</option>
+                            <option value="singleChoiceChipWithImage">اختيار واحد - Chip مع صورة</option>
+                            <option value="singleChoiceDropdown">اختيار واحد - Dropdown</option>
+
+                            <!-- Multi -->
+                            <option value="multiSelection">اختيارات متعددة</option>
+
+                            <!-- Inputs -->
+                            <option value="counterInput">عداد أرقام</option>
+                            <option value="dateCountInput">إدخال تاريخ / مدة</option>
+
+                            <!-- Sliders -->
+                            <option value="singleSelectionSlider">سلايدر اختيار واحد</option>
+                            <option value="valueRangeSlider">سلايدر مدى (من - إلى)</option>
+
+                            <!-- Special -->
+                            <option value="rating">تقييم (نجوم)</option>
+                            <option value="price">سعر</option>
+                            <option value="progress">تقدم / نسبة</option>
+                            <option value="productAges">أعمار المنتج</option>
+                        </select>
                 </div>
 
                 <div class="col-6">
@@ -113,7 +130,18 @@ select.form-select {
                     <label class="form-label">ترتيب السؤال</label>
                     <input type="number" name="order" class="form-control" value="0">
                 </div>
-
+                <div class="col-6">
+                    <label class="form-label">السؤال يوجد فى اى مرحلة</label>
+                    <select name="stageing" class="form-select" required>
+                        <option value="1">المرحلة الأولى</option>
+                        <option value="2">المرحلة الثانية</option>
+                        <option value="3">المرحلة الثالثة</option>
+                        <option value="4">المرحلة الرابعة</option>
+                        <option value="5">المرحلة الخامسة</option>
+                        <option value="6">المرحلة السادسة</option>
+                        <option value="7">المرحلة السابعة</option>
+                    </select>
+                </div>
                 <div class="col-6">
                     <label class="form-label">الحالة</label>
                     <select name="is_active" class="form-select">
@@ -198,24 +226,34 @@ function addOption() {
     optionsList.appendChild(div);
 }
 
-document.getElementById('typeSelect').addEventListener('change', function() {
+
+document.getElementById('typeSelect').addEventListener('change', function () {
     const type = this.value;
+
     const optionsSection = document.getElementById('optionsSection');
     const sliderSettings = document.getElementById('sliderSettings');
 
-    if(['select','radio','checkbox'].includes(type)) {
-        optionsSection.style.display = 'block';
-        sliderSettings.style.display = 'none';
-    }
-    else if (type === 'slider') {
-        sliderSettings.style.display = 'block';
-        optionsSection.style.display = 'none';
-    }
-    else {
-        optionsSection.style.display = 'none';
-        sliderSettings.style.display = 'none';
-    }
+    // الأنواع اللي بتحتاج options
+    const optionTypes = [
+        'singleChoiceCard',
+        'singleChoiceChip',
+        'singleChoiceChipWithImage',
+        'singleChoiceDropdown',
+        'multiSelection'
+    ];
+
+    // أنواع السلايدر
+    const sliderTypes = [
+        'singleSelectionSlider',
+        'valueRangeSlider',
+        'price',
+        'progress'
+    ];
+
+    optionsSection.style.display = optionTypes.includes(type) ? 'block' : 'none';
+    sliderSettings.style.display = sliderTypes.includes(type) ? 'block' : 'none';
 });
+
 
 </script>
 @endsection

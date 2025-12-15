@@ -28,8 +28,7 @@ class QuestionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'question_ar' => 'required|string|max:255',
             'question_en' => 'nullable|string|max:255',
-            'type' => 'required|in:text,number,select,radio,checkbox,image,slider',
-            'is_required' => 'sometimes|boolean',
+            'type' => 'required|in:singleChoiceCard,singleChoiceChip,singleChoiceChipWithImage,singleChoiceDropdown,multiSelection,counterInput,dateCountInput,singleSelectionSlider,valueRangeSlider,rating,price,progress,productAges',
             'order' => 'nullable|integer',
             'options_ar' => 'nullable|array',
             'options_en' => 'nullable|array',
@@ -43,36 +42,47 @@ class QuestionController extends Controller
             'description_ar',
             'description_en',
             'type',
-            'is_required',
-            'is_active',
             'order',
             'min_value',
             'max_value',
-            'step'
+            'step',
+            'stageing'
         ]);
+
+        $data['is_required'] = $request->has('is_required');
+        $data['is_active']   = $request->is_active ?? 1;
+
         $question = Question::create($data);
 
-        if(in_array($question->type, ['select','radio','checkbox']) && $request->filled('options_ar')) {
-            foreach($request->options_ar as $index => $option_ar) {
-                $option_en = $request->options_en[$index] ?? null;
-                $imagePath = null;
+        $optionTypes = [
+            'singleChoiceCard',
+            'singleChoiceChip',
+            'singleChoiceChipWithImage',
+            'singleChoiceDropdown',
+            'multiSelection'
+        ];
 
-                if(isset($request->options_image[$index])) {
+        if (in_array($question->type, $optionTypes)) {
+            foreach ($request->options_ar ?? [] as $index => $option_ar) {
+
+                $imagePath = null;
+                if (isset($request->options_image[$index])) {
                     $imagePath = $request->options_image[$index]->store('options', 'public');
                 }
 
                 QuestionOption::create([
                     'question_id' => $question->id,
-                    'option_ar' => $option_ar,
-                    'option_en' => $option_en,
-                    'image' => $imagePath,
-                    'order' => $index,
-                    'is_active' => true,
+                    'option_ar'   => $option_ar,
+                    'option_en'   => $request->options_en[$index] ?? null,
+                    'image'       => $imagePath,
+                    'order'       => $index,
+                    'is_active'   => true,
                 ]);
             }
         }
 
-        return redirect()->route('questions.index')->with('success', 'تمت إضافة السؤال والخيارات بنجاح');
+        return redirect()->route('questions.index')
+            ->with('success', 'تمت إضافة السؤال والخيارات بنجاح');
     }
 
     public function show(Question $question)
@@ -98,7 +108,7 @@ class QuestionController extends Controller
             'description_en' => 'nullable|string',
 
             // هنا ضفنا slider
-            'type' => 'required|in:text,number,select,radio,checkbox,image,slider',
+            'type' => 'required|in:singleChoiceCard,singleChoiceChip,singleChoiceChipWithImage,singleChoiceDropdown,multiSelection,counterInput,dateCountInput,singleSelectionSlider,valueRangeSlider,rating,price,progress,productAges',
 
             'is_required' => 'sometimes|boolean',
             'is_active' => 'sometimes|boolean',
@@ -116,7 +126,6 @@ class QuestionController extends Controller
             'step' => 'nullable|numeric',
         ]);
 
-        // تجهيز البيانات الأساسية
         $data = $request->only([
             'category_id',
             'question_ar',
@@ -126,7 +135,8 @@ class QuestionController extends Controller
             'type',
             'is_required',
             'is_active',
-            'order'
+            'order',
+            'staging'
         ]);
 
         // إضافة قيم السلايدر

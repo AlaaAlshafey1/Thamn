@@ -19,6 +19,12 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('password');
             $table->string('image')->nullable();
+            $table->string('social_id')->nullable();
+            $table->string('social_provider')->nullable();
+            $table->boolean('is_verified')->default(false);
+
+            $table->string('fcm_token_android')->nullable();
+            $table->string('fcm_token_ios')->nullable();
             $table->boolean('is_active')->default(true);
             $table->foreignId('role_id')->nullable();
             $table->timestamps();

@@ -21,7 +21,8 @@ class Question extends Model
         'order',
         'min_value',
         'max_value',
-        'step'
+        'step',
+        "stageing"
     ];
 
     public function options()
@@ -36,4 +37,3 @@ class Question extends Model
         return $this->belongsTo(Category::class);
     }
 }
-    

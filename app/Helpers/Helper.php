@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Lang;
+
 if (! function_exists('translate_permission')) {
     function translate_permission($permissionName)
     {
@@ -40,4 +42,22 @@ if (! function_exists('lang')) {
         return strtolower($locale) === 'ar' ? $ar : $en;
     }
 }
+
+if (!function_exists('transMsg')) {
+    function transMsg($key, $request = null)
+    {
+        $lang = $request?->header('Accept-Language') ?? 'ar';
+
+        $key = strtolower($key);
+
+        $cleanKey = str_replace('_', ' ', $key);
+
+        if (Lang::has("messages.$key", $lang)) {
+            return __("messages.$key", [], $lang);
+        }
+
+        return $cleanKey;
+    }
+}
+
 

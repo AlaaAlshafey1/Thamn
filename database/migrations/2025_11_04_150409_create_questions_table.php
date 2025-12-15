@@ -18,8 +18,24 @@ return new class extends Migration
             $table->string('question_en')->nullable();
             $table->text('description_ar')->nullable();
             $table->text('description_en')->nullable();
+            $table->unsignedInteger('stageing')
+                ->default(1);
 
-            $table->enum('type', ['text', 'number', 'select', 'radio', 'checkbox', 'image','slider']);
+            $table->enum('type', [
+                'singleChoiceCard',
+                'singleChoiceChip',
+                'singleChoiceChipWithImage',
+                'singleChoiceDropdown',
+                'multiSelection',
+                'counterInput',
+                'dateCountInput',
+                'singleSelectionSlider',
+                'valueRangeSlider',
+                'rating',
+                'price',
+                'progress',
+                'productAges'
+            ]);
             $table->boolean('is_required')->default(false);
             $table->json('options')->nullable(); // إذا السؤال من نوع اختيار
             $table->boolean('is_active')->default(true);

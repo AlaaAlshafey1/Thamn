@@ -22,18 +22,30 @@ class HomeController extends Controller
         ]);
     }
 
-    public function allQuestions($id)
-    {
-        $questions = Question::with(['category', 'options'])
-                            ->where('is_active', 1)
-                            ->where('category_id', $id)
-                            ->orderBy('order')
-                            ->get();
+public function allQuestions($categoryId)
+{
+    // جلب كل الأسئلة الفعالة حسب الفئة، مع تحميل العلاقات
+    $questions = Question::with(['category', 'options'])
+                        ->where('is_active', 1)
+                        ->where('category_id', $categoryId)
+                        ->orderBy('order')
+                        ->get();
 
-        return response()->json([
-            'status' => true,
-            'data'   => QuestionResource::collection($questions),
-        ]);
-    }
+    // ترتيب حسب stageing
+    $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
+        return [
+            'step' => (int) $stage,
+            'questions' => $questions->isNotEmpty()
+                ? QuestionResource::collection($questions)
+                : collect(), // تأكد انو Collection
+        ];
+    })->values(); // إعادة ترقيم array من 0
+
+    return response()->json([
+        'success' => true,
+        'data' => $stages
+    ]);
+}
+
 
 }
