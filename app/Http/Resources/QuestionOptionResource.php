@@ -15,6 +15,9 @@ class QuestionOptionResource extends JsonResource
             'image' => $this->image ? asset('storage/' . $this->image) : null,
             'description' => "desc",
             'order' => $this->order,
+            "min"=>0,
+             "max"=>0,
+
             "sub_options"=>null
         ];
     }
