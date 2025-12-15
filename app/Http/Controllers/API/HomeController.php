@@ -24,22 +24,22 @@ class HomeController extends Controller
 
 public function allQuestions($categoryId)
 {
-    // جلب كل الأسئلة الفعالة حسب الفئة، مع تحميل العلاقات
+
     $questions = Question::with(['category', 'options'])
                         ->where('is_active', 1)
                         ->where('category_id', $categoryId)
                         ->orderBy('order')
                         ->get();
 
-    // ترتيب حسب stageing
+   
     $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
         return [
             'step' => (int) $stage,
             'questions' => $questions->isNotEmpty()
                 ? QuestionResource::collection($questions)
-                : collect(), // تأكد انو Collection
+                : collect(),
         ];
-    })->values(); // إعادة ترقيم array من 0
+    })->values();
 
     return response()->json([
         'success' => true,

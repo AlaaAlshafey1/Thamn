@@ -172,7 +172,7 @@ input.form-control, select.form-select {
         <h6 class="form-section-title">⚙️ الخيارات</h6>
 
         <div class="options-list" id="optionsList">
-            @foreach($question->options ?? [] as $option)
+            @foreach($question->options ?? collect() as $option)
                 <div class="option-row d-flex align-items-center gap-2 mb-2">
                     <input type="text" name="options_ar[]" class="form-control"
                            value="{{ $option->option_ar }}">

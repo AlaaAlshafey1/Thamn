@@ -17,7 +17,9 @@ class QuestionResource extends JsonResource
             'category_id'   => $this->category_id,
             'category_name' => $locale === 'ar' ? ($this->category->name_ar ?? '') : ($this->category->name_en ?? ''),
 
-            'question'      => $locale === 'ar' ? $this->question_ar : $this->question_en,
+            'label'      => $locale === 'ar' ? $this->question_ar : $this->question_en,
+            'hint'=>'hint',
+            'titleDescription'=>'titleDescription',
             'description'   => $locale === 'ar' ? $this->description_ar : $this->description_en,
 
             'type'          => $this->type,
@@ -28,6 +30,8 @@ class QuestionResource extends JsonResource
             'min_value'     => $this->min_value,
             'max_value'     => $this->max_value,
             'step'          => $this->step,
+            'addSearch'          => true,
+            'useCupertinoPicker'          => false,
 
             // options
             'options' => QuestionOptionResource::collection($this->options()->get() ?? collect()),
