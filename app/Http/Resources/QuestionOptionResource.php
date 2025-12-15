@@ -13,6 +13,7 @@ class QuestionOptionResource extends JsonResource
             'id'    => $this->id,
             'name'  => lang($this->option_ar, $this->option_en, $request),
             'image' => $this->image ? asset('storage/' . $this->image) : null,
+            'description' => "desc",
             'order' => $this->order,
         ];
     }
