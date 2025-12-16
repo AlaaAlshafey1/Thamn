@@ -22,15 +22,25 @@ class Question extends Model
         'min_value',
         'max_value',
         'step',
-        "stageing"
+        "stageing",
+        "addSearch",
+        "useCupertinoPicker",
+        "settings"
     ];
 
+    protected $casts = [
+        'settings'    => 'array',
+        'is_required' => 'boolean',
+        'is_active'   => 'boolean',
+    ];
     public function options()
     {
-        return $this->hasMany(QuestionOption::class, 'question_id', 'id')
+        return $this->hasMany(QuestionOption::class)
+                    ->whereNull('parent_option_id')
                     ->where('is_active', 1)
                     ->orderBy('order');
     }
+
 
     public function category()
     {

@@ -21,7 +21,6 @@ class QuestionController extends Controller
         return view('questions.create', compact('categories'));
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
@@ -33,6 +32,12 @@ class QuestionController extends Controller
             'options_ar' => 'nullable|array',
             'options_en' => 'nullable|array',
             'options_image.*' => 'nullable|image|max:2048',
+            'options_min.*' => 'nullable|numeric',
+            'options_max.*' => 'nullable|numeric',
+            'sub_options_ar' => 'nullable|array',
+            'sub_options_en' => 'nullable|array',
+            'sub_options_min' => 'nullable|array',
+            'sub_options_max' => 'nullable|array',
         ]);
 
         $data = $request->only([
@@ -46,9 +51,9 @@ class QuestionController extends Controller
             'min_value',
             'max_value',
             'step',
-            'stageing'
+            'stageing',
+            'settings'
         ]);
-
         $data['is_required'] = $request->has('is_required');
         $data['is_active']   = $request->is_active ?? 1;
 
@@ -70,21 +75,39 @@ class QuestionController extends Controller
                     $imagePath = $request->options_image[$index]->store('options', 'public');
                 }
 
-                QuestionOption::create([
+                // الخيار الرئيسي
+                $option = QuestionOption::create([
                     'question_id' => $question->id,
                     'option_ar'   => $option_ar,
                     'option_en'   => $request->options_en[$index] ?? null,
                     'image'       => $imagePath,
                     'order'       => $index,
+                    'min'         => $request->options_min[$index] ?? null,
+                    'max'         => $request->options_max[$index] ?? null,
                     'is_active'   => true,
                 ]);
+
+                // التعامل مع الـ sub-options
+                if(isset($request->sub_options_ar[$index]) && is_array($request->sub_options_ar[$index])) {
+                    foreach ($request->sub_options_ar[$index] as $subIndex => $sub_ar) {
+                        QuestionOption::create([
+                            'question_id' => $question->id,
+                            'option_ar'   => $sub_ar,
+                            'option_en'   => $request->sub_options_en[$index][$subIndex] ?? null,
+                            'parent_option_id' => $option->id,
+                            'order'       => $subIndex,
+                            'min'         => $request->sub_options_min[$index][$subIndex] ?? null,
+                            'max'         => $request->sub_options_max[$index][$subIndex] ?? null,
+                            'is_active'   => true,
+                        ]);
+                    }
+                }
             }
         }
 
         return redirect()->route('questions.index')
             ->with('success', 'تمت إضافة السؤال والخيارات بنجاح');
     }
-
     public function show(Question $question)
     {
 

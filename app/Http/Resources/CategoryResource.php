@@ -12,6 +12,7 @@ class CategoryResource extends JsonResource
             'id'        => $this->id,
             'name'      => lang($this->name_ar, $this->name_en, $request),
             'image'     => $this->image ? asset('storage/' . $this->image) : null,
+            "is_active" => $this->is_active,
             'created_at'=> $this->created_at->format('Y-m-d'),
         ];
     }

@@ -36,8 +36,8 @@ return new class extends Migration
                 'progress',
                 'productAges'
             ]);
+            $table->json('settings')->nullable();
             $table->boolean('is_required')->default(false);
-            $table->json('options')->nullable(); // إذا السؤال من نوع اختيار
             $table->boolean('is_active')->default(true);
             $table->integer('order')->default(0);
             $table->timestamps();

@@ -10,16 +10,26 @@ class QuestionOption extends Model
 
     protected $fillable = [
         'question_id',
+        'parent_option_id', // 👈 لازم
         'option_ar',
         'option_en',
         'image',
         'order',
+        'min',
+        'max',
         'is_active',
     ];
 
     public function question()
     {
         return $this->belongsTo(Question::class);
+    }
+
+    public function subOptions()
+    {
+        return $this->hasMany(self::class, 'parent_option_id')
+                    ->where('is_active', 1)
+                    ->orderBy('order');
     }
 }
 

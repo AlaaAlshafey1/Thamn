@@ -13,12 +13,28 @@ return new class extends Migration
     {
         Schema::create('question_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained()->onDelete('cascade');
-            $table->string('option_ar'); // النص بالعربية
-            $table->string('option_en')->nullable(); // النص بالإنجليزية
-            $table->string('image')->nullable(); // صورة الاختيار
-            $table->integer('order')->default(0); // ترتيب الخيار
-            $table->boolean('is_active')->default(true); // تفعيل/تعطيل الخيار
+
+            $table->foreignId('question_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            // 👇 لدعم sub options
+            $table->foreignId('parent_option_id')
+                ->nullable()
+                ->constrained('question_options')
+                ->nullOnDelete();
+
+            $table->string('option_ar');
+            $table->string('option_en')->nullable();
+
+            // 👇 min / max للاختيارات اللي محتاجاها
+            $table->decimal('min', 10, 2)->nullable();
+            $table->decimal('max', 10, 2)->nullable();
+
+            $table->string('image')->nullable();
+            $table->integer('order')->default(0);
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
         });
     }
@@ -28,6 +44,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('question_answers');
+        Schema::dropIfExists('question_options');
     }
 };

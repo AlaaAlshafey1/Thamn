@@ -29,27 +29,38 @@ class SocialAuthController extends Controller
             ], 422);
         }
 
-        // بحث عن الحساب
         $user = User::where('social_id', $request->social_id)
-                    ->where('social_provider', $request->provider)
-                    ->first();
+            ->where('social_provider', $request->provider)
+            ->first();
 
         if (!$user) {
             return response()->json([
                 'status' => true,
                 'is_registered' => false,
-                'is_completed' => false
+                'message' => lang(
+                    'الحساب غير مسجل',
+                    'Account not registered',
+                    $request
+                )
             ]);
         }
 
+        // ✅ الحساب موجود → اعمل Login
+        $token = $user->createToken('API Token')->plainTextToken;
+
         return response()->json([
             'status' => true,
-            'is_registered' => true,
-            'is_completed' => true,
-            'data' => new UserResource($user)
+            'message' => lang(
+                'تم تسجيل الدخول بنجاح',
+                'Login successful',
+                $request
+            ),
+            'data' => [
+                'user'  => new UserResource($user),
+                'token' => $token
+            ]
         ]);
     }
-
 
 
 

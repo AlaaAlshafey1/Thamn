@@ -77,7 +77,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('phone', $request->phone)->first();
+        $user = User::where('phone', $request->phone)->where("is_verified","1")->first();
 
         if (! $user) {
             return response()->json([
@@ -115,7 +115,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::Where('phone', $request->phone)
+        $user = User::Where('phone', $request->phone)->where("is_verified","1")
                     ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
