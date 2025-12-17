@@ -97,42 +97,50 @@ input.form-control, select.form-select, textarea.form-control {
         <textarea name="description_en" class="form-control"></textarea>
     </div>
 
+    <div class="col-6">
+        <label class="form-label">المرحلة</label>
+        <select name="stageing" class="form-select">
+            <option value="">اختر المرحلة</option>
+            @for($i=1;$i<=7;$i++)
+                <option value="{{ $i }}">مرحلة {{ $i }}</option>
+            @endfor
+        </select>
+    </div>
+    <div class="col-6">
+        <label class="form-label">ترتيب السؤال</label>
+        <input type="number" name="order" class="form-control" placeholder="رقم ترتيب السؤال" value="1">
+    </div>
+
+
 </div>
 
 {{-- ===================== Settings ===================== --}}
 <h6 class="form-section-title mt-4">⚙️ إعدادات العرض</h6>
 <div class="row g-3">
-
     <div class="col-6">
         <label class="form-label">Hint عربي</label>
         <input type="text" name="settings[hint][ar]" class="form-control">
     </div>
-
     <div class="col-6">
         <label class="form-label">Hint إنجليزي</label>
         <input type="text" name="settings[hint][en]" class="form-control">
     </div>
-
     <div class="col-6">
         <label class="form-label">Title Description عربي</label>
         <input type="text" name="settings[titleDescription][ar]" class="form-control">
     </div>
-
     <div class="col-6">
         <label class="form-label">Title Description إنجليزي</label>
         <input type="text" name="settings[titleDescription][en]" class="form-control">
     </div>
-
     <div class="col-6 d-flex align-items-center gap-2">
         <input type="checkbox" name="settings[addSearch]" value="1">
         <label class="form-label mb-0">تفعيل البحث</label>
     </div>
-
     <div class="col-6 d-flex align-items-center gap-2" id="cupertinoRow" style="display:none">
         <input type="checkbox" name="settings[useCupertinoPicker]" value="1">
         <label class="form-label mb-0">Cupertino Picker</label>
     </div>
-
 </div>
 
 {{-- ===================== Options ===================== --}}
@@ -184,6 +192,10 @@ function addOption() {
     <div class="option-row mb-2 p-2 border rounded">
         <input name="options_ar[]" class="form-control mb-1" placeholder="خيار عربي">
         <input name="options_en[]" class="form-control mb-1" placeholder="خيار EN">
+        <input type="text" name="options_description_ar[]" class="form-control mb-1" placeholder="وصف عربي">
+        <input type="text" name="options_description_en[]" class="form-control mb-1" placeholder="وصف EN">
+
+        <input type="number" name="options_order[]" class="form-control mb-1" placeholder="Order">
         <input type="file" name="options_image[]" class="form-control mb-1" accept="image/*">
         <input type="number" name="options_min[]" class="form-control mb-1" placeholder="Min">
         <input type="number" name="options_max[]" class="form-control mb-1" placeholder="Max">
@@ -196,11 +208,12 @@ function addOption() {
 }
 
 function addSubOption(btn) {
-    const container = btn.previousElementSibling; // الحاوية الفرعية
+    const container = btn.previousElementSibling;
     const html = `
     <div class="sub-option mb-1 d-flex gap-2 align-items-center">
         <input name="sub_options_ar[][]" class="form-control" placeholder="سؤال فرعي عربي">
         <input name="sub_options_en[][]" class="form-control" placeholder="سؤال فرعي EN">
+        <input type="number" name="sub_options_order[][]" class="form-control" placeholder="Order">
         <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">حذف</button>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);

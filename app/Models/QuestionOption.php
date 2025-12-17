@@ -13,6 +13,8 @@ class QuestionOption extends Model
         'parent_option_id', // 👈 لازم
         'option_ar',
         'option_en',
+        "description_ar",
+        "description_en",
         'image',
         'order',
         'min',
