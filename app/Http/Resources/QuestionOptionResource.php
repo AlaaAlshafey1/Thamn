@@ -17,6 +17,9 @@ public function toArray(Request $request): array
         'order'       => $this->order,
         'min'         => $this->min ?? 0,
         'max'         => $this->max ?? 0,
+        'price'            => $this->price ?? null,
+        'badge'            => $this->badge ?? null,
+        'subOptionsTitle'  => $this->sub_options_title ?? null,
         'sub_options' => $this->parent_option_id === null
             ? QuestionOptionResource::collection($this->subOptions)
             : null,

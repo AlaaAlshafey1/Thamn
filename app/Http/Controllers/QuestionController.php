@@ -75,35 +75,36 @@ class QuestionController extends Controller
                     $imagePath = $request->options_image[$index]->store('options', 'public');
                 }
 
-                // الخيار الرئيسي
                 $option = QuestionOption::create([
-                    'question_id' => $question->id,
-                    'option_ar'   => $option_ar,
-                    'option_en'   => $request->options_en[$index] ?? null,
-                    'description_ar'   => $request->options_description_ar[$index] ?? null,
-                    'description_en'   => $request->options_description_en[$index] ?? null,
-
-                    'image'       => $imagePath,
-                    'order'       => $index,
-                    'min'         => $request->options_min[$index] ?? null,
-                    'max'         => $request->options_max[$index] ?? null,
-                    'is_active'   => true,
+                    'question_id'   => $question->id,
+                    'option_ar'     => $option_ar,
+                    'option_en'     => $request->options_en[$index] ?? null,
+                    'description_ar'=> $request->options_description_ar[$index] ?? null,
+                    'description_en'=> $request->options_description_en[$index] ?? null,
+                    'image'         => $imagePath,
+                    'order'         => $request->options_order[$index] ?? $index,
+                    'min'           => $request->options_min[$index] ?? null,
+                    'max'           => $request->options_max[$index] ?? null,
+                    'price'         => $request->options_price[$index] ?? null,
+                    'badge'         => $request->options_badge[$index] ?? null,
+                    'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+                    'is_active'     => true,
                 ]);
 
                 // التعامل مع الـ sub-options
                 if(isset($request->sub_options_ar[$index]) && is_array($request->sub_options_ar[$index])) {
                     foreach ($request->sub_options_ar[$index] as $subIndex => $sub_ar) {
                         QuestionOption::create([
-                            'question_id'     => $question->id,
-                            'option_ar'       => $option_ar,
-                            'option_en'       => $request->options_en[$index] ?? null,
-                            'description_ar' => $request->options_description_ar[$index] ?? null,
-                            'description_en' => $request->options_description_en[$index] ?? null,
-                            'image'           => $imagePath,
-                            'order'           => $index,
-                            'min'             => $request->options_min[$index] ?? null,
-                            'max'             => $request->options_max[$index] ?? null,
-                            'is_active'       => true,
+                            'question_id'      => $question->id,
+                            'parent_option_id' => $option->id,
+                            'option_ar'        => $sub_ar,
+                            'option_en'        => $request->sub_options_en[$index][$subIndex] ?? null,
+                            'description_ar'   => $request->sub_options_description_ar[$index][$subIndex] ?? null,
+                            'description_en'   => $request->sub_options_description_en[$index][$subIndex] ?? null,
+                            'order'            => $subIndex,
+                            'min'              => $request->sub_options_min[$index][$subIndex] ?? null,
+                            'max'              => $request->sub_options_max[$index][$subIndex] ?? null,
+                            'is_active'        => true,
                         ]);
                     }
                 }
@@ -195,17 +196,20 @@ class QuestionController extends Controller
 
                 // -------- الخيار الرئيسي --------
                 $option = QuestionOption::create([
-                    'question_id'     => $question->id,
+                    'question_id'   => $question->id,
                     'parent_option_id'=> null,
-                    'option_ar'       => $option_ar,
-                    'option_en'       => $request->options_en[$index] ?? null,
-                    'description_ar' => $request->options_description_ar[$index] ?? null,
-                    'description_en' => $request->options_description_en[$index] ?? null,
-                    'image'           => $imagePath,
-                    'order'           => $index,
-                    'min'             => $request->options_min[$index] ?? null,
-                    'max'             => $request->options_max[$index] ?? null,
-                    'is_active'       => true,
+                    'option_ar'     => $option_ar,
+                    'option_en'     => $request->options_en[$index] ?? null,
+                    'description_ar'=> $request->options_description_ar[$index] ?? null,
+                    'description_en'=> $request->options_description_en[$index] ?? null,
+                    'image'         => $imagePath,
+                    'order'         => $request->options_order[$index] ?? $index,
+                    'min'           => $request->options_min[$index] ?? null,
+                    'max'           => $request->options_max[$index] ?? null,
+                    'price'         => $request->options_price[$index] ?? null,
+                    'badge'         => $request->options_badge[$index] ?? null,
+                    'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+                    'is_active'     => true,
                 ]);
 
                 // -------- sub options --------
@@ -216,11 +220,15 @@ class QuestionController extends Controller
                             'parent_option_id' => $option->id,
                             'option_ar'        => $sub_ar,
                             'option_en'        => $request->sub_options_en[$index][$subIndex] ?? null,
-                            'description_ar'  => $request->sub_options_description_ar[$index][$subIndex] ?? null,
-                            'description_en'  => $request->sub_options_description_en[$index][$subIndex] ?? null,
+                            'description_ar'   => $request->sub_options_description_ar[$index][$subIndex] ?? null,
+                            'description_en'   => $request->sub_options_description_en[$index][$subIndex] ?? null,
                             'order'            => $subIndex,
                             'min'              => $request->sub_options_min[$index][$subIndex] ?? null,
                             'max'              => $request->sub_options_max[$index][$subIndex] ?? null,
+                            'price'            => $request->options_price[$index] ?? null,
+                            'badge'            => $request->options_badge[$index] ?? null,
+                            'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+
                             'is_active'        => true,
                         ]);
                     }

@@ -10,13 +10,16 @@ class QuestionOption extends Model
 
     protected $fillable = [
         'question_id',
-        'parent_option_id', // 👈 لازم
+        'parent_option_id',
         'option_ar',
         'option_en',
         "description_ar",
         "description_en",
         'image',
         'order',
+        'price',
+        'badge',
+        'sub_options_title',
         'min',
         'max',
         'is_active',

@@ -31,10 +31,11 @@ public function allQuestions($categoryId)
                         ->orderBy('order')
                         ->get();
 
-   
+
     $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
         return [
             'step' => (int) $stage,
+            'name' => (int) $stage,
             'questions' => $questions->isNotEmpty()
                 ? QuestionResource::collection($questions)
                 : collect(),

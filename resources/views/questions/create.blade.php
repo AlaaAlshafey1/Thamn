@@ -199,6 +199,9 @@ function addOption() {
         <input type="file" name="options_image[]" class="form-control mb-1" accept="image/*">
         <input type="number" name="options_min[]" class="form-control mb-1" placeholder="Min">
         <input type="number" name="options_max[]" class="form-control mb-1" placeholder="Max">
+        <input type="text" name="options_price[]" class="form-control mb-1" placeholder="Price">
+        <input type="text" name="options_badge[]" class="form-control mb-1" placeholder="Badge (مثال: monthly,best,ai)">
+        <input type="text" name="options_subOptionsTitle[]" class="form-control mb-1" placeholder="عنوان الأسئلة الفرعية">
 
         <div class="sub-options-list ms-3 mt-2"></div>
         <button type="button" class="btn btn-sm btn-info mt-1" onclick="addSubOption(this)">إضافة سؤال فرعي</button>
@@ -206,6 +209,7 @@ function addOption() {
     </div>`;
     document.getElementById('optionsList').insertAdjacentHTML('beforeend', html);
 }
+
 
 function addSubOption(btn) {
     const container = btn.previousElementSibling;

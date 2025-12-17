@@ -142,35 +142,37 @@ $optionTypes=[
 
 @foreach($question->options->whereNull('parent_option_id') as $index=>$option)
 <div class="option-row mb-2">
-    <input name="options_ar[]" class="form-control mb-1" value="{{ $option->option_ar }}">
-    <input name="options_en[]" class="form-control mb-1" value="{{ $option->option_en }}">
-    <input name="options_description_ar[]" class="form-control mb-1" value="{{ $option->description_ar }}">
-    <input name="options_description_en[]" class="form-control mb-1" value="{{ $option->description_en }}">
+<div class="option-row mb-2">
+    <input name="options_ar[]" class="form-control mb-1" placeholder="خيار عربي" value="{{ $option->option_ar ?? '' }}">
+    <input name="options_en[]" class="form-control mb-1" placeholder="خيار EN" value="{{ $option->option_en ?? '' }}">
+    <input name="options_description_ar[]" class="form-control mb-1" placeholder="وصف عربي" value="{{ $option->description_ar ?? '' }}">
+    <input name="options_description_en[]" class="form-control mb-1" placeholder="وصف EN" value="{{ $option->description_en ?? '' }}">
 
+    <input type="file" name="options_image[]" class="form-control mb-1">
     @if($option->image)
         <img src="{{ asset('storage/'.$option->image) }}" width="50">
     @endif
-    <input type="file" name="options_image[]" class="form-control mb-1">
 
-    <input type="number" name="options_min[]" class="form-control mb-1" value="{{ $option->min }}">
-    <input type="number" name="options_max[]" class="form-control mb-1" value="{{ $option->max }}">
+    <input type="number" name="options_min[]" class="form-control mb-1" placeholder="Min" value="{{ $option->min ?? '' }}">
+    <input type="number" name="options_max[]" class="form-control mb-1" placeholder="Max" value="{{ $option->max ?? '' }}">
+
+    {{-- الحقول الجديدة --}}
+    <input type="text" name="options_price[]" class="form-control mb-1" placeholder="Price" value="{{ $option->price ?? '' }}">
+    <input type="text" name="options_badge[]" class="form-control mb-1" placeholder="Badge (مثال: monthly,best,ai)" value="{{ $option->badge ?? '' }}">
+    <input type="text" name="options_subOptionsTitle[]" class="form-control mb-1" placeholder="عنوان الأسئلة الفرعية" value="{{ $option->sub_options_title ?? '' }}">
 
     <div class="sub-options-list ms-3">
         @foreach($option->subOptions as $sub)
         <div class="sub-option d-flex gap-2">
             <input name="sub_options_ar[{{ $index }}][]" class="form-control" value="{{ $sub->option_ar }}">
             <input name="sub_options_en[{{ $index }}][]" class="form-control" value="{{ $sub->option_en }}">
-            <button type="button" class="btn btn-danger btn-sm"
-                    onclick="this.parentElement.remove()">×</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">×</button>
         </div>
         @endforeach
     </div>
 
-    <button type="button" class="btn btn-info btn-sm" onclick="addSubOption(this)">
-        إضافة سؤال فرعي
-    </button>
-    <button type="button" class="btn btn-danger btn-sm"
-            onclick="this.parentElement.remove()">حذف الخيار</button>
+    <button type="button" class="btn btn-info btn-sm" onclick="addSubOption(this)">إضافة سؤال فرعي</button>
+    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">حذف الخيار</button>
 </div>
 @endforeach
 
@@ -187,21 +189,28 @@ $optionTypes=[
 
 {{-- ===================== JS ===================== --}}
 <script>
-function addOption(){
-document.getElementById('optionsList').insertAdjacentHTML('beforeend',`
-<div class="option-row mb-2">
-    <input name="options_ar[]" class="form-control mb-1" placeholder="خيار عربي">
-    <input name="options_en[]" class="form-control mb-1" placeholder="خيار EN">
-    <input name="options_description_ar[]" class="form-control mb-1" placeholder="وصف عربي">
-    <input name="options_description_en[]" class="form-control mb-1" placeholder="وصف EN">
-    <input type="file" name="options_image[]" class="form-control mb-1">
-    <input type="number" name="options_min[]" class="form-control mb-1" placeholder="Min">
-    <input type="number" name="options_max[]" class="form-control mb-1" placeholder="Max">
-    <div class="sub-options-list ms-3"></div>
-    <button type="button" class="btn btn-info btn-sm" onclick="addSubOption(this)">إضافة سؤال فرعي</button>
-    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">حذف</button>
-</div>`);
+function addOption() {
+    document.getElementById('optionsList').insertAdjacentHTML('beforeend', `
+    <div class="option-row mb-2">
+        <input name="options_ar[]" class="form-control mb-1" placeholder="خيار عربي">
+        <input name="options_en[]" class="form-control mb-1" placeholder="خيار EN">
+        <input name="options_description_ar[]" class="form-control mb-1" placeholder="وصف عربي">
+        <input name="options_description_en[]" class="form-control mb-1" placeholder="وصف EN">
+        <input type="file" name="options_image[]" class="form-control mb-1">
+        <input type="number" name="options_min[]" class="form-control mb-1" placeholder="Min">
+        <input type="number" name="options_max[]" class="form-control mb-1" placeholder="Max">
+
+        {{-- الحقول الجديدة --}}
+        <input type="text" name="options_price[]" class="form-control mb-1" placeholder="Price">
+        <input type="text" name="options_badge[]" class="form-control mb-1" placeholder="Badge (مثال: monthly,best,ai)">
+        <input type="text" name="options_subOptionsTitle[]" class="form-control mb-1" placeholder="عنوان الأسئلة الفرعية">
+
+        <div class="sub-options-list ms-3"></div>
+        <button type="button" class="btn btn-info btn-sm" onclick="addSubOption(this)">إضافة سؤال فرعي</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">حذف</button>
+    </div>`);
 }
+
 
 function addSubOption(btn){
 btn.previousElementSibling.insertAdjacentHTML('beforeend',`
