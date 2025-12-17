@@ -13,7 +13,7 @@ public function toArray(Request $request): array
         'id'          => $this->id,
         'name'        => lang($this->option_ar, $this->option_en, $request),
         'image'       => $this->image ? asset('storage/' . $this->image) : null,
-        'description' => "desc",
+        'description' => lang($this->description_ar, $this->description_en, $request),
         'order'       => $this->order,
         'min'         => $this->min ?? 0,
         'max'         => $this->max ?? 0,
