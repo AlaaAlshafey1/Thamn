@@ -32,6 +32,7 @@ Route::prefix('auth')->group(function () {
 
 // ------------------ PUBLIC ENDPOINTS ------------------
 Route::get('categories', [HomeController::class, 'categories']);
+Route::get('terms', [HomeController::class, 'terms']);
 
 
 // ------------------ PROTECTED ENDPOINTS ------------------

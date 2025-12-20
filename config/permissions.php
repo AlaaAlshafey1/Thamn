@@ -26,12 +26,13 @@ return [
         'questions_edit',
         'questions_delete',
     ],
-       'app_pages' => [
-        'app_pages_view',
-        'app_pages_create',
-        'app_pages_edit',
-        'app_pages_delete',
+       'terms' => [
+        'terms_view',
+        'terms_create',
+        'terms_edit',
+        'terms_delete',
     ],
+
 
 
 

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\QuestionResource;
 use App\Models\Question;
+use App\Models\TermCondition;
 
 class HomeController extends Controller
 {
@@ -22,31 +23,60 @@ class HomeController extends Controller
         ]);
     }
 
-public function allQuestions($categoryId)
-{
+    public function allQuestions($categoryId)
+    {
 
-    $questions = Question::with(['category', 'options'])
-                        ->where('is_active', 1)
-                        ->where('category_id', $categoryId)
-                        ->orderBy('order')
-                        ->get();
+        $questions = Question::with(['category', 'options'])
+                            ->where('is_active', 1)
+                            ->where('category_id', $categoryId)
+                            ->orderBy('order')
+                            ->get();
 
 
-    $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
-        return [
-            'step' => (int) $stage,
-            'name' => (int) $stage,
-            'questions' => $questions->isNotEmpty()
-                ? QuestionResource::collection($questions)
-                : collect(),
-        ];
-    })->values();
+        $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
+            return [
+                'step' => (int) $stage,
+                'name' => (int) $stage,
+                'questions' => $questions->isNotEmpty()
+                    ? QuestionResource::collection($questions)
+                    : collect(),
+            ];
+        })->values();
 
-    return response()->json([
-        'success' => true,
-        'data' => $stages
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'data' => $stages
+        ]);
+    }
 
+
+    public function terms(Request $request)
+    {
+        $lang = $request->header('Accept-Language', 'ar');
+
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
+
+        $terms = TermCondition::where('is_active', 1)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($term) use ($lang) {
+                return [
+                    'id'      => $term->id,
+                    'title'   => $lang === 'ar' ? $term->title_ar : $term->title_en,
+                    'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
+                    'order'   => $term->sort_order,
+                ];
+            });
+
+        return response()->json([
+            'status'  => true,
+            'message' => lang(
+                'تم إرجاع الشروط والأحكام بنجاح',
+                'Terms & conditions fetched successfully',
+                $request
+            ),
+            'data' => $terms,
+        ]);
+    }
 
 }

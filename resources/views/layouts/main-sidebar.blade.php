@@ -70,7 +70,7 @@
                         @endcan
                     </li>
 
-                    <li class="slide">
+                    {{-- <li class="slide">
                         @can('app_pages_view')
                             <a class="side-menu__item" href="{{ route('app_pages.index') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
@@ -78,6 +78,18 @@
                                     <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
                                 </svg>
                                 <span class="side-menu__label">الصفحات</span>
+                            </a>
+                        @endcan
+                    </li> --}}
+                    <li class="slide">
+                        @can('terms_view')
+                            <a class="side-menu__item" href="{{ route('terms.index') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                                    <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/>
+                                    <path d="M8 12h8M8 16h8M8 20h5"/>
+                                </svg>
+                                <span class="side-menu__label">الشروط والأحكام</span>
                             </a>
                         @endcan
                     </li>
