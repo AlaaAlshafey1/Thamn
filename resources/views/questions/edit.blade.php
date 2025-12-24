@@ -91,11 +91,13 @@
     <div class="col-6">
         <label class="form-label">المرحلة</label>
         <select name="stageing" class="form-select">
-            @for($i=1;$i<=7;$i++)
-                <option value="{{ $i }}" {{ $question->stageing==$i?'selected':'' }}>
-                    مرحلة {{ $i }}
+            <option value="">اختر المرحلة</option>
+            @foreach($steps as $step)
+                <option value="{{ $step->id }}"
+                    {{ old('stageing', $question->stageing) == $step->id ? 'selected' : '' }}>
+                    {{ $step->name_ar }}
                 </option>
-            @endfor
+            @endforeach
         </select>
     </div>
 

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\QuestionStepController;
 use App\Http\Controllers\TermConditionController;
 
 Route::get('/', function () {
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('questions', QuestionController::class);
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
+    Route::resource('question_steps', QuestionStepController::class);
 
 
 });

@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use App\Models\QuestionOption;
+use App\Models\QuestionStep;
 
 class QuestionController extends Controller
 {
@@ -18,7 +19,11 @@ class QuestionController extends Controller
     public function create()
     {
         $categories = Category::where('is_active', 1)->get();
-        return view('questions.create', compact('categories'));
+        $steps = QuestionStep::where('is_active', 1)
+                    ->orderBy('sort_order')
+                    ->get();
+
+        return view('questions.create', compact('categories','steps'));
     }
 
     public function store(Request $request)
@@ -123,8 +128,11 @@ class QuestionController extends Controller
 
     public function edit(Question $question)
     {
+        $steps = QuestionStep::where('is_active', 1)
+            ->orderBy('sort_order')
+            ->get();
         $categories = Category::where('is_active', 1)->get();
-        return view('questions.edit', compact('question','categories'));
+        return view('questions.edit', compact('question','categories','steps'));
     }
 
     public function update(Request $request, Question $question)

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\QuestionResource;
 use App\Models\Question;
+use App\Models\QuestionStep;
 use App\Models\TermCondition;
 
 class HomeController extends Controller
@@ -23,7 +24,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function allQuestions($categoryId)
+    public function allQuestions($categoryId , Request $request)
     {
 
         $questions = Question::with(['category', 'options'])
@@ -33,10 +34,14 @@ class HomeController extends Controller
                             ->get();
 
 
-        $stages = $questions->groupBy('stageing')->map(function($questions, $stage) {
+        $stages = $questions->groupBy('stageing')->map(function($questions, $stage ) use($request) {
+
+            $Question_step = QuestionStep::where("id",$stage)->value("name_ar");
+            $locale = strtolower($request->header('Accept-Language', 'en'));
+
             return [
                 'step' => (int) $stage,
-                'name' => (int) $stage,
+                'name' => $locale  == "ar" ? QuestionStep::where("id",$stage)->value("name_ar") : QuestionStep::where("id",$stage)->value("name_en"),
                 'questions' => $questions->isNotEmpty()
                     ? QuestionResource::collection($questions)
                     : collect(),

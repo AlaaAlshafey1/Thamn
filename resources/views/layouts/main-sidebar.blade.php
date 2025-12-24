@@ -45,7 +45,19 @@
                     </li>
 
                     <li class="side-item side-item-category">Valuation Management</li>
-
+                    <li class="slide">
+                        @can('question_steps_view')
+                            <a class="side-menu__item" href="{{ route('question_steps.index') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="side-menu__icon"
+                                    viewBox="0 0 24 24">
+                                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                                    <path d="M3 3h18v2H3V3zm0 6h18v2H3V9zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/>
+                                </svg>
+                                <span class="side-menu__label">مراحل الأسئلة</span>
+                            </a>
+                        @endcan
+                    </li>
                     <li class="slide">
                         @can('categories_view')
                             <a class="side-menu__item" href="{{ route('categories.index') }}">

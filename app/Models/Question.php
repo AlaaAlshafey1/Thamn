@@ -46,4 +46,10 @@ class Question extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function step()
+    {
+        return $this->belongsTo(QuestionStep::class);
+    }
+
 }

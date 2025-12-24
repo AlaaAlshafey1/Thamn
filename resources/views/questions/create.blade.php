@@ -101,9 +101,12 @@ input.form-control, select.form-select, textarea.form-control {
         <label class="form-label">المرحلة</label>
         <select name="stageing" class="form-select">
             <option value="">اختر المرحلة</option>
-            @for($i=1;$i<=7;$i++)
-                <option value="{{ $i }}">مرحلة {{ $i }}</option>
-            @endfor
+            @foreach($steps as $step)
+                <option value="{{ $step->id }}"
+                    {{ old('stageing', $question->stageing ?? '') == $step->id ? 'selected' : '' }}>
+                    {{ $step->name_ar }}
+                </option>
+            @endforeach
         </select>
     </div>
     <div class="col-6">

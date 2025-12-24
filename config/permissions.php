@@ -32,6 +32,13 @@ return [
         'terms_edit',
         'terms_delete',
     ],
+       'question_steps' => [
+        'question_steps_view',
+        'question_steps_create',
+        'question_steps_edit',
+        'question_steps_delete',
+    ],
+
 
 
 
