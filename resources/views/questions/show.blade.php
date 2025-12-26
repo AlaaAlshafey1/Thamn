@@ -141,7 +141,11 @@
 
 {{-- ===================== Slider Preview ===================== --}}
 @php
-$sliderTypes=['singleSelectionSlider','valueRangeSlider','price','progress'];
+$sliderTypes=[
+        'singleChoiceCard','singleChoiceChip',
+    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+
+];
 @endphp
 
 @if(in_array($question->type,$sliderTypes))
