@@ -65,11 +65,8 @@ class QuestionController extends Controller
         $question = Question::create($data);
 
         $optionTypes = [
-            'singleChoiceCard',
-            'singleChoiceChip',
-            'singleChoiceChipWithImage',
-            'singleChoiceDropdown',
-            'multiSelection'
+    'singleChoiceCard','singleChoiceChip',
+    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
         ];
 
         if (in_array($question->type, $optionTypes)) {
@@ -186,11 +183,8 @@ class QuestionController extends Controller
 
         // ===================== أنواع الأسئلة اللي ليها options =====================
         $optionTypes = [
-            'singleChoiceCard',
-            'singleChoiceChip',
-            'singleChoiceChipWithImage',
-            'singleChoiceDropdown',
-            'multiSelection'
+            'singleChoiceCard','singleChoiceChip',
+            'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
         ];
 
         if (in_array($question->type, $optionTypes)) {

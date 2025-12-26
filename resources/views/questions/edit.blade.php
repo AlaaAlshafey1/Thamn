@@ -217,9 +217,9 @@ input.form-control, select.form-select, textarea.form-control {
 <script>
 const optionTypes = [
     'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','multiSelection','progress'
+    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
 ];
-const sliderTypes = ['singleSelectionSlider','valueRangeSlider','price'];
+const sliderTypes = [];
 
 function toggleSections(type){
     document.getElementById('optionsSection').style.display =
