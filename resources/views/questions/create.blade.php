@@ -174,9 +174,9 @@ input.form-control, select.form-select, textarea.form-control {
 <script>
 const optionTypes = [
     'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    'singleChoiceChipWithImage','price','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
 ];
-const sliderTypes = ['price'];
+const sliderTypes = [];
 
 document.getElementById('typeSelect').addEventListener('change', function () {
     const type = this.value;
