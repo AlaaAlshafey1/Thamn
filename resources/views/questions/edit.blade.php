@@ -68,7 +68,7 @@ input.form-control, select.form-select, textarea.form-control {
             @foreach([
                 'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
                 'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
-                'singleSelectionSlider','valueRangeSlider','rating','price','progress'
+                'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges'
             ] as $type)
                 <option value="{{ $type }}" {{ $question->type == $type ? 'selected' : '' }}>
                     {{ $type }}
@@ -217,7 +217,7 @@ input.form-control, select.form-select, textarea.form-control {
 <script>
 const optionTypes = [
     'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
 ];
 const sliderTypes = [];
 

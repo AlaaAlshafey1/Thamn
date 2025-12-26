@@ -66,7 +66,7 @@ class QuestionController extends Controller
 
         $optionTypes = [
     'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
         ];
 
         if (in_array($question->type, $optionTypes)) {
@@ -184,7 +184,7 @@ class QuestionController extends Controller
         // ===================== أنواع الأسئلة اللي ليها options =====================
         $optionTypes = [
             'singleChoiceCard','singleChoiceChip',
-            'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+            'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
         ];
 
         if (in_array($question->type, $optionTypes)) {

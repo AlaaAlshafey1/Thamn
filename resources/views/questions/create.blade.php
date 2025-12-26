@@ -73,6 +73,9 @@ input.form-control, select.form-select, textarea.form-control {
             <option value="valueRangeSlider">Slider مدى</option>
             <option value="rating">تقييم</option>
             <option value="price">سعر</option>
+            <option value="rateTypeSelection">rate Type Selection</option>
+            <option value="productAges">product Ages</option>
+
             <option value="progress">Progress</option>
         </select>
     </div>
@@ -174,7 +177,7 @@ input.form-control, select.form-select, textarea.form-control {
 <script>
 const optionTypes = [
     'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress','rateTypeSelection','productAges'
 ];
 const sliderTypes = [];
 

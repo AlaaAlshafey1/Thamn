@@ -143,7 +143,7 @@
 @php
 $sliderTypes=[
         'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress','rateTypeSelection','productAges'
 
 ];
 @endphp
