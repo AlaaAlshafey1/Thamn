@@ -9,35 +9,55 @@ use Illuminate\Http\Request;
 
 class AnswerController extends Controller
 {
-    public function store(Request $request, Question $question)
+    public function store(Request $request, $question_id)
     {
         $user = $request->user();
+        $question = Question::findOrFail($question_id);
 
-        $validated = $request->validate([
-            'answer'  => 'nullable|string',
-            'options' => 'nullable|array',
+        $request->validate([
+            'option_id'     => 'nullable|exists:question_options,id',
+            'sub_option_id' => 'nullable|exists:question_options,id',
+            'value'         => 'nullable|string',
         ]);
 
-        // لو السؤال اختيار Checkbox
-        if ($question->type === 'checkbox') {
-            $validated['options'] = json_encode($validated['options'] ?? []);
+
+        if ($question->type === 'multiSelection') {
+
+            Answer::where('user_id', $user->id)
+                ->where('question_id', $question->id)
+                ->delete();
+
+            foreach ($request->option_id ?? [] as $optionId) {
+                Answer::create([
+                    'user_id'     => $user->id,
+                    'question_id' => $question->id,
+                    'option_id'   => $optionId,
+                ]);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Answers saved'
+            ]);
         }
 
-        // مسح أى إجابة قديمة لنفس المستخدم والسؤال
+
         Answer::updateOrCreate(
             [
-                'user_id' => $user->id,
-                'question_id' => $question->id
+                'user_id'     => $user->id,
+                'question_id' => $question->id,
             ],
             [
-                'answer'  => $validated['answer'] ?? null,
-                'options' => $validated['options'] ?? null,
+                'option_id'     => $request->option_id,
+                'sub_option_id' => $request->sub_option_id,
+                'value'         => $request->value,
             ]
         );
 
         return response()->json([
             'status' => true,
-            'message' => lang("تم حفظ الإجابة", "Answer saved", $request)
+            'message' => 'Answer saved'
         ]);
     }
+
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\QuestionController;
 use App\Http\Controllers\API\AnswerController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\API\SocialAuthController;
 
 Route::get('/user', function (Request $request) {
@@ -45,5 +46,5 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('questions/{id}', [HomeController::class, 'allQuestions']); // كل الأسئلة حسب الفئة
-    Route::post('questions/{question_id}/answer', [AnswerController::class, 'store']);
+    Route::post('orders', [OrderController::class, 'store']);
 });

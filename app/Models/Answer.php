@@ -1,19 +1,16 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'user_id',       // <-- ضيف ده
+        'user_id',
         'question_id',
-        'answer',
-        'options'
+        'option_id',
+        'sub_option_id',
+        'value',
     ];
 
     public function question()
@@ -21,8 +18,15 @@ class Answer extends Model
         return $this->belongsTo(Question::class);
     }
 
-    public function user()
+    public function option()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(QuestionOption::class, 'option_id');
+    }
+
+    public function subOption()
+    {
+        return $this->belongsTo(QuestionOption::class, 'sub_option_id');
     }
 }
+
+
