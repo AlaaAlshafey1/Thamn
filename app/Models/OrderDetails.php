@@ -16,11 +16,28 @@ class OrderDetails extends Model
         'sub_option_id',
         'value',
         'price',
-        'status'
+        'status',
+        "stageing"
     ];
 
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function question()
+    {
+        return $this->belongsTo(Question::class);
+    }
+
+    public function option()
+    {
+        return $this->belongsTo(QuestionOption::class);
+    }
+
+    public function steps()
+    {
+        return $this->belongsTo(QuestionStep::class);
+    }
+
 }

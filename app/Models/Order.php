@@ -19,10 +19,13 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function files()
-{
-    return $this->hasMany(OrderFiles::class);
-}
-
+        public function files()
+    {
+        return $this->hasMany(OrderFiles::class);
+    }
+    public function payments()
+    {
+        return $this->hasMany(TapPayment::class);
+    }
 
 }

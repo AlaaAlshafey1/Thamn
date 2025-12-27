@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuestionStepController;
 use App\Http\Controllers\TermConditionController;
@@ -30,6 +31,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);
+    Route::get('orders', [OrderController::class, 'index'])
+        ->name('orders.index');
+
+    Route::get('orders/{order}', [OrderController::class, 'show'])
+        ->name('orders.show');
+
+    Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->name('orders.updateStatus');
 
 
 });

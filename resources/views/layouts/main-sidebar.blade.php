@@ -93,18 +93,40 @@
                             </a>
                         @endcan
                     </li> --}}
-                    <li class="slide">
-                        @can('terms_view')
-                            <a class="side-menu__item" href="{{ route('terms.index') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
-                                    <path d="M0 0h24v24H0V0z" fill="none"/>
-                                    <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/>
-                                    <path d="M8 12h8M8 16h8M8 20h5"/>
-                                </svg>
-                                <span class="side-menu__label">الشروط والأحكام</span>
-                            </a>
-                        @endcan
-                    </li>
+                <li class="slide">
+                    @can('terms_view')
+                        <a class="side-menu__item" href="{{ route('terms.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/>
+                                <path d="M8 12h8M8 16h8M8 20h5"/>
+                            </svg>
+                            <span class="side-menu__label">الشروط والأحكام</span>
+                        </a>
+                    @endcan
+                </li>
+                <li class="side-item side-item-category">Orders Management</li>
+
+                <li class="slide">
+                    @can('orders_view')
+                        <a class="side-menu__item" href="{{ route('orders.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="side-menu__icon"
+                                viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2
+                                        2-.9 2-2-.9-2-2-2zm10 0c-1.1
+                                        0-2 .9-2 2s.9 2 2 2 2-.9
+                                        2-2-.9-2-2-2zM7.16 14h9.45c.75
+                                        0 1.41-.41 1.75-1.03l3.58-6.49
+                                        -1.74-.97-3.58 6.49H8.53L4.27
+                                        4H1v2h2l3.6 7.59-1.35 2.44C4.52
+                                        16.37 5.48 18 7 18h12v-2H7l1.16-2z"/>
+                            </svg>
+                            <span class="side-menu__label">الطلبات</span>
+                        </a>
+                    @endcan
+                </li>
 
 
 				</ul>

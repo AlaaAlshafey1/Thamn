@@ -17,6 +17,9 @@ class TapPayment extends Model
         'response_data'
     ];
 
+    protected $casts = [
+    'response_data' => 'array',
+        ];
     public function order()
     {
         return $this->belongsTo(Order::class);

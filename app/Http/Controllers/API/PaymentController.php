@@ -35,9 +35,8 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        // إنشاء طلب الدفع في Tap
         $payment = $this->tapPaymentService->createPayment(
-            $amount , // Tap بالهللة
+            $amount ,
             "SAR",
             [
                 "first_name" => $customerName,
@@ -50,7 +49,6 @@ class PaymentController extends Controller
             route('payment.callback', ['order_id' => $order->id])
         );
 
-        // حفظ بيانات الدفع في DB
         TapPayment::create([
             'order_id'      => $order->id,
             'charge_id'     => $payment['id'] ?? null,
@@ -65,7 +63,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    // Callback ناجح بعد الدفع
+
     public function callback(Request $request)
     {
         $orderId = $request->query('order_id');
@@ -96,7 +94,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    // Callback خطأ
+
     public function callbackError(Request $request)
     {
         $chargeId = $request->query('tap_id');

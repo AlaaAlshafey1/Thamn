@@ -53,4 +53,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/callback', [PaymentController::class, 'callback'])->name('payment.callback');
         Route::get('/callback/error', [PaymentController::class, 'callbackError'])->name('payment.callback.error');
     });
+    
 });

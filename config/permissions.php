@@ -38,6 +38,14 @@ return [
         'question_steps_edit',
         'question_steps_delete',
     ],
+       'orders_view' => [
+        'orders_view',
+        'orders_create',
+        'orders_edit',
+        'orders_delete',
+    ],
+
+
 
 
 
