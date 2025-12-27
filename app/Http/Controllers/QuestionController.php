@@ -32,7 +32,7 @@ class QuestionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'question_ar' => 'required|string|max:255',
             'question_en' => 'nullable|string|max:255',
-            'type' => 'required|in:singleChoiceCard,singleChoiceChip,singleChoiceChipWithImage,singleChoiceDropdown,multiSelection,counterInput,dateCountInput,singleSelectionSlider,valueRangeSlider,rating,price,progress,productAges','rateTypeSelection',
+            'type' => 'required',
             'order' => 'nullable|integer',
             'options_ar' => 'nullable|array',
             'options_en' => 'nullable|array',
@@ -141,7 +141,7 @@ class QuestionController extends Controller
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
 
-            'type' => 'required|in:singleChoiceCard,singleChoiceChip,singleChoiceChipWithImage,singleChoiceDropdown,multiSelection,counterInput,dateCountInput,singleSelectionSlider,valueRangeSlider,rating,price,progress,productAges','rateTypeSelection',
+            'type' => 'required',
 
             'order' => 'nullable|integer',
 
