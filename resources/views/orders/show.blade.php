@@ -171,7 +171,7 @@ body {
 
         <!-- Total -->
         <div class="invoice-total">
-            الإجمالي: {{ number_format($total,2) }} SAR
+            الإجمالي: {{ number_format($order->total_price,2) }} SAR
         </div>
 
     </div>
