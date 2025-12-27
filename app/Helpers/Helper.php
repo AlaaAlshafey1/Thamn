@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('translate_permission')) {
     function translate_permission($permissionName)
@@ -61,3 +62,20 @@ if (!function_exists('transMsg')) {
 }
 
 
+
+if (! function_exists('full_url')) {
+    function full_url(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        // لو already URL (http / https)
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        // public disk
+        return url(Storage::url($path));
+    }
+}

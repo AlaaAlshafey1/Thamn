@@ -7,6 +7,7 @@ use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\QuestionController;
 use App\Http\Controllers\API\AnswerController;
 use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\SocialAuthController;
 
 Route::get('/user', function (Request $request) {
@@ -47,4 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('questions/{id}', [HomeController::class, 'allQuestions']); // كل الأسئلة حسب الفئة
     Route::post('orders', [OrderController::class, 'store']);
+    Route::prefix('payment')->group(function () {
+        Route::post('/order/{order_id}', [PaymentController::class, 'payOrder'])->name('payment.order');
+        Route::get('/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+        Route::get('/callback/error', [PaymentController::class, 'callbackError'])->name('payment.callback.error');
+    });
 });

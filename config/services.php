@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'tap' => [
+        'secret_key' => env('TAP_SECRET_KEY'),
+    ],
+
+
 ];

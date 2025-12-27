@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderDetails;
+use App\Models\OrderFiles;
 use App\Models\QuestionStep;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -57,7 +59,36 @@ class OrderController extends Controller
         }
 
         $order->update(['total_price' => $totalPrice]);
+        $images = [];
+        $files = [];
 
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('orders/' . $order->id . '/images', 'public');
+                $images[] = Storage::url($path);
+
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'image',
+                ]);
+            }
+        }
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('orders/' . $order->id . '/files', 'public');
+                $files[] = Storage::url($path);
+
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'file',
+                ]);
+            }
+        }
 
         $responseAnswers = collect($details)->map(function($d) {
             return [
@@ -78,6 +109,27 @@ class OrderController extends Controller
                 'user_id' => $order->user_id,
                 'status' => $order->status,
                 'total_price' => $totalPrice,
+                'files' => OrderFiles::where('order_id', $order->id)
+                    ->where('type', 'file')
+                    ->get()
+                    ->map(function ($file) {
+                        return [
+                            'id'   => $file->id,
+                            'name' => $file->file_name,
+                            'url'  => full_url($file->file_path),
+                        ];
+                    }),
+
+                'images' => OrderFiles::where('order_id', $order->id)
+                    ->where('type', 'image')
+                    ->get()
+                    ->map(function ($file) {
+                        return [
+                            'id'   => $file->id,
+                            'name' => $file->file_name,
+                            'url'  => full_url($file->file_path),
+                        ];
+                    }),
                 'answers' => $responseAnswers,
             ],
         ]);

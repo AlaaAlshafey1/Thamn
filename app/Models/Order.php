@@ -15,4 +15,14 @@ class Order extends Model
     {
         return $this->hasMany(OrderDetails::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function files()
+{
+    return $this->hasMany(OrderFiles::class);
+}
+
+
 }
