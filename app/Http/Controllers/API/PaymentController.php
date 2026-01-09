@@ -94,9 +94,7 @@ class PaymentController extends Controller
             'payment_status' => $payment->status
         ]);
 
-        /**
-         * ================= AI Evaluation =================
-         */
+        // ================= Evaluation =================
         if ($payment->status === 'paid') {
 
             $order->load([
@@ -105,64 +103,89 @@ class PaymentController extends Controller
                 'category'
             ]);
 
-            $qaText = '';
-            foreach ($order->details as $detail) {
-                $question = $detail->question->question_ar ?? null;
-                $answer   = $detail->option->option_ar ?? $detail->value ?? null;
+            // البحث عن سؤال التقييم
+            $rateQuestion = $order->details->firstWhere('question.type', 'rateTypeSelection');
 
-                if ($question && $answer) {
-                    $qaText .= "- {$question}: {$answer}\n";
+            if ($rateQuestion) {
+                $selectedBadge = $rateQuestion->option->badge ?? null;
+
+                if ($selectedBadge === 'ai') {
+                    // ===== AI Evaluation =====
+                    $qaText = '';
+                    foreach ($order->details as $detail) {
+                        $question = $detail->question->question_ar ?? null;
+                        $answer   = $detail->option->option_ar ?? $detail->value ?? null;
+
+                        if ($question && $answer) {
+                            $qaText .= "- {$question}: {$answer}\n";
+                        }
+                    }
+
+                    $prompt = <<<PROMPT
+    أنت خبير محترف في تثمين السلع في السوق السعودي.
+
+    الدولة: المملكة العربية السعودية
+    العملة: ريال سعودي (SAR)
+    فئة السلعة: {$order->category->name_ar}
+
+    تفاصيل السلعة كما أدخلها العميل:
+    {$qaText}
+
+    المطلوب:
+    1- تحديد السعر العادل الحالي في السوق السعودي.
+    2- أقل سعر وأعلى سعر منطقي.
+    3- سعر نهائي موصى به.
+    4- شرح مختصر لأسباب التقييم.
+    5- نسبة ثقة من 0 إلى 100.
+
+    الرد يجب أن يكون JSON فقط:
+    {
+    "min_price": رقم,
+    "max_price": رقم,
+    "recommended_price": رقم,
+    "currency": "SAR",
+    "confidence": رقم,
+    "reasoning": "شرح مختصر"
+    }
+    PROMPT;
+
+                    try {
+                        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
+
+                        $order->update([
+                            'ai_min_price'  => $aiResult['min_price'] ?? null,
+                            'ai_max_price'  => $aiResult['max_price'] ?? null,
+                            'ai_price'      => $aiResult['recommended_price'] ?? null,
+                            'ai_confidence' => $aiResult['confidence'] ?? null,
+                            'ai_reasoning'  => $aiResult['reasoning'] ?? null,
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::error('AI Evaluation Failed', [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage()
+                        ]);
+                    }
+
+                } else {
+                    // ===== Expert / Badge Evaluation =====
+                    // إرسال إشعار بالـ Email بأن التقييم سيتم من خبير
+                    try {
+                        $user = $order->user;
+                        \Mail::to($user->email)->send(new \App\Mail\ExpertEvaluationNotification($order));
+                        Log::info("Expert evaluation email sent to {$user->email}");
+                    } catch (\Throwable $e) {
+                        Log::error("Failed to send expert evaluation email", [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage()
+                        ]);
+                    }
                 }
-            }
-
-            $prompt = <<<PROMPT
-أنت خبير محترف في تثمين السلع في السوق السعودي.
-
-الدولة: المملكة العربية السعودية
-العملة: ريال سعودي (SAR)
-فئة السلعة: {$order->category->name_ar}
-
-تفاصيل السلعة كما أدخلها العميل:
-{$qaText}
-
-المطلوب:
-1- تحديد السعر العادل الحالي في السوق السعودي.
-2- أقل سعر وأعلى سعر منطقي.
-3- سعر نهائي موصى به.
-4- شرح مختصر لأسباب التقييم.
-5- نسبة ثقة من 0 إلى 100.
-
-الرد يجب أن يكون JSON فقط:
-{
-  "min_price": رقم,
-  "max_price": رقم,
-  "recommended_price": رقم,
-  "currency": "SAR",
-  "confidence": رقم,
-  "reasoning": "شرح مختصر"
-}
-PROMPT;
-
-            try {
-                $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
-
-                $order->update([
-                    'ai_min_price'  => $aiResult['min_price'] ?? null,
-                    'ai_max_price'  => $aiResult['max_price'] ?? null,
-                    'ai_price'      => $aiResult['recommended_price'] ?? null,
-                    'ai_confidence' => $aiResult['confidence'] ?? null,
-                    'ai_reasoning'  => $aiResult['reasoning'] ?? null,
-                ]);
-            } catch (\Throwable $e) {
-                Log::error('AI Evaluation Failed', [
-                    'order_id' => $order->id,
-                    'error'    => $e->getMessage()
-                ]);
             }
         }
 
         return response()->json(['status' => true]);
     }
+
 
     /**
      * المستخدم بعد الدفع
