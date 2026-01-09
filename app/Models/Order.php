@@ -9,12 +9,19 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning'];
+    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning'];
 
     public function details()
     {
         return $this->hasMany(OrderDetails::class);
     }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+
     public function user()
     {
         return $this->belongsTo(User::class);

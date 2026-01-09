@@ -127,6 +127,23 @@
                         </a>
                     @endcan
                 </li>
+                <li class="side-item side-item-category">Payments Management</li>
+
+                <li class="slide">
+                    @can('payments_view')
+                        <a class="side-menu__item" href="{{ route('payments.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11
+                                        11-4.93 11-11S18.07 1 12 1zm1 17.93c-2.83.48-5.48-.48-7.07-2.07
+                                        S4.48 14.83 4 12c.48-2.83 2.48-5.18 5.07-6.07
+                                        2.59-.89 5.32.07 7.07 2.07 1.75 2 2.41 4.74 1.93 7.57-.48 2.83-2.48 5.18-5.07 6.07z"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            <span class="side-menu__label">المدفوعات</span>
+                        </a>
+                    @endcan
+                </li>
 
 
 				</ul>

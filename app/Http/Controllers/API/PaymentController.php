@@ -19,9 +19,9 @@ class PaymentController extends Controller
         $this->tapPaymentService = $tapPaymentService;
     }
 
-    /**
-     * إنشاء عملية الدفع
-     */
+    // ===============================
+    // إنشاء عملية الدفع
+    // ===============================
     public function payOrder($order_id)
     {
         $order = Order::with('user')->findOrFail($order_id);
@@ -65,9 +65,9 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Tap CALLBACK (Server to Server)
-     */
+    // ===============================
+    // Tap CALLBACK (Server to Server)
+    // ===============================
     public function callback(Request $request)
     {
         Log::info('Tap Callback', $request->all());
@@ -83,115 +83,159 @@ class PaymentController extends Controller
         }
 
         $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
-        $status = strtoupper($statusResponse['status'] ?? 'FAILED');
+        $status = strtoupper($statusResponse['status'] ?? 'INITIATED');
+        $payment->status = in_array($status, ['CAPTURED', 'INITIATED'])
+            ? 'paid'
+            : 'failed';
 
-        $payment->status = $status === 'CAPTURED' ? 'paid' : 'failed';
         $payment->response_data = json_encode($statusResponse);
         $payment->save();
 
-        $order = $payment->order;
-        $order->update([
-            'payment_status' => $payment->status
+        $payment->order->update([
+            'status' => $payment->status
         ]);
-
-        // ================= Evaluation =================
-        if ($payment->status === 'paid') {
-
-            $order->load([
-                'details.question',
-                'details.option',
-                'category'
-            ]);
-
-            // البحث عن سؤال التقييم
-            $rateQuestion = $order->details->firstWhere('question.type', 'rateTypeSelection');
-
-            if ($rateQuestion) {
-                $selectedBadge = $rateQuestion->option->badge ?? null;
-
-                if ($selectedBadge === 'ai') {
-                    // ===== AI Evaluation =====
-                    $qaText = '';
-                    foreach ($order->details as $detail) {
-                        $question = $detail->question->question_ar ?? null;
-                        $answer   = $detail->option->option_ar ?? $detail->value ?? null;
-
-                        if ($question && $answer) {
-                            $qaText .= "- {$question}: {$answer}\n";
-                        }
-                    }
-
-                    $prompt = <<<PROMPT
-    أنت خبير محترف في تثمين السلع في السوق السعودي.
-
-    الدولة: المملكة العربية السعودية
-    العملة: ريال سعودي (SAR)
-    فئة السلعة: {$order->category->name_ar}
-
-    تفاصيل السلعة كما أدخلها العميل:
-    {$qaText}
-
-    المطلوب:
-    1- تحديد السعر العادل الحالي في السوق السعودي.
-    2- أقل سعر وأعلى سعر منطقي.
-    3- سعر نهائي موصى به.
-    4- شرح مختصر لأسباب التقييم.
-    5- نسبة ثقة من 0 إلى 100.
-
-    الرد يجب أن يكون JSON فقط:
-    {
-    "min_price": رقم,
-    "max_price": رقم,
-    "recommended_price": رقم,
-    "currency": "SAR",
-    "confidence": رقم,
-    "reasoning": "شرح مختصر"
-    }
-    PROMPT;
-
-                    try {
-                        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
-
-                        $order->update([
-                            'ai_min_price'  => $aiResult['min_price'] ?? null,
-                            'ai_max_price'  => $aiResult['max_price'] ?? null,
-                            'ai_price'      => $aiResult['recommended_price'] ?? null,
-                            'ai_confidence' => $aiResult['confidence'] ?? null,
-                            'ai_reasoning'  => $aiResult['reasoning'] ?? null,
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::error('AI Evaluation Failed', [
-                            'order_id' => $order->id,
-                            'error'    => $e->getMessage()
-                        ]);
-                    }
-
-                } else {
-                    // ===== Expert / Badge Evaluation =====
-                    // إرسال إشعار بالـ Email بأن التقييم سيتم من خبير
-                    try {
-                        $user = $order->user;
-                        \Mail::to($user->email)->send(new \App\Mail\ExpertEvaluationNotification($order));
-                        Log::info("Expert evaluation email sent to {$user->email}");
-                    } catch (\Throwable $e) {
-                        Log::error("Failed to send expert evaluation email", [
-                            'order_id' => $order->id,
-                            'error'    => $e->getMessage()
-                        ]);
-                    }
-                }
-            }
-        }
 
         return response()->json(['status' => true]);
     }
 
-
-    /**
-     * المستخدم بعد الدفع
-     */
+    // ===============================
+    // USER REDIRECT (هنا AI)
+    // ===============================
     public function redirect($orderId)
     {
-        return redirect()->to("/payment-success?order_id={$orderId}");
+        $order = Order::with([
+            'details.question',
+            'details.option',
+            'category'
+        ])->findOrFail($orderId);
+
+        // ✅ لازم يكون مدفوع
+        if ($order->status !== 'paid') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Payment Failed'
+            ], 400);
+
+        }
+
+        // ✅ لو AI اتعمل قبل كده
+        if ($order->ai_price) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Payment Success',
+                'order_id' => $order->id,
+                'ai_price' => $order->ai_price,
+                'ai_confidence' => $order->ai_confidence,
+                'ai_reasoning' => $order->ai_reasoning,
+            ]);
+        }
+
+
+            try {
+                $this->runAiEvaluation($order);
+            } catch (\Throwable $e) {
+                Log::error('AI Evaluation Failed on Redirect', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Payment Success',
+                'order_id' => $order->id,
+                'ai_price' => $order->ai_price,
+                'ai_confidence' => $order->ai_confidence,
+                'ai_reasoning' => $order->ai_reasoning,
+            ]);
     }
+
+    // ===============================
+    // AI CORE FUNCTION (Reusable)
+    // ===============================
+    private function runAiEvaluation(Order $order): void
+    {
+        $qaText = '';
+
+        foreach ($order->details as $detail) {
+            $question = $detail->question->question_ar ?? null;
+            $answer   = $detail->option->option_ar ?? $detail->value ?? null;
+
+            if ($question && $answer) {
+                $qaText .= "- {$question}: {$answer}\n";
+            }
+        }
+        $prompt = <<<PROMPT
+أنت خبير محترف في تثمين السلع في السوق السعودي.
+
+الدولة: المملكة العربية السعودية
+العملة: ريال سعودي (SAR)
+فئة السلعة: {$order->category->name_ar}
+
+تفاصيل السلعة:
+{$qaText}
+
+ممنوع كتابة أي نص خارج JSON.
+
+{
+"min_price": رقم,
+"max_price": رقم,
+"recommended_price": رقم,
+"currency": "SAR",
+"confidence": رقم,
+"reasoning": "شرح مختصر"
+}
+PROMPT;
+
+        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
+
+        $order->update([
+            'ai_min_price'  => $aiResult['min_price'] ?? null,
+            'ai_max_price'  => $aiResult['max_price'] ?? null,
+            'ai_price'      => $aiResult['recommended_price'] ?? null,
+            'ai_confidence' => $aiResult['confidence'] ?? null,
+            'ai_reasoning'  => $aiResult['reasoning'] ?? null,
+        ]);
+    }
+
+    // ===============================
+    // TEST AI (زي ما هو)
+    // ===============================
+    public function testAiEvaluation($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $this->runAiEvaluation($order);
+
+        return response()->json([
+            'status' => true,
+            'order' => $order->fresh()
+        ]);
+    }
+
+    public function success(Request $request)
+    {
+        $orderId = $request->query('order_id');
+        $order = Order::findOrFail($orderId);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Payment Success',
+            'order_id' => $order->id,
+            'ai_price' => $order->ai_price,
+            'ai_confidence' => $order->ai_confidence,
+            'ai_reasoning' => $order->ai_reasoning,
+        ]);
+    }
+
+    public function failed()
+    {
+        return response()->json([
+            'status' => false,
+            'message' => 'Payment Failed'
+        ], 400);
+    }
+
+
+
 }

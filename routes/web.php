@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuestionStepController;
+use App\Http\Controllers\TapPaymentController;
 use App\Http\Controllers\TermConditionController;
 
 Route::get('/', function () {
@@ -44,6 +45,11 @@ Route::middleware('auth')->group(function () {
         ->name('orders.updateStatus');
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+    Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
+    Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');
+    Route::delete( 'payments/{payment}', [TapPaymentController::class, 'destroy'])->name('payments.destroy');
+
 
 });
 Route::get('lang/{locale}', function ($locale) {

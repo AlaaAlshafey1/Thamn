@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
+            // $table->integer('category_id')->nullable();
             $table->decimal('ai_min_price',10,2)->nullable();
             $table->decimal('ai_max_price',10,2)->nullable();
             $table->decimal('ai_price',10,2)->nullable();

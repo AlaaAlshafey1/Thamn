@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\OrderFiles;
 use App\Models\QuestionStep;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
@@ -30,6 +31,7 @@ class OrderController extends Controller
 
         $order = Order::create([
             'user_id' => $user->id,
+            'category_id' => $request->category_id ?? 1 ,
             'status' => $request->status ?? 0,
             'payload' => json_encode($request->answers),
         ]);
@@ -134,4 +136,82 @@ class OrderController extends Controller
             ],
         ]);
     }
+
+    public function allOrders()
+    {
+        $orders = Order::where("user_id",Auth::id())->with( 'category')
+            ->latest()
+            ->get();
+
+        return response()->json(['status' => true, 'orders' => $orders]);
+    }
+
+    // ✅ أوردرات حسب حالة واحدة
+    public function ordersByStatus($status)
+    {
+        $validStatuses = [
+            'orderReceived','beingEstimated','beingReEstimated','estimated',
+            'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
+        ];
+
+        if (!in_array($status, $validStatuses)) {
+            return response()->json(['status' => false, 'message' => 'Invalid status'], 400);
+        }
+
+        $orders = Order::where("user_id",Auth::id())->with( 'category')
+            ->where('status', $status)
+            ->latest()
+            ->get();
+
+        return response()->json(['status' => true, 'orders' => $orders]);
+    }
+
+    // ✅ أوردرات بحسب مجموعة predefined
+    public function ordersByGroup($group)
+    {
+        $groups = [
+            'inPricing' => ['beingEstimated','beingReEstimated'],
+            'priced' => ['estimated','estimatedAndStored','reEstimated'],
+            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
+        ];
+
+        if (!array_key_exists($group, $groups)) {
+            return response()->json(['status' => false, 'message' => 'Invalid group'], 400);
+        }
+
+        $orders = Order::where("user_id",Auth::id())->with('category')
+            ->whereIn('status', $groups[$group])
+            ->latest()
+            ->get();
+
+        return response()->json(['status' => true, 'orders' => $orders]);
+    }
+
+    // ✅ أوردرات بفلاتر متعددة: category_id, user_id, date range
+    public function ordersFiltered(Request $request)
+    {
+        $query = Order::where("user_id",Auth::id())->with( 'category');
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $orders = $query->latest()->get();
+
+        return response()->json(['status' => true, 'orders' => $orders]);
+    }
+
 }

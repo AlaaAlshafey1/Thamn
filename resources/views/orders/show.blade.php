@@ -141,7 +141,7 @@ body {
             <div>
                 <p><strong>المستخدم:</strong> {{ $order->user->first_name . ' ' . $order->user->last_name }}</p>
                 <p><strong>حالة الطلب:</strong> {{ $order->status }}</p>
-                <p><strong>الدفع:</strong> {{ $order->payment_status ?? '-' }}</p>
+                <p><strong>الدفع:</strong> {{ $order->status ?? '-' }}</p>
             </div>
         </div>
 

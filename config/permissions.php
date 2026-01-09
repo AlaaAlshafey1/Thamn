@@ -44,6 +44,14 @@ return [
         'orders_edit',
         'orders_delete',
     ],
+       'payments' => [
+        'payments_view',
+        'payments_create',
+        'payments_edit',
+        'payments_delete',
+    ],
+
+
 
 
 

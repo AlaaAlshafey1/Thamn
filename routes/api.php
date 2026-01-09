@@ -64,5 +64,26 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/callback/error', [PaymentController::class, 'callbackError'])
             ->name('payment.callback.error');
     });
+        Route::get('/test-ai/{orderId}', [PaymentController::class, 'testAiEvaluation']);
+
+        Route::get('/payment-success', [PaymentController::class, 'success'])
+            ->name('payment.success');
+
+        Route::get('/payment-failed', [PaymentController::class, 'failed'])
+            ->name('payment.failed');
+
+
+        Route::prefix('orders')->group(function () {
+            Route::get('/all', [OrderController::class, 'allOrders']);
+
+            // الأوردرات حسب الحالة
+            Route::get('/status/{status}', [OrderController::class, 'ordersByStatus']);
+
+            // الأوردرات بحسب المجموعة (inPricing, priced, incompleteOrCancelled)
+            Route::get('/group/{group}', [OrderController::class, 'ordersByGroup']);
+
+            // الأوردرات مع فلترة category أو user أو date
+            Route::get('/filter', [OrderController::class, 'ordersFiltered']);
+        });
 
 });

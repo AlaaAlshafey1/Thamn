@@ -17,7 +17,7 @@ class OpenAIService
 
         // نفس الإعدادات اللي عندك
         $this->base = rtrim(
-            config('services.openai.base', env('OPENAI_API_BASE', 'https://api.groq.com/openai/v1')),
+            config('services.openai.base', env('OPENAI_API_BASE', 'https://api.openai.com/v1/')),
             '/'
         );
 
@@ -27,22 +27,25 @@ class OpenAIService
     /**
      * Chat Completion (عام)
      */
-    public function chat(array $messages, string $model = 'gpt-4o-mini'): array
-    {
-        $res = $this->http->post($this->base . '/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->key,
-                'Content-Type'  => 'application/json',
+public function chat(array $messages, string $model = 'gpt-4o-mini'): array
+{
+    $res = $this->http->post($this->base . '/chat/completions', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $this->key,
+            'Content-Type'  => 'application/json',
+        ],
+        'json' => [
+            'model' => $model,
+            'messages' => $messages,
+            'temperature' => 0.1,
+            'response_format' => [
+                'type' => 'json_object'
             ],
-            'json' => [
-                'model'       => $model,
-                'messages'    => $messages,
-                'temperature' => 0.2,
-            ],
-        ]);
+        ],
+    ]);
 
-        return json_decode((string) $res->getBody(), true);
-    }
+    return json_decode((string) $res->getBody(), true);
+}
 
     /**
      * ===============================
