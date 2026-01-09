@@ -74,16 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
         Route::prefix('orders')->group(function () {
-            Route::get('/all', [OrderController::class, 'allOrders']);
-
-            // الأوردرات حسب الحالة
-            Route::get('/status/{status}', [OrderController::class, 'ordersByStatus']);
-
-            // الأوردرات بحسب المجموعة (inPricing, priced, incompleteOrCancelled)
-            Route::get('/group/{group}', [OrderController::class, 'ordersByGroup']);
-
-            // الأوردرات مع فلترة category أو user أو date
-            Route::get('/filter', [OrderController::class, 'ordersFiltered']);
+            Route::get('/all', [OrderController::class, 'getOrders']);
         });
 
 });

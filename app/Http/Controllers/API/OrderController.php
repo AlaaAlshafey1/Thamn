@@ -137,70 +137,51 @@ class OrderController extends Controller
         ]);
     }
 
-    public function allOrders()
+    public function getOrders(Request $request)
     {
-        $orders = Order::where("user_id",Auth::id())->with( 'category')
-            ->latest()
-            ->get();
+        $query = Order::where('user_id', Auth::id())->with('category');
 
-        return response()->json(['status' => true, 'orders' => $orders]);
-    }
+        // --------------------- فلترة حسب status مباشر ---------------------
+        if ($request->filled('status')) {
+            $validStatuses = [
+                'orderReceived','beingEstimated','beingReEstimated','estimated',
+                'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
+            ];
 
-    // ✅ أوردرات حسب حالة واحدة
-    public function ordersByStatus($status)
-    {
-        $validStatuses = [
-            'orderReceived','beingEstimated','beingReEstimated','estimated',
-            'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
-        ];
+            if (!in_array($request->status, $validStatuses)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid status'
+                ], 400);
+            }
 
-        if (!in_array($status, $validStatuses)) {
-            return response()->json(['status' => false, 'message' => 'Invalid status'], 400);
+            $query->where('status', $request->status);
         }
 
-        $orders = Order::where("user_id",Auth::id())->with( 'category')
-            ->where('status', $status)
-            ->latest()
-            ->get();
+        // --------------------- فلترة حسب group predefined ---------------------
+        if ($request->filled('group')) {
+            $groups = [
+                'inPricing' => ['beingEstimated','beingReEstimated'],
+                'priced' => ['estimated','estimatedAndStored','reEstimated'],
+                'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
+            ];
 
-        return response()->json(['status' => true, 'orders' => $orders]);
-    }
+            if (!array_key_exists($request->group, $groups)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid group'
+                ], 400);
+            }
 
-    // ✅ أوردرات بحسب مجموعة predefined
-    public function ordersByGroup($group)
-    {
-        $groups = [
-            'inPricing' => ['beingEstimated','beingReEstimated'],
-            'priced' => ['estimated','estimatedAndStored','reEstimated'],
-            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
-        ];
-
-        if (!array_key_exists($group, $groups)) {
-            return response()->json(['status' => false, 'message' => 'Invalid group'], 400);
+            $query->whereIn('status', $groups[$request->group]);
         }
 
-        $orders = Order::where("user_id",Auth::id())->with('category')
-            ->whereIn('status', $groups[$group])
-            ->latest()
-            ->get();
-
-        return response()->json(['status' => true, 'orders' => $orders]);
-    }
-
-    // ✅ أوردرات بفلاتر متعددة: category_id, user_id, date range
-    public function ordersFiltered(Request $request)
-    {
-        $query = Order::where("user_id",Auth::id())->with( 'category');
-
+        // --------------------- فلترة category ---------------------
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
+        // --------------------- فلترة range تاريخ ---------------------
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
@@ -211,7 +192,10 @@ class OrderController extends Controller
 
         $orders = $query->latest()->get();
 
-        return response()->json(['status' => true, 'orders' => $orders]);
+        return response()->json([
+            'status' => true,
+            'orders' => $orders
+        ]);
     }
 
 }

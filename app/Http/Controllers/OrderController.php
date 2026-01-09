@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -66,5 +67,50 @@ public function store(Request $request)
 
         return back()->with('success','تم تحديث حالة الطلب');
     }
+
+
+    public function expertEvaluate(Request $request, Order $order)
+    {
+        // التأكد إن المستخدم هو خبير
+        $user = Auth::user();
+        if (!$user->hasRole('expert')) {
+            abort(403, 'غير مسموح لك بهذا الإجراء');
+        }
+
+        $request->validate([
+            'expert_price' => 'required|numeric|min:0',
+            'expert_reasoning' => 'required|string|max:1000',
+        ]);
+
+        // تحديث الأوردر
+        $order->update([
+            'expert_id' => $user->id,
+            'expert_price' => $request->expert_price,
+            'expert_reasoning' => $request->expert_reasoning,
+            'expert_evaluated' => true,
+            'total_price' => $request->expert_price, // تحديث السعر النهائي للأوردر
+            'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
+        ]);
+
+        return back()->with('success','تم تقييم الأوردر بنجاح');
+    }
+
+// OrderController.php
+public function assignExpert(Request $request)
+{
+    $request->validate([
+        'order_id' => 'required|exists:orders,id',
+    ]);
+
+    $order = Order::findOrFail($request->order_id);
+
+    // تعيين الخبير الحالي على الأوردر
+    $order->update([
+        'expert_id' => auth()->id(),
+        'status' => 'beingEstimated' // ممكن تعدل الحالة حسب النظام
+    ]);
+
+    return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك']);
+}
 
 }

@@ -53,6 +53,39 @@
     color: #333;
     cursor: pointer;
 }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+.switch input {display:none;}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
 </style>
 @endsection
 
@@ -87,6 +120,9 @@
                         <th>الدفع</th>
                         <th>الإجمالي</th>
                         <th>تاريخ</th>
+                         @if(auth()->user()->hasRole('expert'))
+                        <th>تقييم الخبير</th>
+                        @endif
                         <th>التحكم</th>
                     </tr>
                 </thead>
@@ -109,6 +145,29 @@
                         </td>
                         <td>{{ number_format($order->total_price,2) }} SAR</td>
                         <td>{{ $order->created_at->format('Y-m-d') }}</td>
+
+                        <td>
+                            @if(auth()->user()->hasRole('expert'))
+                                @if(!$order->expert_id)
+                                    {{-- لو مفيش خبير معين للأوردر، اعرض الزر --}}
+                                    <div class="toggle-switch d-flex justify-content-end gap-2">
+                                        <span class="text-danger">❌</span>
+                                        <label class="switch">
+                                            <input type="checkbox" class="expert-select" data-order-id="{{ $order->id }}">
+                                            <span class="slider round"></span>
+                                        </label>
+                                        <span class="text-success">✅</span>
+                                    </div>
+                                @else
+                                    {{-- لو في خبير بالفعل، اعرض اسمه --}}
+                                    <span class="badge bg-primary">
+                                        {{ $order->expert->first_name ?? 'خبير غير معروف' }}
+                                    </span>
+                                @endif
+                            @endif
+                        </td>
+
+
                         <td>
                             <a href="{{ route('orders.show',$order->id) }}" class="btn btn-outline-info btn-sm">
                                 <i class="bx bx-show"></i>
@@ -161,4 +220,32 @@ $(document).ready(function() {
     });
 });
 </script>
+<script>
+$(document).ready(function() {
+    $('.expert-select').change(function() {
+        let orderId = $(this).data('order-id');
+        let checked = $(this).is(':checked');
+
+        if(checked) {
+            $.ajax({
+                url: '/orders/assign-expert', // route جديد للـ controller
+                method: 'POST',
+                data: {
+                    order_id: orderId,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    // بعد نجاح التعيين نعمل refresh للصفحة
+                    location.reload();
+                },
+                error: function(err) {
+                    alert('حدث خطأ أثناء التعيين!');
+                }
+            });
+        }
+    });
+});
+</script>
+
+
 @endsection

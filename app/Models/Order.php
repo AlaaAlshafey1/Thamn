@@ -9,7 +9,8 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning'];
+    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning','expert_id','expert_evaluated'
+];
 
     public function details()
     {
@@ -33,6 +34,11 @@ class Order extends Model
     public function payments()
     {
         return $this->hasMany(TapPayment::class);
+    }
+
+    public function expert()
+    {
+        return $this->belongsTo(User::class, 'expert_id');
     }
 
 }

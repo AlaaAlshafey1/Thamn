@@ -45,10 +45,13 @@ Route::middleware('auth')->group(function () {
         ->name('orders.updateStatus');
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::post('orders/{order}/evaluate', [OrderController::class,'expertEvaluate'])->name('orders.expert.evaluate');
 
     Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');
     Route::delete( 'payments/{payment}', [TapPaymentController::class, 'destroy'])->name('payments.destroy');
+
+    Route::post('/orders/assign-expert', [OrderController::class, 'assignExpert'])->name('orders.assignExpert');
 
 
 });
