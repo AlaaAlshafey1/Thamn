@@ -38,6 +38,9 @@ return [
     'tap' => [
         'secret_key' => env('TAP_SECRET_KEY'),
     ],
+    'openai' => [
+        'OPENAI_API_KEY' => env('OPENAI_KEY'),
+    ],
 
 
 ];

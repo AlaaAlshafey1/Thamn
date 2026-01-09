@@ -7,46 +7,48 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\TapPayment;
 use App\Services\TapPaymentService;
+use App\Services\OpenAIService;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    private $tapPaymentService;
+    private TapPaymentService $tapPaymentService;
 
     public function __construct(TapPaymentService $tapPaymentService)
     {
         $this->tapPaymentService = $tapPaymentService;
     }
 
-    // إنشاء طلب دفع للـ Order
+    /**
+     * إنشاء عملية الدفع
+     */
     public function payOrder($order_id)
     {
         $order = Order::with('user')->findOrFail($order_id);
 
-        $customerName  = $order->user->name ?? 'Unknown Customer';
-        $customerEmail = $order->user->email ?? 'noemail@example.com';
-        $customerPhone = $order->user->phone ?? '0000000000';
-
-        $amount = $order->total_price ?? 0;
-
+        $amount = (float) $order->total_price;
         if ($amount <= 0) {
             return response()->json([
                 'status'  => false,
-                'message' => 'قيمة الطلب غير صالحة للدفع.'
+                'message' => 'قيمة الطلب غير صالحة للدفع'
             ], 400);
         }
 
         $payment = $this->tapPaymentService->createPayment(
-            $amount ,
-            "SAR",
+            $amount,
+            'SAR',
             [
-                "first_name" => $customerName,
-                "email" => $customerEmail,
-                "phone" => [
-                    "country_code" => "966",
-                    "number" => $customerPhone
-                ]
+                'first_name' => $order->user->name ?? 'Customer',
+                'email'      => $order->user->email ?? 'test@test.com',
+                'phone'      => [
+                    'country_code' => '966',
+                    'number'       => $order->user->phone ?? '500000000',
+                ],
             ],
-            route('payment.callback', ['order_id' => $order->id])
+            [
+                'redirect' => route('payment.redirect', $order->id),
+                'callback' => route('payment.callback'),
+            ]
         );
 
         TapPayment::create([
@@ -58,51 +60,115 @@ class PaymentController extends Controller
         ]);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'payment' => $payment
         ]);
     }
 
-
+    /**
+     * Tap CALLBACK (Server to Server)
+     */
     public function callback(Request $request)
     {
-        $orderId = $request->query('order_id');
-        $chargeId = $request->query('tap_id');
+        Log::info('Tap Callback', $request->all());
+
+        $chargeId = $request->input('id') ?? $request->input('tap_id');
+        if (!$chargeId) {
+            return response()->json(['status' => false, 'message' => 'Missing charge id'], 400);
+        }
 
         $payment = TapPayment::where('charge_id', $chargeId)->first();
         if (!$payment) {
-            return response()->json(['status' => false, 'message' => 'Payment not found.'], 404);
+            return response()->json(['status' => false, 'message' => 'Payment not found'], 404);
         }
 
         $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
+        $status = strtoupper($statusResponse['status'] ?? 'FAILED');
 
-        $status = $statusResponse['status'] ?? 'FAILED';
-
-        $payment->status = strtoupper($status) === 'CAPTURED' ? 'paid' : 'failed';
+        $payment->status = $status === 'CAPTURED' ? 'paid' : 'failed';
         $payment->response_data = json_encode($statusResponse);
         $payment->save();
 
-        $payment->order->update([
-            'payment_status' => $payment->status,
+        $order = $payment->order;
+        $order->update([
+            'payment_status' => $payment->status
         ]);
 
-        return response()->json([
-            'status' => true,
-            'order_id' => $orderId,
-            'payment_status' => $payment->status,
-            'payment_details' => $statusResponse
-        ]);
+        /**
+         * ================= AI Evaluation =================
+         */
+        if ($payment->status === 'paid') {
+
+            $order->load([
+                'details.question',
+                'details.option',
+                'category'
+            ]);
+
+            $qaText = '';
+            foreach ($order->details as $detail) {
+                $question = $detail->question->question_ar ?? null;
+                $answer   = $detail->option->option_ar ?? $detail->value ?? null;
+
+                if ($question && $answer) {
+                    $qaText .= "- {$question}: {$answer}\n";
+                }
+            }
+
+            $prompt = <<<PROMPT
+أنت خبير محترف في تثمين السلع في السوق السعودي.
+
+الدولة: المملكة العربية السعودية
+العملة: ريال سعودي (SAR)
+فئة السلعة: {$order->category->name_ar}
+
+تفاصيل السلعة كما أدخلها العميل:
+{$qaText}
+
+المطلوب:
+1- تحديد السعر العادل الحالي في السوق السعودي.
+2- أقل سعر وأعلى سعر منطقي.
+3- سعر نهائي موصى به.
+4- شرح مختصر لأسباب التقييم.
+5- نسبة ثقة من 0 إلى 100.
+
+الرد يجب أن يكون JSON فقط:
+{
+  "min_price": رقم,
+  "max_price": رقم,
+  "recommended_price": رقم,
+  "currency": "SAR",
+  "confidence": رقم,
+  "reasoning": "شرح مختصر"
+}
+PROMPT;
+
+            try {
+                $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
+
+                $order->update([
+                    'ai_min_price'  => $aiResult['min_price'] ?? null,
+                    'ai_max_price'  => $aiResult['max_price'] ?? null,
+                    'ai_price'      => $aiResult['recommended_price'] ?? null,
+                    'ai_confidence' => $aiResult['confidence'] ?? null,
+                    'ai_reasoning'  => $aiResult['reasoning'] ?? null,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('AI Evaluation Failed', [
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage()
+                ]);
+            }
+        }
+
+        return response()->json(['status' => true]);
     }
 
-
-    public function callbackError(Request $request)
+    /**
+     * المستخدم بعد الدفع
+     */
+    public function redirect($orderId)
     {
-        $chargeId = $request->query('tap_id');
-
-        return response()->json([
-            'status' => false,
-            'message' => 'عملية الدفع فشلت.',
-            'charge_id' => $chargeId
-        ]);
+        return redirect()->to("/payment-success?order_id={$orderId}");
     }
 }
