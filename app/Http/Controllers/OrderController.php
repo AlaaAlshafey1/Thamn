@@ -16,12 +16,43 @@ class OrderController extends Controller
         return view('orders.index', compact('orders'));
     }
 
+
+    public function create()
+    {
+
+        return view('orders.create');
+    }
+
+
+
     public function show(Order $order)
     {
         $order->load(['details','files','user','payments']);
 
         return view('orders.show', compact('order'));
     }
+
+public function store(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'category_id' => 'required|exists:categories,id',
+        'details' => 'required|string',
+        'total_price' => 'required|numeric|min:0',
+        'evaluation_type' => 'required|string',
+    ]);
+
+    $order = Order::create([
+        'user_id' => $request->user_id,
+        'category_id' => $request->category_id,
+        'total_price' => $request->total_price,
+        'evaluation_type' => $request->evaluation_type,
+        'status' => 'pending',
+    ]);
+
+
+    return redirect()->route('orders.index')->with('success','تم إنشاء الطلب بنجاح');
+}
 
     public function updateStatus(Request $request, Order $order)
     {

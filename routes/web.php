@@ -34,12 +34,16 @@ Route::middleware('auth')->group(function () {
     Route::get('orders', [OrderController::class, 'index'])
         ->name('orders.index');
 
+    Route::get('orders/create', [OrderController::class, 'create'])
+        ->name('orders.create');
+
     Route::get('orders/{order}', [OrderController::class, 'show'])
         ->name('orders.show');
 
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])
         ->name('orders.updateStatus');
 
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 
 });
 Route::get('lang/{locale}', function ($locale) {
