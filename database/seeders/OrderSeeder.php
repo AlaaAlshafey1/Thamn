@@ -19,7 +19,6 @@ class OrderSeeder extends Seeder
         // إنشاء طلب جديد
         $order = Order::create([
             'user_id' => $user->id,
-            'category_id' => 1, // ممكن تختار أي فئة افتراضية
             'total_price' => rand(100, 1000), // سعر افتراضي
             'status' => 'pending',
         ]);
