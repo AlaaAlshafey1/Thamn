@@ -130,12 +130,12 @@ public function redirect(Request $request, $orderId)
     if ($order->status == 'INITIATED') {
 
         return redirect()->to(
-            url("/payment/order/{$orderId}?success=true&tap_id={$tapId}")
+            url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
         );
     }
 
     return redirect()->to(
-        url("/payment/order/{$orderId}?success=false&tap_id={$tapId}")
+        url("/payment/callback/package_error?success=false&tap_id={$tapId}")
     );
 }
 
