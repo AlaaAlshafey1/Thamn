@@ -37,7 +37,7 @@ public function chat(array $messages, string $model = 'gpt-4o-mini'): array
         'json' => [
             'model' => $model,
             'messages' => $messages,
-            'temperature' => 0.1,
+            'temperature' =>null,
             'response_format' => [
                 'type' => 'json_object'
             ],
