@@ -131,12 +131,12 @@ public function redirect(Request $request, $orderId)
     if ($tap_pay->status == 'INITIATED') {
 
         return redirect()->to(
-            url("/api/payment/callback/package_sucess?success=true&tap_id={$tapId}")
+            url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
         );
     }
 
     return redirect()->to(
-        url("/api/payment/callback/package_error?success=false&tap_id={$tapId}")
+        url("/payment/callback/package_error?success=false&tap_id={$tapId}")
     );
 }
 

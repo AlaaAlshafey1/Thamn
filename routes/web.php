@@ -24,6 +24,8 @@ Route::get('/payment/order/{orderId}',
     [PaymentController::class, 'redirect']
 )->name('payment.redirect');
 
+Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
+Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
