@@ -96,15 +96,9 @@ class PaymentController extends Controller
             'details.option',
             'category'
         ])->findOrFail($payment->order->id);
-            try {
 
                 $this->runAiEvaluation($order);
-            } catch (\Throwable $e) {
-                Log::error('AI Evaluation Failed on Redirect', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage()
-                ]);
-            }
+
         return response()->json($statusResponse);
     }
 
