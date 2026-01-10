@@ -75,6 +75,7 @@ class PaymentController extends Controller
     // ===============================
     public function callback(Request $request)
     {
+
         $chargeId = $request->tap_id; // Tap بترجع tap_id
         $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
         $payment = TapPayment::where('charge_id', $chargeId)->first();
@@ -130,12 +131,12 @@ public function redirect(Request $request, $orderId)
     if ($tap_pay->status == 'INITIATED') {
 
         return redirect()->to(
-            url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
+            url("/api/payment/callback/package_sucess?success=true&tap_id={$tapId}")
         );
     }
 
     return redirect()->to(
-        url("/payment/callback/package_error?success=false&tap_id={$tapId}")
+        url("/api/payment/callback/package_error?success=false&tap_id={$tapId}")
     );
 }
 
