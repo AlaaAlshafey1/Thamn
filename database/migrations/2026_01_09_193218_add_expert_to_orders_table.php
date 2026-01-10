@@ -14,6 +14,9 @@ return new class extends Migration
 
             // هل التقييم اتعمل من قبل الخبير
             $table->boolean('expert_evaluated')->default(false)->after('expert_id');
+            $table->string('expert_price')->nullable();
+            $table->string('expert_reasoning')->nullable();
+
 
             // لو تحب تعمل علاقة مع جدول users (الخبراء)
             $table->foreign('expert_id')->references('id')->on('users')->nullOnDelete();

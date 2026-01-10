@@ -54,23 +54,12 @@ Route::middleware('auth:sanctum')->group(function () {
             ->name('payment.order');
 
         // Tap server → server
-        Route::post('/callback', [PaymentController::class, 'callback'])
-            ->name('payment.callback');
-
-        // User redirect
-        Route::get('/redirect/{order}', [PaymentController::class, 'redirect'])
-            ->name('payment.redirect');
-
-        Route::get('/callback/error', [PaymentController::class, 'callbackError'])
-            ->name('payment.callback.error');
     });
         Route::get('/test-ai/{orderId}', [PaymentController::class, 'testAiEvaluation']);
 
-        Route::get('/payment-success', [PaymentController::class, 'success'])
-            ->name('payment.success');
 
-        Route::get('/payment-failed', [PaymentController::class, 'failed'])
-            ->name('payment.failed');
+        Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
+        Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
 
 
         Route::prefix('orders')->group(function () {

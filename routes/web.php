@@ -10,6 +10,7 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuestionStepController;
 use App\Http\Controllers\TapPaymentController;
 use App\Http\Controllers\TermConditionController;
+use App\Http\Controllers\API\PaymentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,6 +19,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/payment/order/{orderId}',
+    [PaymentController::class, 'redirect']
+)->name('payment.redirect');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -46,6 +51,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::post('orders/{order}/evaluate', [OrderController::class,'expertEvaluate'])->name('orders.expert.evaluate');
+    Route::post('/orders/{order}/price', [OrderController::class, 'updatePrice'])
+        ->name('orders.updatePrice');
 
     Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');
@@ -53,6 +60,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/orders/assign-expert', [OrderController::class, 'assignExpert'])->name('orders.assignExpert');
 
+    Route::post('/orders/{order}/thamn-evaluate',
+        [OrderController::class, 'thamnEvaluate']
+    )->name('orders.thamn.evaluate');
 
 });
 Route::get('lang/{locale}', function ($locale) {

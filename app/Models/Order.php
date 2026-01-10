@@ -9,7 +9,10 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning','expert_id','expert_evaluated'
+    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning',
+    'expert_id','expert_evaluated',
+    'expert_price','expert_reasoning',
+    'thamn_price','thamn_reasoning','thamn_by','thamn_at'
 ];
 
     public function details()
@@ -40,5 +43,22 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'expert_id');
     }
+
+    // App\Models\Order.php
+
+    public function calculateThamnPrice()
+    {
+        if (!$this->ai_price || !$this->expert_price) {
+            return null;
+        }
+
+        return round(($this->ai_price + $this->expert_price) / 2, 2);
+    }
+
+    public function thamnUser()
+    {
+        return $this->belongsTo(User::class, 'thamn_by');
+    }
+
 
 }

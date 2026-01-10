@@ -17,7 +17,9 @@
 					</div>
 				</div>
 				<ul class="side-menu">
+                     @can('users_view')
 					<li class="side-item side-item-category">Users Managment</li>
+                     @endcan
 					<li class="slide">
                     @can("roles_view")
 
@@ -43,8 +45,10 @@
                             </a>
                         @endcan
                     </li>
+                    @can('question_steps_view')
 
                     <li class="side-item side-item-category">Valuation Management</li>
+                    @endcan
                     <li class="slide">
                         @can('question_steps_view')
                             <a class="side-menu__item" href="{{ route('question_steps.index') }}">
@@ -105,8 +109,9 @@
                         </a>
                     @endcan
                 </li>
+                @can('orders_view')
                 <li class="side-item side-item-category">Orders Management</li>
-
+                @endcan
                 <li class="slide">
                     @can('orders_view')
                         <a class="side-menu__item" href="{{ route('orders.index') }}">
@@ -127,8 +132,10 @@
                         </a>
                     @endcan
                 </li>
-                <li class="side-item side-item-category">Payments Management</li>
+                 @can('payments_view')
 
+                <li class="side-item side-item-category">Payments Management</li>
+                @endcan
                 <li class="slide">
                     @can('payments_view')
                         <a class="side-menu__item" href="{{ route('payments.index') }}">

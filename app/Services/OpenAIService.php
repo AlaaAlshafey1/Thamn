@@ -65,7 +65,7 @@ public function chat(array $messages, string $model = 'gpt-4o-mini'): array
             ],
         ];
 
-        $response = $this->chat($messages, 'gpt-4o-mini');
+        $response = $this->chat($messages, 'gpt-5-mini');
 
         $raw = $response['choices'][0]['message']['content'] ?? '{}';
 

@@ -25,8 +25,8 @@ class PaymentController extends Controller
     public function payOrder($order_id)
     {
         $order = Order::with('user')->findOrFail($order_id);
-
         $amount = (float) $order->total_price;
+
         if ($amount <= 0) {
             return response()->json([
                 'status'  => false,
@@ -34,21 +34,29 @@ class PaymentController extends Controller
             ], 400);
         }
 
+        $customerName  = $order->user->name ?? 'Unknown Customer';
+        $customerEmail = $order->user->email ?? 'noemail@example.com';
+        $customerPhone = $order->user->phone ?? '0000000000';
+
+
+
+                // إنشاء طلب الدفع في Tap
         $payment = $this->tapPaymentService->createPayment(
             $amount,
-            'SAR',
+            "SAR",
             [
-                'first_name' => $order->user->name ?? 'Customer',
-                'email'      => $order->user->email ?? 'test@test.com',
-                'phone'      => [
-                    'country_code' => '966',
-                    'number'       => $order->user->phone ?? '500000000',
-                ],
+                "first_name" => $customerName,
+                "email" => $customerEmail,
+                "phone" => [
+                    "country_code" => "966",
+                    "number" => $customerPhone
+                ]
             ],
-            [
-                'redirect' => route('payment.redirect', $order->id),
-                'callback' => route('payment.callback'),
-            ]
+            // 👇 USER REDIRECT
+            url("/payment/order/{$order->id}"),
+
+            // 👇 SERVER CALLBACK
+            route('payment.callback')
         );
 
         TapPayment::create([
@@ -59,10 +67,7 @@ class PaymentController extends Controller
             'response_data' => json_encode($payment),
         ]);
 
-        return response()->json([
-            'status'  => true,
-            'payment' => $payment
-        ]);
+        return response()->json($payment);
     }
 
     // ===============================
@@ -70,68 +75,28 @@ class PaymentController extends Controller
     // ===============================
     public function callback(Request $request)
     {
-        Log::info('Tap Callback', $request->all());
-
-        $chargeId = $request->input('id') ?? $request->input('tap_id');
-        if (!$chargeId) {
-            return response()->json(['status' => false, 'message' => 'Missing charge id'], 400);
-        }
-
-        $payment = TapPayment::where('charge_id', $chargeId)->first();
-        if (!$payment) {
-            return response()->json(['status' => false, 'message' => 'Payment not found'], 404);
-        }
-
+        $chargeId = $request->tap_id; // Tap بترجع tap_id
         $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
-        $status = strtoupper($statusResponse['status'] ?? 'INITIATED');
-        $payment->status = in_array($status, ['CAPTURED', 'INITIATED'])
-            ? 'paid'
-            : 'failed';
+        $payment = TapPayment::where('charge_id', $chargeId)->first();
 
-        $payment->response_data = json_encode($statusResponse);
-        $payment->save();
+        if ($payment) {
+            $status = $statusResponse['status'] ?? 'FAILED';
 
-        $payment->order->update([
-            'status' => $payment->status
-        ]);
+            $payment->status = strtoupper($status) === 'CAPTURED' ? 'paid' : 'failed';
+            $payment->response_data = json_encode($statusResponse);
+            $payment->save();
 
-        return response()->json(['status' => true]);
-    }
-
-    // ===============================
-    // USER REDIRECT (هنا AI)
-    // ===============================
-    public function redirect($orderId)
-    {
+            $payment->order->update([
+                'payment_status' => $payment->status,
+            ]);
+        }
         $order = Order::with([
             'details.question',
             'details.option',
             'category'
-        ])->findOrFail($orderId);
-
-        // ✅ لازم يكون مدفوع
-        if ($order->status !== 'paid') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Payment Failed'
-            ], 400);
-
-        }
-
-        // ✅ لو AI اتعمل قبل كده
-        if ($order->ai_price) {
-            return response()->json([
-                'status' => true,
-                'message' => 'Payment Success',
-                'order_id' => $order->id,
-                'ai_price' => $order->ai_price,
-                'ai_confidence' => $order->ai_confidence,
-                'ai_reasoning' => $order->ai_reasoning,
-            ]);
-        }
-
-
+        ])->findOrFail($payment->order->id);
             try {
+
                 $this->runAiEvaluation($order);
             } catch (\Throwable $e) {
                 Log::error('AI Evaluation Failed on Redirect', [
@@ -139,21 +104,43 @@ class PaymentController extends Controller
                     'error' => $e->getMessage()
                 ]);
             }
+        return response()->json($statusResponse);
+    }
 
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Payment Success',
-                'order_id' => $order->id,
-                'ai_price' => $order->ai_price,
-                'ai_confidence' => $order->ai_confidence,
-                'ai_reasoning' => $order->ai_reasoning,
-            ]);
+    public function callback_error(Request $request)
+    {
+        $chargeId = $request->tap_id;
+        return response()->json([
+            'status' => false,
+            'message' => 'عملية الدفع فشلت.',
+            'charge_id' => $chargeId
+        ]);
     }
 
     // ===============================
-    // AI CORE FUNCTION (Reusable)
+    // USER REDIRECT (هنا AI)
     // ===============================
+public function redirect(Request $request, $orderId)
+{
+    $order = Order::findOrFail($orderId);
+
+    // Tap بيرجع tap_id
+    $tapId = $request->query('tap_id');
+
+    if ($order->payment_status === 'INITIATED') {
+
+        return redirect()->to(
+            url("/payment/order/{$orderId}?success=true&tap_id={$tapId}")
+        );
+    }
+
+    return redirect()->to(
+        url("/payment/order/{$orderId}?success=false&tap_id={$tapId}")
+    );
+}
+
+
+
     private function runAiEvaluation(Order $order): void
     {
         $qaText = '';
@@ -235,6 +222,7 @@ PROMPT;
             'message' => 'Payment Failed'
         ], 400);
     }
+
 
 
 

@@ -107,6 +107,78 @@ body {
         width: 100%;
     }
 }
+/* ====================== Evaluation Section ====================== */
+.evaluation-box {
+    margin-top: 25px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.eval-title {
+    font-weight: bold;
+    color: #374151;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.eval-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.eval-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+}
+
+.eval-card h6 {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #111827;
+}
+
+.eval-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #16a34a;
+}
+
+.eval-meta {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.eval-reason {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #374151;
+    background: #f9fafb;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.eval-empty {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* ====================== Expert Form ====================== */
+.expert-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #d1d5db;
+}
+
 </style>
 @endsection
 
@@ -168,11 +240,175 @@ body {
                 @endforeach
             </tbody>
         </table>
+<div class="evaluation-box">
+    <div class="eval-title">📊 نتائج التقييم</div>
 
-        <!-- Total -->
-        <div class="invoice-total">
-            الإجمالي: {{ number_format($order->total_price,2) }} SAR
+    <div class="eval-grid">
+
+        {{-- تقييم AI --}}
+        <div class="eval-card">
+            <h6>🤖 تقييم الذكاء الاصطناعي</h6>
+
+            @if($order->ai_price)
+                <div class="eval-price">
+                    {{ number_format($order->ai_price,2) }} SAR
+                </div>
+
+                <div class="eval-meta">
+                    نطاق السعر:
+                    {{ number_format($order->ai_min_price,2) }} -
+                    {{ number_format($order->ai_max_price,2) }} SAR
+                </div>
+
+                <div class="eval-meta">
+                    نسبة الثقة: {{ $order->ai_confidence }}%
+                </div>
+
+                <div class="eval-reason">
+                    {{ $order->ai_reasoning }}
+                </div>
+            @else
+                <div class="eval-empty">لم يتم إجراء تقييم بالذكاء الاصطناعي بعد</div>
+            @endif
         </div>
+
+
+        {{-- تقييم الخبير --}}
+        <div class="eval-card">
+            <h6>🧑‍💼 تقييم الخبير</h6>
+
+            @if($order->expert_price)
+                <div class="eval-price">
+                    {{ number_format($order->expert_price,2) }} SAR
+                </div>
+
+                <div class="eval-reason">
+                    {{ $order->expert_reasoning }}
+                </div>
+            @else
+                <div class="eval-empty">لم يتم تقييم الطلب من قبل الخبير بعد</div>
+            @endif
+
+            {{-- فورم الخبير --}}
+            @if(auth()->user()->hasRole('expert'))
+            <form method="POST"
+                  action="{{ route('orders.expert.evaluate', $order->id) }}"
+                  class="expert-form">
+                @csrf
+
+                <div class="mb-2">
+                    <label class="fw-bold">السعر المقترح (SAR)</label>
+                    <input type="number"
+                           name="expert_price"
+                           class="form-control"
+                           step="0.01"
+                           min="0"
+                           value="{{ old('expert_price', $order->expert_price ?? $order->ai_price) }}">
+                </div>
+
+                <div class="mb-2">
+                    <label class="fw-bold">سبب التقييم</label>
+                    <textarea name="expert_reasoning"
+                              class="form-control"
+                              rows="3"
+                              required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    💾 اعتماد تقييم الخبير
+                </button>
+            </form>
+            @endif
+        </div>
+
+
+        @if(auth()->user()->hasAnyRole(['superadmin','admin']) || $order->thamn_price)
+        <div class="evaluation-box mt-4">
+            <div class="eval-title">🏷️ تقييم ثمن المعتمد</div>
+
+            @if($order->thamn_price)
+                <div class="eval-card">
+                    <div class="eval-price">
+                        {{ number_format($order->thamn_price,2) }} SAR
+                    </div>
+
+                    <div class="eval-meta">
+                        (متوسط تقييم AI وتقييم الخبير)
+                    </div>
+
+                    @if($order->thamn_reasoning)
+                        <div class="eval-reason">
+                            {{ $order->thamn_reasoning }}
+                        </div>
+                    @endif
+
+                    <div class="eval-meta mt-2">
+                        تم الاعتماد بواسطة:
+                        <strong>{{ $order->thamnUser->first_name ?? '-' }}</strong>
+                        <br>
+                        بتاريخ: {{ $order->thamn_at }}
+                    </div>
+                </div>
+            @else
+                <div class="eval-empty mb-2">
+                    لم يتم اعتماد تقييم ثمن بعد
+                </div>
+
+                <form method="POST"
+                    action="{{ route('orders.thamn.evaluate', $order->id) }}">
+                    @csrf
+
+                    <textarea name="thamn_reasoning"
+                            class="form-control mb-2"
+                            rows="3"
+                            placeholder="ملاحظة أو سبب اعتماد التقييم (اختياري)"></textarea>
+
+                    <button class="btn btn-warning w-100">
+                        ✔ اعتماد تقييم ثمن
+                    </button>
+                </form>
+            @endif
+        </div>
+        @endif
+
+    </div>
+</div>
+
+        <div class="invoice-total">
+        @if(auth()->user()->hasRole('expert'))
+
+        <form method="POST"
+            action="{{ route('orders.expert.evaluate', $order->id) }}"
+            class="d-flex flex-column align-items-end gap-2">
+            @csrf
+
+            <div class="d-flex align-items-center gap-2">
+                <label class="fw-bold">السعر (SAR):</label>
+
+                <input type="number"
+                    name="expert_price"
+                    class="form-control"
+                    style="width:150px"
+                    step="0.01"
+                    min="0"
+                    value="{{ $order->expert_price ?? $order->total_price }}">
+            </div>
+
+            <textarea name="expert_reasoning"
+                    class="form-control mt-2"
+                    rows="3"
+                    placeholder="سبب التقييم (إجباري)">{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+
+            <button type="submit" class="btn btn-success mt-2">
+                💾 حفظ التقييم
+            </button>
+        </form>
+
+        @else
+            الإجمالي: {{ number_format($order->total_price,2) }} SAR
+        @endif
+        </div>
+
 
     </div>
 </div>

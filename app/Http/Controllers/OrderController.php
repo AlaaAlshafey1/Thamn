@@ -10,9 +10,19 @@ class OrderController extends Controller
 {
     public function index()
     {
+    if(auth()->user()->hasRole('expert')){
+
+        $orders = Order::where("expert_id",Auth::id())->orwhere("expert_id",null)->with('user')
+            ->latest()
+            ->paginate(20);
+
+    }else{
+
         $orders = Order::with('user')
             ->latest()
             ->paginate(20);
+
+    }
 
         return view('orders.index', compact('orders'));
     }
@@ -95,6 +105,29 @@ public function store(Request $request)
         return back()->with('success','تم تقييم الأوردر بنجاح');
     }
 
+    public function thamnEvaluate(Request $request, Order $order)
+    {
+        $request->validate([
+            'thamn_reasoning' => 'nullable|string|max:1000',
+        ]);
+
+        $thamnPrice = $order->calculateThamnPrice();
+
+        if (!$thamnPrice) {
+            return back()->with('error', 'يجب وجود تقييم AI وتقييم خبير أولاً');
+        }
+
+        $order->update([
+            'thamn_price'     => $thamnPrice,
+            'thamn_reasoning' => $request->thamn_reasoning,
+            'thamn_by'        => auth()->id(),
+            'thamn_at'        => now(),
+            'total_price'    => $thamnPrice, // السعر النهائي
+        ]);
+
+        return back()->with('success', 'تم اعتماد تقييم ثمن بنجاح');
+    }
+
 // OrderController.php
 public function assignExpert(Request $request)
 {
@@ -112,5 +145,27 @@ public function assignExpert(Request $request)
 
     return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك']);
 }
+
+    public function updatePrice(Request $request, Order $order)
+    {
+        if (!auth()->user()->hasRole('expert')) {
+            abort(403);
+        }
+
+
+
+        $request->validate([
+            'total_price' => 'required|numeric|min:0'
+        ]);
+
+        $order->update([
+            'total_price' => $request->total_price,
+            'status' => 'estimated',
+            'expert_id' => auth()->id()
+        ]);
+
+        return back()->with('success', 'تم تقييم السعر بنجاح');
+    }
+
 
 }

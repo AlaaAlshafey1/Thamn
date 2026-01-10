@@ -85,6 +85,32 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+.table td {
+    vertical-align: middle !important;
+}
+
+.badge {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #fff8e1;
+}
+.dataTables-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#ordersTable {
+    min-width: 1800px; /* مهم عشان الأعمدة */
+    white-space: nowrap;
+}
+
+#ordersTable td,
+#ordersTable th {
+    vertical-align: middle !important;
+}
 
 </style>
 @endsection
@@ -110,7 +136,7 @@ input:checked + .slider:before {
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <div class="table-responsive">
+        <div class="table-responsive dataTables-wrapper">
             <table id="ordersTable" class="table table-hover table-striped text-center align-middle">
                 <thead class="bg-light">
                     <tr>
@@ -123,6 +149,10 @@ input:checked + .slider:before {
                          @if(auth()->user()->hasRole('expert'))
                         <th>تقييم الخبير</th>
                         @endif
+                        <th>تقييم AI</th>
+                        <th>تقييم الخبير</th>
+                        <th>السعر النهائي</th>
+
                         <th>التحكم</th>
                     </tr>
                 </thead>
@@ -161,10 +191,46 @@ input:checked + .slider:before {
                                 @else
                                     {{-- لو في خبير بالفعل، اعرض اسمه --}}
                                     <span class="badge bg-primary">
-                                        {{ $order->expert->first_name ?? 'خبير غير معروف' }}
+                                        {{ $order->expert_price ?? 'قم بتحديد السعر الان' }}
                                     </span>
                                 @endif
                             @endif
+                        </td>
+                        <td>
+                            @if($order->ai_price)
+                                <span class="badge bg-primary">
+                                    {{ number_format($order->ai_price,2) }} SAR
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    ثقة: {{ $order->ai_confidence }}%
+                                </small>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+
+
+                        {{-- تقييم الخبير --}}
+                        <td>
+                            @if($order->expert_price)
+                                <span class="badge bg-dark">
+                                    {{ number_format($order->expert_price,2) }} SAR
+                                </span>
+                            @elseif(auth()->user()->hasRole('expert') && !$order->expert_id)
+                                <span class="badge bg-warning text-dark">بانتظارك</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+
+
+
+                        {{-- السعر النهائي --}}
+                        <td>
+                            <strong class="text-success">
+                                {{ number_format($order->total_price,2) }} SAR
+                            </strong>
                         </td>
 
 
