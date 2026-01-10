@@ -58,8 +58,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/test-ai/{orderId}', [PaymentController::class, 'testAiEvaluation']);
 
 
-        Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
-        Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
 
 
         Route::prefix('orders')->group(function () {
