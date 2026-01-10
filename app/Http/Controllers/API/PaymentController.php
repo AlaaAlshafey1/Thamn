@@ -126,8 +126,8 @@ public function redirect(Request $request, $orderId)
 
     // Tap بيرجع tap_id
     $tapId = $request->query('tap_id');
-
-    if ($order->status == 'INITIATED') {
+    $tap_pay = TapPayment::where('charge_id', $tapId)->first();
+    if ($tap_pay->status == 'INITIATED') {
 
         return redirect()->to(
             url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
