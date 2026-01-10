@@ -127,7 +127,7 @@ public function redirect(Request $request, $orderId)
     // Tap بيرجع tap_id
     $tapId = $request->query('tap_id');
 
-    if ($order->payment_status === 'INITIATED') {
+    if ($order->payment_status == 'INITIATED') {
 
         return redirect()->to(
             url("/payment/order/{$orderId}?success=true&tap_id={$tapId}")
