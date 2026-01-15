@@ -4,16 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory , Notifiable , SoftDeletes;
 
     protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning',
     'expert_id','expert_evaluated',
     'expert_price','expert_reasoning',
     'thamn_price','thamn_reasoning','thamn_by','thamn_at'
 ];
+
+    protected $dates = ['deleted_at'];
 
     public function details()
     {

@@ -73,40 +73,115 @@ class PaymentController extends Controller
     // ===============================
     // Tap CALLBACK (Server to Server)
     // ===============================
+    // public function callback(Request $request)
+    // {
+
+    //     $chargeId = $request->tap_id; // Tap بترجع tap_id
+    //     $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
+    //     $payment = TapPayment::where('charge_id', $chargeId)->first();
+
+    //     if ($payment) {
+    //         $status = $statusResponse['status'] ?? 'FAILED';
+
+    //         $payment->status = strtoupper($status) === 'CAPTURED' ? 'paid' : 'failed';
+    //         $payment->response_data = json_encode($statusResponse);
+    //         $payment->save();
+
+    //         $payment->order->update([
+    //             'payment_status' => $payment->status,
+    //         ]);
+    //     }
+    //     $order = Order::with([
+    //         'details.question',
+    //         'details.option',
+    //         'category'
+    //     ])->findOrFail($payment->order->id);
+    //         try {
+
+    //             $this->runAiEvaluation($order);
+    //         } catch (\Throwable $e) {
+    //             Log::error('AI Evaluation Failed on Redirect', [
+    //                 'order_id' => $order->id,
+    //                 'error' => $e->getMessage()
+    //             ]);
+    //         }
+    //     return response()->json($statusResponse);
+    // }
     public function callback(Request $request)
     {
-
         $chargeId = $request->tap_id; // Tap بترجع tap_id
         $statusResponse = $this->tapPaymentService->getPaymentStatus($chargeId);
         $payment = TapPayment::where('charge_id', $chargeId)->first();
 
-        if ($payment) {
-            $status = $statusResponse['status'] ?? 'FAILED';
-
-            $payment->status = strtoupper($status) === 'CAPTURED' ? 'paid' : 'failed';
-            $payment->response_data = json_encode($statusResponse);
-            $payment->save();
-
-            $payment->order->update([
-                'payment_status' => $payment->status,
-            ]);
+        if (!$payment) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Payment record not found'
+            ], 404);
         }
+
+        // تحديث حالة الدفع
+        $status = $statusResponse['status'] ?? 'FAILED';
+        $payment->status = strtoupper($status) === 'CAPTURED' ? 'paid' : 'failed';
+        $payment->response_data = json_encode($statusResponse);
+        $payment->save();
+
+        // تحميل الأوردر مع التفاصيل
         $order = Order::with([
             'details.question',
             'details.option',
             'category'
         ])->findOrFail($payment->order->id);
-            try {
 
-                $this->runAiEvaluation($order);
+        $order->update([
+            'payment_status' => $payment->status,
+        ]);
+
+        // إذا تم الدفع بنجاح → نحدد نوع التقييم
+        if ($payment->status === 'paid') {
+            try {
+                // نجيب الإجابة على سؤال rateTypeSelection
+                $rateTypeAnswer = $order->details()
+                    ->whereHas('question', function ($q) {
+                        $q->where('type', 'rateTypeSelection');
+                    })
+                    ->first();
+
+                // قراءة القيمة من الخيار أو value مباشر
+                $evaluationType = $rateTypeAnswer?->option?->badge // badge = 'ai', 'expert', 'best'
+                                ?? $rateTypeAnswer?->value;
+
+                switch ($evaluationType) {
+                    case 'ai':
+                        $this->runAiEvaluation($order);
+                        break;
+
+                    case 'expert':
+                        $this->sendToExperts($order); // هنعملها بعدين
+                        break;
+
+                    case 'best':
+                        $this->runPricingEvaluation($order); // هنعملها بعدين
+                        break;
+
+                    default:
+                        Log::warning('Unknown evaluation type', [
+                            'order_id' => $order->id,
+                            'evaluation_type' => $evaluationType
+                        ]);
+                }
+
             } catch (\Throwable $e) {
-                Log::error('AI Evaluation Failed on Redirect', [
+                Log::error('Evaluation Failed on Callback', [
                     'order_id' => $order->id,
                     'error' => $e->getMessage()
                 ]);
             }
+        }
+
         return response()->json($statusResponse);
     }
+
 
     public function callback_error(Request $request)
     {
@@ -186,6 +261,72 @@ PROMPT;
             'ai_reasoning'  => $aiResult['reasoning'] ?? null,
         ]);
     }
+
+// ===============================
+// إرسال للأخصائيين للتقييم
+// ===============================
+private function sendToExperts(Order $order): void
+{
+    // نغير حالة الأوردر
+    $order->update([
+        'status' => 'waiting_expert',
+        'expert_evaluated' => 0, // لم يتم تقييمه بعد
+    ]);
+
+    // مثال: اختيار أول خبير (يمكن تعديل حسب المنطق لديك)
+    $expert = \App\Models\User::role('expert')->first();
+    if ($expert) {
+        $order->update([
+            'expert_id' => $expert->id
+        ]);
+
+        // إرسال Notification للخبير
+        $expert->notify(new \App\Notifications\OrderAssignedToExpert($order));
+    }
+
+    // إرسال Notification للمستخدم
+    $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
+
+    Log::info("Order sent to expert", [
+        'order_id' => $order->id,
+        'expert_id' => $order->expert_id ?? null
+    ]);
+}
+
+// ===============================
+// تثمين ثمن المنتج
+// ===============================
+private function runPricingEvaluation(Order $order): void
+{
+    // مثال: حساب متوسط بين AI و Expert إذا متوفرين
+    $aiPrice = $order->ai_price ?? null;
+    $expertPrice = $order->expert_price ?? null;
+
+    $thamnPrice = null;
+
+    if ($aiPrice && $expertPrice) {
+        $thamnPrice = round(($aiPrice + $expertPrice) / 2, 2);
+    } elseif ($aiPrice) {
+        $thamnPrice = $aiPrice;
+    } elseif ($expertPrice) {
+        $thamnPrice = $expertPrice;
+    }
+
+    $order->update([
+        'thamn_price' => $thamnPrice,
+        'thamn_by' => auth()->id() ?? null,
+        'thamn_at' => now(),
+    ]);
+
+    // إرسال Notification للمستخدم
+    $order->user->notify(new \App\Notifications\OrderThamnPriceCalculated($order));
+
+    Log::info("Thamn price calculated", [
+        'order_id' => $order->id,
+        'thamn_price' => $thamnPrice
+    ]);
+}
+
 
     // ===============================
     // TEST AI (زي ما هو)

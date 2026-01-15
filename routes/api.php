@@ -20,6 +20,7 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('check-phone', [AuthController::class, 'checkPhone']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 
     Route::post('verifyOtp', [AuthController::class, 'verifyOtp']);
     Route::post('resendOtp', [AuthController::class, 'resendOtp']);
@@ -44,10 +45,26 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('profile', [AuthController::class, 'profile']);
     Route::post('profile/update', [AuthController::class, 'updateProfile']);
+    Route::post('change-password', [AuthController::class, 'changePassword']);
+    Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
+
     });
 
     Route::get('questions/{id}', [HomeController::class, 'allQuestions']); // كل الأسئلة حسب الفئة
     Route::post('orders', [OrderController::class, 'store']);
+
+
+    Route::post('valuation-orders/{order_id}', [OrderController::class, 'update']);
+    Route::get('valuation-orders/{order_id}', [OrderController::class, 'show']);
+    Route::delete('valuation-orders/{order_id}', [OrderController::class, 'destroy']);
+    Route::post('valuation-orders/{orderId}/cancel', [OrderController::class, 'cancel']);
+    Route::get('valuation-orders/{orderId}/result', [OrderController::class, 'result']);
+    Route::post('valuation-orders/{orderId}/re-evaluate', [OrderController::class, 'reEvaluate']);
+    Route::post('valuation-orders/{orderId}/resend', [OrderController::class, 'resendOrder']);
+    Route::post('valuation-orders/{orderId}/send-to-market', [OrderController::class, 'sendToMarket']);
+
+
+
     Route::prefix('payment')->group(function () {
 
         Route::post('/order/{order_id}', [PaymentController::class, 'payOrder'])

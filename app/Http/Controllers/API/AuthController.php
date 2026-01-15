@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\AccountDeletedNotification;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -77,7 +78,10 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('phone', $request->phone)->where("is_verified","1")->first();
+        $user = User::where('phone', $request->phone)
+            ->where('is_verified', 1)
+            ->whereNull('deleted_at')
+            ->first();
 
         if (! $user) {
             return response()->json([
@@ -115,8 +119,10 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::Where('phone', $request->phone)->where("is_verified","1")
-                    ->first();
+    $user = User::where('phone', $request->phone)
+        ->where('is_verified', 1)
+        ->whereNull('deleted_at')
+        ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
@@ -280,6 +286,121 @@ class AuthController extends Controller
             'data' => new UserResource($user)
         ]);
     }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|exists:users,phone',
+        ], [
+            'phone.required' => lang('رقم الهاتف مطلوب', 'Phone is required', $request),
+            'phone.exists'   => lang('رقم الهاتف غير مسجل', 'Phone not registered', $request),
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('phone', $request->phone)->first();
+
+        // generate OTP
+        $otp = rand(1000, 9999);
+
+        \DB::table('otps')->insert([
+            'user_id' => $user->id,
+            'otp' => $otp,
+            'type' => 'reset_password', // مهم
+            'expires_at' => now()->addMinutes(5),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+
+        return response()->json([
+            'status' => true,
+            'message' => lang(
+                'تم إرسال رمز إعادة تعيين كلمة المرور',
+                'Reset password code sent',
+                $request
+            ),
+            'data' => [
+                'otp' => $otp,
+                'user_id' => $user->id
+            ]
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ], [
+            'current_password.required' => lang('كلمة المرور الحالية مطلوبة', 'Current password is required', $request),
+            'new_password.required' => lang('كلمة المرور الجديدة مطلوبة', 'New password is required', $request),
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => lang(
+                    'كلمة المرور الحالية غير صحيحة',
+                    'Current password is incorrect',
+                    $request
+                )
+            ], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // إلغاء كل التوكنات
+        $user->tokens()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => lang(
+                'تم تغيير كلمة المرور بنجاح',
+                'Password changed successfully',
+                $request
+            )
+        ]);
+    }
+
+public function deleteAccount(Request $request)
+{
+    $user = $request->user();
+
+    // حذف التوكنات
+    $user->tokens()->delete();
+
+    // Soft Delete
+    $user->delete();
+
+    // Notification (database)
+    $user->notify(new AccountDeletedNotification());
+
+    return response()->json([
+        'status' => true,
+        'message' => lang(
+            'تم حذف الحساب بنجاح',
+            'Account deleted successfully',
+            $request
+        )
+    ]);
+}
+
 
 
 }
