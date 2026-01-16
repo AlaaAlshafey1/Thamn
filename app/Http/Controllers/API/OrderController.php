@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderDetails;
 use App\Models\OrderFiles;
+use App\Models\QuestionOption;
 use App\Models\QuestionStep;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -58,9 +59,22 @@ class OrderController extends Controller
                     'stageing' => $answer['stageing'] ?? null,
                 ]);
 
-                $totalPrice += $answer['price'] ?? 0;
             }
         }
+
+            $rateTypeAnswer = $order->details
+                ->first(fn ($detail) =>
+                    $detail->question?->type === 'rateTypeSelection'
+
+                );
+
+
+                if( $rateTypeAnswer){
+
+                        $totalPrice = $rateTypeAnswer->option->price    ;
+
+                }
+
 
         $order->update(['total_price' => $totalPrice]);
         $images = [];
