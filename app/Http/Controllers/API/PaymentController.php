@@ -123,11 +123,10 @@ class PaymentController extends Controller
         // تحديث حالة الدفع
         $status = $statusResponse['status'] ?? 'FAILED';
 
-        $payment->status = strtoupper($status) === 'INITIATED' ? 'paid' : 'failed';
+        $payment->status = strtoupper($status) === 'INITIATED' ? 'orderReceived' : 'failed';
         $payment->response_data = json_encode($statusResponse);
         $payment->save();
 
-        // تحميل الأوردر مع التفاصيل
         $order = Order::with([
             'details.question',
             'details.option',
@@ -138,7 +137,6 @@ class PaymentController extends Controller
             'payment_status' => $payment->status,
         ]);
 
-        // إذا تم الدفع بنجاح → نحدد نوع التقييم
         if ($payment->status === 'paid') {
             try {
                 // نجيب الإجابة على سؤال rateTypeSelection

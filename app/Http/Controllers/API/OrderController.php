@@ -278,37 +278,91 @@ class OrderController extends Controller
 
     public function show(Request $request, $orderId)
     {
-        $order = Order::where('id', $orderId)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+        $order = Order::with([
+            'details.question',
+            'details.option',
+            'files',
+            'category'
+        ])
+        ->where('id', $orderId)
+        ->where('user_id', $request->user()->id)
+        ->firstOrFail();
+
+        /*
+        |--------------------------------------------------------------------------
+        | TITLE
+        |--------------------------------------------------------------------------
+        */
+        $title = $order->category->name_en
+            ?? $order->category->name_ar
+            ?? 'Valuation Order';
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMAGES
+        |--------------------------------------------------------------------------
+        */
+        $images = $order->files
+            ->where('type', 'image')
+            ->map(fn ($file) => full_url($file->file_path))
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | IS IN MARKET
+        |--------------------------------------------------------------------------
+        */
+        $isInMarket = $order->status === 'sent_to_market';
+
+        /*
+        |--------------------------------------------------------------------------
+        | GROUP DETAILS FOR UI
+        |--------------------------------------------------------------------------
+        */
+        $groups = [];
+
+        foreach ($order->details as $detail) {
+            if (!$detail->question) {
+                continue;
+            }
+
+            $groupId = $detail->question->step_id ?? 0;
+            $groupTitle = $detail->question->step?->title_ar
+                ?? $detail->question->step?->title_en
+                ?? 'تفاصيل';
+
+            if (!isset($groups[$groupId])) {
+                $groups[$groupId] = [
+                    'id' => $groupId,
+                    'label' => $groupTitle,
+                    'items' => []
+                ];
+            }
+
+            $groups[$groupId]['items'][] = [
+                'id' => $detail->id,
+                'label' => $detail->question->question_ar
+                    ?? $detail->question->question_en,
+                'value' => $detail->option?->option_ar
+                    ?? $detail->option?->option_en
+                    ?? $detail->value,
+            ];
+        }
 
         return response()->json([
             'status' => true,
             'order' => [
                 'id' => $order->id,
-                'user_id' => $order->user_id,
+                'title' => $title,
                 'status' => $order->status,
                 'total_price' => $order->total_price,
-                'payload' => json_decode($order->payload, true),
-                'files' => OrderFiles::where('order_id', $order->id)
-                    ->where('type', 'file')
-                    ->get()
-                    ->map(fn ($file) => [
-                        'id' => $file->id,
-                        'name' => $file->file_name,
-                        'url' => full_url($file->file_path),
-                    ]),
-                'images' => OrderFiles::where('order_id', $order->id)
-                    ->where('type', 'image')
-                    ->get()
-                    ->map(fn ($file) => [
-                        'id' => $file->id,
-                        'name' => $file->file_name,
-                        'url' => full_url($file->file_path),
-                    ]),
+                'isInMarket' => $isInMarket,
+                'images' => $images,
+                'details' => array_values($groups),
             ]
         ]);
     }
+
 
     public function destroy(Request $request, $orderId)
     {
