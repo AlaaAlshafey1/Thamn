@@ -401,20 +401,103 @@ class OrderController extends Controller
         ]);
     }
 
-    public function result(Request $request, $orderId)
-    {
-        $order = Order::where('id', $orderId)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+public function result(Request $request, $orderId)
+{
+    $order = Order::with([
+        'details.question',
+        'details.option',
+        'category',
+        'files',
+    ])
+    ->where('id', $orderId)
+    ->firstOrFail();
 
-        return response()->json([
-            'status' => true,
-            'result' => [
-                'total_price' => $order->total_price,
-                'valuation_payload' => json_decode($order->payload) ?? null
-            ]
-        ]);
+    /* ===================== CATEGORY ===================== */
+    $category = $order->category->name_en
+        ?? $order->category->name_ar
+        ?? '';
+
+    /* ===================== DESCRIPTION ===================== */
+    $year = null;
+    $condition = null;
+
+    foreach ($order->details as $detail) {
+        if (!$detail->question) {
+            continue;
+        }
+
+        switch ($detail->question->type) {
+            case 'year':
+                $year = $detail->value
+                    ?? $detail->option?->option_en
+                    ?? $detail->option?->option_ar;
+                break;
+
+            case 'condition':
+                $condition = $detail->option?->option_en
+                    ?? $detail->option?->option_ar
+                    ?? $detail->value;
+                break;
+        }
     }
+
+    $description = trim(implode(' ', array_filter([
+        $category,
+        $year,
+        $condition ? "– {$condition}" : null,
+    ])));
+
+    /* ===================== MAIN IMAGE ===================== */
+    $imageFile = $order->files->firstWhere('type', 'image');
+
+    $image = $imageFile
+        ? full_url($imageFile->file_path)
+        : null;
+
+    /* ===================== PRICES ===================== */
+    $prices = [
+        'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
+        'average' => (float) (
+            $order->thamn_price
+            ?? $order->ai_price
+            ?? 0
+        ),
+        'lowest'  => $order->ai_min_price ? (float) $order->ai_min_price : null,
+    ];
+
+    /* ===================== DETAILS ===================== */
+    $details = [];
+
+    foreach ($order->details as $detail) {
+        if (!$detail->question) {
+            continue;
+        }
+
+        $title = $detail->question->question_en
+            ?? $detail->question->question_ar;
+
+        $value = $detail->option?->option_en
+            ?? $detail->option?->option_ar
+            ?? $detail->value;
+
+        if ($title && $value) {
+            $details[] = [
+                'title' => $title,
+                'value' => (string) $value,
+            ];
+        }
+    }
+
+    /* ===================== RESPONSE ===================== */
+    return response()->json([
+        'category'    => $category,
+        'description' => $description,
+        'image'       => $image,
+        'prices'      => $prices,
+        'details'     => $details,
+    ]);
+}
+
 
 
     public function reEvaluate(Request $request, $orderId)
@@ -435,7 +518,6 @@ class OrderController extends Controller
             'thamn_at' => null,
         ]);
 
-        // تشغيل التقييم من جديد حسب طريقة المستخدم الأصلية
         $rateTypeAnswer = $order->details()
             ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
             ->first();
