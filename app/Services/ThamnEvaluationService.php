@@ -45,6 +45,7 @@ PROMPT;
         $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
 
         $order->update([
+            'status'        => "estimated" ?? null,
             'ai_min_price'  => $aiResult['min_price'] ?? null,
             'ai_max_price'  => $aiResult['max_price'] ?? null,
             'ai_price'      => $aiResult['recommended_price'] ?? null,

@@ -754,6 +754,7 @@ PROMPT;
         $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
 
         $order->update([
+            'status'  => "estimated" ?? null,
             'ai_min_price'  => $aiResult['min_price'] ?? null,
             'ai_max_price'  => $aiResult['max_price'] ?? null,
             'ai_price'      => $aiResult['recommended_price'] ?? null,
@@ -773,11 +774,12 @@ private function sendToExperts(Order $order): void
         'expert_evaluated' => 0, // لم يتم تقييمه بعد
     ]);
 
-    // مثال: اختيار أول خبير (يمكن تعديل حسب المنطق لديك)
     $expert = \App\Models\User::role('expert')->first();
     if ($expert) {
         $order->update([
-            'expert_id' => $expert->id
+            'expert_id' => $expert->id,
+            'status' => 'beingEstimated',
+
         ]);
 
         // إرسال Notification للخبير
@@ -816,6 +818,8 @@ private function runPricingEvaluation(Order $order): void
         'thamn_price' => $thamnPrice,
         'thamn_by' => auth()->id() ?? null,
         'thamn_at' => now(),
+        'status' => 'beingEstimated',
+
     ]);
 
     // إرسال Notification للمستخدم
