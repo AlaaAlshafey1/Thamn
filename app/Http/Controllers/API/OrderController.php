@@ -395,142 +395,168 @@ class OrderController extends Controller
         ]);
     }
 
-    public function getOrders(Request $request)
-    {
-        $query = Order::where('user_id', Auth::id())
-            ->with([
-                'category',
-                'details.option',
-                'files'
-            ]);
+public function getOrders(Request $request)
+{
+    $query = Order::where('user_id', Auth::id())
+        ->with([
+            'category',
+            'details.option',
+            'files'
+        ]);
 
-        /* ===================== FILTER BY STATUS ===================== */
-        if ($request->filled('status')) {
-            $validStatuses = [
-                'orderReceived','beingEstimated','beingReEstimated',
-                'estimated','estimatedAndStored','reEstimated',
-                'inComplete','notPaid','cancelled'
-            ];
+    // --------------------- فلترة حسب status مباشر ---------------------
+    if ($request->filled('status')) {
+        $validStatuses = [
+            'orderReceived','beingEstimated','beingReEstimated','estimated',
+            'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
+        ];
 
-            if (!in_array($request->status, $validStatuses)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid status'
-                ], 400);
-            }
-
-            $query->where('status', $request->status);
+        if (!in_array($request->status, $validStatuses)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid status'
+            ], 400);
         }
 
-        /* ===================== FILTER BY GROUP ===================== */
-        if ($request->filled('group')) {
-            $groups = [
-                'inPricing' => ['beingEstimated','beingReEstimated'],
-                'priced' => ['estimated','estimatedAndStored','reEstimated'],
-                'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
-            ];
+        $query->where('status', $request->status);
+    }
 
-            if (!array_key_exists($request->group, $groups)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid group'
-                ], 400);
-            }
+    // --------------------- فلترة حسب group predefined ---------------------
+    if ($request->filled('group')) {
+        $groups = [
+            'inPricing' => ['beingEstimated','beingReEstimated'],
+            'priced' => ['estimated','estimatedAndStored','reEstimated'],
+            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
+        ];
 
-            $query->whereIn('status', $groups[$request->group]);
+        if (!array_key_exists($request->group, $groups)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid group'
+            ], 400);
         }
 
-        /* ===================== FILTER CATEGORY ===================== */
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+        $query->whereIn('status', $groups[$request->group]);
+    }
+
+    // --------------------- فلترة category ---------------------
+    if ($request->filled('category_id')) {
+        $query->where('category_id', $request->category_id);
+    }
+
+    // --------------------- فلترة range تاريخ ---------------------
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $orders = $query->latest()->get();
+
+    /* ===================== MAP RESPONSE ===================== */
+    $orders = $orders->map(function ($order) {
+
+        // ===== TITLE =====
+        $titleParts = [];
+
+        // Category name
+        $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
+        if ($categoryName) {
+            $titleParts[] = $categoryName;
         }
 
-        /* ===================== FILTER DATE RANGE ===================== */
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+        // details values (unique)
+        $detailValues = $order->details
+            ->map(fn ($d) =>
+                $d->option?->option_en
+                ?? $d->option?->option_ar
+                ?? $d->value
+            )
+            ->filter()
+            ->unique()
+            ->values()
+            ->take(2)
+            ->toArray();
+
+        $titleParts = array_merge($titleParts, $detailValues);
+
+        // fallback
+        if (empty($titleParts)) {
+            $titleParts[] = "Order #{$order->id}";
         }
 
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
+        $title = implode(' - ', $titleParts);
 
-        $orders = $query->latest()->get();
+        // ===== FILES =====
+        $files = $order->files
+            ->where('type', 'file')
+            ->map(fn ($file) => [
+                'url' => full_url($file->file_path),
+            ])
+            ->values();
 
-        /* ===================== MAP RESPONSE ===================== */
-        $orders = $orders->map(function ($order) {
+        // ===== IMAGES =====
+        $images = $order->files
+            ->where('type', 'image')
+            ->map(fn ($file) => [
+                'id' => $file->id,
+                'name' => $file->file_name,
+                'url' => full_url($file->file_path),
+            ])
+            ->values();
 
-            /* -------- TITLE FROM FIRST 2 OPTIONS -------- */
-/* -------- TITLE -------- */
-$titleParts = [];
+        return [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'category_id' => $order->category_id,
+            'status' => $order->status,
+            'pricing_method' => $order->pricing_method,
+            'total_price' => $order->total_price,
+            'payload' => $order->payload,
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'ai_min_price' => $order->ai_min_price,
+            'ai_max_price' => $order->ai_max_price,
+            'ai_price' => $order->ai_price,
+            'ai_confidence' => $order->ai_confidence,
+            'ai_reasoning' => $order->ai_reasoning,
+            'expert_id' => $order->expert_id,
+            'expert_evaluated' => $order->expert_evaluated,
+            'expert_price' => $order->expert_price,
+            'thamn_price' => $order->thamn_price,
+            'thamn_reasoning' => $order->thamn_reasoning,
+            'expert_reasoning' => $order->expert_reasoning,
+            'thamn_by' => $order->thamn_by,
+            'thamn_at' => $order->thamn_at,
+            'deleted_at' => $order->deleted_at,
 
-// 1) Add category name
-$categoryName = $order->category?->name_en ?? $order->category?->name_ar;
-if ($categoryName) {
-    $titleParts[] = $categoryName;
+            // ===== extra fields =====
+            'title' => $title,
+            'category' => [
+                'id' => $order->category?->id,
+                'name_ar' => $order->category?->name_ar,
+                'name_en' => $order->category?->name_en,
+                'description_ar' => $order->category?->description_ar,
+                'description_en' => $order->category?->description_en,
+                'image' => $order->category?->image,
+                'is_active' => $order->category?->is_active,
+                'created_at' => $order->category?->created_at,
+                'updated_at' => $order->category?->updated_at,
+            ],
+            'isInMarket' => $order->status === 'sent_to_market',
+            'images' => $images,
+            'files' => $files,
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'orders' => $orders
+    ]);
 }
 
-    // 2) Add up to 2 unique detail values (avoid duplicates)
-    $detailValues = $order->details
-        ->map(fn ($d) =>
-            $d->option?->option_en
-            ?? $d->option?->option_ar
-            ?? $d->value
-        )
-        ->filter()
-        ->unique()      // <-- important to avoid duplicates
-        ->values()
-        ->take(2)
-        ->toArray();
-
-    $titleParts = array_merge($titleParts, $detailValues);
-
-    // 3) Fallback
-    if (empty($titleParts)) {
-        $titleParts[] = "Order #{$order->id}";
-    }
-
-    // 4) Build title
-    $title = implode(' - ', $titleParts);
-
-
-            /* -------- FILES -------- */
-            $files = $order->files
-                ->where('type', 'file')
-                ->map(fn ($file) => [
-                    'id' => $file->id,
-                    'name' => $file->file_name,
-                    'url' => full_url($file->file_path),
-                ])
-                ->values();
-
-            /* -------- IMAGES -------- */
-            $images = $order->files
-                ->where('type', 'image')
-                ->map(fn ($file) => [
-                    'url' => full_url($file->file_path),
-                ])
-                ->values();
-
-
-            return [
-                'id' => $order->id,
-                'title' => $title,                     // ✅ REQUIRED
-                'status' => $order->status,
-                'total_price' => $order->total_price,
-                'category' => $order->category?->name_en
-                    ?? $order->category?->name_ar,
-                'isInMarket' => $order->status === 'sent_to_market', // ✅
-                'images' => $images,                   // ✅
-                'files' => $files,                     // ✅
-                'created_at' => $order->created_at,
-            ];
-        });
-
-        return response()->json([
-            'status' => true,
-            'orders' => $orders
-        ]);
-    }
 
 
 public function result(Request $request, $orderId)
