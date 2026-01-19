@@ -137,7 +137,7 @@ class PaymentController extends Controller
             'status' => $payment->status,
         ]);
 
-        if ($payment->status === 'orderReceived') {
+
             try {
                 // نجيب الإجابة على سؤال rateTypeSelection
                 $rateTypeAnswer = $order->details()
@@ -176,7 +176,7 @@ class PaymentController extends Controller
                     'error' => $e->getMessage()
                 ]);
             }
-        }
+        
 
         return response()->json($statusResponse);
     }
