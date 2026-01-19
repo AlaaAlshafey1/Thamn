@@ -545,12 +545,18 @@ public function result(Request $request, $orderId)
             ];
         }
     }
+$reasoning =
+    $order->thamn_reasoning
+    ?? $order->expert_reasoning
+    ?? $order->ai_reasoning
+    ?? '';
 
     /* ===================== RESPONSE ===================== */
     return response()->json([
         'category'    => $category,
         'description' => $description,
         'image'       => $image,
+        'reasoning'       => $reasoning ,
         'prices'      => $prices,
         'details'     => $details,
     ]);
