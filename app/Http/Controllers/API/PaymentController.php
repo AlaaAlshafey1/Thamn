@@ -137,7 +137,7 @@ class PaymentController extends Controller
             'status' => $payment->status,
         ]);
 
-        if ($payment->status === 'paid') {
+        if ($payment->status === 'orderReceived') {
             try {
                 // نجيب الإجابة على سؤال rateTypeSelection
                 $rateTypeAnswer = $order->details()
