@@ -203,7 +203,8 @@ public function redirect(Request $request, $orderId)
     $tapId = $request->query('tap_id');
     $tap_pay = TapPayment::where('charge_id', $tapId)->first();
     if ($tap_pay->status == 'INITIATED') {
-
+        $order->status = "orderReceived";
+        $order->save();
         return redirect()->to(
             url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
         );
