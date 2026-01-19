@@ -269,7 +269,17 @@ body {
                 </div>
             @else
                 <div class="eval-empty">لم يتم إجراء تقييم بالذكاء الاصطناعي بعد</div>
+            @if(auth()->user()->hasAnyRole(['superadmin','admin']) || auth()->user()->hasRole('expert'))
+            <form method="POST" action="{{ route('orders.ai.evaluate', $order->id) }}">
+                @csrf
+                <button type="submit" class="btn btn-primary w-100 mt-2">
+                    🤖 تشغيل تقييم AI الآن
+                </button>
+            </form>
+           @endif
             @endif
+
+
         </div>
 
 

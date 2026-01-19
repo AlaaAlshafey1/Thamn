@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ThamnEvaluationService;
 
 class OrderController extends Controller
 {
@@ -43,27 +44,27 @@ class OrderController extends Controller
         return view('orders.show', compact('order'));
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'category_id' => 'required|exists:categories,id',
-        'details' => 'required|string',
-        'total_price' => 'required|numeric|min:0',
-        'evaluation_type' => 'required|string',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'category_id' => 'required|exists:categories,id',
+            'details' => 'required|string',
+            'total_price' => 'required|numeric|min:0',
+            'evaluation_type' => 'required|string',
+        ]);
 
-    $order = Order::create([
-        'user_id' => $request->user_id,
-        'category_id' => $request->category_id,
-        'total_price' => $request->total_price,
-        'evaluation_type' => $request->evaluation_type,
-        'status' => 'pending',
-    ]);
+        $order = Order::create([
+            'user_id' => $request->user_id,
+            'category_id' => $request->category_id,
+            'total_price' => $request->total_price,
+            'evaluation_type' => $request->evaluation_type,
+            'status' => 'pending',
+        ]);
 
 
-    return redirect()->route('orders.index')->with('success','تم إنشاء الطلب بنجاح');
-}
+        return redirect()->route('orders.index')->with('success','تم إنشاء الطلب بنجاح');
+    }
 
     public function updateStatus(Request $request, Order $order)
     {
@@ -167,5 +168,21 @@ public function assignExpert(Request $request)
         return back()->with('success', 'تم تقييم السعر بنجاح');
     }
 
+
+    public function aiEvaluate(Order $order, ThamnEvaluationService $evaluationService)
+    {
+        // صلاحية الوصول
+        if (!auth()->user()->hasAnyRole(['superadmin','admin','expert'])) {
+            abort(403);
+        }
+
+        try {
+            $evaluationService->runAiEvaluation($order);
+
+            return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
+        }
+    }
 
 }

@@ -57,6 +57,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/price', [OrderController::class, 'updatePrice'])
         ->name('orders.updatePrice');
 
+    Route::post('/orders/{order}/ai-evaluate', [OrderController::class, 'aiEvaluate'])
+        ->name('orders.ai.evaluate');
+
+
     Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');
     Route::delete( 'payments/{payment}', [TapPaymentController::class, 'destroy'])->name('payments.destroy');
