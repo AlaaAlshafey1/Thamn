@@ -63,7 +63,7 @@ class PaymentController extends Controller
             'order_id'      => $order->id,
             'charge_id'     => $payment['id'] ?? null,
             'amount'        => $amount,
-            'status'        => $payment['status'] ?? 'INITIATED',
+            'status'        => $payment['status'] ?? 'CAPTURED',
             'response_data' => json_encode($payment),
         ]);
 
@@ -123,7 +123,7 @@ class PaymentController extends Controller
         // تحديث حالة الدفع
         $status = $statusResponse['status'] ?? 'FAILED';
 
-        $payment->status = strtoupper($status) === 'INITIATED' ? 'orderReceived' : 'failed';
+        $payment->status = strtoupper($status) === 'CAPTURED' ? 'orderReceived' : 'failed';
         $payment->response_data = json_encode($statusResponse);
         $payment->save();
 
@@ -202,7 +202,7 @@ public function redirect(Request $request, $orderId)
     // Tap بيرجع tap_id
     $tapId = $request->query('tap_id');
     $tap_pay = TapPayment::where('charge_id', $tapId)->first();
-    if ($tap_pay->status == 'INITIATED') {
+    if ($tap_pay->status == 'CAPTURED') {
         $order->status = "orderReceived";
         $order->save();
         return redirect()->to(
