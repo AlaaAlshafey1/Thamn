@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\OpenAIService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class OrderController extends Controller
 {
@@ -504,9 +505,12 @@ public function result(Request $request, $orderId)
     /* ===================== MAIN IMAGE ===================== */
     $imageFile = $order->files->firstWhere('type', 'image');
 
-    $image = $imageFile
-        ? full_url($imageFile->file_path)
-        : null;
+    $image = '';
+    if($order->category->name_en == "cars"){
+
+        $image =  URL::asset('/assets/img/Cars-result.jpeg');
+    }
+
 
     /* ===================== PRICES ===================== */
     $prices = [

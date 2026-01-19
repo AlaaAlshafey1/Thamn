@@ -134,7 +134,7 @@ class PaymentController extends Controller
         ])->findOrFail($payment->order->id);
 
         $order->update([
-            'payment_status' => $payment->status,
+            'status' => $payment->status,
         ]);
 
         if ($payment->status === 'paid') {
