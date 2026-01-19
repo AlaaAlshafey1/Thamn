@@ -397,13 +397,19 @@ class OrderController extends Controller
 
     public function getOrders(Request $request)
     {
-        $query = Order::where('user_id', Auth::id())->with('category');
+        $query = Order::where('user_id', Auth::id())
+            ->with([
+                'category',
+                'details.option',
+                'files'
+            ]);
 
-        // --------------------- فلترة حسب status مباشر ---------------------
+        /* ===================== FILTER BY STATUS ===================== */
         if ($request->filled('status')) {
             $validStatuses = [
-                'orderReceived','beingEstimated','beingReEstimated','estimated',
-                'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
+                'orderReceived','beingEstimated','beingReEstimated',
+                'estimated','estimatedAndStored','reEstimated',
+                'inComplete','notPaid','cancelled'
             ];
 
             if (!in_array($request->status, $validStatuses)) {
@@ -416,7 +422,7 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
-        // --------------------- فلترة حسب group predefined ---------------------
+        /* ===================== FILTER BY GROUP ===================== */
         if ($request->filled('group')) {
             $groups = [
                 'inPricing' => ['beingEstimated','beingReEstimated'],
@@ -434,12 +440,12 @@ class OrderController extends Controller
             $query->whereIn('status', $groups[$request->group]);
         }
 
-        // --------------------- فلترة category ---------------------
+        /* ===================== FILTER CATEGORY ===================== */
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        // --------------------- فلترة range تاريخ ---------------------
+        /* ===================== FILTER DATE RANGE ===================== */
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
@@ -450,11 +456,82 @@ class OrderController extends Controller
 
         $orders = $query->latest()->get();
 
+        /* ===================== MAP RESPONSE ===================== */
+        $orders = $orders->map(function ($order) {
+
+            /* -------- TITLE FROM FIRST 2 OPTIONS -------- */
+/* -------- TITLE -------- */
+$titleParts = [];
+
+// 1) Add category name
+$categoryName = $order->category?->name_en ?? $order->category?->name_ar;
+if ($categoryName) {
+    $titleParts[] = $categoryName;
+}
+
+    // 2) Add up to 2 unique detail values (avoid duplicates)
+    $detailValues = $order->details
+        ->map(fn ($d) =>
+            $d->option?->option_en
+            ?? $d->option?->option_ar
+            ?? $d->value
+        )
+        ->filter()
+        ->unique()      // <-- important to avoid duplicates
+        ->values()
+        ->take(2)
+        ->toArray();
+
+    $titleParts = array_merge($titleParts, $detailValues);
+
+    // 3) Fallback
+    if (empty($titleParts)) {
+        $titleParts[] = "Order #{$order->id}";
+    }
+
+    // 4) Build title
+    $title = implode(' - ', $titleParts);
+
+
+            /* -------- FILES -------- */
+            $files = $order->files
+                ->where('type', 'file')
+                ->map(fn ($file) => [
+                    'id' => $file->id,
+                    'name' => $file->file_name,
+                    'url' => full_url($file->file_path),
+                ])
+                ->values();
+
+            /* -------- IMAGES -------- */
+            $images = $order->files
+                ->where('type', 'image')
+                ->map(fn ($file) => [
+                    'url' => full_url($file->file_path),
+                ])
+                ->values();
+
+
+            return [
+                'id' => $order->id,
+                'title' => $title,                     // ✅ REQUIRED
+                'status' => $order->status,
+                'total_price' => $order->total_price,
+                'category' => $order->category?->name_en
+                    ?? $order->category?->name_ar,
+                'isInMarket' => $order->status === 'sent_to_market', // ✅
+                'images' => $images,                   // ✅
+                'files' => $files,                     // ✅
+                'created_at' => $order->created_at,
+            ];
+        });
+
         return response()->json([
             'status' => true,
             'orders' => $orders
         ]);
     }
+
 
 public function result(Request $request, $orderId)
 {
