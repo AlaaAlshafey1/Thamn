@@ -123,7 +123,7 @@ class PaymentController extends Controller
         // تحديث حالة الدفع
         $status = $statusResponse['status'] ?? 'FAILED';
 
-        $payment->status = strtoupper($status) === 'INITIATED' ? 'orderReceived' : 'failed';
+        $payment->status = strtoupper($status) === 'CAPTURED' ? 'orderReceived' : 'failed';
         $payment->response_data = json_encode($statusResponse);
         $payment->save();
 
