@@ -24,6 +24,15 @@ class UserRequest extends FormRequest
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
             'role_id' => 'nullable|exists:roles,id',
+            'bank_name' => 'nullable|string|max:255',
+            'iban' => 'nullable|string|max:50',
+            'account_number' => 'nullable|string|max:50',
+            'swift' => 'nullable|string|max:50',
+            'experience' => 'nullable|string',
+            'certificates' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'balance' => 'nullable|numeric',
+
         ];
     }
 }

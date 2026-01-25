@@ -44,6 +44,19 @@
                                 <span class="side-menu__label">المستخدمين</span>
                             </a>
                         @endcan
+					</li>
+                    <li class="slide">
+
+                        @can('experts_view')
+                            <a class="side-menu__item" href="{{ route('experts.index') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                <span class="side-menu__label">الخبراء</span>
+                            </a>
+                        @endcan
+
                     </li>
                     @can('question_steps_view')
 
@@ -151,6 +164,53 @@
                         </a>
                     @endcan
                 </li>
+{{-- ===================== Withdrawals Menu ===================== --}}
+@role('expert')
+    <li class="side-item side-item-category">Withdrawals</li>
+
+    <li class="slide">
+        <a class="side-menu__item" href="{{ route('withdrawals.create') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M12 2L4 5v6c0 5 4 9 8 11 4-2 8-6 8-11V5l-8-3z"/>
+                <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+            <span class="side-menu__label">طلب سحب رصيد</span>
+        </a>
+    </li>
+
+    <li class="slide">
+        <a class="side-menu__item" href="{{ route('withdrawals.my') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
+                        10-4.48 10-10S17.52 2 12 2zm1 17.93c-2.83.48-5.48-.48-7.07-2.07
+                        S4.48 14.83 4 12c.48-2.83 2.48-5.18 5.07-6.07
+                        2.59-.89 5.32.07 7.07 2.07 1.75 2 2.41 4.74 1.93 7.57
+                        -.48 2.83-2.48 5.18-5.07 6.07z"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            <span class="side-menu__label">طلبات السحب الخاصة بي</span>
+        </a>
+    </li>
+@endrole
+
+
+@role('superadmin')
+    <li class="side-item side-item-category">Withdrawals Management</li>
+
+    <li class="slide">
+        <a class="side-menu__item" href="{{ route('withdrawals.index') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M12 2L4 5v6c0 5 4 9 8 11 4-2 8-6 8-11V5l-8-3z"/>
+                <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+            <span class="side-menu__label">إدارة طلبات السحب</span>
+        </a>
+    </li>
+@endrole
+{{-- ============================================================ --}}
 
 
 				</ul>

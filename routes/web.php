@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AppPageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WithdrawalController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
@@ -34,7 +36,28 @@ Route::middleware('auth')->group(function () {
     Route::resource('roles', RoleController::class);
     Route::post('roles/import', [RoleController::class, 'import'])->name('roles.import');
     Route::get('roles/export', [RoleController::class, 'export'])->name('roles.export');
-    Route::resource('users', \App\Http\Controllers\UserController::class);
+    Route::resource('users', controller: \App\Http\Controllers\UserController::class);
+
+    Route::prefix('experts')->group(function () {
+        Route::get('/', [UserController::class, 'experts'])->name('experts.index');
+        Route::get('/create', [UserController::class, 'createExpert'])->name('experts.create');
+        Route::get('/{user}', [\App\Http\Controllers\UserController::class, 'showExpert'])
+            ->name('experts.show');
+        Route::post('/store', [UserController::class, 'storeExpert'])->name('experts.store');
+        Route::get('/{user}/edit', [UserController::class, 'editExpert'])->name('experts.edit');
+        Route::put('/{user}', [UserController::class, 'updateExpert'])->name('experts.update');
+    });
+        // Expert Routes
+        Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
+        Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+        Route::get('/withdrawals/my', [WithdrawalController::class, 'myWithdrawals'])->name('withdrawals.my');
+
+        // Admin Routes
+        Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::post('/withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
+        Route::post('/withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
+
+
     Route::resource('categories', CategoryController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('app_pages', AppPageController::class);

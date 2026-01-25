@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Notifications\OrderEvaluated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ThamnEvaluationService;
@@ -84,6 +85,7 @@ class OrderController extends Controller
     {
         // التأكد إن المستخدم هو خبير
         $user = Auth::user();
+
         if (!$user->hasRole('expert')) {
             abort(403, 'غير مسموح لك بهذا الإجراء');
         }
@@ -102,8 +104,11 @@ class OrderController extends Controller
             'total_price' => $request->expert_price, // تحديث السعر النهائي للأوردر
             'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
         ]);
+        $user->balance += 4 ;
+        $user->save();
+        $order->user->notify(new OrderEvaluated($order, 'expert'));
 
-        return back()->with('success','تم تقييم الأوردر بنجاح');
+        return back()->with('success', 'تم تقييم الأوردر بنجاح وتم إرسال إشعار للمستخدم');
     }
 
     public function thamnEvaluate(Request $request, Order $order)
@@ -125,6 +130,7 @@ class OrderController extends Controller
             'thamn_at'        => now(),
             'total_price'    => $thamnPrice, // السعر النهائي
         ]);
+    $order->user->notify(new OrderEvaluated($order, 'thamn'));
 
         return back()->with('success', 'تم اعتماد تقييم ثمن بنجاح');
     }
@@ -175,9 +181,9 @@ public function assignExpert(Request $request)
         if (!auth()->user()->hasAnyRole(['superadmin','admin','expert'])) {
             abort(403);
         }
-
         try {
             $evaluationService->runAiEvaluation($order);
+            $order->user->notify(new OrderEvaluated($order, 'ai'));
 
             return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
         } catch (\Throwable $e) {

@@ -50,6 +50,12 @@ return [
         'payments_edit',
         'payments_delete',
     ],
+       'experts' => [
+        'experts_view',
+        'experts_create',
+        'experts_edit',
+        'experts_delete',
+    ],
 
 
 

@@ -19,7 +19,6 @@ class ThamnEvaluationService
                 $qaText .= "- {$question}: {$answer}\n";
             }
         }
-
         $prompt = <<<PROMPT
 أنت خبير محترف في تثمين السلع في السوق السعودي.
 

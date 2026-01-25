@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'إدارة المستخدمين')
+@section('title', 'إدارة الخبراء')
 
 @section('css')
 <!-- DataTables -->
@@ -26,47 +26,20 @@
     .dt-buttons .btn:hover {
         background-color: #a67f31 !important;
     }
-#colvisList {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-#colvisList .form-check {
-    display: flex;
-    align-items: center;
-    gap: 10px; /* المسافة بين الـ checkbox والكلمة */
-    margin: 0;
-}
-
-#colvisList .form-check-input {
-    margin: 0;
-    transform: scale(1.1);
-    cursor: pointer;
-}
-
-#colvisList .form-check-label {
-    margin: 0;
-    line-height: 1;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-}
-
 </style>
 @endsection
 
 @section('page-header')
 <div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3" style="direction: rtl;">
     <div class="d-flex flex-column">
-        <h4 class="content-title mb-1 fw-bold text-primary">إدارة المستخدمين</h4>
-        <small class="text-muted">عرض جميع المستخدمين والتحكم بهم</small>
+        <h4 class="content-title mb-1 fw-bold text-primary">إدارة الخبراء</h4>
+        <small class="text-muted">عرض جميع الخبراء والتحكم بهم</small>
     </div>
 
     <div class="d-flex flex-wrap justify-content-start gap-2">
         @can('users_create')
-            <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
-                <i class="bx bx-plus-circle fs-5"></i> <span>إضافة مستخدم جديد</span>
+            <a href="{{ route('experts.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
+                <i class="bx bx-plus-circle fs-5"></i> <span>إضافة خبير جديد</span>
             </a>
         @endcan
     </div>
@@ -76,8 +49,8 @@
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h5 class="card-title mb-0">قائمة المستخدمين</h5>
-        <small class="text-muted">عرض جميع المستخدمين مع بياناتهم</small>
+        <h5 class="card-title mb-0">قائمة الخبراء</h5>
+        <small class="text-muted">عرض جميع الخبراء مع بياناتهم</small>
     </div>
 
     <div class="card-body">
@@ -89,8 +62,8 @@
                         <th>الصورة</th>
                         <th>الاسم</th>
                         <th>البريد الإلكتروني</th>
-                        <th>رقم الهاتف</th>
-                        <th>الدور</th>
+                        <th>عدد الطلبات</th>
+                        <th>الرصيد</th>
                         <th>الحالة</th>
                         <th>التحكم</th>
                     </tr>
@@ -105,8 +78,8 @@
                             </td>
                             <td>{{ $user->first_name }} {{ $user->last_name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td>{{ $user->phone ?? '-' }}</td>
-                            <td>{{ $user->role->name ?? '-' }}</td>
+                            <td>{{ $user->expert_orders_count }}</td>
+                            <td>{{ $user->balance ?? 0 }} SAR</td>
                             <td>
                                 @if($user->is_active)
                                     <span class="badge bg-success">نشط</span>
@@ -117,16 +90,15 @@
                             <td>
                                 <div class="btn-group">
                                     @can('users_edit')
-                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-outline-warning btn-sm">
+                                        <a href="{{ route('experts.edit', $user->id) }}" class="btn btn-outline-warning btn-sm">
                                             <i class="bx bx-edit-alt"></i>
                                         </a>
                                     @endcan
+
                                     @can('experts_view')
-
                                         <a href="{{ route('experts.show', $user->id) }}" class="btn btn-outline-info btn-sm">
-                                            <i class="bx bx-edit-alt"></i>
+                                            <i class="bx bx-show"></i>
                                         </a>
-
                                     @endcan
 
                                     @can('users_delete')
@@ -172,28 +144,15 @@ $(document).ready(function() {
         language: { url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/ar.json' },
         pageLength: 10,
         dom: '<"d-flex justify-content-between align-items-center mb-3"<"btn-left"B><"search-box"f>>rtip',
-
-            buttons: [
-                { extend: 'copy', text: '📋 نسخ', className: 'btn-sm mx-1' },
-                { extend: 'excel', text: '📊 Excel', className: 'btn-sm mx-1' },
-                { extend: 'pdf', text: '📄 PDF', className: 'btn-sm mx-1' },
-                { extend: 'print', text: '🖨️ طباعة', className: 'btn-sm mx-1' }
-            ],
-
-
+        buttons: [
+            { extend: 'copy', text: '📋 نسخ', className: 'btn-sm mx-1' },
+            { extend: 'excel', text: '📊 Excel', className: 'btn-sm mx-1' },
+            { extend: 'pdf', text: '📄 PDF', className: 'btn-sm mx-1' },
+            { extend: 'print', text: '🖨️ طباعة', className: 'btn-sm mx-1' }
+        ],
     });
 
-    // تنسيق الأزرار
     $('.dt-buttons').addClass('d-flex flex-wrap gap-2 align-items-center');
-    $('.dt-buttons .btn').addClass('btn-primary').css({
-        'background-color': '#c1953e',
-        'border-color': '#c1953e',
-        'color': '#fff'
-    });
 });
 </script>
-
-
-
-
 @endsection

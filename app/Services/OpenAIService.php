@@ -27,24 +27,36 @@ class OpenAIService
     /**
      * Chat Completion (عام)
      */
-public function chat(array $messages, string $model = 'gpt-4o-mini'): array
+public function chat(array $messages, string $model = 'gpt-5-mini'): array
 {
-    $res = $this->http->post($this->base . '/chat/completions', [
-        'headers' => [
-            'Authorization' => 'Bearer ' . $this->key,
-            'Content-Type'  => 'application/json',
-        ],
-        'json' => [
+    try {
+        $res = $this->http->post($this->base . '/chat/completions', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->key,
+                'Content-Type'  => 'application/json',
+            ],
+            'json' => [
+                'model' => $model,
+                'messages' => $messages,
+                'temperature' => null,
+                'response_format' => [
+                    'type' => 'json_object'
+                ],
+            ],
+        ]);
+
+        return json_decode((string) $res->getBody(), true);
+
+    } catch (\Throwable $e) {
+        dd($e->getMessage());
+        Log::error('OpenAI Chat API failed', [
+            'message' => $e->getMessage(),
             'model' => $model,
             'messages' => $messages,
-            'temperature' =>null,
-            'response_format' => [
-                'type' => 'json_object'
-            ],
-        ],
-    ]);
+        ]);
 
-    return json_decode((string) $res->getBody(), true);
+        return [];
+    }
 }
 
     /**

@@ -13,21 +13,30 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles, HasApiTokens, SoftDeletes;
 
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'email',
-        'phone',
-        'password',
-        'image',
-        'is_active',
-        'social_id',
-        'social_provider',
-        'is_verified',
-        'fcm_token_android',
-        'fcm_token_ios',
-        'role_id',
-    ];
+protected $fillable = [
+    'first_name',
+    'last_name',
+    'email',
+    'phone',
+    'password',
+    'image',
+    'is_active',
+    'bank_name',
+    'iban',
+    'account_number',
+    'swift',
+    'experience',
+    'certificates',
+    'notes',
+    'balance',
+    'social_id',
+    'social_provider',
+    'is_verified',
+    'fcm_token_android',
+    'fcm_token_ios',
+    'role_id',
+];
+
 
     protected $hidden = [
         'password',
@@ -36,8 +45,14 @@ class User extends Authenticatable
 
     protected $dates = ['deleted_at'];
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
+public function mainRole()
+{
+    return $this->belongsTo(Role::class);
+}
+public function expertOrders()
+{
+    return $this->hasMany(Order::class, 'expert_id');
+}
+
+
 }
