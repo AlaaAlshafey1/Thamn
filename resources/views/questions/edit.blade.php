@@ -68,12 +68,31 @@ input.form-control, select.form-select, textarea.form-control {
             @foreach([
                 'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
                 'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
-                'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges'
+                'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
+                'dropdown','number','timeCount','count','text','note','typeSelect'
             ] as $type)
                 <option value="{{ $type }}" {{ $question->type == $type ? 'selected' : '' }}>
                     {{ $type }}
                 </option>
             @endforeach
+        </select>
+    </div>
+    <div class="col-6">
+        <label class="form-label">نوع المجموعة</label>
+
+    <select name="group_type" class="form-select" required>
+        <option value="first" {{ $question->group_type == 'first' ? 'selected' : '' }}>First</option>
+        <option value="main" {{ $question->group_type == 'main' ? 'selected' : '' }}>Main</option>
+        <option value="secondary" {{ $question->group_type == 'secondary' ? 'selected' : '' }}>Secondary</option>
+    </select>
+    </div>
+
+    <div class="col-6">
+        <label class="form-label">Flow</label>
+        <select name="flow" class="form-select" required>
+            <option value="valuation" {{ $question->flow == 'valuation' ? 'selected' : '' }}>الأسئلة</option>
+            <option value="market" {{ $question->flow == 'market' ? 'selected' : '' }}>منتجات السوق</option>
+            <option value="both" {{ $question->flow == 'both' ? 'selected' : '' }}>كلاهما</option>
         </select>
     </div>
 
@@ -216,8 +235,11 @@ input.form-control, select.form-select, textarea.form-control {
 {{-- ===================== JS (نفس create بالظبط) ===================== --}}
 <script>
 const optionTypes = [
-    'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+                'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
+                'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
+                'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
+                'dropdown','number','timeCount','count','text','note','typeSelect'
+
 ];
 const sliderTypes = [];
 

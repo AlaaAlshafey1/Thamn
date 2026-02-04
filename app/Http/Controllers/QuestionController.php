@@ -10,20 +10,44 @@ use App\Models\QuestionStep;
 
 class QuestionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $questions = Question::with('category')->latest()->get();
-        return view('questions.index', compact('questions'));
+        $query = Question::with('category');
+
+
+        if ($request->filled('flow')) {
+
+            if ($request->flow === 'valuation') {
+                $query->whereIn('flow', ['valuation', 'both']);
+            }
+
+            elseif ($request->flow === 'market') {
+                $query->whereIn('flow', ['market', 'both']);
+            }
+        }else{
+
+
+        }
+
+        $questions = $query->latest()->get();
+
+        return view('questions.index', [
+            'questions' => $questions,
+            'flow'      => $request->flow
+        ]);
     }
 
-    public function create()
+
+    public function create(Request $request)
     {
         $categories = Category::where('is_active', 1)->get();
-        $steps = QuestionStep::where('is_active', 1)
-                    ->orderBy('sort_order')
-                    ->get();
 
-        return view('questions.create', compact('categories','steps'));
+        $steps = QuestionStep::where('is_active', 1)
+            ->orderBy('sort_order')
+            ->get();
+
+        return view('questions.create', compact('categories','steps'))
+            ->with('flow', $request->flow);
     }
 
     public function store(Request $request)
@@ -43,6 +67,8 @@ class QuestionController extends Controller
             'sub_options_en' => 'nullable|array',
             'sub_options_min' => 'nullable|array',
             'sub_options_max' => 'nullable|array',
+            'flow' => 'required|in:valuation,market,both',
+
         ]);
 
         $data = $request->only([
@@ -57,19 +83,21 @@ class QuestionController extends Controller
             'max_value',
             'step',
             'stageing',
+            'flow',
             'settings'
         ]);
+        $data['group_type'] = $request->group_type;
         $data['is_required'] = $request->has('is_required');
         $data['is_active']   = $request->is_active ?? 1;
 
         $question = Question::create($data);
 
-        $optionTypes = [
-    'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
-        ];
+    //     $optionTypes = [
+    // 'singleChoiceCard','singleChoiceChip',
+    // 'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
+    //     ];
 
-        if (in_array($question->type, $optionTypes)) {
+
             foreach ($request->options_ar ?? [] as $index => $option_ar) {
 
                 $imagePath = null;
@@ -111,7 +139,7 @@ class QuestionController extends Controller
                     }
                 }
             }
-        }
+
 
         return redirect()->route('questions.index')
             ->with('success', 'تمت إضافة السؤال والخيارات بنجاح');
@@ -123,13 +151,16 @@ class QuestionController extends Controller
         return view('questions.show', compact('question'));
     }
 
-    public function edit(Question $question)
+    public function edit(Request $request, Question $question)
     {
         $steps = QuestionStep::where('is_active', 1)
             ->orderBy('sort_order')
             ->get();
+
         $categories = Category::where('is_active', 1)->get();
-        return view('questions.edit', compact('question','categories','steps'));
+
+        return view('questions.edit', compact('question','categories','steps'))
+            ->with('flow', $request->flow);
     }
 
     public function update(Request $request, Question $question)
@@ -144,6 +175,7 @@ class QuestionController extends Controller
             'type' => 'required',
 
             'order' => 'nullable|integer',
+            'flow' => 'required|in:valuation,market,both',
 
             'options_ar' => 'nullable|array',
             'options_en' => 'nullable|array',
@@ -170,24 +202,23 @@ class QuestionController extends Controller
             'max_value',
             'step',
             'stageing',
-            'settings'
+            'settings',
+            'flow',
+            'group_type'
         ]);
+
+        $data['group_type'] = $request->group_type;
 
         $data['is_required'] = $request->has('is_required');
         $data['is_active']   = $request->is_active ?? 1;
 
         $question->update($data);
 
-        // ===================== مسح كل الخيارات القديمة =====================
         QuestionOption::where('question_id', $question->id)->delete();
 
-        // ===================== أنواع الأسئلة اللي ليها options =====================
-        $optionTypes = [
-            'singleChoiceCard','singleChoiceChip',
-            'singleChoiceChipWithImage','rateTypeSelection','productAges','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress'
-        ];
 
-        if (in_array($question->type, $optionTypes)) {
+
+
 
             foreach ($request->options_ar ?? [] as $index => $option_ar) {
 
@@ -236,7 +267,7 @@ class QuestionController extends Controller
                     }
                 }
             }
-        }
+
 
         return redirect()->route('questions.index')
             ->with('success', 'تم تحديث السؤال والخيارات بنجاح');

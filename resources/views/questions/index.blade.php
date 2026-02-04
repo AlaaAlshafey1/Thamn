@@ -64,7 +64,7 @@
     </div>
 
     <div class="d-flex flex-wrap justify-content-start gap-2">
-        <a href="{{ route('questions.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
+        <a href="{{ route('questions.create', ['flow' => request('flow')]) }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
             <i class="bx bx-plus-circle fs-5"></i> <span>إضافة سؤال جديد</span>
         </a>
     </div>
@@ -115,14 +115,14 @@
                             <td>{{ $question->order }}</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-outline-warning btn-sm">
+                                    <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="btn btn-outline-warning btn-sm">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
-                                    <a href="{{ route('questions.show', $question->id) }}" class="btn btn-outline-info btn-sm">
+                                    <a href="{{ route('questions.show', [$question->id, 'flow' => request('flow')]) }}" class="btn btn-outline-info btn-sm">
                                         <i class="bx bx-show-alt"></i>
                                     </a>
 
-                                    <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                    <form action="{{ route('questions.destroy', [$question->id, 'flow' => request('flow')]) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-outline-danger btn-sm">

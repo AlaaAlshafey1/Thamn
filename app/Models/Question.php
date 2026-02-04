@@ -25,7 +25,9 @@ class Question extends Model
         "stageing",
         "addSearch",
         "useCupertinoPicker",
-        "settings"
+        'flow',
+        "settings",
+        'group_type'
     ];
 
     protected $casts = [

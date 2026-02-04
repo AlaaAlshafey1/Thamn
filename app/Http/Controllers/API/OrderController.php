@@ -395,275 +395,231 @@ class OrderController extends Controller
         ]);
     }
 
-public function getOrders(Request $request)
-{
-    $query = Order::where('user_id', Auth::id())
-        ->with([
-            'category',
-            'details.option',
-            'files'
-        ]);
+    public function getOrders(Request $request)
+    {
+        $query = Order::where('user_id', Auth::id())
+            ->with([
+                'category',
+                'details.option',
+                'files'
+            ]);
 
-    // --------------------- فلترة حسب status مباشر ---------------------
-    if ($request->filled('status')) {
-        $validStatuses = [
-            'orderReceived','beingEstimated','beingReEstimated','estimated',
-            'estimatedAndStored','reEstimated','inComplete','notPaid','cancelled'
-        ];
-
-        if (!in_array($request->status, $validStatuses)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid status'
-            ], 400);
-        }
-
-        $query->where('status', $request->status);
-    }
-
-    // --------------------- فلترة حسب group predefined ---------------------
-    if ($request->filled('group')) {
-        $groups = [
+        // Status groups mapping
+        $statusGroups = [
             'inPricing' => ['beingEstimated','beingReEstimated'],
             'priced' => ['estimated','estimatedAndStored','reEstimated'],
-            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled']
+            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled'],
+        ];
+        $validStatuses = collect($statusGroups)->flatten()->unique()->toArray();
+
+        // ========================== Filter ==========================
+        if ($request->filled('statsCategory')) {
+            if (!array_key_exists($request->statsCategory, $statusGroups)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid statsCategory'
+                ], 400);
+            }
+            $query->whereIn('status', $statusGroups[$request->statsCategory]);
+        } elseif ($request->filled('status')) {
+            if (!in_array($request->status, $validStatuses)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid status'
+                ], 400);
+            }
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $orders = $query->latest()->get();
+
+        // ========================== Map response ==========================
+        $orders = $orders->map(function ($order) {
+            $titleParts = [];
+
+            $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
+            if ($categoryName) $titleParts[] = $categoryName;
+
+            $detailValues = $order->details
+                ->map(fn($d) => $d->option?->option_en ?? $d->option?->option_ar ?? $d->value)
+                ->filter()
+                ->unique()
+                ->values()
+                ->take(2)
+                ->toArray();
+
+            $titleParts = array_merge($titleParts, $detailValues);
+            if (empty($titleParts)) $titleParts[] = "Order #{$order->id}";
+
+            $files = $order->files
+                ->where('type', 'file')
+                ->map(fn($f) => ['url' => full_url($f->file_path)])
+                ->values();
+
+            $images = $order->files
+                ->where('type', 'image')
+                ->map(fn($f) => [
+                    'id' => $f->id,
+                    'name' => $f->file_name,
+                    'url' => full_url($f->file_path)
+                ])
+                ->values();
+
+            return [
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'category_id' => $order->category_id,
+                'status' => $order->status,
+                'pricing_method' => $order->pricing_method,
+                'total_price' => $order->total_price,
+                'payload' => $order->payload,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
+                'ai_min_price' => $order->ai_min_price,
+                'ai_max_price' => $order->ai_max_price,
+                'ai_price' => $order->ai_price,
+                'ai_confidence' => $order->ai_confidence,
+                'ai_reasoning' => $order->ai_reasoning,
+                'expert_id' => $order->expert_id,
+                'expert_evaluated' => $order->expert_evaluated,
+                'expert_price' => $order->expert_price,
+                'thamn_price' => $order->thamn_price,
+                'thamn_reasoning' => $order->thamn_reasoning,
+                'expert_reasoning' => $order->expert_reasoning,
+                'thamn_by' => $order->thamn_by,
+                'thamn_at' => $order->thamn_at,
+                'deleted_at' => $order->deleted_at,
+
+                'title' => implode(' - ', $titleParts),
+                'category' => $order->category,
+                'isInMarket' => $order->status === 'sent_to_market',
+                'images' => $images,
+                'files' => $files,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'orders' => $orders
+        ]);
+    }
+
+
+    public function result(Request $request, $orderId)
+    {
+        $order = Order::with([
+            'details.question',
+            'details.option',
+            'category',
+            'files',
+        ])
+        ->where('id', $orderId)
+        ->firstOrFail();
+
+        /* ===================== CATEGORY ===================== */
+        $category = $order->category->name_en
+            ?? $order->category->name_ar
+            ?? '';
+
+        /* ===================== DESCRIPTION ===================== */
+        $year = null;
+        $condition = null;
+
+        foreach ($order->details as $detail) {
+            if (!$detail->question) {
+                continue;
+            }
+
+            switch ($detail->question->type) {
+                case 'year':
+                    $year = $detail->value
+                        ?? $detail->option?->option_en
+                        ?? $detail->option?->option_ar;
+                    break;
+
+                case 'condition':
+                    $condition = $detail->option?->option_en
+                        ?? $detail->option?->option_ar
+                        ?? $detail->value;
+                    break;
+            }
+        }
+
+        $description = trim(implode(' ', array_filter([
+            $category,
+            $year,
+            $condition ? "– {$condition}" : null,
+        ])));
+
+        /* ===================== MAIN IMAGE ===================== */
+        $imageFile = $order->files->firstWhere('type', 'image');
+
+        $image = '';
+        if($order->category->name_en == "cars"){
+
+            $image =  URL::asset('/assets/img/Cars-result.jpeg');
+        }
+
+
+        /* ===================== PRICES ===================== */
+        $prices = [
+            'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
+            'average' => (float) (
+                $order->thamn_price
+                ?? $order->ai_price
+                ?? 0
+            ),
+            'lowest'  => $order->ai_min_price ? (float) $order->ai_min_price : null,
         ];
 
-        if (!array_key_exists($request->group, $groups)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid group'
-            ], 400);
+        /* ===================== DETAILS ===================== */
+        $details = [];
+
+        foreach ($order->details as $detail) {
+            if (!$detail->question) {
+                continue;
+            }
+
+            $title = $detail->question->question_en
+                ?? $detail->question->question_ar;
+
+            $value = $detail->option?->option_en
+                ?? $detail->option?->option_ar
+                ?? $detail->value;
+
+            if ($title && $value) {
+                $details[] = [
+                    'title' => $title,
+                    'value' => (string) $value,
+                ];
+            }
         }
-
-        $query->whereIn('status', $groups[$request->group]);
-    }
-
-    // --------------------- فلترة category ---------------------
-    if ($request->filled('category_id')) {
-        $query->where('category_id', $request->category_id);
-    }
-
-    // --------------------- فلترة range تاريخ ---------------------
-    if ($request->filled('from_date')) {
-        $query->whereDate('created_at', '>=', $request->from_date);
-    }
-
-    if ($request->filled('to_date')) {
-        $query->whereDate('created_at', '<=', $request->to_date);
-    }
-
-    $orders = $query->latest()->get();
-
-    /* ===================== MAP RESPONSE ===================== */
-    $orders = $orders->map(function ($order) {
-
-        // ===== TITLE =====
-        $titleParts = [];
-
-        // Category name
-        $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
-        if ($categoryName) {
-            $titleParts[] = $categoryName;
-        }
-
-        // details values (unique)
-        $detailValues = $order->details
-            ->map(fn ($d) =>
-                $d->option?->option_en
-                ?? $d->option?->option_ar
-                ?? $d->value
-            )
-            ->filter()
-            ->unique()
-            ->values()
-            ->take(2)
-            ->toArray();
-
-        $titleParts = array_merge($titleParts, $detailValues);
-
-        // fallback
-        if (empty($titleParts)) {
-            $titleParts[] = "Order #{$order->id}";
-        }
-
-        $title = implode(' - ', $titleParts);
-
-        // ===== FILES =====
-        $files = $order->files
-            ->where('type', 'file')
-            ->map(fn ($file) => [
-                'url' => full_url($file->file_path),
-            ])
-            ->values();
-
-        // ===== IMAGES =====
-        $images = $order->files
-            ->where('type', 'image')
-            ->map(fn ($file) => [
-                'id' => $file->id,
-                'name' => $file->file_name,
-                'url' => full_url($file->file_path),
-            ])
-            ->values();
-
-        return [
-            'id' => $order->id,
-            'user_id' => $order->user_id,
-            'category_id' => $order->category_id,
-            'status' => $order->status,
-            'pricing_method' => $order->pricing_method,
-            'total_price' => $order->total_price,
-            'payload' => $order->payload,
-            'created_at' => $order->created_at,
-            'updated_at' => $order->updated_at,
-            'ai_min_price' => $order->ai_min_price,
-            'ai_max_price' => $order->ai_max_price,
-            'ai_price' => $order->ai_price,
-            'ai_confidence' => $order->ai_confidence,
-            'ai_reasoning' => $order->ai_reasoning,
-            'expert_id' => $order->expert_id,
-            'expert_evaluated' => $order->expert_evaluated,
-            'expert_price' => $order->expert_price,
-            'thamn_price' => $order->thamn_price,
-            'thamn_reasoning' => $order->thamn_reasoning,
-            'expert_reasoning' => $order->expert_reasoning,
-            'thamn_by' => $order->thamn_by,
-            'thamn_at' => $order->thamn_at,
-            'deleted_at' => $order->deleted_at,
-
-            // ===== extra fields =====
-            'title' => $title,
-            'category' => [
-                'id' => $order->category?->id,
-                'name_ar' => $order->category?->name_ar,
-                'name_en' => $order->category?->name_en,
-                'description_ar' => $order->category?->description_ar,
-                'description_en' => $order->category?->description_en,
-                'image' => $order->category?->image,
-                'is_active' => $order->category?->is_active,
-                'created_at' => $order->category?->created_at,
-                'updated_at' => $order->category?->updated_at,
-            ],
-            'isInMarket' => $order->status === 'sent_to_market',
-            'images' => $images,
-            'files' => $files,
-        ];
-    });
-
-    return response()->json([
-        'status' => true,
-        'orders' => $orders
-    ]);
-}
-
-
-
-public function result(Request $request, $orderId)
-{
-    $order = Order::with([
-        'details.question',
-        'details.option',
-        'category',
-        'files',
-    ])
-    ->where('id', $orderId)
-    ->firstOrFail();
-
-    /* ===================== CATEGORY ===================== */
-    $category = $order->category->name_en
-        ?? $order->category->name_ar
+    $reasoning =
+        $order->thamn_reasoning
+        ?? $order->expert_reasoning
+        ?? $order->ai_reasoning
         ?? '';
 
-    /* ===================== DESCRIPTION ===================== */
-    $year = null;
-    $condition = null;
-
-    foreach ($order->details as $detail) {
-        if (!$detail->question) {
-            continue;
-        }
-
-        switch ($detail->question->type) {
-            case 'year':
-                $year = $detail->value
-                    ?? $detail->option?->option_en
-                    ?? $detail->option?->option_ar;
-                break;
-
-            case 'condition':
-                $condition = $detail->option?->option_en
-                    ?? $detail->option?->option_ar
-                    ?? $detail->value;
-                break;
-        }
+        /* ===================== RESPONSE ===================== */
+        return response()->json([
+            'category'    => $category,
+            'description' => $description,
+            'image'       => $image,
+            'reasoning'       => $reasoning ,
+            'prices'      => $prices,
+            'details'     => $details,
+        ]);
     }
-
-    $description = trim(implode(' ', array_filter([
-        $category,
-        $year,
-        $condition ? "– {$condition}" : null,
-    ])));
-
-    /* ===================== MAIN IMAGE ===================== */
-    $imageFile = $order->files->firstWhere('type', 'image');
-
-    $image = '';
-    if($order->category->name_en == "cars"){
-
-        $image =  URL::asset('/assets/img/Cars-result.jpeg');
-    }
-
-
-    /* ===================== PRICES ===================== */
-    $prices = [
-        'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
-        'average' => (float) (
-            $order->thamn_price
-            ?? $order->ai_price
-            ?? 0
-        ),
-        'lowest'  => $order->ai_min_price ? (float) $order->ai_min_price : null,
-    ];
-
-    /* ===================== DETAILS ===================== */
-    $details = [];
-
-    foreach ($order->details as $detail) {
-        if (!$detail->question) {
-            continue;
-        }
-
-        $title = $detail->question->question_en
-            ?? $detail->question->question_ar;
-
-        $value = $detail->option?->option_en
-            ?? $detail->option?->option_ar
-            ?? $detail->value;
-
-        if ($title && $value) {
-            $details[] = [
-                'title' => $title,
-                'value' => (string) $value,
-            ];
-        }
-    }
-$reasoning =
-    $order->thamn_reasoning
-    ?? $order->expert_reasoning
-    ?? $order->ai_reasoning
-    ?? '';
-
-    /* ===================== RESPONSE ===================== */
-    return response()->json([
-        'category'    => $category,
-        'description' => $description,
-        'image'       => $image,
-        'reasoning'       => $reasoning ,
-        'prices'      => $prices,
-        'details'     => $details,
-    ]);
-}
 
 
 

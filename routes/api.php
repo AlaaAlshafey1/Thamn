@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\QuestionController;
 use App\Http\Controllers\API\AnswerController;
+use App\Http\Controllers\Api\MarketPlaceOrderController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\SocialAuthController;
@@ -36,6 +37,8 @@ Route::prefix('auth')->group(function () {
 // ------------------ PUBLIC ENDPOINTS ------------------
 Route::get('categories', [HomeController::class, 'categories']);
 Route::get('terms', [HomeController::class, 'terms']);
+Route::get('app-pages', [HomeController::class, 'appData']);
+Route::get('colors', [HomeController::class, 'colors']);
 
 
 // ------------------ PROTECTED ENDPOINTS ------------------
@@ -51,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('questions/{id}', [HomeController::class, 'allQuestions']); // كل الأسئلة حسب الفئة
+    Route::get('marketplace/questions/{id}', [HomeController::class, 'marketQuestionsByGroup']); // كل الأسئلة حسب الفئة
+
     Route::post('orders', [OrderController::class, 'store']);
 
 
@@ -64,6 +69,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('valuation-orders/{orderId}/send-to-market', [OrderController::class, 'sendToMarket']);
 
 
+    Route::prefix('marketplace/orders')->group(function () {
+
+        Route::post('/', [MarketPlaceOrderController::class, 'store']);
+
+        Route::post('{orderId}', [MarketPlaceOrderController::class, 'update']);
+
+        Route::get('{orderId}', [MarketPlaceOrderController::class, 'show']);
+
+        Route::delete('{orderId}', [MarketPlaceOrderController::class, 'destroy']);
+
+        Route::post('{orderId}/cancel', [MarketPlaceOrderController::class, 'cancel']);
+    });
 
     Route::prefix('payment')->group(function () {
 

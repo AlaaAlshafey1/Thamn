@@ -56,6 +56,19 @@ return [
         'experts_edit',
         'experts_delete',
     ],
+       'market-products' => [
+        'market-products_view',
+        'market-products_create',
+        'market-products_edit',
+        'market-products_delete',
+    ],
+       'contacts' => [
+        'contacts_view',
+        'contactst_create',
+        'contacts_edit',
+        'contacts_delete',
+    ],
+
 
 
 

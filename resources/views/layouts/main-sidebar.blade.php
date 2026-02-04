@@ -58,6 +58,46 @@
                         @endcan
 
                     </li>
+            @can('contacts_view')
+                <li class="side-item side-item-category">Contacts Management</li>
+                <li class="slide">
+                    <a class="side-menu__item" href="{{ route('contacts.index') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="side-menu__label">جهات الاتصال</span>
+                    </a>
+                </li>
+                <li class="slide">
+                    <a class="side-menu__item" href="{{ route('pages.index') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="side-menu__label">صفحات التطبيق</span>
+                    </a>
+                </li>
+                <li class="slide">
+                    <a class="side-menu__item" href="{{ route('faqs.index') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="side-menu__label">الاسئلة الشائعة</span>
+                    </a>
+                </li>
+                <li class="slide">
+                    <a class="side-menu__item" href="{{ route('colors.index') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="side-menu__label">الوان التطبيق</span>
+                    </a>
+                </li>
+
+            @endcan
                     @can('question_steps_view')
 
                     <li class="side-item side-item-category">Valuation Management</li>
@@ -86,18 +126,31 @@
                             </a>
                         @endcan
                     </li>
-
                     <li class="slide">
                         @can('questions_view')
-                            <a class="side-menu__item" href="{{ route('questions.index') }}">
+                            <a class="side-menu__item" href="{{ route('questions.index', ['flow' => 'valuation']) }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
                                     <path d="M0 0h24v24H0V0z" fill="none"/>
                                     <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
                                 </svg>
-                                <span class="side-menu__label"> الاسئلة</span>
+                                <span class="side-menu__label">الأسئلة</span>
                             </a>
                         @endcan
                     </li>
+
+                    @can('market-products_view')
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('questions.index', ['flow' => 'market']) }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M3 6h18v2H3zm2 4h14v10H5z"/>
+                            </svg>
+                            <span class="side-menu__label">منتجات السوق</span>
+                        </a>
+                    </li>
+                    @endcan
+
+
 
                     {{-- <li class="slide">
                         @can('app_pages_view')

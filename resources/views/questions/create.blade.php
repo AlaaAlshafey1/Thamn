@@ -75,8 +75,31 @@ input.form-control, select.form-select, textarea.form-control {
             <option value="price">سعر</option>
             <option value="rateTypeSelection">rate Type Selection</option>
             <option value="productAges">product Ages</option>
-
+            <option value="dropdown">dropdown</option>
+            <option value="number">number</option>
+            <option value="timeCount">timeCount</option>
+            <option value="count">count</option>
+            <option value="typeSelect">typeSelect</option>
+            <option value="text">text</option>
+            <option value="note">note</option>
             <option value="progress">Progress</option>
+        </select>
+    </div>
+    <div class="col-6">
+        <label class="form-label">نوع المجموعة</label>
+        <select name="group_type" class="form-select" required>
+            <option value="first" {{ old('group_type') == 'first' ? 'selected' : '' }}>First</option>
+            <option value="main" {{ old('group_type') == 'main' ? 'selected' : '' }}>Main</option>
+            <option value="secondary" {{ old('group_type') == 'secondary' ? 'selected' : '' }}>Secondary</option>
+        </select>
+    </div>
+
+    <div class="col-6">
+        <label class="form-label">نوع الاستخدام</label>
+        <select name="flow" class="form-select" required>
+            <option value="valuation">تثمين فقط</option>
+            <option value="market">السوق فقط</option>
+            <option value="both">الاثنين</option>
         </select>
     </div>
 
@@ -176,8 +199,10 @@ input.form-control, select.form-select, textarea.form-control {
 {{-- ===================== JS ===================== --}}
 <script>
 const optionTypes = [
-    'singleChoiceCard','singleChoiceChip',
-    'singleChoiceChipWithImage','singleChoiceDropdown','valueRangeSlider','singleSelectionSlider','multiSelection','progress','rateTypeSelection','productAges'
+                'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
+                'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
+                'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
+                'dropdown','number','timeCount','count','text','note','typeSelect'
 ];
 const sliderTypes = [];
 

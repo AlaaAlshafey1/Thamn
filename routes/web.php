@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AboutController;
+use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\AppPageController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WithdrawalController;
@@ -13,6 +16,8 @@ use App\Http\Controllers\QuestionStepController;
 use App\Http\Controllers\TapPaymentController;
 use App\Http\Controllers\TermConditionController;
 use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\ColorController;
+use App\Http\Controllers\ContactController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -63,6 +68,20 @@ Route::middleware('auth')->group(function () {
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);
+    Route::resource('contacts', ContactController::class);
+    Route::prefix('pages')->group(function() {
+        Route::get('{type?}', [PageController::class, 'index'])->name('pages.index');
+        Route::get('create/{type?}', [PageController::class, 'create'])->name('pages.create');
+        Route::post('store', [PageController::class, 'store'])->name('pages.store');
+        Route::get('edit/{id}', [PageController::class, 'edit'])->name('pages.edit');
+        Route::put('update/{id}', [PageController::class, 'update'])->name('pages.update');
+        Route::delete('destroy/{id}', [PageController::class, 'destroy'])->name('pages.destroy');
+    });
+    Route::resource('faqs', FaqController::class);
+    Route::resource('colors', ColorController::class);
+
+
+
     Route::get('orders', [OrderController::class, 'index'])
         ->name('orders.index');
 
