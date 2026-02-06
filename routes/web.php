@@ -18,6 +18,8 @@ use App\Http\Controllers\TermConditionController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\HomeStepController;
+use App\Http\Controllers\IntroController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,7 +29,8 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/payment/order/{orderId}',
+Route::get(
+    '/payment/order/{orderId}',
     [PaymentController::class, 'redirect']
 )->name('payment.redirect');
 
@@ -52,15 +55,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/{user}/edit', [UserController::class, 'editExpert'])->name('experts.edit');
         Route::put('/{user}', [UserController::class, 'updateExpert'])->name('experts.update');
     });
-        // Expert Routes
-        Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
-        Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
-        Route::get('/withdrawals/my', [WithdrawalController::class, 'myWithdrawals'])->name('withdrawals.my');
+    // Expert Routes
+    Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
+    Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+    Route::get('/withdrawals/my', [WithdrawalController::class, 'myWithdrawals'])->name('withdrawals.my');
 
-        // Admin Routes
-        Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
-        Route::post('/withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
-        Route::post('/withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
+    // Admin Routes
+    Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::post('/withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
+    Route::post('/withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
 
     Route::resource('categories', CategoryController::class);
@@ -69,7 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);
     Route::resource('contacts', ContactController::class);
-    Route::prefix('pages')->group(function() {
+    Route::prefix('pages')->group(function () {
         Route::get('{type?}', [PageController::class, 'index'])->name('pages.index');
         Route::get('create/{type?}', [PageController::class, 'create'])->name('pages.create');
         Route::post('store', [PageController::class, 'store'])->name('pages.store');
@@ -79,6 +82,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::resource('faqs', FaqController::class);
     Route::resource('colors', ColorController::class);
+    Route::resource('home_steps', HomeStepController::class);
+    Route::resource('intros', IntroController::class);
 
 
 
@@ -95,7 +100,7 @@ Route::middleware('auth')->group(function () {
         ->name('orders.updateStatus');
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::post('orders/{order}/evaluate', [OrderController::class,'expertEvaluate'])->name('orders.expert.evaluate');
+    Route::post('orders/{order}/evaluate', [OrderController::class, 'expertEvaluate'])->name('orders.expert.evaluate');
     Route::post('/orders/{order}/price', [OrderController::class, 'updatePrice'])
         ->name('orders.updatePrice');
 
@@ -105,11 +110,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');
-    Route::delete( 'payments/{payment}', [TapPaymentController::class, 'destroy'])->name('payments.destroy');
+    Route::delete('payments/{payment}', [TapPaymentController::class, 'destroy'])->name('payments.destroy');
 
     Route::post('/orders/assign-expert', [OrderController::class, 'assignExpert'])->name('orders.assignExpert');
 
-    Route::post('/orders/{order}/thamn-evaluate',
+    Route::post(
+        '/orders/{order}/thamn-evaluate',
         [OrderController::class, 'thamnEvaluate']
     )->name('orders.thamn.evaluate');
 
@@ -122,4 +128,4 @@ Route::get('lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('change.language');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

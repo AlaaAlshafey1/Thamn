@@ -10,10 +10,6 @@ use App\Http\Resources\QuestionResource;
 use App\Models\Question;
 use App\Models\QuestionStep;
 use App\Models\TermCondition;
-use App\Models\About;
-use App\Models\Color;
-use App\Models\Faq;
-use App\Models\Contact;
 
 class HomeController extends Controller
 {
@@ -22,31 +18,31 @@ class HomeController extends Controller
         $categories = Category::orderBy('id', 'desc')->get();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => lang('تم إرجاع الفئات بنجاح', 'Categories fetched successfully', $request),
-            'data'    => CategoryResource::collection($categories),
+            'data' => CategoryResource::collection($categories),
         ]);
     }
 
-    public function allQuestions($categoryId , Request $request)
+    public function allQuestions($categoryId, Request $request)
     {
 
         $questions = Question::with(['category', 'options'])
-                            ->where('is_active', 1)
-                            ->whereIn('flow', ['valuation', 'both'])
-                            ->where('category_id', $categoryId)
-                            ->orderBy('order')
-                            ->get();
+            ->where('is_active', 1)
+            ->whereIn('flow', ['valuation', 'both'])
+            ->where('category_id', $categoryId)
+            ->orderBy('order')
+            ->get();
 
 
-        $stages = $questions->groupBy('stageing')->map(function($questions, $stage ) use($request) {
+        $stages = $questions->groupBy('stageing')->map(function ($questions, $stage) use ($request) {
 
-            $Question_step = QuestionStep::where("id",$stage)->value("name_ar");
+            $Question_step = QuestionStep::where("id", $stage)->value("name_ar");
             $locale = strtolower($request->header('Accept-Language', 'en'));
 
             return [
                 'step' => (int) $stage,
-                'name' => $locale  == "ar" ? QuestionStep::where("id",$stage)->value("name_ar") : QuestionStep::where("id",$stage)->value("name_en"),
+                'name' => $locale == "ar" ? QuestionStep::where("id", $stage)->value("name_ar") : QuestionStep::where("id", $stage)->value("name_en"),
                 'questions' => $questions->isNotEmpty()
                     ? QuestionResource::collection($questions)
                     : collect(),
@@ -85,8 +81,8 @@ class HomeController extends Controller
                 'titleDescription' => $q->settings['titleDescription'][$locale] ?? null,
                 'description' => $locale === 'ar' ? $q->description_ar : $q->description_en,
                 'type' => $q->type,
-                'is_required' => (bool)$q->is_required,
-                'order' => (int)$q->order,
+                'is_required' => (bool) $q->is_required,
+                'order' => (int) $q->order,
                 'min_value' => $q->min_value,
                 'max_value' => $q->max_value,
                 'step' => $q->step,
@@ -121,6 +117,7 @@ class HomeController extends Controller
             'data' => $groups
         ]);
     }
+
     public function terms(Request $request)
     {
         $lang = $request->header('Accept-Language', 'ar');
@@ -151,65 +148,4 @@ class HomeController extends Controller
     }
 
 
-
-    public function appData(Request $request)
-    {
-        $lang = strtolower($request->header('Accept-Language', 'en'));
-        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
-
-        // ------------------- الصفحات -------------------
-        $pages = About::all()->mapWithKeys(function($page) use ($lang) {
-            return [
-                $page->type => [
-                    'content' => $lang === 'ar' ? $page->content_ar : $page->content_en
-                ]
-            ];
-        });
-
-        // ------------------- FAQs -------------------
-        $faqs = Faq::all()->map(function($faq) use ($lang) {
-            return [
-                'id' => $faq->id,
-                'category' => $faq->category,
-                'question' => $lang === 'ar' ? $faq->question_ar : $faq->question_en,
-                'answer' => $lang === 'ar' ? $faq->answer_ar : $faq->answer_en,
-            ];
-        });
-
-        // ------------------- بيانات الاتصال -------------------
-        $contacts = Contact::all()->map(function($contact) use ($lang) {
-            return [
-                'id' => $contact->id,
-                'type' => $contact->type,
-                'value' => $contact->value,
-                'label' => $lang === 'ar' ? $contact->label_ar : $contact->label_en,
-            ];
-        });
-
-        return response()->json([
-            'status' => true,
-            'message' => $lang === 'ar' ? 'تم إرجاع بيانات التطبيق بنجاح' : 'App data fetched successfully',
-            'data' => [
-                'pages' => $pages,
-                'faqs' => $faqs,
-                'contacts' => $contacts
-            ]
-        ]);
-    }
-
-    public function colors()
-    {
-        // جلب كل الألوان
-        $colors = Color::orderBy('group')->get();
-
-        // ترتيبهم حسب المجموعة
-        $grouped = $colors->groupBy('group')->map(function ($group) {
-            return $group->pluck('value','key');
-        });
-
-        return response()->json([
-            'status' => true,
-            'data' => $grouped
-        ]);
-    }
 }

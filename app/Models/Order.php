@@ -9,13 +9,32 @@ use Illuminate\Notifications\Notifiable;
 
 class Order extends Model
 {
-    use HasFactory , Notifiable , SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['user_id',"category_id", 'status', 'total_price', 'payload','ai_min_price','ai_max_price','ai_price','ai_confidence','ai_reasoning',
-    'expert_id','expert_evaluated',
-    'expert_price','expert_reasoning',
-    'thamn_price','thamn_reasoning','thamn_by','thamn_at'
-];
+    protected $fillable = [
+        'user_id',
+        "category_id",
+        'status',
+        'total_price',
+        'payload',
+        'ai_min_price',
+        'ai_max_price',
+        'ai_price',
+        'ai_confidence',
+        'ai_reasoning',
+        'expert_id',
+        'expert_evaluated',
+        'expert_price',
+        'expert_min_price',
+        'expert_max_price',
+        'expert_reasoning',
+        'thamn_price',
+        'thamn_min_price',
+        'thamn_max_price',
+        'thamn_reasoning',
+        'thamn_by',
+        'thamn_at'
+    ];
 
     protected $dates = ['deleted_at'];
 
@@ -34,7 +53,7 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
-        public function files()
+    public function files()
     {
         return $this->hasMany(OrderFiles::class);
     }

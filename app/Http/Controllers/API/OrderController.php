@@ -35,7 +35,7 @@ class OrderController extends Controller
 
         $order = Order::create([
             'user_id' => $user->id,
-            'category_id' => $request->category_id ?? 1 ,
+            'category_id' => $request->category_id ?? 1,
             'status' => $request->status ?? 0,
             'payload' => json_encode($request->answers),
         ]);
@@ -47,7 +47,8 @@ class OrderController extends Controller
             $optionIds = is_array($answer['option_id'] ?? null) ? $answer['option_id'] : [$answer['option_id'] ?? null];
 
             foreach ($optionIds as $optionId) {
-                if ($optionId === null) continue;
+                if ($optionId === null)
+                    continue;
 
                 $details[] = OrderDetails::create([
                     'order_id' => $order->id,
@@ -63,18 +64,19 @@ class OrderController extends Controller
             }
         }
 
-            $rateTypeAnswer = $order->details
-                ->first(fn ($detail) =>
-                    $detail->question?->type === 'rateTypeSelection'
+        $rateTypeAnswer = $order->details
+            ->first(
+                fn($detail) =>
+                $detail->question?->type === 'rateTypeSelection'
 
-                );
+            );
 
 
-                if( $rateTypeAnswer){
+        if ($rateTypeAnswer) {
 
-                        $totalPrice = $rateTypeAnswer->option->price    ;
+            $totalPrice = $rateTypeAnswer->option->price;
 
-                }
+        }
 
 
         $order->update(['total_price' => $totalPrice]);
@@ -109,7 +111,7 @@ class OrderController extends Controller
             }
         }
 
-        $responseAnswers = collect($details)->map(function($d) {
+        $responseAnswers = collect($details)->map(function ($d) {
             return [
                 'question_id' => $d->question_id,
                 'option_id' => $d->option_id,
@@ -133,9 +135,9 @@ class OrderController extends Controller
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id'   => $file->id,
+                            'id' => $file->id,
                             'name' => $file->file_name,
-                            'url'  => full_url($file->file_path),
+                            'url' => full_url($file->file_path),
                         ];
                     }),
 
@@ -144,9 +146,9 @@ class OrderController extends Controller
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id'   => $file->id,
+                            'id' => $file->id,
                             'name' => $file->file_name,
-                            'url'  => full_url($file->file_path),
+                            'url' => full_url($file->file_path),
                         ];
                     }),
                 'answers' => $responseAnswers,
@@ -158,12 +160,12 @@ class OrderController extends Controller
     public function update(Request $request, $orderId)
     {
         $user = $request->user();
-
-        $order = Order::where('id', $orderId)
+        $originalOrder = Order::where('id', $orderId)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
         $request->validate([
+            'isUpdate' => 'required|boolean',
             'status' => 'nullable|string',
             'answers' => 'required|array',
             'answers.*.question_id' => 'required|exists:questions,id',
@@ -173,14 +175,82 @@ class OrderController extends Controller
             'answers.*.price' => 'nullable|numeric',
             'answers.*.status' => 'nullable|integer',
             'answers.*.stageing' => 'nullable|integer',
+            'oldImages' => 'nullable|array',
+            'oldFiles' => 'nullable|array',
         ]);
 
-        $order->update([
-            'status' => $request->status ?? $order->status,
-            'payload' => json_encode($request->answers),
-        ]);
+        $isUpdate = filter_var($request->isUpdate, FILTER_VALIDATE_BOOLEAN);
 
-        OrderDetails::where('order_id', $order->id)->delete();
+        if ($isUpdate) {
+            $order = $originalOrder;
+            $order->update([
+                'status' => $request->status ?? $order->status,
+                'payload' => json_encode($request->answers),
+            ]);
+
+            // Handle deleted files (those not in oldImages/oldFiles)
+            $oldImageIds = $request->get('oldImages', []);
+            $oldFileIds = $request->get('oldFiles', []);
+
+            // Images
+            $imagesToDelete = OrderFiles::where('order_id', $order->id)
+                ->where('type', 'image')
+                ->whereNotIn('id', $oldImageIds)
+                ->get();
+            foreach ($imagesToDelete as $file) {
+                Storage::disk('public')->delete($file->file_path);
+                $file->delete();
+            }
+
+            // Files
+            $filesToDelete = OrderFiles::where('order_id', $order->id)
+                ->where('type', 'file')
+                ->whereNotIn('id', $oldFileIds)
+                ->get();
+            foreach ($filesToDelete as $file) {
+                Storage::disk('public')->delete($file->file_path);
+                $file->delete();
+            }
+
+            // Clear old details
+            OrderDetails::where('order_id', $order->id)->delete();
+        } else {
+            // Create NEW order
+            $order = Order::create([
+                'user_id' => $user->id,
+                'category_id' => $originalOrder->category_id,
+                'status' => $request->status ?? 0,
+                'payload' => json_encode($request->answers),
+            ]);
+
+            // Copy preserved files
+            $oldImageIds = $request->get('oldImages', []);
+            $oldFileIds = $request->get('oldFiles', []);
+
+            $preservedImages = OrderFiles::where('order_id', $originalOrder->id)
+                ->whereIn('id', $oldImageIds)
+                ->get();
+            foreach ($preservedImages as $file) {
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->file_name,
+                    'file_path' => $file->file_path,
+                    'type' => 'image',
+                ]);
+            }
+
+            $preservedFiles = OrderFiles::where('order_id', $originalOrder->id)
+                ->whereIn('id', $oldFileIds)
+                ->get();
+            foreach ($preservedFiles as $file) {
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->file_name,
+                    'file_path' => $file->file_path,
+                    'type' => 'file',
+                ]);
+            }
+        }
 
         $totalPrice = 0;
         $details = [];
@@ -191,7 +261,8 @@ class OrderController extends Controller
                 : [$answer['option_id'] ?? null];
 
             foreach ($optionIds as $optionId) {
-                if ($optionId === null) continue;
+                if ($optionId === null)
+                    continue;
 
                 $details[] = OrderDetails::create([
                     'order_id' => $order->id,
@@ -204,17 +275,16 @@ class OrderController extends Controller
                     'stageing' => $answer['stageing'] ?? null,
                 ]);
 
-                $totalPrice += $answer['price'] ?? 0;
+                $totalPrice += floatval($answer['price'] ?? 0);
             }
         }
 
         $order->update(['total_price' => $totalPrice]);
 
-
+        // Upload NEW files
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('orders/' . $order->id . '/images', 'public');
-
                 OrderFiles::create([
                     'order_id' => $order->id,
                     'file_name' => $file->getClientOriginalName(),
@@ -227,7 +297,6 @@ class OrderController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('orders/' . $order->id . '/files', 'public');
-
                 OrderFiles::create([
                     'order_id' => $order->id,
                     'file_name' => $file->getClientOriginalName(),
@@ -259,7 +328,7 @@ class OrderController extends Controller
                 'files' => OrderFiles::where('order_id', $order->id)
                     ->where('type', 'file')
                     ->get()
-                    ->map(fn ($file) => [
+                    ->map(fn($file) => [
                         'id' => $file->id,
                         'name' => $file->file_name,
                         'url' => full_url($file->file_path),
@@ -267,7 +336,7 @@ class OrderController extends Controller
                 'images' => OrderFiles::where('order_id', $order->id)
                     ->where('type', 'image')
                     ->get()
-                    ->map(fn ($file) => [
+                    ->map(fn($file) => [
                         'id' => $file->id,
                         'name' => $file->file_name,
                         'url' => full_url($file->file_path),
@@ -280,14 +349,14 @@ class OrderController extends Controller
     public function show(Request $request, $orderId)
     {
         $order = Order::with([
-            'details.question',
+            'details.question.step',
             'details.option',
             'files',
             'category'
         ])
-        ->where('id', $orderId)
-        ->where('user_id', $request->user()->id)
-        ->firstOrFail();
+            ->where('id', $orderId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
 
         /*
         |--------------------------------------------------------------------------
@@ -305,7 +374,7 @@ class OrderController extends Controller
         */
         $images = $order->files
             ->where('type', 'image')
-            ->map(fn ($file) => full_url($file->file_path))
+            ->map(fn($file) => full_url($file->file_path))
             ->values();
 
         /*
@@ -321,20 +390,21 @@ class OrderController extends Controller
         |--------------------------------------------------------------------------
         */
         $groups = [];
-
         foreach ($order->details as $detail) {
             if (!$detail->question) {
                 continue;
             }
 
-            $groupId = $detail->question->step_id ?? 0;
-            $groupTitle = $detail->question->step?->title_ar
-                ?? $detail->question->step?->title_en
+
+            $question_steps =QuestionStep::find($detail->question->step);
+            $groupId = $detail->stageing ?? 0;
+            $groupTitle = $question_steps?->name_ar
+                ?? $question_steps?->name_en
                 ?? 'تفاصيل';
 
             if (!isset($groups[$groupId])) {
                 $groups[$groupId] = [
-                    'id' => $groupId,
+                    'id' => intval($groupId),
                     'label' => $groupTitle,
                     'items' => []
                 ];
@@ -406,9 +476,9 @@ class OrderController extends Controller
 
         // Status groups mapping
         $statusGroups = [
-            'inPricing' => ['beingEstimated','beingReEstimated'],
-            'priced' => ['estimated','estimatedAndStored','reEstimated'],
-            'incompleteOrCancelled' => ['inComplete','notPaid','cancelled'],
+            'inPricing' => ['beingEstimated', 'beingReEstimated'],
+            'priced' => ['estimated', 'estimatedAndStored', 'reEstimated'],
+            'incompleteOrCancelled' => ['inComplete', 'notPaid', 'cancelled'],
         ];
         $validStatuses = collect($statusGroups)->flatten()->unique()->toArray();
 
@@ -448,7 +518,8 @@ class OrderController extends Controller
             $titleParts = [];
 
             $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
-            if ($categoryName) $titleParts[] = $categoryName;
+            if ($categoryName)
+                $titleParts[] = $categoryName;
 
             $detailValues = $order->details
                 ->map(fn($d) => $d->option?->option_en ?? $d->option?->option_ar ?? $d->value)
@@ -459,7 +530,8 @@ class OrderController extends Controller
                 ->toArray();
 
             $titleParts = array_merge($titleParts, $detailValues);
-            if (empty($titleParts)) $titleParts[] = "Order #{$order->id}";
+            if (empty($titleParts))
+                $titleParts[] = "Order #{$order->id}";
 
             $files = $order->files
                 ->where('type', 'file')
@@ -523,8 +595,8 @@ class OrderController extends Controller
             'category',
             'files',
         ])
-        ->where('id', $orderId)
-        ->firstOrFail();
+            ->where('id', $orderId)
+            ->firstOrFail();
 
         /* ===================== CATEGORY ===================== */
         $category = $order->category->name_en
@@ -565,9 +637,9 @@ class OrderController extends Controller
         $imageFile = $order->files->firstWhere('type', 'image');
 
         $image = '';
-        if($order->category->name_en == "cars"){
+        if ($order->category->name_en == "cars") {
 
-            $image =  URL::asset('/assets/img/Cars-result.jpeg');
+            $image = URL::asset('/assets/img/Cars-result.jpeg');
         }
 
 
@@ -579,7 +651,7 @@ class OrderController extends Controller
                 ?? $order->ai_price
                 ?? 0
             ),
-            'lowest'  => $order->ai_min_price ? (float) $order->ai_min_price : null,
+            'lowest' => $order->ai_min_price ? (float) $order->ai_min_price : null,
         ];
 
         /* ===================== DETAILS ===================== */
@@ -604,20 +676,20 @@ class OrderController extends Controller
                 ];
             }
         }
-    $reasoning =
-        $order->thamn_reasoning
-        ?? $order->expert_reasoning
-        ?? $order->ai_reasoning
-        ?? '';
+        $reasoning =
+            $order->thamn_reasoning
+            ?? $order->expert_reasoning
+            ?? $order->ai_reasoning
+            ?? '';
 
         /* ===================== RESPONSE ===================== */
         return response()->json([
-            'category'    => $category,
+            'category' => $category,
             'description' => $description,
-            'image'       => $image,
-            'reasoning'       => $reasoning ,
-            'prices'      => $prices,
-            'details'     => $details,
+            'image' => $image,
+            'reasoning' => $reasoning,
+            'prices' => $prices,
+            'details' => $details,
         ]);
     }
 
@@ -679,7 +751,7 @@ class OrderController extends Controller
 
         foreach ($order->details as $detail) {
             $question = $detail->question->question_ar ?? null;
-            $answer   = $detail->option->option_ar ?? $detail->value ?? null;
+            $answer = $detail->option->option_ar ?? $detail->value ?? null;
 
             if ($question && $answer) {
                 $qaText .= "- {$question}: {$answer}\n";
@@ -710,133 +782,133 @@ PROMPT;
         $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
 
         $order->update([
-            'status'  => "estimated" ?? null,
-            'ai_min_price'  => $aiResult['min_price'] ?? null,
-            'ai_max_price'  => $aiResult['max_price'] ?? null,
-            'ai_price'      => $aiResult['recommended_price'] ?? null,
+            'status' => "estimated" ?? null,
+            'ai_min_price' => $aiResult['min_price'] ?? null,
+            'ai_max_price' => $aiResult['max_price'] ?? null,
+            'ai_price' => $aiResult['recommended_price'] ?? null,
             'ai_confidence' => $aiResult['confidence'] ?? null,
-            'ai_reasoning'  => $aiResult['reasoning'] ?? null,
+            'ai_reasoning' => $aiResult['reasoning'] ?? null,
         ]);
     }
 
-// ===============================
+    // ===============================
 // إرسال للأخصائيين للتقييم
 // ===============================
-private function sendToExperts(Order $order): void
-{
-    // نغير حالة الأوردر
-    $order->update([
-        'status' => 'waiting_expert',
-        'expert_evaluated' => 0, // لم يتم تقييمه بعد
-    ]);
-
-    $expert = \App\Models\User::role('expert')->first();
-    if ($expert) {
+    private function sendToExperts(Order $order): void
+    {
+        // نغير حالة الأوردر
         $order->update([
-            'expert_id' => $expert->id,
+            'status' => 'waiting_expert',
+            'expert_evaluated' => 0, // لم يتم تقييمه بعد
+        ]);
+
+        $expert = \App\Models\User::role('expert')->first();
+        if ($expert) {
+            $order->update([
+                'expert_id' => $expert->id,
+                'status' => 'beingEstimated',
+
+            ]);
+
+            // إرسال Notification للخبير
+            $expert->notify(new \App\Notifications\OrderAssignedToExpert($order));
+        }
+
+        // إرسال Notification للمستخدم
+        $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
+
+        Log::info("Order sent to expert", [
+            'order_id' => $order->id,
+            'expert_id' => $order->expert_id ?? null
+        ]);
+    }
+
+    // ===============================
+// تثمين ثمن المنتج
+// ===============================
+    private function runPricingEvaluation(Order $order): void
+    {
+        // مثال: حساب متوسط بين AI و Expert إذا متوفرين
+        $aiPrice = $order->ai_price ?? null;
+        $expertPrice = $order->expert_price ?? null;
+
+        $thamnPrice = null;
+
+        if ($aiPrice && $expertPrice) {
+            $thamnPrice = round(($aiPrice + $expertPrice) / 2, 2);
+        } elseif ($aiPrice) {
+            $thamnPrice = $aiPrice;
+        } elseif ($expertPrice) {
+            $thamnPrice = $expertPrice;
+        }
+
+        $order->update([
+            'thamn_price' => $thamnPrice,
+            'thamn_by' => auth()->id() ?? null,
+            'thamn_at' => now(),
             'status' => 'beingEstimated',
 
         ]);
 
-        // إرسال Notification للخبير
-        $expert->notify(new \App\Notifications\OrderAssignedToExpert($order));
-    }
+        // إرسال Notification للمستخدم
+        $order->user->notify(new \App\Notifications\OrderThamnPriceCalculated($order));
 
-    // إرسال Notification للمستخدم
-    $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
-
-    Log::info("Order sent to expert", [
-        'order_id' => $order->id,
-        'expert_id' => $order->expert_id ?? null
-    ]);
-}
-
-// ===============================
-// تثمين ثمن المنتج
-// ===============================
-private function runPricingEvaluation(Order $order): void
-{
-    // مثال: حساب متوسط بين AI و Expert إذا متوفرين
-    $aiPrice = $order->ai_price ?? null;
-    $expertPrice = $order->expert_price ?? null;
-
-    $thamnPrice = null;
-
-    if ($aiPrice && $expertPrice) {
-        $thamnPrice = round(($aiPrice + $expertPrice) / 2, 2);
-    } elseif ($aiPrice) {
-        $thamnPrice = $aiPrice;
-    } elseif ($expertPrice) {
-        $thamnPrice = $expertPrice;
-    }
-
-    $order->update([
-        'thamn_price' => $thamnPrice,
-        'thamn_by' => auth()->id() ?? null,
-        'thamn_at' => now(),
-        'status' => 'beingEstimated',
-
-    ]);
-
-    // إرسال Notification للمستخدم
-    $order->user->notify(new \App\Notifications\OrderThamnPriceCalculated($order));
-
-    Log::info("Thamn price calculated", [
-        'order_id' => $order->id,
-        'thamn_price' => $thamnPrice
-    ]);
-}
-
-public function resendOrder($orderId)
-{
-    $order = Order::findOrFail($orderId);
-
-    // نرسل Notification للمستخدم بأن الطلب تم إعادة إرساله
-    $order->user->notify(new \App\Notifications\OrderResent($order));
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Order request resent successfully',
-        'order_id' => $order->id,
-    ]);
-}
-public function sendToMarket(Request $request, $orderId)
-{
-    $order = Order::findOrFail($orderId);
-
-    $request->validate([
-        'send' => 'required|boolean', // true => نرسل للسوق، false => لا
-    ]);
-
-    if (!$order->total_price) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Product price must be calculated before sending to market.'
-        ], 400);
-    }
-
-    if ($request->send) {
-        // تحديث الحالة للسوق
-        $order->update([
-            'status' => 'sent_to_market'
+        Log::info("Thamn price calculated", [
+            'order_id' => $order->id,
+            'thamn_price' => $thamnPrice
         ]);
+    }
 
-        // Notification للمستخدم أن المنتج أرسل للسوق
-        $order->user->notify(new \App\Notifications\OrderSentToMarket($order));
+    public function resendOrder($orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        // نرسل Notification للمستخدم بأن الطلب تم إعادة إرساله
+        $order->user->notify(new \App\Notifications\OrderResent($order));
 
         return response()->json([
             'status' => true,
-            'message' => 'Order sent to market successfully',
+            'message' => 'Order request resent successfully',
             'order_id' => $order->id,
         ]);
     }
+    public function sendToMarket(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
 
-    return response()->json([
-        'status' => true,
-        'message' => 'Order not sent to market',
-        'order_id' => $order->id,
-    ]);
-}
+        $request->validate([
+            'send' => 'required|boolean', // true => نرسل للسوق، false => لا
+        ]);
+
+        if (!$order->total_price) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product price must be calculated before sending to market.'
+            ], 400);
+        }
+
+        if ($request->send) {
+            // تحديث الحالة للسوق
+            $order->update([
+                'status' => 'sent_to_market'
+            ]);
+
+            // Notification للمستخدم أن المنتج أرسل للسوق
+            $order->user->notify(new \App\Notifications\OrderSentToMarket($order));
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order sent to market successfully',
+                'order_id' => $order->id,
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order not sent to market',
+            'order_id' => $order->id,
+        ]);
+    }
 
 
 }

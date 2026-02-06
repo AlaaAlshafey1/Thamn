@@ -9,19 +9,21 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\UserResource;
+use App\Http\Traits\FCMOperation;
 
 class AuthController extends Controller
 {
+    use FCMOperation;
 
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email',
-            'phone'      => 'required|string|max:255|unique:users,phone',
-            'password'   => 'required|string|min:6|confirmed',
-            'image'      => 'nullable|image|max:2048',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:255|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -31,11 +33,11 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $data = $request->only(['first_name','last_name','email','phone']);
+        $data = $request->only(['first_name', 'last_name', 'email', 'phone']);
         $data['password'] = Hash::make($request->password);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('users','public');
+            $data['image'] = $request->file('image')->store('users', 'public');
         }
 
         $user = User::create($data);
@@ -83,7 +85,7 @@ class AuthController extends Controller
             ->whereNull('deleted_at')
             ->first();
 
-        if (! $user) {
+        if (!$user) {
             return response()->json([
                 'status' => true,
                 'exists' => false,
@@ -106,10 +108,10 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'password'       => 'required',
+            'password' => 'required',
         ], [
             'phone.required' => lang(' رقم الهاتف مطلوب', ' phone is required', $request),
-            'password.required'       => lang('كلمة المرور مطلوبة', 'Password is required', $request),
+            'password.required' => lang('كلمة المرور مطلوبة', 'Password is required', $request),
         ]);
 
         if ($validator->fails()) {
@@ -119,12 +121,12 @@ class AuthController extends Controller
             ], 422);
         }
 
-    $user = User::where('phone', $request->phone)
-        ->where('is_verified', 1)
-        ->whereNull('deleted_at')
-        ->first();
+        $user = User::where('phone', $request->phone)
+            ->where('is_verified', 1)
+            ->whereNull('deleted_at')
+            ->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => false,
                 'message' => lang('بيانات الدخول غير صحيحة', 'Invalid login credentials', $request)
@@ -141,11 +143,22 @@ class AuthController extends Controller
 
         $token = $user->createToken('API Token')->plainTextToken;
 
+        // Send FCM: Login Successful
+        if ($user->fcm_token_android || $user->fcm_token_ios) {
+            $tokens = array_filter([$user->fcm_token_android, $user->fcm_token_ios]);
+            $this->notifyByFirebase(
+                lang('مرحباً بعودتك', 'Welcome back', $request),
+                lang('تم تسجيل الدخول بنجاح إلى تثمين', 'Successfully logged into Thamn', $request),
+                $tokens,
+                ['data' => ['user_id' => $user->id, 'type' => 'login_success']]
+            );
+        }
+
         return response()->json([
             'status' => true,
             'message' => lang('تم تسجيل الدخول بنجاح', 'Login successful', $request),
             'data' => [
-                'user'  => new UserResource($user),
+                'user' => new UserResource($user),
                 'token' => $token
             ]
         ]);
@@ -247,11 +260,11 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'nullable|string|max:255',
-            'last_name'  => 'nullable|string|max:255',
-            'email'      => 'nullable|email|unique:users,email,' . $user->id,
-            'phone'      => 'nullable|string|max:255|unique:users,phone,' . $user->id,
-            'password'   => 'nullable|string|min:6|confirmed',
-            'image'      => 'nullable|image|max:2048',
+            'last_name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:255|unique:users,phone,' . $user->id,
+            'password' => 'nullable|string|min:6|confirmed',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -261,10 +274,14 @@ class AuthController extends Controller
             ], 422);
         }
 
-        if ($request->filled('first_name')) $user->first_name = $request->first_name;
-        if ($request->filled('last_name'))  $user->last_name = $request->last_name;
-        if ($request->filled('email'))      $user->email = $request->email;
-        if ($request->filled('phone'))      $user->phone = $request->phone;
+        if ($request->filled('first_name'))
+            $user->first_name = $request->first_name;
+        if ($request->filled('last_name'))
+            $user->last_name = $request->last_name;
+        if ($request->filled('email'))
+            $user->email = $request->email;
+        if ($request->filled('phone'))
+            $user->phone = $request->phone;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -293,7 +310,7 @@ class AuthController extends Controller
             'phone' => 'required|string|exists:users,phone',
         ], [
             'phone.required' => lang('رقم الهاتف مطلوب', 'Phone is required', $request),
-            'phone.exists'   => lang('رقم الهاتف غير مسجل', 'Phone not registered', $request),
+            'phone.exists' => lang('رقم الهاتف غير مسجل', 'Phone not registered', $request),
         ]);
 
         if ($validator->fails()) {
@@ -378,28 +395,28 @@ class AuthController extends Controller
         ]);
     }
 
-public function deleteAccount(Request $request)
-{
-    $user = $request->user();
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
 
-    // حذف التوكنات
-    $user->tokens()->delete();
+        // حذف التوكنات
+        $user->tokens()->delete();
 
-    // Soft Delete
-    $user->delete();
+        // Soft Delete
+        $user->delete();
 
-    // Notification (database)
-    $user->notify(new AccountDeletedNotification());
+        // Notification (database)
+        $user->notify(new AccountDeletedNotification());
 
-    return response()->json([
-        'status' => true,
-        'message' => lang(
-            'تم حذف الحساب بنجاح',
-            'Account deleted successfully',
-            $request
-        )
-    ]);
-}
+        return response()->json([
+            'status' => true,
+            'message' => lang(
+                'تم حذف الحساب بنجاح',
+                'Account deleted successfully',
+                $request
+            )
+        ]);
+    }
 
 
 
