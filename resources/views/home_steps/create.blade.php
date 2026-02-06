@@ -95,7 +95,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">الوصف (Value) *</label>
-                            <input type="text" name="items[0][value]" class="form-control" required>
+                            <input type="text" name="items[0][value]" class="form-control">
                         </div>
                         <div class="col-md-3 image-field" style="display: none;">
                             <label class="form-label">رابط الصورة (Image)</label>
@@ -154,7 +154,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">الوصف (Value) *</label>
-                                <input type="text" name="items[${itemIndex}][value]" class="form-control" required>
+                                <input type="text" name="items[${itemIndex}][value]" class="form-control" >
                             </div>
                             <div class="col-md-3 image-field" style="display: ${imageFieldDisplay};">
                                 <label class="form-label">رابط الصورة (Image)</label>

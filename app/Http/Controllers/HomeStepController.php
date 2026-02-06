@@ -39,7 +39,7 @@ class HomeStepController extends Controller
             'type' => 'required|in:steps,check,image',
             'items' => 'required|array',
             'items.*.label' => 'required|string',
-            'items.*.value' => 'required|string',
+            'items.*.value' => 'nullable|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
