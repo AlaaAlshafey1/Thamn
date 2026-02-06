@@ -41,8 +41,6 @@ class HomeStepController extends Controller
             'items.*.label' => 'required|string',
             'items.*.value' => 'required|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
         ]);
 
         // Process items and handle image uploads

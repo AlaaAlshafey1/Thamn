@@ -85,8 +85,6 @@ class IntroController extends Controller
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
         ]);
 
         // Handle image upload
