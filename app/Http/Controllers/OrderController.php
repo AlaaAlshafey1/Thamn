@@ -12,19 +12,19 @@ class OrderController extends Controller
 {
     public function index()
     {
-    if(auth()->user()->hasRole('expert')){
+        if (auth()->user()->hasRole('expert')) {
 
-        $orders = Order::where("expert_id",Auth::id())->orwhere("expert_id",null)->with('user')
-            ->latest()
-            ->paginate(20);
+            $orders = Order::where("expert_id", Auth::id())->orwhere("expert_id", null)->with('user')
+                ->latest()
+                ->paginate(20);
 
-    }else{
+        } else {
 
-        $orders = Order::with('user')
-            ->latest()
-            ->paginate(20);
+            $orders = Order::with('user')
+                ->latest()
+                ->paginate(20);
 
-    }
+        }
 
         return view('orders.index', compact('orders'));
     }
@@ -40,7 +40,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['details','files','user','payments']);
+        $order->load(['details', 'files', 'user', 'payments']);
 
         return view('orders.show', compact('order'));
     }
@@ -64,7 +64,7 @@ class OrderController extends Controller
         ]);
 
 
-        return redirect()->route('orders.index')->with('success','تم إنشاء الطلب بنجاح');
+        return redirect()->route('orders.index')->with('success', 'تم إنشاء الطلب بنجاح');
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -77,7 +77,7 @@ class OrderController extends Controller
             'status' => $request->status
         ]);
 
-        return back()->with('success','تم تحديث حالة الطلب');
+        return back()->with('success', 'تم تحديث حالة الطلب');
     }
 
 
@@ -92,6 +92,8 @@ class OrderController extends Controller
 
         $request->validate([
             'expert_price' => 'required|numeric|min:0',
+            'expert_min_price' => 'nullable|numeric|min:0',
+            'expert_max_price' => 'nullable|numeric|min:0',
             'expert_reasoning' => 'required|string|max:1000',
         ]);
 
@@ -99,59 +101,59 @@ class OrderController extends Controller
         $order->update([
             'expert_id' => $user->id,
             'expert_price' => $request->expert_price,
+            'expert_min_price' => $request->expert_min_price ?? $request->expert_price * 0.8,
+            'expert_max_price' => $request->expert_max_price ?? $request->expert_price * 1.2,
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
             'total_price' => $request->expert_price, // تحديث السعر النهائي للأوردر
             'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
         ]);
-        $user->balance += 4 ;
+        $user->balance += 4;
         $user->save();
         $order->user->notify(new OrderEvaluated($order, 'expert'));
 
         return back()->with('success', 'تم تقييم الأوردر بنجاح وتم إرسال إشعار للمستخدم');
     }
 
-    public function thamnEvaluate(Request $request, Order $order)
+    public function thamnEvaluate(Request $request, Order $order, ThamnEvaluationService $evaluationService)
     {
         $request->validate([
             'thamn_reasoning' => 'nullable|string|max:1000',
         ]);
 
-        $thamnPrice = $order->calculateThamnPrice();
+        $evaluationService->runThamnValuation($order);
 
-        if (!$thamnPrice) {
+        if (!$order->thamn_price) {
             return back()->with('error', 'يجب وجود تقييم AI وتقييم خبير أولاً');
         }
 
         $order->update([
-            'thamn_price'     => $thamnPrice,
             'thamn_reasoning' => $request->thamn_reasoning,
-            'thamn_by'        => auth()->id(),
-            'thamn_at'        => now(),
-            'total_price'    => $thamnPrice, // السعر النهائي
+            'total_price' => $order->thamn_price, // السعر النهائي
         ]);
-    $order->user->notify(new OrderEvaluated($order, 'thamn'));
+
+        $order->user->notify(new OrderEvaluated($order, 'thamn'));
 
         return back()->with('success', 'تم اعتماد تقييم ثمن بنجاح');
     }
 
-// OrderController.php
-public function assignExpert(Request $request)
-{
-    $request->validate([
-        'order_id' => 'required|exists:orders,id',
-    ]);
+    // OrderController.php
+    public function assignExpert(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
 
-    $order = Order::findOrFail($request->order_id);
+        $order = Order::findOrFail($request->order_id);
 
-    // تعيين الخبير الحالي على الأوردر
-    $order->update([
-        'expert_id' => auth()->id(),
-        'status' => 'beingEstimated' // ممكن تعدل الحالة حسب النظام
-    ]);
+        // تعيين الخبير الحالي على الأوردر
+        $order->update([
+            'expert_id' => auth()->id(),
+            'status' => 'beingEstimated' // ممكن تعدل الحالة حسب النظام
+        ]);
 
-    return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك']);
-}
+        return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك']);
+    }
 
     public function updatePrice(Request $request, Order $order)
     {
@@ -177,16 +179,15 @@ public function assignExpert(Request $request)
 
     public function aiEvaluate(Order $order, ThamnEvaluationService $evaluationService)
     {
-        // صلاحية الوصول
-        if (!auth()->user()->hasAnyRole(['superadmin','admin','expert'])) {
-            abort(403);
-        }
+
+
         try {
             $evaluationService->runAiEvaluation($order);
             $order->user->notify(new OrderEvaluated($order, 'ai'));
 
             return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
         } catch (\Throwable $e) {
+            dd($e->getMessage());
             return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
         }
     }

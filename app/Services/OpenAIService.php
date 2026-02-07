@@ -21,63 +21,83 @@ class OpenAIService
             '/'
         );
 
-        $this->key  = (string) env('OPENAI_API_KEY');
+        $this->key = (string) env('OPENAI_API_KEY');
     }
 
     /**
      * Chat Completion (عام)
      */
-public function chat(array $messages, string $model = 'gpt-5-mini'): array
-{
-    try {
-        $res = $this->http->post($this->base . '/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->key,
-                'Content-Type'  => 'application/json',
-            ],
-            'json' => [
+    public function chat(array $messages, string $model = 'gpt-4o-mini'): array
+    {
+        try {
+            $res = $this->http->post($this->base . '/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->key,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $model,
+                    'messages' => $messages,
+                    'temperature' => 0.7,
+                    'response_format' => [
+                        'type' => 'json_object'
+                    ],
+                ],
+            ]);
+
+            return json_decode((string) $res->getBody(), true);
+
+        } catch (\Throwable $e) {
+            Log::error('OpenAI Chat API failed', [
+                'message' => $e->getMessage(),
                 'model' => $model,
                 'messages' => $messages,
-                'temperature' => null,
-                'response_format' => [
-                    'type' => 'json_object'
-                ],
-            ],
-        ]);
+            ]);
 
-        return json_decode((string) $res->getBody(), true);
-
-    } catch (\Throwable $e) {
-        dd($e->getMessage());
-        Log::error('OpenAI Chat API failed', [
-            'message' => $e->getMessage(),
-            'model' => $model,
-            'messages' => $messages,
-        ]);
-
-        return [];
+            return [];
+        }
     }
-}
 
     /**
      * ===============================
      * تقييم سلعة (AI Valuation)
      * ===============================
      */
-    public function evaluateProduct(string $prompt): array
+    public function evaluateProduct(string $prompt, array $imagePaths = []): array
     {
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $prompt
+            ]
+        ];
+
+        // Add images if provided
+        foreach (array_slice($imagePaths, 0, 5) as $path) {
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = base64_encode(file_get_contents($path));
+                $content[] = [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => "data:image/{$type};base64,{$data}"
+                    ]
+                ];
+            }
+        }
+
         $messages = [
             [
                 'role' => 'system',
-                'content' => 'أنت خبير محترف في تثمين السلع وبالأخص السوق السعودي.'
+                'content' => 'أنت خبير محترف في تثمين السلع وبالأخص السوق السعودي. تستخدم الصور المرفقة لتقييم حالة المنتج وجودته وندرته.'
             ],
             [
                 'role' => 'user',
-                'content' => $prompt
+                'content' => $content
             ],
         ];
 
-        $response = $this->chat($messages, 'gpt-5-mini');
+        $response = $this->chat($messages, 'gpt-4o-mini');
 
         $raw = $response['choices'][0]['message']['content'] ?? '{}';
 

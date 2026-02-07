@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\TapPayment;
 use App\Services\TapPaymentService;
 use App\Services\OpenAIService;
+use App\Services\ThamnEvaluationService;
 use Illuminate\Support\Facades\Log;
 use App\Http\Traits\FCMOperation;
 
@@ -165,7 +166,7 @@ class PaymentController extends Controller
 
             switch ($evaluationType) {
                 case 'ai':
-                    $this->runAiEvaluation($order);
+                    app(ThamnEvaluationService::class)->runAiEvaluation($order);
                     break;
 
                 case 'expert':
@@ -173,7 +174,7 @@ class PaymentController extends Controller
                     break;
 
                 case 'best':
-                    $this->runPricingEvaluation($order); // هنعملها بعدين
+                    app(ThamnEvaluationService::class)->runThamnValuation($order); // هنعملها بعدين
                     break;
 
                 default:
@@ -232,73 +233,7 @@ class PaymentController extends Controller
 
     private function runAiEvaluation(Order $order): void
     {
-        $qaText = '';
-
-        foreach ($order->details as $detail) {
-            $question = $detail->question->name_ar ?? null;
-            $answer = $detail->option->name_ar ?? $detail->value ?? null;
-
-            if ($question && $answer) {
-                $qaText .= "- {$question}: {$answer}\n";
-            }
-        }
-
-        $prompt = <<<PROMPT
-أنت خبير تثمين محترف (Appraiser) معتمد في منطقة الخليج العربي، وتحديداً في المملكة العربية السعودية. مهمتك هي تقديم تثمين دقيق وواقعي للسلعة بناءً على البيانات المقدمة.
-
-السياق:
-- الدولة: المملكة العربية السعودية (KSA)
-- العملة: ريال سعودي (SAR)
-- الفئة المختارة: {$order->category->name_ar}
-
-البيانات المقدمة من المستخدم:
-{$qaText}
-
-المطلوب:
-1. تحليل السلعة بناءً على ندرتها، حالتها، الطلب الحالي عليها في السوق السعودي (مثل حراج، منصات البيع الفاخرة، أو أسواق المستعمل).
-2. تقديم ثلاثة قيم:
-   - "min_price": الحد الأدنى للسعر في حالة البيع السريع.
-   - "max_price": الحد الأعلى للسعر الذي يمكن أن تصل إليه السلعة في حالة ممتازة ومشتري مهتم.
-   - "recommended_price": السعر العادل (Fair Market Value) الذي تنصح به للبيع.
-3. كتابة "reasoning" (السبب) باللغة العربية بأسلوب احترافي يشرح العوامل التي أثرت على هذا التقييم (مثل: الحالة، البراند، اتجاهات السوق).
-
-الشروط:
-- الرد يجب أن يكون بصيغة JSON فقط.
-- ممنوع كتابة أي كلمات خارج ملف JSON.
-- تأكد من أن الأسعار واقعية وبالريال السعودي.
-
-{
-"min_price": number,
-"max_price": number,
-"recommended_price": number,
-"currency": "SAR",
-"confidence": number (from 0 to 100),
-"reasoning": "شرح احترافي بالعربية"
-}
-PROMPT;
-
-        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
-
-        $order->update([
-            'status' => "estimated",
-            'ai_min_price' => $aiResult['min_price'] ?? null,
-            'ai_max_price' => $aiResult['max_price'] ?? null,
-            'ai_price' => $aiResult['recommended_price'] ?? null,
-            'ai_confidence' => $aiResult['confidence'] ?? null,
-            'ai_reasoning' => $aiResult['reasoning'] ?? null,
-        ]);
-
-        // Send FCM: Evaluation Ready
-        $user = $order->user;
-        if ($user->fcm_token_android || $user->fcm_token_ios) {
-            $tokens = array_filter([$user->fcm_token_android, $user->fcm_token_ios]);
-            $this->notifyByFirebase(
-                lang('تم تقييم منتجك', 'Product Evaluated', request()),
-                lang('التقييم الذكي لطلبك رقم ' . $order->id . ' جاهز الآن', 'AI Evaluation for your order #' . $order->id . ' is now ready', request()),
-                $tokens,
-                ['data' => ['user_id' => $user->id, 'order_id' => $order->id, 'type' => 'evaluation_ready']]
-            );
-        }
+        app(ThamnEvaluationService::class)->runAiEvaluation($order);
     }
 
     // ===============================
@@ -358,47 +293,7 @@ PROMPT;
 // ===============================
     private function runPricingEvaluation(Order $order): void
     {
-        // مثال: حساب متوسط بين AI و Expert إذا متوفرين
-        $aiPrice = $order->ai_price ?? null;
-        $expertPrice = $order->expert_price ?? null;
-
-        $thamnPrice = null;
-
-        if ($aiPrice && $expertPrice) {
-            $thamnPrice = round(($aiPrice + $expertPrice) / 2, 2);
-        } elseif ($aiPrice) {
-            $thamnPrice = $aiPrice;
-        } elseif ($expertPrice) {
-            $thamnPrice = $expertPrice;
-        }
-
-        $order->update([
-            'thamn_price' => $thamnPrice,
-            'thamn_min_price' => $order->ai_min_price ?? $order->expert_min_price,
-            'thamn_max_price' => $order->ai_max_price ?? $order->expert_max_price,
-            'thamn_by' => auth()->id() ?? null,
-            'thamn_at' => now(),
-            'status' => 'beingEstimated',
-        ]);
-
-        // إرسال Notification للمستخدم
-        $order->user->notify(new \App\Notifications\OrderThamnPriceCalculated($order));
-
-        // Push Notification to User
-        if ($order->user->fcm_token_android || $order->user->fcm_token_ios) {
-            $tokens = array_filter([$order->user->fcm_token_android, $order->user->fcm_token_ios]);
-            $this->notifyByFirebase(
-                lang('تم استلام طلب تقييم ثمن', 'Thamn request received', request()),
-                lang('طلبك رقم ' . $order->id . ' قيد المراجعة، سيتم تزويدك بالتقييم النهائي قريباً', 'Your order #' . $order->id . ' is under review, final evaluation will be provided soon', request()),
-                $tokens,
-                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_pending']]
-            );
-        }
-
-        Log::info("Thamn price calculated", [
-            'order_id' => $order->id,
-            'thamn_price' => $thamnPrice
-        ]);
+        app(ThamnEvaluationService::class)->runThamnValuation($order);
     }
 
 

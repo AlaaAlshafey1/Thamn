@@ -71,11 +71,14 @@ class Order extends Model
 
     public function calculateThamnPrice()
     {
-        if (!$this->ai_price || !$this->expert_price) {
+        if (!$this->ai_price && !$this->expert_price) {
             return null;
         }
 
-        return round(($this->ai_price + $this->expert_price) / 2, 2);
+        $aiPrice = $this->ai_price ?? $this->expert_price;
+        $expPrice = $this->expert_price ?? $this->ai_price;
+
+        return round(($aiPrice + $expPrice) / 2, 2);
     }
 
     public function thamnUser()
