@@ -64,12 +64,11 @@ class OrderController extends Controller
             }
         }
 
-        $rateTypeAnswer = $order->details
-            ->first(
-                fn($detail) =>
-                $detail->question?->type === 'rateTypeSelection'
-
-            );
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
 
 
         if ($rateTypeAnswer) {
@@ -396,7 +395,7 @@ class OrderController extends Controller
             }
 
 
-            $question_steps =QuestionStep::find($detail->question->step);
+            $question_steps = QuestionStep::find($detail->question->step);
             $groupId = $detail->stageing ?? 0;
             $groupTitle = $question_steps?->name_ar
                 ?? $question_steps?->name_en

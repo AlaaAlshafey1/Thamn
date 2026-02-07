@@ -187,7 +187,6 @@ class OrderController extends Controller
 
             return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
         } catch (\Throwable $e) {
-            dd($e->getMessage());
             return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
         }
     }
