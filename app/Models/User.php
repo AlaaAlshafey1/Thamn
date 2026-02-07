@@ -34,6 +34,8 @@ class User extends Authenticatable
         'is_verified',
         'fcm_token_android',
         'fcm_token_ios',
+        'fcm_token',
+        'device_type',
         'role_id',
         'news_enabled',
         'email_enabled',

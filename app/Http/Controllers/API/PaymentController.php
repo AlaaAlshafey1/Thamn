@@ -141,12 +141,12 @@ class PaymentController extends Controller
         ]);
 
         // Send FCM: Order Received
-        if ($order->user->fcm_token_android || $order->user->fcm_token_ios) {
-            $tokens = array_filter([$order->user->fcm_token_android, $order->user->fcm_token_ios]);
+        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        if ($fcmToken) {
             $this->notifyByFirebase(
                 lang('تم استلام طلبك', 'Order Received', $request),
                 lang('بدأنا العمل على طلب التقييم رقم ' . $order->id, 'We started working on evaluation order #' . $order->id, $request),
-                $tokens,
+                [$fcmToken],
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_received']]
             );
         }
@@ -257,12 +257,12 @@ class PaymentController extends Controller
             $expert->notify(new \App\Notifications\OrderAssignedToExpert($order));
 
             // Push Notification to Expert
-            if ($expert->fcm_token_android || $expert->fcm_token_ios) {
-                $tokens = array_filter([$expert->fcm_token_android, $expert->fcm_token_ios]);
+            $expertToken = $expert->fcm_token ?? $expert->fcm_token_android ?? $expert->fcm_token_ios;
+            if ($expertToken) {
                 $this->notifyByFirebase(
                     'طلب تقييم جديد',
                     'لديك طلب تقييم جديد رقم ' . $order->id,
-                    $tokens,
+                    [$expertToken],
                     ['data' => ['user_id' => $expert->id, 'order_id' => $order->id, 'type' => 'new_expert_order']]
                 );
             }
@@ -272,12 +272,12 @@ class PaymentController extends Controller
         $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
 
         // Push Notification to User: We will get back to you soon
-        if ($order->user->fcm_token_android || $order->user->fcm_token_ios) {
-            $tokens = array_filter([$order->user->fcm_token_android, $order->user->fcm_token_ios]);
+        $userToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        if ($userToken) {
             $this->notifyByFirebase(
                 lang('تم تحويل طلبك للخبراء', 'Order sent to experts', request()),
                 lang('طلبك رقم ' . $order->id . ' قيد المراجعة الآن من قبل خبرائنا، سنقوم بالرد عليك في أقرب وقت', 'Your order #' . $order->id . ' is now being reviewed by our experts, we will get back to you as soon as possible', request()),
-                $tokens,
+                [$userToken],
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'expert_pending']]
             );
         }

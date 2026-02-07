@@ -24,6 +24,8 @@ class AuthController extends Controller
             'phone' => 'required|string|max:255|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
             'image' => 'nullable|image|max:2048',
+            'fcm_token' => 'nullable|string',
+            'device_type' => 'nullable|string|in:ios,android',
         ]);
 
         if ($validator->fails()) {
@@ -33,7 +35,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $data = $request->only(['first_name', 'last_name', 'email', 'phone']);
+        $data = $request->only(['first_name', 'last_name', 'email', 'phone', 'fcm_token', 'device_type']);
         $data['password'] = Hash::make($request->password);
 
         if ($request->hasFile('image')) {
@@ -107,8 +109,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string',
             'password' => 'required',
+            'fcm_token' => 'nullable|string',
+            'device_type' => 'nullable|string|in:ios,android',
         ], [
             'phone.required' => lang(' رقم الهاتف مطلوب', ' phone is required', $request),
             'password.required' => lang('كلمة المرور مطلوبة', 'Password is required', $request),
@@ -143,13 +146,21 @@ class AuthController extends Controller
 
         $token = $user->createToken('API Token')->plainTextToken;
 
+        // Update FCM Token if provided
+        if ($request->fcm_token) {
+            $user->update([
+                'fcm_token' => $request->fcm_token,
+                'device_type' => $request->device_type ?? $user->device_type
+            ]);
+        }
+
         // Send FCM: Login Successful
-        if ($user->fcm_token_android || $user->fcm_token_ios) {
-            $tokens = array_filter([$user->fcm_token_android, $user->fcm_token_ios]);
+        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
+        if ($fcmToken) {
             $this->notifyByFirebase(
                 lang('مرحباً بعودتك', 'Welcome back', $request),
                 lang('تم تسجيل الدخول بنجاح إلى تثمين', 'Successfully logged into Thamn', $request),
-                $tokens,
+                [$fcmToken],
                 ['data' => ['user_id' => $user->id, 'type' => 'login_success']]
             );
         }
