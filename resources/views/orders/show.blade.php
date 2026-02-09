@@ -421,11 +421,19 @@
                         class="d-flex flex-column align-items-end gap-2">
                         @csrf
 
-                        <div class="d-flex align-items-center gap-2">
-                            <label class="fw-bold">السعر (SAR):</label>
-
-                            <input type="number" name="expert_price" class="form-control" style="width:150px" step="0.01"
-                                min="0" value="{{ $order->expert_price ?? $order->total_price }}">
+                        <div class="row w-100 g-2">
+                            <div class="col-md-4">
+                                <label class="fw-bold small">السعر الأدنى (SAR):</label>
+                                <input type="number" name="expert_min_price" class="form-control" step="0.01" min="0" value="{{ $order->expert_min_price ?? $order->expert_price * 0.8 }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small">السعر الموصى به (SAR):</label>
+                                <input type="number" name="expert_price" class="form-control border-primary" step="0.01" min="0" value="{{ $order->expert_price ?? $order->total_price }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small">السعر الأعلى (SAR):</label>
+                                <input type="number" name="expert_max_price" class="form-control" step="0.01" min="0" value="{{ $order->expert_max_price ?? $order->expert_price * 1.2 }}">
+                            </div>
                         </div>
 
                         <textarea name="expert_reasoning" class="form-control mt-2" rows="3"

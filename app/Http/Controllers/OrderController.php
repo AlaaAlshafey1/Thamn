@@ -7,23 +7,29 @@ use App\Notifications\OrderEvaluated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ThamnEvaluationService;
+use App\Notifications\ExpertEvaluatedOrderAdminNotification;
+use App\Mail\ExpertValuationMail;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class OrderController extends Controller
 {
     public function index()
     {
         if (auth()->user()->hasRole('expert')) {
-
-            $orders = Order::where("expert_id", Auth::id())->orwhere("expert_id", null)->with('user')
+            // خبير: يشوف اللي متاح (expert_id null) أو اللي هو مسكه (expert_id = أنا)
+            $orders = Order::where(function ($q) {
+                $q->where('expert_id', Auth::id())
+                    ->orWhereNull('expert_id');
+            })
+                ->whereIn('status', ['orderReceived', 'beingEstimated'])
+                ->with('user')
                 ->latest()
                 ->paginate(20);
-
         } else {
-
             $orders = Order::with('user')
                 ->latest()
                 ->paginate(20);
-
         }
 
         return view('orders.index', compact('orders'));
@@ -112,6 +118,19 @@ class OrderController extends Controller
         $user->save();
         $order->user->notify(new OrderEvaluated($order, 'expert'));
 
+        // إرسال إشعار للأدمن (Database)
+        $admins = User::role('admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
+        }
+
+        // إرسال إيميل للأدمن
+        try {
+            Mail::to(config('mail.from.address'))->send(new ExpertValuationMail($order, $user));
+        } catch (\Throwable $e) {
+            \Log::error('Expert Valuation Mail Failed: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'تم تقييم الأوردر بنجاح وتم إرسال إشعار للمستخدم');
     }
 
@@ -145,6 +164,10 @@ class OrderController extends Controller
         ]);
 
         $order = Order::findOrFail($request->order_id);
+
+        if ($order->expert_id && $order->expert_id != auth()->id()) {
+            return response()->json(['status' => false, 'message' => 'هذا الطلب تم استلامه بالفعل من قبل خبير آخر']);
+        }
 
         // تعيين الخبير الحالي على الأوردر
         $order->update([

@@ -16,7 +16,7 @@ class OrderSeeder extends Seeder
     {
         $user = \App\Models\User::first();
 
-        // إنشاء طلب جديد
+
         $order = Order::create([
             'user_id' => $user->id,
             'total_price' => rand(100, 1000), // سعر افتراضي

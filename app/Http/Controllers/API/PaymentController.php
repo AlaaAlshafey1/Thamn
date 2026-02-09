@@ -10,6 +10,7 @@ use App\Services\TapPaymentService;
 use App\Services\OpenAIService;
 use App\Services\ThamnEvaluationService;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\OrderReadyForExpertsNotification;
 use App\Http\Traits\FCMOperation;
 
 class PaymentController extends Controller
@@ -246,22 +247,17 @@ class PaymentController extends Controller
             'expert_evaluated' => 0,
         ]);
 
-        // مثال: اختيار أول خبير (يمكن تعديل حسب المنطق لديك)
-        $expert = \App\Models\User::role('expert')->first();
-        if ($expert) {
-            $order->update([
-                'expert_id' => $expert->id
-            ]);
-
-            // إرسال Notification للخبير
-            $expert->notify(new \App\Notifications\OrderAssignedToExpert($order));
+        // Broadcast to ALL Experts
+        $experts = \App\Models\User::role('expert')->get();
+        foreach ($experts as $expert) {
+            $expert->notify(new OrderReadyForExpertsNotification($order));
 
             // Push Notification to Expert
             $expertToken = $expert->fcm_token ?? $expert->fcm_token_android ?? $expert->fcm_token_ios;
             if ($expertToken) {
                 $this->notifyByFirebase(
-                    'طلب تقييم جديد',
-                    'لديك طلب تقييم جديد رقم ' . $order->id,
+                    'طلب تقييم جديد متاح',
+                    'يوجد طلب تقييم جديد رقم ' . $order->id . ' متاح الآن في السوق.',
                     [$expertToken],
                     ['data' => ['user_id' => $expert->id, 'order_id' => $order->id, 'type' => 'new_expert_order']]
                 );

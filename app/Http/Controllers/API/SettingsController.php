@@ -225,26 +225,31 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        // Get phone and email from contacts
-        $phone = Contact::where('type', 'phone')->first();
-        $email = Contact::where('type', 'email')->first();
+        // Get the first contact record (since there should be only one main contact info)
+        $contact = Contact::first();
 
-        // Get social media links
-        $socialMedia = Contact::where('type', 'social')->get()->map(function ($contact) use ($lang) {
-            return [
-                'name' => $lang === 'ar' ? $contact->label_ar : $contact->label_en,
-                'icon' => $contact->icon ?? $this->getDefaultIcon($contact->label_en),
-                'url' => $contact->value
-            ];
-        });
+        // Get social media links from JSON column
+        $socialMedia = [];
+        if ($contact && $contact->social_media) {
+            $socials = is_array($contact->social_media) ? $contact->social_media : json_decode($contact->social_media, true);
+            if (is_array($socials)) {
+                $socialMedia = collect($socials)->map(function ($item) use ($lang) {
+                    return [
+                        'name' => $item['name'] ?? '',
+                        'icon' => $item['icon'] ?? $this->getDefaultIcon($item['name'] ?? ''),
+                        'url' => $item['url'] ?? ''
+                    ];
+                });
+            }
+        }
 
         return response()->json([
             'status' => true,
             'message' => $lang === 'ar' ? 'تم إرجاع معلومات الاتصال بنجاح' : 'Contact information fetched successfully',
             'data' => [
-                'phone' => $phone ? $phone->value : '+20 123 456 7890',
-                'email' => $email ? $email->value : 'support@thamin.com',
-                'social_media' => $socialMedia->isEmpty() ? $this->getDefaultSocialMedia() : $socialMedia
+                'phone' => $contact ? $contact->phone : '+20 123 456 7890',
+                'email' => $contact ? $contact->email : 'support@thamin.com',
+                'social_media' => empty($socialMedia) ? $this->getDefaultSocialMedia() : $socialMedia
             ]
         ]);
     }
