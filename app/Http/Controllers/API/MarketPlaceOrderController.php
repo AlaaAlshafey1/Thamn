@@ -38,7 +38,7 @@ public function store(Request $request)
         'category_id' => $request->category_id,
         'status' => 'sent_to_market',
         'payload' => json_encode($request->answers),
-        'total_price' => 0,
+        'total_price' => $request->answerstotal_price ?? 0,
     ]);
 
     $totalPrice = 0;
