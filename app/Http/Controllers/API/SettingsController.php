@@ -83,28 +83,33 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $homeStep = HomeStep::where('is_active', 1)
+        $homeSteps = HomeStep::where('is_active', 1)
             ->orderBy('sort_order')
-            ->first();
+            ->get();
 
-        if (!$homeStep) {
+        if ($homeSteps->isEmpty()) {
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar' ? 'لم يتم العثور على خطوات الصفحة الرئيسية' : 'Home steps content not found',
-                'data' => null
+                'data' => []
             ], 404);
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => $lang === 'ar' ? 'تم إرجاع خطوات الصفحة الرئيسية بنجاح' : 'Home steps fetched successfully',
-            'data' => [
+        $data = $homeSteps->map(function ($homeStep) use ($lang) {
+            return [
+                'id' => $homeStep->id,
                 'title' => $homeStep->getTitle($lang),
                 'subTitle' => $homeStep->getSubTitle($lang),
                 'desc' => $homeStep->getDesc($lang),
                 'type' => $homeStep->type,
                 'items' => $homeStep->getLocalizedItems($lang)
-            ]
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => $lang === 'ar' ? 'تم إرجاع خطوات الصفحة الرئيسية بنجاح' : 'Home steps fetched successfully',
+            'data' => $data
         ]);
     }
 
@@ -309,7 +314,7 @@ class SettingsController extends Controller
                 'content' => $lang === 'ar' ? $terms->content_ar : $terms->content_en
             ]
 
-            ]);
+        ]);
     }
 
     /**
