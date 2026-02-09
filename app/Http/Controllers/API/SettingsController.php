@@ -305,8 +305,11 @@ class SettingsController extends Controller
         return response()->json([
             'status' => true,
             'message' => $lang === 'ar' ? 'تم إرجاع الشروط والأحكام بنجاح' : 'Terms & conditions fetched successfully',
-            'data' => $terms,
-        ]);
+            'data' => [
+                'content' => $lang === 'ar' ? $terms->content_ar : $terms->content_en
+            ]
+
+            ]);
     }
 
     /**
