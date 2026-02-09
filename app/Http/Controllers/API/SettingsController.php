@@ -292,17 +292,15 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $terms = TermCondition::where('is_active', 1)
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function ($term) use ($lang) {
-                return [
-                    'id' => $term->id,
-                    'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
-                    'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
-                    'order' => $term->sort_order,
-                ];
-            });
+        $terms = About::where('type', 'terms')->first();
+
+        if (!$terms) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'لم يتم العثور على الشروط و الاحكام' : 'Terms not found',
+                'data' => null
+            ], 404);
+        }
 
         return response()->json([
             'status' => true,
