@@ -15,7 +15,7 @@
 
         <div class="mb-3">
             <label>المفتاح</label>
-            <input type="text" name="key" class="form-control" required value="{{ old('key', $color->key ?? '') }}">
+            <input type="text" name="key" class="form-control" required value="{{ old('key', $color->key ?? '') }}" $color->key ? @readonly : ''>
         </div>
 
         <div class="mb-3">
