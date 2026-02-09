@@ -6,7 +6,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\QuestionController;
 use App\Http\Controllers\API\AnswerController;
-use App\Http\Controllers\ApI\MarketPlaceOrderController;
+use App\Http\Controllers\API\MarketPlaceOrderController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\SocialAuthController;
