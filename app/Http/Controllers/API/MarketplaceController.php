@@ -59,13 +59,17 @@ class MarketplaceController extends Controller
             return [
                 'id' => $order->id,
                 'title' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
+                'payment_type' => $order->payment_type,
                 'category' => [
                     'id' => $order->category_id,
                     'name' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
                 ],
-                'price' => $order->total_price,
+                'total_price' => $order->total_price,
                 'image' => $order->files->where('type', 'image')->first() ? Storage::url($order->files->where('type', 'image')->first()->file_path) : null,
+                'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
+                'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                'payload' => $order->payload,
                 'user' => [
                     'id' => $order->user->id,
                     'name' => $order->user->first_name . ' ' . $order->user->last_name,
@@ -117,9 +121,10 @@ class MarketplaceController extends Controller
                 ];
             }
             $groups[$groupId]['items'][] = [
-                'question' => $lang === 'ar' ? ($detail->question->name_ar ?? '') : ($detail->question->name_en ?? ''),
-                'answer' => $lang === 'ar' ? ($detail->option->name_ar ?? $detail->value) : ($detail->option->name_en ?? $detail->value),
-                'price' => $detail->price,
+                'id' => $detail->id,
+                'label' => $lang === 'ar' ? ($detail->question->name_ar ?? '') : ($detail->question->name_en ?? ''),
+                'value' => $lang === 'ar' ? ($detail->option->name_ar ?? $detail->value) : ($detail->option->name_en ?? $detail->value),
+                // 'price' => $detail->price,
             ];
         }
 
@@ -134,6 +139,8 @@ class MarketplaceController extends Controller
                 'price' => $order->total_price,
                 'description' => $order->payload,
                 'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
+                'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
+                "payment_type" => $order->payment_type,
                 'details' => array_values($groups),
                 'seller' => [
                     'id' => $order->user->id,
