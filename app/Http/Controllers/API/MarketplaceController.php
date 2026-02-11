@@ -123,11 +123,10 @@ class MarketplaceController extends Controller
                     'items' => []
                 ];
             }
-            dd($detail->option);
             $groups[$groupId]['items'][] = [
                 'id' => $detail->id,
                 'label' => $lang === 'ar' ? ($detail->question->question_ar ?? '') : ($detail->question->question_en ?? ''),
-                'value' => $lang === 'ar' ? ($detail->option->name_ar ?? $detail->value) : ($detail->option->name_en ?? $detail->value),
+                'value' => $lang === 'ar' ? ($detail->option->option_ar ?? $detail->value) : ($detail->option->option_en ?? $detail->value),
                 // 'price' => $detail->price,
             ];
         }
