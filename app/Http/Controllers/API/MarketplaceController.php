@@ -21,7 +21,7 @@ class MarketplaceController extends Controller
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
         $query = Order::with(['category', 'user', 'files'])
-            ->where('status', 'sent_to_market');
+            ->whereIn('status', ['sent_to_market', 'in_market', 'cancelled_from_market']);
 
         // Filter by Category
         if ($request->has('category_id')) {
@@ -60,6 +60,7 @@ class MarketplaceController extends Controller
                 'id' => $order->id,
                 'title' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
                 'payment_type' => $order->payment_type,
+                'status' => $order->status,
                 'category' => [
                     'id' => $order->category_id,
                     'name' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
@@ -103,7 +104,7 @@ class MarketplaceController extends Controller
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
         $order = Order::with(['category', 'user', 'files', 'details.question', 'details.option'])
-            ->where('status', 'sent_to_market')
+            ->whereIn('status', ['sent_to_market', 'in_market', 'cancelled_from_market'])
             ->where('id', $id)
             ->first();
 
@@ -140,6 +141,7 @@ class MarketplaceController extends Controller
                     'name' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
                 ],
                 'price' => $order->total_price,
+                'status' => $order->status,
                 'description' => $order->payload,
                 'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),

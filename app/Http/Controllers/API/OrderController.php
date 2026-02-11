@@ -475,7 +475,7 @@ class OrderController extends Controller
 
     public function getOrders(Request $request)
     {
-        $query = Order::where('user_id', Auth::id())
+        $query = Order::where('user_id', Auth::id())->where("status", "!=", "in_market")
             ->with([
                 'category',
                 'details.option',
