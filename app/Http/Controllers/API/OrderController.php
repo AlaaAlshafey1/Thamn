@@ -121,13 +121,22 @@ class OrderController extends Controller
                 'stageing' => $d->stageing,
             ];
         });
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
 
+        // قراءة القيمة من الخيار أو value مباشر
+        $evaluationType = $rateTypeAnswer?->option?->badge // badge = 'ai', 'expert', 'best'
+            ?? $rateTypeAnswer?->value;
         return response()->json([
             'status' => true,
             'order' => [
                 'id' => $order->id,
                 'user_id' => $order->user_id,
                 'status' => $order->status,
+                'thamn_by' => $evaluationType,
                 'total_price' => $totalPrice,
                 'files' => OrderFiles::where('order_id', $order->id)
                     ->where('type', 'file')
