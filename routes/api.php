@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::prefix('marketplace/orders')->group(function () {
-
+        Route::get('/', [MarketPlaceOrderController::class, 'index']);
         Route::post('/', [MarketPlaceOrderController::class, 'store']);
 
         Route::post('{orderId}', [MarketPlaceOrderController::class, 'update']);
@@ -116,6 +116,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{orderId}', [MarketPlaceOrderController::class, 'destroy']);
 
         Route::post('{orderId}/cancel', [MarketPlaceOrderController::class, 'cancel']);
+
+        Route::post('{orderId}/publish', [MarketPlaceOrderController::class, 'publish']);
     });
 
     Route::prefix('payment')->group(function () {

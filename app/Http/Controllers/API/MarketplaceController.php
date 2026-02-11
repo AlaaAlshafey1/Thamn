@@ -28,6 +28,49 @@ class MarketplaceController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        if ($request->has('status')) {
+            if ($request->status == 'cancelled_from_market') {
+                $query->where('status', $request->status);
+            } else {
+
+                $query->whereIn('status', ["sent_to_market", "in_market"]);
+
+            }
+        }
+
+        // Advanced Filters
+        if ($request->has('filters')) {
+            $filters = $request->get('filters');
+            if (is_string($filters)) {
+                $filters = json_decode($filters, true);
+            }
+
+            if (is_array($filters)) {
+                foreach ($filters as $questionId => $value) {
+                    if ($questionId == '4') { // price_range
+                        if (is_array($value)) {
+                            $min = $value['min'] ?? null;
+                            $max = $value['max'] ?? null;
+                            if ($min !== null && $max !== null) {
+                                $query->whereBetween('total_price', [$min, $max]);
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Question based filters
+                    $query->whereHas('details', function ($q) use ($questionId, $value) {
+                        $q->where('question_id', $questionId);
+                        if (is_array($value)) {
+                            $q->whereIn('option_id', $value);
+                        } else {
+                            $q->where('option_id', $value);
+                        }
+                    });
+                }
+            }
+        }
+
         // Search
         if ($request->has('search')) {
             $search = $request->search;

@@ -111,10 +111,10 @@ class OrderController extends Controller
             'expert_max_price' => $request->expert_max_price ?? $request->expert_price * 1.2,
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
-            'total_price' => $request->expert_price, // تحديث السعر النهائي للأوردر
+            'total_price' => $request->expert_price, 
             'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
         ]);
-        $user->balance += 4;
+        $user->balance += 10;
         $user->save();
         $order->user->notify(new OrderEvaluated($order, 'expert'));
 

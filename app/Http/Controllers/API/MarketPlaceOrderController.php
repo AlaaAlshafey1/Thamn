@@ -12,6 +12,65 @@ use Illuminate\Support\Facades\Storage;
 class MarketPlaceOrderController extends Controller
 {
     /**
+     * Get User's Marketplace Orders
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
+        $query = Order::with(['category', 'files', 'user'])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['sent_to_market', 'in_market', 'cancelled_from_market']);
+
+        // Filter by Category
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Search
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('payload', 'like', '%' . $search . '%');
+            });
+        }
+
+        $orders = $query->latest()->paginate($request->get('per_page', 15));
+
+        $data = $orders->getCollection()->map(function ($order) use ($lang) {
+            return [
+                'id' => $order->id,
+                'title' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
+                'payment_type' => $order->payment_type,
+                'status' => $order->status,
+                'category' => [
+                    'id' => $order->category_id,
+                    'name' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
+                ],
+                'total_price' => $order->total_price,
+                'image' => $order->files->where('type', 'image')->first() ? Storage::url($order->files->where('type', 'image')->first()->file_path) : null,
+                'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
+                'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
+                'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                'payload' => $order->payload,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => $lang === 'ar' ? 'تم استرجاع طلباتك بنجاح' : 'Your orders fetched successfully',
+            'data' => $data,
+            'meta' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'total' => $orders->total(),
+            ]
+        ]);
+    }
+
+    /**
      * إضافة منتج جديد للماركت
      */
     public function store(Request $request)
@@ -331,11 +390,28 @@ class MarketPlaceOrderController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        $order->update(['status' => 'cancelled']);
+        $order->update(['status' => 'cancelled_from_market']);
 
         return response()->json([
             'status' => true,
             'message' => 'Product cancelled successfully'
+        ]);
+    }
+
+    /**
+     * إعادة عرض المنتج في الماركت
+     */
+    public function publish(Request $request, $orderId)
+    {
+        $order = Order::where('id', $orderId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $order->update(['status' => 'in_market']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product published successfully'
         ]);
     }
 }
