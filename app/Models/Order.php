@@ -34,7 +34,7 @@ class Order extends Model
         'thamn_reasoning',
         'thamn_by',
         'thamn_at',
-        'payment_method',
+        'payment_type',
     ];
 
     protected $dates = ['deleted_at'];

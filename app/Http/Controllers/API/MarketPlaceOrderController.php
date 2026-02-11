@@ -30,7 +30,7 @@ class MarketPlaceOrderController extends Controller
             'answers.*.group_type' => 'nullable|string',
             'images.*' => 'nullable|file|mimes:jpg,jpeg,png,gif',
             'files.*' => 'nullable|file',
-            'payment_method' => 'nullable|string',
+            'payment_type' => 'nullable|string',
         ]);
 
         // ================= CREATE ORDER =================
@@ -40,7 +40,7 @@ class MarketPlaceOrderController extends Controller
             'status' => 'sent_to_market',
             'payload' => json_encode($request->answers),
             'total_price' => $request->answerstotal_price ?? 0,
-            'payment_method' => $request->payment_method,
+            'payment_type' => $request->payment_type,
         ]);
 
         $totalPrice = 0;
@@ -133,7 +133,7 @@ class MarketPlaceOrderController extends Controller
                 'category_id' => $order->category_id,
                 'status' => $order->status,
                 'total_price' => $totalPrice,
-                'payment_method' => $order->payment_method,
+                'payment_type' => $order->payment_type,
                 'images' => $filesData['images'],
                 'files' => $filesData['files'],
                 'answers' => $responseAnswers,
@@ -296,7 +296,7 @@ class MarketPlaceOrderController extends Controller
                 'category_id' => $order->category_id,
                 'total_price' => $order->total_price,
                 'status' => $order->status,
-                'payment_method' => $order->payment_method,
+                'payment_type' => $order->payment_type,
                 'groups' => array_values($groups),
                 'images' => $order->files->where('type', 'image')->map(fn($f) => \Illuminate\Support\Facades\Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => \Illuminate\Support\Facades\Storage::url($f->file_path)),
