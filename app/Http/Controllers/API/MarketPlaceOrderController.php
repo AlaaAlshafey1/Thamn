@@ -14,46 +14,63 @@ class MarketPlaceOrderController extends Controller
     /**
      * إضافة منتج جديد للماركت
      */
-public function store(Request $request)
-{
-    $user = $request->user();
+    public function store(Request $request)
+    {
+        $user = $request->user();
 
-    // ================= VALIDATION =================
-    $request->validate([
-        'category_id' => 'required|exists:categories,id',
-        'answers' => 'required|array',
-        'answers.*.question_id' => 'required|exists:questions,id',
-        'answers.*.option_id' => 'nullable',
-        'answers.*.sub_option_id' => 'nullable',
-        'answers.*.value' => 'nullable|string',
-        'answers.*.price' => 'nullable|numeric',
-        'answers.*.group_type' => 'nullable|string',
-        'images.*' => 'nullable|file|mimes:jpg,jpeg,png,gif',
-        'files.*' => 'nullable|file',
-    ]);
+        // ================= VALIDATION =================
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'answers' => 'required|array',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.option_id' => 'nullable',
+            'answers.*.sub_option_id' => 'nullable',
+            'answers.*.value' => 'nullable|string',
+            'answers.*.price' => 'nullable|numeric',
+            'answers.*.group_type' => 'nullable|string',
+            'images.*' => 'nullable|file|mimes:jpg,jpeg,png,gif',
+            'files.*' => 'nullable|file',
+            'payment_method' => 'nullable|string',
+        ]);
 
-    // ================= CREATE ORDER =================
-    $order = Order::create([
-        'user_id' => $user->id,
-        'category_id' => $request->category_id,
-        'status' => 'sent_to_market',
-        'payload' => json_encode($request->answers),
-        'total_price' => $request->answerstotal_price ?? 0,
-    ]);
+        // ================= CREATE ORDER =================
+        $order = Order::create([
+            'user_id' => $user->id,
+            'category_id' => $request->category_id,
+            'status' => 'sent_to_market',
+            'payload' => json_encode($request->answers),
+            'total_price' => $request->answerstotal_price ?? 0,
+            'payment_method' => $request->payment_method,
+        ]);
 
-    $totalPrice = 0;
-    $details = [];
+        $totalPrice = 0;
+        $details = [];
 
-    // ================= STORE ORDER DETAILS =================
-    foreach ($request->answers as $answer) {
-        // إذا فيه option_id
-        if (!empty($answer['option_id'])) {
-            $optionIds = is_array($answer['option_id']) ? $answer['option_id'] : [$answer['option_id']];
-            foreach ($optionIds as $optionId) {
+        // ================= STORE ORDER DETAILS =================
+        foreach ($request->answers as $answer) {
+            // إذا فيه option_id
+            if (!empty($answer['option_id'])) {
+                $optionIds = is_array($answer['option_id']) ? $answer['option_id'] : [$answer['option_id']];
+                foreach ($optionIds as $optionId) {
+                    $detail = OrderDetails::create([
+                        'order_id' => $order->id,
+                        'question_id' => $answer['question_id'],
+                        'option_id' => $optionId,
+                        'sub_option_id' => $answer['sub_option_id'] ?? null,
+                        'value' => $answer['value'] ?? null,
+                        'price' => $answer['price'] ?? 0,
+                        'status' => 1,
+                        'stageing' => $answer['group_type'] ?? null,
+                    ]);
+                    $totalPrice += $answer['price'] ?? 0;
+                    $details[] = $detail;
+                }
+            } else {
+                // لو مفيش option_id نخزن النص مباشرة
                 $detail = OrderDetails::create([
                     'order_id' => $order->id,
                     'question_id' => $answer['question_id'],
-                    'option_id' => $optionId,
+                    'option_id' => null,
                     'sub_option_id' => $answer['sub_option_id'] ?? null,
                     'value' => $answer['value'] ?? null,
                     'price' => $answer['price'] ?? 0,
@@ -63,80 +80,66 @@ public function store(Request $request)
                 $totalPrice += $answer['price'] ?? 0;
                 $details[] = $detail;
             }
-        } else {
-            // لو مفيش option_id نخزن النص مباشرة
-            $detail = OrderDetails::create([
-                'order_id' => $order->id,
-                'question_id' => $answer['question_id'],
-                'option_id' => null,
-                'sub_option_id' => $answer['sub_option_id'] ?? null,
-                'value' => $answer['value'] ?? null,
-                'price' => $answer['price'] ?? 0,
-                'status' => 1,
-                'stageing' => $answer['group_type'] ?? null,
-            ]);
-            $totalPrice += $answer['price'] ?? 0;
-            $details[] = $detail;
         }
-    }
 
-    $order->update(['total_price' => $totalPrice]);
+        $order->update(['total_price' => $totalPrice]);
 
-    // ================= STORE FILES =================
-    $filesData = ['images' => [], 'files' => []];
+        // ================= STORE FILES =================
+        $filesData = ['images' => [], 'files' => []];
 
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $file) {
-            $path = $file->store("market_orders/{$order->id}/images", 'public');
-            OrderFiles::create([
-                'order_id' => $order->id,
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'type' => 'image',
-            ]);
-            $filesData['images'][] = \Illuminate\Support\Facades\Storage::url($path);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store("market_orders/{$order->id}/images", 'public');
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'image',
+                ]);
+                $filesData['images'][] = \Illuminate\Support\Facades\Storage::url($path);
+            }
         }
-    }
 
-    if ($request->hasFile('files')) {
-        foreach ($request->file('files') as $file) {
-            $path = $file->store("market_orders/{$order->id}/files", 'public');
-            OrderFiles::create([
-                'order_id' => $order->id,
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'type' => 'file',
-            ]);
-            $filesData['files'][] = \Illuminate\Support\Facades\Storage::url($path);
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store("market_orders/{$order->id}/files", 'public');
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'file',
+                ]);
+                $filesData['files'][] = \Illuminate\Support\Facades\Storage::url($path);
+            }
         }
+
+        // ================= RESPONSE =================
+        $responseAnswers = collect($details)->map(function ($d) {
+            return [
+                'question_id' => $d->question_id,
+                'option_id' => $d->option_id,
+                'sub_option_id' => $d->sub_option_id,
+                'value' => $d->value,
+                'price' => $d->price,
+                'group_type' => $d->stageing,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'order' => [
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'category_id' => $order->category_id,
+                'status' => $order->status,
+                'total_price' => $totalPrice,
+                'payment_method' => $order->payment_method,
+                'images' => $filesData['images'],
+                'files' => $filesData['files'],
+                'answers' => $responseAnswers,
+            ],
+        ]);
     }
-
-    // ================= RESPONSE =================
-    $responseAnswers = collect($details)->map(function ($d) {
-        return [
-            'question_id' => $d->question_id,
-            'option_id' => $d->option_id,
-            'sub_option_id' => $d->sub_option_id,
-            'value' => $d->value,
-            'price' => $d->price,
-            'group_type' => $d->stageing,
-        ];
-    });
-
-    return response()->json([
-        'status' => true,
-        'order' => [
-            'id' => $order->id,
-            'user_id' => $order->user_id,
-            'category_id' => $order->category_id,
-            'status' => $order->status,
-            'total_price' => $totalPrice,
-            'images' => $filesData['images'],
-            'files' => $filesData['files'],
-            'answers' => $responseAnswers,
-        ],
-    ]);
-}
 
 
     /**
@@ -293,6 +296,7 @@ public function store(Request $request)
                 'category_id' => $order->category_id,
                 'total_price' => $order->total_price,
                 'status' => $order->status,
+                'payment_method' => $order->payment_method,
                 'groups' => array_values($groups),
                 'images' => $order->files->where('type', 'image')->map(fn($f) => \Illuminate\Support\Facades\Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => \Illuminate\Support\Facades\Storage::url($f->file_path)),

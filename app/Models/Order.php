@@ -33,7 +33,8 @@ class Order extends Model
         'thamn_max_price',
         'thamn_reasoning',
         'thamn_by',
-        'thamn_at'
+        'thamn_at',
+        'payment_method',
     ];
 
     protected $dates = ['deleted_at'];
