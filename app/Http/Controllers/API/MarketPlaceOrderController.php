@@ -37,7 +37,7 @@ class MarketPlaceOrderController extends Controller
         $order = Order::create([
             'user_id' => $user->id,
             'category_id' => $request->category_id,
-            'status' => 'sent_to_market',
+            'status' => 'in_market',
             'payload' => json_encode($request->answers),
             'total_price' => $request->answerstotal_price ?? 0,
             'payment_type' => $request->payment_type,
