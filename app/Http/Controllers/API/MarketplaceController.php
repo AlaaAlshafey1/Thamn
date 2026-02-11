@@ -96,6 +96,9 @@ class MarketplaceController extends Controller
      */
     public function show(Request $request, $id)
     {
+
+
+
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
@@ -120,9 +123,10 @@ class MarketplaceController extends Controller
                     'items' => []
                 ];
             }
+            dd($detail->option);
             $groups[$groupId]['items'][] = [
                 'id' => $detail->id,
-                'label' => $lang === 'ar' ? ($detail->question->name_ar ?? '') : ($detail->question->name_en ?? ''),
+                'label' => $lang === 'ar' ? ($detail->question->question_ar ?? '') : ($detail->question->question_en ?? ''),
                 'value' => $lang === 'ar' ? ($detail->option->name_ar ?? $detail->value) : ($detail->option->name_en ?? $detail->value),
                 // 'price' => $detail->price,
             ];
