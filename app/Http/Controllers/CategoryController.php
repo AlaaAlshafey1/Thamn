@@ -23,12 +23,15 @@ class CategoryController extends Controller
         $request->validate([
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories','public');
+            $data['image'] = $request->file('image')->store('categories', 'public');
         }
         Category::create($data);
 
@@ -51,7 +54,7 @@ class CategoryController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories','public');
+            $data['image'] = $request->file('image')->store('categories', 'public');
         }
 
         $category->update($data);

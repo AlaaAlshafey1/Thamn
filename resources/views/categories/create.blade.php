@@ -1,109 +1,109 @@
 @extends('layouts.master')
-@section('title','إنشاء طلب جديد')
+@section('title', 'إضافة فئة جديدة')
 
 @section('css')
-<style>
-/* نفس ستايل الباقي */
-.card { border:1px solid #ddd; border-radius:6px; margin-bottom:10px; padding:15px; background:#fff; }
-.card-header { font-weight:bold; color:#c1953e; cursor:pointer; display:flex; justify-content:space-between; }
-.card-body { display:none; padding-top:10px; }
-.card-body.show { display:block; }
-input, select { width:100%; padding:6px; margin:3px 0; border-radius:4px; border:1px solid #ccc; }
-button { background:#c1953e; color:#fff; padding:8px 15px; border:none; border-radius:4px; cursor:pointer; }
-</style>
+    <style>
+        .category-form-card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0d6efd;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+
+        label.form-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        input.form-control,
+        textarea.form-control {
+            border-radius: 10px;
+            padding: 10px 14px;
+            min-height: 45px;
+            width: 100%;
+        }
+    </style>
+@endsection
+
+@section('page-header')
+    <div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3"
+        style="direction: rtl;">
+        <div class="d-flex flex-column">
+            <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-plus-circle"></i> إضافة فئة جديدة</h4>
+            <small class="text-muted">قم بإدخال بيانات الفئة الجديدة</small>
+        </div>
+        <div>
+            <a href="{{ route('categories.index') }}" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
+                <i class="bx bx-arrow-back fs-5"></i> <span>رجوع</span>
+            </a>
+        </div>
+    </div>
 @endsection
 
 @section('content')
-<div class="container py-4">
-    <h2 class="mb-4">إنشاء طلب جديد</h2>
+    <div class="category-form-card">
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+            </div>
+        @endif
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+        <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-        </div>
-    @endif
+            <div class="form-section mb-4">
+                <h6 class="form-section-title">📦 معلومات الفئة</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">اسم الفئة (عربي)</label>
+                        <input type="text" name="name_ar" class="form-control" value="{{ old('name_ar') }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">اسم الفئة (إنجليزي)</label>
+                        <input type="text" name="name_en" class="form-control" value="{{ old('name_en') }}">
+                    </div>
 
-    <form action="{{ route('orders.store') }}" method="POST">
-        @csrf
+                    <div class="col-md-6">
+                        <label class="form-label">الوصف (عربي)</label>
+                        <textarea name="description_ar" class="form-control">{{ old('description_ar') }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">الوصف (إنجليزي)</label>
+                        <textarea name="description_en" class="form-control">{{ old('description_en') }}</textarea>
+                    </div>
 
-        <div class="mb-3">
-            <label>اسم المستخدم</label>
-            <select name="user_id" required class="form-control">
-                <option value="">اختر المستخدم</option>
-                @foreach(\App\Models\User::all() as $user)
-                    <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
-                @endforeach
-            </select>
-        </div>
+                    <div class="col-md-6">
+                        <label class="form-label">صورة الفئة</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
 
-        <div class="mb-3">
-            <label>فئة الطلب</label>
-            <select name="category_id" required class="form-control">
-                <option value="">اختر الفئة</option>
-                @foreach(\App\Models\Category::all() as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label>طريقة التقييم</label>
-            <select name="evaluation_type" class="form-control" required>
-                <option value="ai">التقييم الذكي (AI)</option>
-                <option value="expert">تقييم بواسطة خبير موثوق</option>
-                <option value="price">تقييم سعر المنتج</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label>السعر الإجمالي (SAR)</label>
-            <input type="number" step="0.01" name="total_price" required class="form-control">
-        </div>
-
-        <h4>الأسئلة</h4>
-        @foreach(\App\Models\Question::with('options')->where('is_active',1)->get() as $question)
-            <div class="card">
-                <div class="card-header" onclick="this.nextElementSibling.classList.toggle('show')">
-                    {{ $question->question_ar }}
-                    <span>▼</span>
-                </div>
-                <div class="card-body">
-                    @foreach($question->options as $option)
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio"
-                                   name="questions[{{ $question->id }}]"
-                                   value="{{ $option->id }}"
-                                   id="option_{{ $option->id }}">
-                            <label class="form-check-label" for="option_{{ $option->id }}">
-                                {{ $option->option_ar }}
-                                @if($option->price) - {{ $option->price }} SAR @endif
-                            </label>
-                        </div>
-                        @if($option->sub_options()->count())
-                            <div class="ms-4 mt-1">
-                                @foreach($option->sub_options as $sub)
-                                    <div class="form-check">
-                                        <input type="radio" name="questions[{{ $question->id }}]"
-                                               value="{{ $sub->id }}" id="sub_{{ $sub->id }}">
-                                        <label for="sub_{{ $sub->id }}">{{ $sub->option_ar }}
-                                            @if($sub->price) - {{ $sub->price }} SAR @endif
-                                        </label>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    @endforeach
+                    <div class="col-md-6">
+                        <label class="form-label">الحالة</label>
+                        <select name="is_active" class="form-select">
+                            <option value="1" {{ old('is_active') == '1' ? 'selected' : '' }}>مفعّلة</option>
+                            <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>غير مفعّلة</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        @endforeach
 
-        <div class="mt-3">
-            <button type="submit">إنشاء الطلب</button>
-        </div>
-    </form>
-</div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="submit" class="btn btn-primary" style="background-color:#c1953e; border:none;">
+                    <i class="bx bx-save"></i> حفظ الفئة
+                </button>
+                <a href="{{ route('categories.index') }}" class="btn btn-light border">
+                    <i class="bx bx-x-circle"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
 @endsection
