@@ -129,15 +129,16 @@ class HomeController extends Controller
             ->get()
             ->map(function ($term) use ($lang) {
                 return [
-                    'id'      => $term->id,
-                    'title'   => $lang === 'ar' ? $term->title_ar : $term->title_en,
+                    'id' => $term->id,
+                    'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
                     'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
-                    'order'   => $term->sort_order,
+                    'file' => $term->file ? asset('uploads/terms/' . $term->file) : null,
+                    'order' => $term->sort_order,
                 ];
             });
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => lang(
                 'تم إرجاع الشروط والأحكام بنجاح',
                 'Terms & conditions fetched successfully',
