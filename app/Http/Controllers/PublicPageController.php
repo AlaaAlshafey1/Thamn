@@ -17,9 +17,9 @@ class PublicPageController extends Controller
 
     public function terms(Request $request)
     {
-        $terms = About::where('type', 'terms')->first();
+        $page = About::where('type', 'terms')->first();
         $title = lang('الشروط والأحكام', 'Terms & Conditions', $request);
-        return view('public.terms', compact('terms', 'title'));
+        return view('public.page', compact('page', 'title'));
     }
 
     public function about(Request $request)
