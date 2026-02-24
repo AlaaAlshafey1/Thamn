@@ -27,7 +27,8 @@ class OrderThamnPriceCalculated extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'message' => "تم تثمين ثمن منتجك: Order #{$this->order->id} → السعر النهائي: {$this->order->thamn_price} SAR",
+            'title' => 'تم حساب سعر ثمن',
+            'message' => "تم تثمين ثمن منتجك: طلب رقم #{$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي",
             'thamn_price' => $this->order->thamn_price,
         ];
     }

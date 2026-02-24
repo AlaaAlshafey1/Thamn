@@ -10,7 +10,10 @@ class PageController extends Controller
     // عرض الصفحة حسب النوع
     public function index($type = 'about')
     {
-        $pages = About::get();
+        $pages = About::where('type', $type)->get();
+        if ($pages->count() === 1) {
+            return redirect()->route('pages.edit', $pages->first()->id);
+        }
         return view('pages.index', compact('pages', 'type'));
     }
 

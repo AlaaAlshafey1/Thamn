@@ -9,8 +9,11 @@ class ContactController extends Controller
 {
     public function index()
     {
-        $contacts = Contact::latest()->paginate(10);
-        return view('contacts.index', compact('contacts'));
+        $contact = Contact::first();
+        if ($contact) {
+            return redirect()->route('contacts.edit', $contact->id);
+        }
+        return view('contacts.index');
     }
 
     public function create()
@@ -18,25 +21,25 @@ class ContactController extends Controller
         return view('contacts.form');
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'phone' => 'nullable|string|max:255',
-        'email' => 'nullable|email|max:255',
-        // social_media optional
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'phone' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            // social_media optional
+        ]);
 
-    $data = $request->all();
+        $data = $request->all();
 
-    // تحويل social_media array إلى JSON
-    if(isset($data['social_media']) && is_array($data['social_media'])) {
-        $data['social_media'] = json_encode($data['social_media']);
+        // تحويل social_media array إلى JSON
+        if (isset($data['social_media']) && is_array($data['social_media'])) {
+            $data['social_media'] = json_encode($data['social_media']);
+        }
+
+        Contact::create($data);
+
+        return redirect()->route('contacts.index')->with('success', 'تمت إضافة جهة الاتصال بنجاح');
     }
-
-    Contact::create($data);
-
-    return redirect()->route('contacts.index')->with('success', 'تمت إضافة جهة الاتصال بنجاح');
-}
 
 
 
@@ -45,25 +48,25 @@ public function store(Request $request)
         return view('contacts.form', compact('contact'));
     }
 
-public function update(Request $request, Contact $contact)
-{
-    $request->validate([
-        'phone' => 'nullable|string|max:255',
-        'email' => 'nullable|email|max:255',
-        // social_media optional
-    ]);
+    public function update(Request $request, Contact $contact)
+    {
+        $request->validate([
+            'phone' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            // social_media optional
+        ]);
 
-    $data = $request->all();
+        $data = $request->all();
 
-    // تحويل social_media array إلى JSON
-    if(isset($data['social_media']) && is_array($data['social_media'])) {
-        $data['social_media'] = json_encode($data['social_media']);
+        // تحويل social_media array إلى JSON
+        if (isset($data['social_media']) && is_array($data['social_media'])) {
+            $data['social_media'] = json_encode($data['social_media']);
+        }
+
+        $contact->update($data);
+
+        return redirect()->route('contacts.index')->with('success', 'تم تحديث جهة الاتصال بنجاح');
     }
-
-    $contact->update($data);
-
-    return redirect()->route('contacts.index')->with('success', 'تم تحديث جهة الاتصال بنجاح');
-}
 
     public function destroy(Contact $contact)
     {

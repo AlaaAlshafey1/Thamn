@@ -27,7 +27,8 @@ class OrderAssignedToExpert extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'message' => "تم إرسال طلب تقييم جديد لك: Order #{$this->order->id}",
+            'title' => 'تم تعيين طلب جديد لك',
+            'message' => "تم إرسال طلب تقييم جديد لك: طلب رقم #{$this->order->id}",
             'user_id' => $this->order->user_id,
         ];
     }

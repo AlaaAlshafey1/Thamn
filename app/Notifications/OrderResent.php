@@ -26,7 +26,8 @@ class OrderResent extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'message' => "تم إعادة إرسال طلبك: Order #{$this->order->id}"
+            'title' => 'تم إعادة إرسال الطلب',
+            'message' => "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}"
         ];
     }
 }

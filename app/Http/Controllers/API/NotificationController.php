@@ -22,6 +22,8 @@ class NotificationController extends Controller
             return [
                 'id' => $notification->id,
                 'type' => $notification->type,
+                'title' => $notification->data['title'] ?? ($notification->data['title_' . $lang] ?? ''),
+                'message' => $notification->data['message'] ?? ($notification->data['message_' . $lang] ?? ''),
                 'data' => $notification->data,
                 'read_at' => $notification->read_at,
                 'created_at' => $notification->created_at->format('Y-m-d H:i:s'),

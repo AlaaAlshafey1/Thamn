@@ -26,7 +26,8 @@ class OrderSentToMarket extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'message' => "تم إرسال منتجك للسوق: Order #{$this->order->id}, السعر: {$this->order->thamn_price} SAR"
+            'title' => 'تم إرسال الطلب للسوق',
+            'message' => "تم إرسال منتجك للسوق: طلب رقم #{$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي"
         ];
     }
 }

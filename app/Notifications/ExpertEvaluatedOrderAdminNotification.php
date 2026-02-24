@@ -30,6 +30,7 @@ class ExpertEvaluatedOrderAdminNotification extends Notification
         return [
             'order_id' => $this->order->id,
             'expert_id' => $this->expert->id,
+            'title' => 'اكتمل تقييم الخبير',
             'message' => "قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.",
             'type' => 'expert_evaluation_completed'
         ];

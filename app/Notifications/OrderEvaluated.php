@@ -40,6 +40,7 @@ class OrderEvaluated extends Notification
             'order_id' => $this->order->id,
             'type' => $this->type,
             'total_price' => $this->order->total_price,
+            'title' => 'تم تقييم طلبك',
             'message' => "تم تقييم طلبك رقم #{$this->order->id} بنجاح"
         ];
     }

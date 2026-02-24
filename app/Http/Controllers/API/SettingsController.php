@@ -12,6 +12,8 @@ use App\Models\TermCondition;
 use App\Models\User;
 use App\Models\HomeStep;
 use App\Models\Intro;
+use App\Models\TapPayment;
+use App\Http\Resources\InvoiceResource;
 
 class SettingsController extends Controller
 {
@@ -233,11 +235,11 @@ class SettingsController extends Controller
         // Get the first contact record (since there should be only one main contact info)
         $contact = Contact::first();
 
-        // Get social media links from JSON column
+        // Get social media links from casted array
         $socialMedia = [];
-        if ($contact && $contact->social_media) {
-            $socials = is_array($contact->social_media) ? $contact->social_media : json_decode($contact->social_media, true);
-            if (is_array($socials)) {
+        if ($contact && is_array($contact->social_media)) {
+            $socials = $contact->social_media;
+            if (count($socials) > 0) {
                 $socialMedia = collect($socials)->map(function ($item) use ($lang) {
                     return [
                         'name' => $item['name'] ?? '',
@@ -297,23 +299,29 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $terms = About::where('type', 'terms')->first();
+        $terms = TermCondition::where('is_active', 1)->orderBy('sort_order')->get();
 
-        if (!$terms) {
+        if ($terms->isEmpty()) {
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar' ? 'لم يتم العثور على الشروط و الاحكام' : 'Terms not found',
-                'data' => null
+                'data' => []
             ], 404);
         }
+
+        $data = $terms->map(function ($term) use ($lang) {
+            return [
+                'id' => $term->id,
+                'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
+                'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
+                'file' => $term->file ? asset($term->file) : null,
+            ];
+        });
 
         return response()->json([
             'status' => true,
             'message' => $lang === 'ar' ? 'تم إرجاع الشروط والأحكام بنجاح' : 'Terms & conditions fetched successfully',
-            'data' => [
-                'content' => $lang === 'ar' ? $terms->content_ar : $terms->content_en
-            ]
-
+            'data' => $data
         ]);
     }
 
@@ -341,6 +349,35 @@ class SettingsController extends Controller
             'message' => $lang === 'ar' ? 'تم إرجاع سياسة الخصوصية بنجاح' : 'Privacy policy fetched successfully',
             'data' => [
                 'content' => $lang === 'ar' ? $privacy->content_ar : $privacy->content_en
+            ]
+        ]);
+    }
+
+    /**
+     * Get any page content by type from About model
+     * GET /settings/pages/{type}
+     */
+    public function getPage(Request $request, $type)
+    {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
+        $page = About::where('type', $type)->first();
+
+        if (!$page) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'الصفحة غير موجودة' : 'Page not found',
+                'data' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $lang === 'ar' ? 'تم إرجاع محتوى الصفحة بنجاح' : 'Page content fetched successfully',
+            'data' => [
+                'type' => $page->type,
+                'content' => $lang === 'ar' ? $page->content_ar : $page->content_en
             ]
         ]);
     }
@@ -399,5 +436,20 @@ class SettingsController extends Controller
         ];
 
         return $icons[$name] ?? '${AssetsManager.link}';
+    }
+
+    /**
+     * Get user invoices
+     * GET /settings/invoices
+     */
+    public function invoices(Request $request)
+    {
+        $user = $request->user();
+
+        $payments = TapPayment::whereHas('order', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->latest()->get();
+
+        return InvoiceResource::collection($payments);
     }
 }

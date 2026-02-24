@@ -17,6 +17,8 @@ class AccountDeletedNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
+            'title' => 'تم حذف الحساب',
+            'message' => 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً',
             'title_ar' => 'تم حذف الحساب',
             'title_en' => 'Account Deleted',
             'message_ar' => 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً',

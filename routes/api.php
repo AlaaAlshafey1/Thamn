@@ -58,6 +58,7 @@ Route::prefix('settings')->group(function () {
     Route::post('contact', [SettingsController::class, 'submitContact']);
     Route::get('terms', [SettingsController::class, 'terms']);
     Route::get('privacy', [SettingsController::class, 'privacy']);
+    Route::get('pages/{type}', [SettingsController::class, 'getPage']);
 });
 
 
@@ -77,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('settings')->group(function () {
         Route::get('notifications', [SettingsController::class, 'notificationSettings']);
         Route::post('notifications', [SettingsController::class, 'updateNotificationSettings']);
+        Route::get('invoices', [SettingsController::class, 'invoices']);
     });
 
     Route::get('questions/{id}', [HomeController::class, 'allQuestions']); // كل الأسئلة حسب الفئة

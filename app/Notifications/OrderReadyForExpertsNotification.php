@@ -28,6 +28,7 @@ class OrderReadyForExpertsNotification extends Notification
         return [
             'order_id' => $this->order->id,
             'user_id' => $this->order->user_id,
+            'title' => 'طلب تقييم جديد',
             'message' => "طلب تقييم جديد متاح الآن (رقم {$this->order->id}) لمن يرغب في البدء.",
             'type' => 'new_expert_order'
         ];

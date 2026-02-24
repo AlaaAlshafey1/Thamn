@@ -13,6 +13,7 @@ class TermCondition extends Model
         'content_ar',
         'content_en',
         'sort_order',
-        'is_active'
+        'is_active',
+        'file'
     ];
 }
