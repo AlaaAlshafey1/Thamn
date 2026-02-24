@@ -17,7 +17,7 @@ class PublicPageController extends Controller
 
     public function terms(Request $request)
     {
-        $terms = TermCondition::where('is_active', 1)->orderBy('sort_order')->get();
+        $terms = About::where('type', 'terms')->first();
         $title = lang('الشروط والأحكام', 'Terms & Conditions', $request);
         return view('public.terms', compact('terms', 'title'));
     }
