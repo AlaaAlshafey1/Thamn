@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Term;
 use Illuminate\Http\Request;
 use App\Models\About;
 use App\Models\Color;
@@ -299,7 +300,7 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $terms = TermCondition::where('is_active', 1)->orderBy('sort_order')->get();
+        $terms = Term::where('type', 'terms')->get();
 
         if ($terms->isEmpty()) {
             return response()->json([
