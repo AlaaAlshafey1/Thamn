@@ -49,7 +49,7 @@ class HomeStepController extends Controller
             $imagePath = null;
 
             // Handle image upload if type is 'image' and file exists
-            if ($request->type === 'image' && $request->hasFile("items.{$index}.image")) {
+            if ($request->type === 'image' || $request->type === 'banner' && $request->hasFile("items.{$index}.image")) {
                 $image = $request->file("items.{$index}.image");
                 $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('home_steps', $imageName, 'public');
@@ -116,7 +116,7 @@ class HomeStepController extends Controller
             $imagePath = $existingItems[$index]['image'] ?? null; // Keep existing image
 
             // Handle new image upload if type is 'image' and file exists
-            if ($request->type === 'image' && $request->hasFile("items.{$index}.image")) {
+            if ($request->type === 'image' || $request->type === 'banner' && $request->hasFile("items.{$index}.image")) {
                 $image = $request->file("items.{$index}.image");
                 $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('home_steps', $imageName, 'public');

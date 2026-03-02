@@ -300,7 +300,7 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $terms = Term::where('type', 'terms')->get();
+        $terms = About::where('type', 'terms')->get();
 
         if ($terms->isEmpty()) {
             return response()->json([
