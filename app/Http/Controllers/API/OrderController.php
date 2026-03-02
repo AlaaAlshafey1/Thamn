@@ -522,15 +522,15 @@ class OrderController extends Controller
         $orders = $query->latest()->get();
 
         // ========================== Map response ==========================
-        $orders = $orders->map(function ($order) {
+        $orders = $orders->map(function ($order) use ($request) {
             $titleParts = [];
 
             $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
             if ($categoryName)
-                $titleParts[] = app()->getLocale() == 'ar' ? $order->category?->name_ar : $order->category?->name_en;
+                $titleParts[] = $request->header('Accept-Language') == 'ar' ? $order->category?->name_ar : $order->category?->name_en;
 
             $detailValues = $order->details
-                ->map(fn($d) => app()->getLocale() == 'ar' ? $d->option?->option_ar : $d->option?->option_en ?? $d->value)
+                ->map(fn($d) => $request->header('Accept-Language') == 'ar' ? $d->option?->option_ar : $d->option?->option_en ?? $d->value)
                 ->filter()
                 ->unique()
                 ->values()
