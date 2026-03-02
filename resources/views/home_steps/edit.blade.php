@@ -67,6 +67,8 @@
                             (Checklist)</option>
                         <option value="image" {{ old('type', $homeStep->type) == 'image' ? 'selected' : '' }}>صور (Images)
                         </option>
+                        <option value="banner" {{ old('type', $homeStep->type) == 'banner' ? 'selected' : '' }}>بنر (banner)
+                        </option>
                     </select>
                     @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
@@ -140,7 +142,7 @@
             const type = document.querySelector('select[name="type"]').value;
             const imageFields = document.querySelectorAll('.image-field');
 
-            if (type === 'image') {
+            if (type === 'image' || type === 'banner') {
                 imageFields.forEach(field => field.style.display = 'block');
             } else {
                 imageFields.forEach(field => field.style.display = 'none');
