@@ -413,17 +413,16 @@ class AuthController extends Controller
         // حذف التوكنات
         $user->tokens()->delete();
 
-        // Soft Delete
-        $user->delete();
+        // Hard Delete (Permanent)
+        $user->forceDelete();
 
-        // Notification (database)
-        $user->notify(new AccountDeletedNotification());
+        // Notification (database) - Removed as user record is permanently deleted
 
         return response()->json([
             'status' => true,
             'message' => lang(
-                'تم حذف الحساب بنجاح',
-                'Account deleted successfully',
+                'تم حذف الحساب نهائياً بنجاح',
+                'Account permanently deleted successfully',
                 $request
             )
         ]);
