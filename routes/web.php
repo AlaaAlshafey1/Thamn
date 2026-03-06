@@ -22,7 +22,7 @@ use App\Http\Controllers\HomeStepController;
 use App\Http\Controllers\IntroController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Public Pages for App Store Compliance
