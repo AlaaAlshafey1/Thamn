@@ -48,8 +48,8 @@ class HomeStepController extends Controller
         foreach ($request->items as $index => $item) {
             $imagePath = null;
 
-            // Handle image upload if type is 'image' and file exists
-            if ($request->type === 'image' || $request->type === 'banner' && $request->hasFile("items.{$index}.image")) {
+            // Handle image upload if type is 'image' or 'banner' and file exists
+            if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
                 $image = $request->file("items.{$index}.image");
                 $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('home_steps', $imageName, 'public');
@@ -115,8 +115,8 @@ class HomeStepController extends Controller
         foreach ($request->items as $index => $item) {
             $imagePath = $existingItems[$index]['image'] ?? null; // Keep existing image
 
-            // Handle new image upload if type is 'image' and file exists
-            if ($request->type === 'image' || $request->type === 'banner' && $request->hasFile("items.{$index}.image")) {
+            // Handle new image upload if type is 'image' or 'banner' and file exists
+            if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
                 $image = $request->file("items.{$index}.image");
                 $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('home_steps', $imageName, 'public');

@@ -31,7 +31,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 
@@ -59,10 +59,10 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'تم إنشاء الحساب - يرجى إدخال رمز التفعيل',
+            'message' => transMsg('account_created_please_verify', $request),
             'data' => [
                 'user_id' => $user->id,
-                'otp' => $otp, // يمكنك إزالته فى الإنتاج
+                'otp' => $otp,
             ]
         ]);
     }
@@ -78,7 +78,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 
@@ -120,7 +120,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 
@@ -139,7 +139,7 @@ class AuthController extends Controller
         if (!$user->is_verified) {
             return response()->json([
                 'status' => false,
-                'message' => 'الحساب غير مفعل - يرجى إدخال OTP'
+                'message' => transMsg('account_not_verified', $request)
             ], 403);
         }
 
@@ -194,7 +194,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
         }
 
         $otp = \DB::table('otps')
@@ -236,7 +236,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
         }
 
         $otp = rand(1000, 9999);
@@ -281,7 +281,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 
@@ -327,7 +327,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 
@@ -375,7 +375,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 422);
         }
 

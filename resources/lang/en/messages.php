@@ -2,10 +2,11 @@
 
 return [
     'otp_invalid_or_expired' => 'OTP is invalid or expired',
-    'otp_sent_successfully'  => 'OTP sent successfully',
+    'otp_sent_successfully' => 'OTP sent successfully',
     'otp_verified_successfully' => 'Account verified successfully',
     'account_verified_successfully' => 'Account verified successfully',
     'profile_fetched_successfully' => 'Profile fetched successfully',
     'profile_updated_successfully' => 'Profile updated successfully',
-
+    'account_created_please_verify' => 'Account created - please enter verification code',
+    'account_not_verified' => 'Account not verified - please enter OTP',
 ];
