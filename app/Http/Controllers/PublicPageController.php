@@ -38,14 +38,30 @@ class PublicPageController extends Controller
 
         // Process social media like the API method
         $socialMedia = [];
-        if ($contactInfo && is_array($contactInfo->social_media)) {
-            $socials = $contactInfo->social_media;
-            if (count($socials) > 0) {
-                $socialMedia = collect($socials)->map(function ($item) {
+        if ($contactInfo && $contactInfo->social_media) {
+            $socials = is_string($contactInfo->social_media)
+                ? json_decode($contactInfo->social_media, true)
+                : $contactInfo->social_media;
+
+            if (is_array($socials) && count($socials) > 0) {
+                $socialMedia = collect($socials)->filter(function ($item) {
+                    return !empty($item['url']) || !empty($item['name']);
+                })->map(function ($item) {
+                    $name = $item['name'] ?? '';
+                    $icon = $item['icon'] ?? '';
+
+                    if (empty($icon) && !empty($name)) {
+                        $icon = $this->getDefaultIcon($name);
+                    }
+
+                    if (empty($icon)) {
+                        $icon = 'fas fa-link';
+                    }
+
                     return [
-                        'name' => $item['name'] ?? '',
-                        'icon' => $item['icon'] ?? $this->getDefaultIcon($item['name'] ?? ''),
-                        'url' => $item['url'] ?? ''
+                        'name' => $name,
+                        'icon' => $icon,
+                        'url' => $item['url'] ?? '#'
                     ];
                 });
             }

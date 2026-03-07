@@ -31,11 +31,6 @@ class ContactController extends Controller
 
         $data = $request->all();
 
-        // تحويل social_media array إلى JSON
-        if (isset($data['social_media']) && is_array($data['social_media'])) {
-            $data['social_media'] = json_encode($data['social_media']);
-        }
-
         Contact::create($data);
 
         return redirect()->route('contacts.index')->with('success', 'تمت إضافة جهة الاتصال بنجاح');
@@ -57,11 +52,6 @@ class ContactController extends Controller
         ]);
 
         $data = $request->all();
-
-        // تحويل social_media array إلى JSON
-        if (isset($data['social_media']) && is_array($data['social_media'])) {
-            $data['social_media'] = json_encode($data['social_media']);
-        }
 
         $contact->update($data);
 
