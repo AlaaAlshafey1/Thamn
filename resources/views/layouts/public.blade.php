@@ -16,6 +16,19 @@
             line-height: 1.6;
         }
 
+        :root {
+            --thamn-gold: #c1953e;
+            --thamn-gold-dark: #a07a2d;
+        }
+
+        .text-gold {
+            color: var(--thamn-gold) !important;
+        }
+
+        .bg-gold {
+            background-color: var(--thamn-gold) !important;
+        }
+
         .navbar {
             background-color: #fff;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -70,9 +83,19 @@
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+    <footer class="mt-5 py-4 border-top">
+        <div class="container text-center">
+            <div class="mb-3">
+                <img src="{{ URL::asset('assets/img/Logo.png') }}" alt="Logo" class="main-logo opacity-75 mb-3"
+                    style="max-height: 40px;">
+            </div>
+            <div class="mb-3 text-muted">
+                <span class="mx-2"><i class="fas fa-phone me-1 text-gold"></i>
+                    {{ App\Models\Contact::first()->phone ?? '' }}</span>
+                <span class="mx-2"><i class="fas fa-envelope me-1 text-gold"></i>
+                    {{ App\Models\Contact::first()->email ?? '' }}</span>
+            </div>
+            <p class="mb-0 text-muted">&copy; {{ date('Y') }} <strong>Thamn</strong>. All rights reserved.</p>
         </div>
     </footer>
 

@@ -29,6 +29,8 @@ Route::get('/', function () {
 Route::get('/privacy-policy', [App\Http\Controllers\PublicPageController::class, 'privacy'])->name('public.privacy');
 Route::get('/terms-conditions', [App\Http\Controllers\PublicPageController::class, 'terms'])->name('public.terms');
 Route::get('/about-us', [App\Http\Controllers\PublicPageController::class, 'about'])->name('public.about');
+Route::get('/contact-us', [App\Http\Controllers\PublicPageController::class, 'contact'])->name('public.contact');
+Route::post('/contact-us', [App\Http\Controllers\PublicPageController::class, 'submitContact'])->name('public.contact.submit');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
