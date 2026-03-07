@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Color extends Model
 {
-    protected $fillable = ['group', 'key', 'value'];
+    protected $fillable = ['group', 'key', 'value', 'suggested_ar_name'];
 }

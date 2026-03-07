@@ -24,9 +24,10 @@ class ColorController extends Controller
             'group' => 'required|string',
             'key' => 'required|string|unique:colors,key',
             'value' => 'required|string',
+            'suggested_ar_name' => 'nullable|string',
         ]);
 
-        Color::create($request->only('group','key','value'));
+        Color::create($request->only('group', 'key', 'value', 'suggested_ar_name'));
 
         return redirect()->route('colors.index')->with('success', 'تم إضافة اللون بنجاح');
     }
@@ -40,11 +41,12 @@ class ColorController extends Controller
     {
         $request->validate([
             'group' => 'required|string',
-            'key' => 'required|string|unique:colors,key,'.$color->id,
+            'key' => 'required|string|unique:colors,key,' . $color->id,
             'value' => 'required|string',
+            'suggested_ar_name' => 'nullable|string',
         ]);
 
-        $color->update($request->only('group','key','value'));
+        $color->update($request->only('group', 'key', 'value', 'suggested_ar_name'));
 
         return redirect()->route('colors.index')->with('success', 'تم تحديث اللون بنجاح');
     }

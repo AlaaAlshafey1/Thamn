@@ -26,6 +26,12 @@
                     value="{{ old('value', $color->value ?? '#000000') }}">
             </div>
 
+            <div class="mb-3">
+                <label>الاسم العربي المقترح</label>
+                <input type="text" name="suggested_ar_name" class="form-control"
+                    value="{{ old('suggested_ar_name', $color->suggested_ar_name ?? '') }}">
+            </div>
+
             <button type="submit" class="btn btn-success">{{ isset($color) ? 'تحديث' : 'حفظ' }}</button>
         </form>
     </div>
