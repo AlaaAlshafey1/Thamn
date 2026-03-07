@@ -142,6 +142,18 @@ class PaymentController extends Controller
         ]);
 
         // Send FCM: Order Received
+        $this->notifyOrderReceived($order, $request);
+
+        $this->handleEvaluationRouting($order);
+
+        return response()->json($statusResponse);
+    }
+
+    /**
+     * Notify user that order is received
+     */
+    private function notifyOrderReceived(Order $order, Request $request): void
+    {
         $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
         if ($fcmToken) {
             $this->notifyByFirebase(
@@ -151,8 +163,13 @@ class PaymentController extends Controller
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_received']]
             );
         }
+    }
 
-
+    /**
+     * Route order to appropriate evaluation service
+     */
+    private function handleEvaluationRouting(Order $order): void
+    {
         try {
             // نجيب الإجابة على سؤال rateTypeSelection
             $rateTypeAnswer = $order->details()
@@ -167,33 +184,31 @@ class PaymentController extends Controller
 
             switch ($evaluationType) {
                 case 'ai':
-                    app(ThamnEvaluationService::class)->runAiEvaluation($order);
+                    $this->runAiEvaluation($order);
                     break;
 
                 case 'expert':
-                    $this->sendToExperts($order); // هنعملها بعدين
+                    $this->sendToExperts($order);
                     break;
 
                 case 'best':
-                    app(ThamnEvaluationService::class)->runThamnValuation($order); // هنعملها بعدين
+                    $this->runPricingEvaluation($order);
                     break;
 
                 default:
-                    Log::warning('Unknown evaluation type', [
+                    Log::warning('Unknown evaluation type, defaulting to Expert', [
                         'order_id' => $order->id,
                         'evaluation_type' => $evaluationType
                     ]);
+                    $this->sendToExperts($order);
             }
 
         } catch (\Throwable $e) {
-            Log::error('Evaluation Failed on Callback', [
+            Log::error('Evaluation Routing Failed', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage()
             ]);
         }
-
-
-        return response()->json($statusResponse);
     }
 
 
