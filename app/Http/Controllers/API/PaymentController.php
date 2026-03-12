@@ -9,6 +9,8 @@ use App\Models\TapPayment;
 use App\Services\TapPaymentService;
 use App\Services\OpenAIService;
 use App\Services\ThamnEvaluationService;
+use App\Mail\InvoiceMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\OrderReadyForExpertsNotification;
 use App\Http\Traits\FCMOperation;
@@ -144,6 +146,23 @@ class PaymentController extends Controller
         // Send FCM: Order Received
         $this->notifyOrderReceived($order, $request);
 
+        // Send FCM & Email: Payment Success & Invoice
+        try {
+            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+            if ($fcmToken) {
+                $this->notifyByFirebase(
+                    lang('تم الدفع بنجاح', 'Payment Successful', $request),
+                    lang('تم استلام مبلغ ' . number_format($order->total_price, 2) . ' ريال بنجاح لطلبك رقم ' . $order->id, 'Payment of ' . number_format($order->total_price, 2) . ' SAR received successfully for order #' . $order->id, $request),
+                    [$fcmToken],
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'payment_success']]
+                );
+            }
+
+            Mail::to($order->user->email)->send(new InvoiceMail($order));
+        } catch (\Exception $e) {
+            \Log::error('Payment Success Notification/Mail Failed: ' . $e->getMessage());
+        }
+
         $this->handleEvaluationRouting($order);
 
         return response()->json($statusResponse);
@@ -201,6 +220,29 @@ class PaymentController extends Controller
                         'evaluation_type' => $evaluationType
                     ]);
                     $this->sendToExperts($order);
+            }
+
+            // Send FCM: Method Selection Confirmation
+            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+            if ($fcmToken) {
+                $methodNameAr = [
+                    'ai' => 'تقييم الذكاء الاصطناعي',
+                    'expert' => 'تقييم الخبراء',
+                    'best' => 'أفضل تقييم (ثمن)'
+                ][$evaluationType] ?? 'طريقة التثمين المختارة';
+
+                $methodNameEn = [
+                    'ai' => 'AI Evaluation',
+                    'expert' => 'Expert Evaluation',
+                    'best' => 'Thamn Best Evaluation'
+                ][$evaluationType] ?? 'Chosen Evaluation Method';
+
+                $this->notifyByFirebase(
+                    lang('تم اختيار طريقة التثمين', 'Evaluation Method Selected', request()),
+                    lang('لقد اخترت طريقة: ' . $methodNameAr, 'You have selected: ' . $methodNameEn, request()),
+                    [$fcmToken],
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'method_selected', 'method' => $evaluationType]]
+                );
             }
 
         } catch (\Throwable $e) {

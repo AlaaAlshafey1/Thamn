@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Traits\FCMOperation;
 
 class NotificationController extends Controller
 {
+    use FCMOperation;
     /**
      * Get Notifications
      * GET /notifications
@@ -71,6 +73,35 @@ class NotificationController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'All notifications marked as read',
+        ]);
+    }
+
+    /**
+     * Test Firebase Notification
+     * POST /notifications/test
+     */
+    public function testNotification(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+            'title' => 'nullable|string',
+            'body' => 'nullable|string',
+        ]);
+
+        $title = $request->title ?? 'Test Notification';
+        $body = $request->body ?? 'This is a test notification from Thamn system';
+
+        $response = $this->notifyByFirebase(
+            $title,
+            $body,
+            [$request->fcm_token],
+            ['data' => ['type' => 'test_notification']]
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Notification test executed',
+            'firebase_response' => $response
         ]);
     }
 }

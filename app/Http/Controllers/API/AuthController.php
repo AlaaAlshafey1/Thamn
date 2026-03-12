@@ -4,6 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Notifications\AccountDeletedNotification;
+use App\Mail\WelcomeMail;
+use App\Mail\OTPMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -54,6 +57,13 @@ class AuthController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Send OTP via Email
+        try {
+            Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
+        } catch (\Exception $e) {
+            \Log::error('OTP Email Failed (Register): ' . $e->getMessage());
+        }
 
         // هنا تبعته SMS لو عندك خدمة
 
@@ -165,6 +175,13 @@ class AuthController extends Controller
             );
         }
 
+        // Send Welcome Mail
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request)));
+        } catch (\Exception $e) {
+            \Log::error('Welcome Mail Failed: ' . $e->getMessage());
+        }
+
         return response()->json([
             'status' => true,
             'message' => lang('تم تسجيل الدخول بنجاح', 'Login successful', $request),
@@ -217,6 +234,25 @@ class AuthController extends Controller
         User::where('id', $request->user_id)->update(['is_verified' => true]);
 
         $user = User::find($request->user_id);
+
+        // Send FCM Notification for Register/Verify
+        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
+        if ($fcmToken) {
+            $this->notifyByFirebase(
+                lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request),
+                lang('تم تفعيل حسابك بنجاح، استكشف عالم التثمين الآن', 'Account verified successfully, explore the world of evaluation now', $request),
+                [$fcmToken],
+                ['data' => ['user_id' => $user->id, 'type' => 'register_success']]
+            );
+        }
+
+        // Send Welcome Mail
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request)));
+        } catch (\Exception $e) {
+            \Log::error('Welcome Mail Failed (Register): ' . $e->getMessage());
+        }
+
         $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
@@ -248,6 +284,15 @@ class AuthController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $user = User::find($request->user_id);
+
+        // Send OTP via Email
+        try {
+            Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
+        } catch (\Exception $e) {
+            \Log::error('OTP Email Failed (Resend): ' . $e->getMessage());
+        }
 
         return response()->json([
             'status' => true,
