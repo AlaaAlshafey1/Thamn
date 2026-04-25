@@ -42,7 +42,21 @@ Route::prefix('auth')->group(function () {
 Route::get('categories', [HomeController::class, 'categories']);
 
 Route::get('terms', [HomeController::class, 'terms']);
+Route::get('/test-fcm', function () {
 
+    $token = "cZ7ORHjG106wrDScXeRUNl:APA91bGOyUGuWZ7YJWpbEuk95GpztU2ntY078R7ul5ZIgIhNZ0BvTi6n1_hRw8AK8Ww69kCUh3a_uwAmz25bGZPr_HFyitABRuHro-65eIgsKa1-x6gQ3q4";
+
+    $trait = new class {
+        use \App\Http\Traits\FCMOperation;
+    };
+
+    return $trait->notifyByFirebase(
+        "Test",
+        "Hello from Alaa",
+        [$token],
+        ['data' => ['test' => 1]]
+    );
+});
 // ------------------ MARKETPLACE ENDPOINTS ------------------
 Route::get('marketplace/products', [MarketplaceController::class, 'index']);
 Route::get('marketplace/products/{productId}', [MarketplaceController::class, 'show']);

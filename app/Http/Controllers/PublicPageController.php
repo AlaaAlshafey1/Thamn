@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class PublicPageController extends Controller
 {
+    public function index()
+    {
+        return view('public.home');
+    }
+
     public function privacy(Request $request)
     {
         $page = About::where('type', 'privacy')->first();

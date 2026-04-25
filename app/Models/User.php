@@ -27,6 +27,8 @@ class User extends Authenticatable
         'swift',
         'experience',
         'certificates',
+        'experience_certificate',
+        'expertise',
         'notes',
         'balance',
         'social_id',

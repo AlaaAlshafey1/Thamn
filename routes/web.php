@@ -21,9 +21,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeStepController;
 use App\Http\Controllers\IntroController;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+Route::get('/', [App\Http\Controllers\PublicPageController::class, 'index'])->name('home');
 
 // Public Pages for App Store Compliance
 Route::get('/privacy-policy', [App\Http\Controllers\PublicPageController::class, 'privacy'])->name('public.privacy');
@@ -31,6 +29,10 @@ Route::get('/terms-conditions', [App\Http\Controllers\PublicPageController::clas
 Route::get('/about-us', [App\Http\Controllers\PublicPageController::class, 'about'])->name('public.about');
 Route::get('/contact-us', [App\Http\Controllers\PublicPageController::class, 'contact'])->name('public.contact');
 Route::post('/contact-us', [App\Http\Controllers\PublicPageController::class, 'submitContact'])->name('public.contact.submit');
+
+// Expert Registration
+Route::get('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'showForm'])->name('experts.register');
+Route::post('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'register'])->name('experts.register.submit');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
