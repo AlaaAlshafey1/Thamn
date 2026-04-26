@@ -320,7 +320,7 @@ class AuthController extends Controller
             'email' => 'nullable|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:255|unique:users,phone,' . $user->id,
             'password' => 'nullable|string|min:6|confirmed',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image',
         ]);
 
         if ($validator->fails()) {

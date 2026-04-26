@@ -709,6 +709,7 @@ class OrderController extends Controller
 
         /* ===================== RESPONSE ===================== */
         return response()->json([
+            'id' => $order->id,
             'category' => $category,
             'description' => $description,
             'image' => $image,
@@ -717,6 +718,7 @@ class OrderController extends Controller
             'reasoning' => $reasoning,
             'prices' => $prices,
             'details' => $details,
+            'created_at' => $order->created_at,
         ]);
     }
 
