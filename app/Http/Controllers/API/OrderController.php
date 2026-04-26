@@ -643,13 +643,30 @@ class OrderController extends Controller
 
         /* ===================== MAIN IMAGE ===================== */
         $imageFile = $order->files->firstWhere('type', 'image');
+        $image = $imageFile ? full_url($imageFile->file_path) : '';
 
-        $image = '';
         if ($order->category->name_en == "cars") {
-
             $image = URL::asset('/assets/img/Cars-result.jpeg');
         }
 
+        /* ===================== IMAGES & FILES ===================== */
+        $images = $order->files
+            ->where('type', 'image')
+            ->map(fn($f) => [
+                'id' => $f->id,
+                'name' => $f->file_name,
+                'url' => full_url($f->file_path)
+            ])
+            ->values();
+
+        $files = $order->files
+            ->where('type', 'file')
+            ->map(fn($f) => [
+                'id' => $f->id,
+                'name' => $f->file_name,
+                'url' => full_url($f->file_path)
+            ])
+            ->values();
 
         /* ===================== PRICES ===================== */
         $prices = [
@@ -695,6 +712,8 @@ class OrderController extends Controller
             'category' => $category,
             'description' => $description,
             'image' => $image,
+            'images' => $images,
+            'files' => $files,
             'reasoning' => $reasoning,
             'prices' => $prices,
             'details' => $details,
