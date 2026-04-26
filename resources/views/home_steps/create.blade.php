@@ -91,16 +91,16 @@
                 <div class="item-row mb-3 p-3 border rounded">
                     <div class="row">
                         <div class="col-md-4">
-                            <label class="form-label">العنوان (Label) *</label>
-                            <input type="text" name="items[0][label]" class="form-control" required>
+                            <label class="form-label label-text">العنوان (Label) *</label>
+                            <input type="text" name="items[0][label]" class="form-control item-label" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">الوصف (Value) *</label>
-                            <input type="text" name="items[0][value]" class="form-control">
+                            <label class="form-label value-text">الوصف (Value) *</label>
+                            <input type="text" name="items[0][value]" class="form-control item-value">
                         </div>
                         <div class="col-md-3 image-field" style="display: none;">
-                            <label class="form-label">رابط الصورة (Image)</label>
-                            <input type="file" name="items[0][image]" class="form-control" accept="image/*">
+                            <label class="form-label">الصورة (Image)</label>
+                            <input type="file" name="items[0][image]" class="form-control image-input" accept="image/*">
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
                             <button type="button" class="btn btn-danger btn-sm remove-item" disabled>حذف</button>
@@ -127,11 +127,28 @@
         function toggleImageFields() {
             const type = document.querySelector('select[name="type"]').value;
             const imageFields = document.querySelectorAll('.image-field');
+            const itemLabels = document.querySelectorAll('.item-label');
+            const itemValues = document.querySelectorAll('.item-value');
+            const labelTexts = document.querySelectorAll('.label-text');
+            const valueTexts = document.querySelectorAll('.value-text');
+            const imageInputs = document.querySelectorAll('.image-input');
 
             if (type === 'image' || type === 'banner' ) {
                 imageFields.forEach(field => field.style.display = 'block');
             } else {
                 imageFields.forEach(field => field.style.display = 'none');
+            }
+
+            if (type === 'banner') {
+                itemLabels.forEach(el => el.required = false);
+                labelTexts.forEach(el => el.innerText = 'العنوان (اختياري)');
+                valueTexts.forEach(el => el.innerText = 'الوصف (اختياري)');
+                imageInputs.forEach(el => el.multiple = true);
+            } else {
+                itemLabels.forEach(el => el.required = true);
+                labelTexts.forEach(el => el.innerText = 'العنوان (Label) *');
+                valueTexts.forEach(el => el.innerText = 'الوصف (Value) *');
+                imageInputs.forEach(el => el.multiple = false);
             }
         }
 
@@ -144,22 +161,26 @@
         document.getElementById('add-item').addEventListener('click', function () {
             const container = document.getElementById('items-container');
             const type = document.querySelector('select[name="type"]').value;
-            const imageFieldDisplay = type === 'image' ? 'block' : 'none';
+            const imageFieldDisplay = (type === 'image' || type === 'banner') ? 'block' : 'none';
+            const isRequired = type !== 'banner' ? 'required' : '';
+            const labelText = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (Label) *';
+            const valueText = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (Value) *';
+            const isMultiple = type === 'banner' ? 'multiple' : '';
 
             const newItem = `
                     <div class="item-row mb-3 p-3 border rounded">
                         <div class="row">
                             <div class="col-md-5">
-                                <label class="form-label">العنوان (Label) *</label>
-                                <input type="text" name="items[${itemIndex}][label]" class="form-control" required>
+                                <label class="form-label label-text">${labelText}</label>
+                                <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" ${isRequired}>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">الوصف (Value) *</label>
-                                <input type="text" name="items[${itemIndex}][value]" class="form-control" >
+                                <label class="form-label value-text">${valueText}</label>
+                                <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" >
                             </div>
                             <div class="col-md-3 image-field" style="display: ${imageFieldDisplay};">
-                                <label class="form-label">رابط الصورة (Image)</label>
-                                <input type="file" name="items[${itemIndex}][image]" class="form-control" accept="image/*">
+                                <label class="form-label">الصورة (Image)</label>
+                                <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" ${isMultiple}>
                             </div>
                             <div class="col-md-1 d-flex align-items-end">
                                 <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
@@ -168,8 +189,71 @@
                     </div>
                 `;
             container.insertAdjacentHTML('beforeend', newItem);
+            const lastItem = container.lastElementChild;
+            const lastInput = lastItem.querySelector('.image-input');
+            if (lastInput) {
+                lastInput.addEventListener('change', handleImageChange);
+            }
             itemIndex++;
             updateRemoveButtons();
+        });
+
+        function handleImageChange(e) {
+            const type = document.querySelector('select[name="type"]').value;
+            if (type !== 'banner') return;
+
+            const files = e.target.files;
+            if (files.length > 1) {
+                const container = document.getElementById('items-container');
+                const label = e.target.closest('.item-row').querySelector('.item-label').value;
+                const value = e.target.closest('.item-row').querySelector('.item-value').value;
+
+                // Keep only the first file in the current input
+                const dtFirst = new DataTransfer();
+                dtFirst.items.add(files[0]);
+                e.target.files = dtFirst.files;
+
+                // Create new rows for the rest
+                for (let i = 1; i < files.length; i++) {
+                    const newItemHTML = `
+                        <div class="item-row mb-3 p-3 border rounded">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <label class="form-label label-text">العنوان (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" value="${label}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label value-text">الوصف (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" value="${value}">
+                                </div>
+                                <div class="col-md-3 image-field" style="display: block;">
+                                    <label class="form-label">الصورة (Image)</label>
+                                    <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" multiple>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', newItemHTML);
+                    const lastRow = container.lastElementChild;
+                    const lastInput = lastRow.querySelector('.image-input');
+
+                    const dt = new DataTransfer();
+                    dt.items.add(files[i]);
+                    lastInput.files = dt.files;
+
+                    lastInput.addEventListener('change', handleImageChange);
+                    itemIndex++;
+                }
+                updateRemoveButtons();
+            }
+        }
+
+        // Add listener to initial inputs
+        document.querySelectorAll('.image-input').forEach(input => {
+            input.addEventListener('change', handleImageChange);
         });
 
         document.getElementById('items-container').addEventListener('click', function (e) {

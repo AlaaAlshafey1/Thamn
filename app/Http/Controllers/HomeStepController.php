@@ -37,30 +37,32 @@ class HomeStepController extends Controller
             'desc_ar' => 'nullable|string',
             'desc_en' => 'nullable|string',
             'type' => 'required|in:steps,check,image,banner',
-            'items' => 'required|array',
-            'items.*.label' => 'required|string',
+            'items' => 'nullable|array',
+            'items.*.label' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
             'items.*.value' => 'nullable|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Process items and handle image uploads
         $items = [];
-        foreach ($request->items as $index => $item) {
-            $imagePath = null;
+        if ($request->has('items')) {
+            foreach ($request->items as $index => $item) {
+                $imagePath = null;
 
-            // Handle image upload if type is 'image' or 'banner' and file exists
-            if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
-                $image = $request->file("items.{$index}.image");
-                $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('home_steps', $imageName, 'public');
-                $imagePath = asset('storage/' . $imagePath);
+                // Handle image upload if type is 'image' or 'banner' and file exists
+                if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
+                    $image = $request->file("items.{$index}.image");
+                    $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
+                    $imagePath = $image->storeAs('home_steps', $imageName, 'public');
+                    $imagePath = asset('storage/' . $imagePath);
+                }
+
+                $items[] = [
+                    'label' => $item['label'] ?? '',
+                    'value' => $item['value'] ?? '',
+                    'image' => $imagePath,
+                ];
             }
-
-            $items[] = [
-                'label' => $item['label'] ?? '',
-                'value' => $item['value'] ?? '',
-                'image' => $imagePath,
-            ];
         }
 
         $validated['items'] = $items;
@@ -101,33 +103,35 @@ class HomeStepController extends Controller
             'desc_ar' => 'nullable|string',
             'desc_en' => 'nullable|string',
             'type' => 'required|in:steps,check,image,banner',
-            'items' => 'required|array',
-            'items.*.label' => 'required|string',
-            'items.*.value' => 'required|string',
+            'items' => 'nullable|array',
+            'items.*.label' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.value' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-
+            'banner_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Process items and handle image uploads
         $items = [];
         $existingItems = $homeStep->items ?? [];
 
-        foreach ($request->items as $index => $item) {
-            $imagePath = $existingItems[$index]['image'] ?? null; // Keep existing image
+        if ($request->has('items')) {
+            foreach ($request->items as $index => $item) {
+                $imagePath = $existingItems[$index]['image'] ?? null; // Keep existing image
 
-            // Handle new image upload if type is 'image' or 'banner' and file exists
-            if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
-                $image = $request->file("items.{$index}.image");
-                $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('home_steps', $imageName, 'public');
-                $imagePath = asset('storage/' . $imagePath);
+                // Handle new image upload if type is 'image' or 'banner' and file exists
+                if (in_array($request->type, ['image', 'banner']) && $request->hasFile("items.{$index}.image")) {
+                    $image = $request->file("items.{$index}.image");
+                    $imageName = time() . '_' . $index . '.' . $image->getClientOriginalExtension();
+                    $imagePath = $image->storeAs('home_steps', $imageName, 'public');
+                    $imagePath = asset('storage/' . $imagePath);
+                }
+
+                $items[] = [
+                    'label' => $item['label'] ?? '',
+                    'value' => $item['value'] ?? '',
+                    'image' => $imagePath,
+                ];
             }
-
-            $items[] = [
-                'label' => $item['label'] ?? '',
-                'value' => $item['value'] ?? '',
-                'image' => $imagePath,
-            ];
         }
 
         $validated['items'] = $items;
