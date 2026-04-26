@@ -16,6 +16,7 @@ class InvoiceResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'title' => $this->order->category->name_ar ?? $this->order->category->name_en ?? 'فاتورة تقييم',
             'date' => $this->created_at->format('Y-m-d'),
             'invoice_number' => 'INV-' . str_pad($this->id, 3, '0', STR_PAD_LEFT),
             'amount' => (float) $this->amount,

@@ -449,7 +449,7 @@ class SettingsController extends Controller
 
         $payments = TapPayment::whereHas('order', function ($query) use ($user) {
             $query->where('user_id', $user->id);
-        })->latest()->get();
+        })->with('order.category')->latest()->get();
 
         return InvoiceResource::collection($payments);
     }
