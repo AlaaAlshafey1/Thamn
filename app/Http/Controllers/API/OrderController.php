@@ -730,6 +730,7 @@ class OrderController extends Controller
 
         // Reset previous evaluation
         $order->update([
+            'status' => 'beingReEstimated',
             'ai_min_price' => null,
             'ai_max_price' => null,
             'ai_price' => null,
@@ -771,6 +772,7 @@ class OrderController extends Controller
             'status' => true,
             'message' => 'Order re-evaluation requested successfully',
             'order_id' => $order->id,
+            'new_status' => 'beingReEstimated',
         ]);
     }
 
