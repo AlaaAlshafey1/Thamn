@@ -100,7 +100,7 @@ class OrderController extends Controller
             'expert_price' => 'required|numeric|min:0',
             'expert_min_price' => 'nullable|numeric|min:0',
             'expert_max_price' => 'nullable|numeric|min:0',
-            'expert_reasoning' => 'required|string|max:1000',
+            'expert_reasoning' => 'required|string|max:5000',
         ]);
 
         // تحديث الأوردر
@@ -137,7 +137,7 @@ class OrderController extends Controller
     public function thamnEvaluate(Request $request, Order $order, ThamnEvaluationService $evaluationService)
     {
         $request->validate([
-            'thamn_reasoning' => 'nullable|string|max:1000',
+            'thamn_reasoning' => 'nullable|string|max:5000',
         ]);
 
         $evaluationService->runThamnValuation($order);
