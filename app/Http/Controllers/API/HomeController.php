@@ -132,7 +132,7 @@ class HomeController extends Controller
                     'id' => $term->id,
                     'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
                     'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
-                    'file' => $term->file ? asset('uploads/terms/' . $term->file) : null,
+                    'file' => $term->file ? asset($term->file) : null,
                     'order' => $term->sort_order,
                 ];
             });

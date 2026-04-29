@@ -300,7 +300,9 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $terms = About::where('type', 'terms')->get();
+        $terms = TermCondition::where('is_active', 1)
+            ->orderBy('sort_order')
+            ->get();
 
         if ($terms->isEmpty()) {
             return response()->json([
