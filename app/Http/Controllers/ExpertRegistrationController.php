@@ -97,18 +97,18 @@ class ExpertRegistrationController extends Controller
                 
                 $msg = \App\Services\WhatsAppService::getTemplate('new_expert_reg', ['name' => $user->first_name . ' ' . $user->last_name]);
 
+                $adminEmail = 'alaa.alshafey12345@gmail.com';
+                Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                    'يا مدير، خبير جديد يبي ينضم لثمن!',
+                    "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\nادخل على لوحة التحكم وشيك على ملفه.",
+                    route('experts.show', $user->id)
+                ));
+
                 foreach ($admins as $admin) {
                     // 1. WhatsApp
                     if ($admin->phone) {
                         $whatsapp->sendMessage($admin->phone, $msg);
                     }
-                    
-                    // 2. Email
-                    Mail::to($admin->email)->send(new \App\Mail\SystemNotificationMail(
-                        'يا مدير، خبير جديد يبي ينضم لثمن!',
-                        "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\nادخل على لوحة التحكم وشيك على ملفه.",
-                        route('experts.show', $user->id)
-                    ));
                 }
                 
             } catch (\Exception $e) {

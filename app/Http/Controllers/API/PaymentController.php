@@ -182,6 +182,14 @@ class PaymentController extends Controller
                 route('orders.show', $order->id)
             ));
 
+            // Notify Admin
+            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                'يا مدير، فيه طلب تثمين جديد اندفع!',
+                "بشرى سارة! العميل {$order->user->first_name} دفع قيمة طلب التثمين رقم {$order->id}.\nشيك على الطلب في لوحة التحكم.",
+                route('orders.show', $order->id)
+            ));
+
             $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
             if ($fcmToken) {
                 $this->notifyByFirebase(

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\WithdrawalRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class WithdrawalController extends Controller
 {
@@ -58,20 +60,20 @@ class WithdrawalController extends Controller
                 'amount' => $request->amount
             ]);
 
+            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                'يا مدير، فيه طلب سحب أرباح جديد!',
+                "الخبير {$user->first_name} طلب سحب مبلغ: " . number_format($request->amount, 2) . " ريال.\nتكفى لا تبطي عليه وراجع الطلب الحين.",
+                route('withdrawals.index')
+            ));
+
             foreach ($admins as $admin) {
                 // 1. Notify via WhatsApp (if phone exists)
                 if ($admin->phone) {
                     $whatsapp->sendMessage($admin->phone, $msg);
                 }
 
-                // 2. Notify via Email
-                Mail::to($admin->email)->send(new \App\Mail\SystemNotificationMail(
-                    'يا مدير، فيه طلب سحب أرباح جديد!',
-                    "الخبير {$user->first_name} طلب سحب مبلغ: " . number_format($request->amount, 2) . " ريال.\nتكفى لا تبطي عليه وراجع الطلب الحين.",
-                    route('withdrawals.index')
-                ));
-
-                // 3. Database Notification (Optional - if you have the class)
+                // 2. Database Notification (Optional - if you have the class)
                 // $admin->notify(new \App\Notifications\NewWithdrawalNotification($withdrawal));
             }
         } catch (\Exception $e) {

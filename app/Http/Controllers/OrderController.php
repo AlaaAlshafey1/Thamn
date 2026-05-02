@@ -17,25 +17,33 @@ class OrderController extends Controller
     public function index()
     {
         if (auth()->user()->hasRole('expert')) {
-            // خبير: يشوف اللي متاح (expert_id null) أو اللي هو مسكه (expert_id = أنا)
-            $orders = Order::where(function ($q) {
+            // الطلبات النشطة: اللي متاح (expert_id null) أو اللي هو مسكه وشغال عليه
+            $activeOrders = Order::where(function ($q) {
                 $q->where('expert_id', Auth::id())
                     ->orWhereNull('expert_id');
             })
-                ->whereIn('status', ['orderReceived', 'beingEstimated', 'paid'])
-                ->when(auth()->user()->category_id, function ($q) {
-                    return $q->where('category_id', auth()->user()->category_id);
-                })
+            ->whereIn('status', ['orderReceived', 'beingEstimated', 'paid'])
+            ->when(auth()->user()->category_id, function ($q) {
+                return $q->where('category_id', auth()->user()->category_id);
+            })
+            ->with('user')
+            ->latest()
+            ->get();
+
+            // الطلبات السابقة: اللي هو خلصها
+            $completedOrders = Order::where('expert_id', Auth::id())
+                ->whereIn('status', ['evaluated', 'finished', 'completed'])
                 ->with('user')
                 ->latest()
-                ->paginate(20);
+                ->get();
+
+            return view('orders.index', compact('activeOrders', 'completedOrders'));
         } else {
             $orders = Order::with('user')
                 ->latest()
                 ->paginate(20);
+            return view('orders.index', compact('orders'));
         }
-
-        return view('orders.index', compact('orders'));
     }
 
 
