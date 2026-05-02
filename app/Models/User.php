@@ -42,7 +42,13 @@ class User extends Authenticatable
         'news_enabled',
         'email_enabled',
         'sms_enabled',
+        'category_id',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
 
     protected $hidden = [

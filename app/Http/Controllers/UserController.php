@@ -56,8 +56,9 @@ public function experts()
     }
     public function createExpert()
     {
+        $categories = \App\Models\Category::all();
         $roles = Role::where("name","!=","superadmin")->get();
-        return view('users.experts.create', compact('roles'));
+        return view('users.experts.create', compact('roles', 'categories'));
     }
 
     public function store(UserRequest $request)
@@ -109,16 +110,17 @@ public function storeExpert(UserRequest $request)
 
     return redirect()->route('experts.index')->with('success', 'تم إضافة الخبير بنجاح');
 }
-public function editExpert(User $user)
-{
-    // لو مش خبير
-    if (!$user->hasRole('expert')) {
-        return redirect()->back()->with('error', 'هذا المستخدم ليس خبيرًا');
-    }
+    public function editExpert(User $user)
+    {
+        // لو مش خبير
+        if (!$user->hasRole('expert')) {
+            return redirect()->back()->with('error', 'هذا المستخدم ليس خبيرًا');
+        }
 
-    $roles = Role::where("name","!=","superadmin")->get();
-    return view('users.experts.edit', compact('user', 'roles'));
-}
+        $categories = \App\Models\Category::all();
+        $roles = Role::where("name","!=","superadmin")->get();
+        return view('users.experts.edit', compact('user', 'roles', 'categories'));
+    }
 public function updateExpert(UserRequest $request, User $user)
 {
     if (!$user->hasRole('expert')) {

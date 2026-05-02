@@ -133,7 +133,20 @@
         style="direction: rtl;">
         <div class="d-flex flex-column">
             <h4 class="content-title mb-1 fw-bold text-primary">إدارة الطلبات</h4>
-            <small class="text-muted">عرض جميع الطلبات والتحكم بها</small>
+            @if(auth()->user()->hasRole('expert'))
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">عرض الطلبات الخاصة بقسم:</small>
+                    @if(auth()->user()->category)
+                        <span class="badge bg-gold-transparent text-gold border border-gold-light px-3 py-2" style="background-color: rgba(193, 149, 62, 0.1); color: #c1953e; border: 1px solid rgba(193, 149, 62, 0.3);">
+                            <i class="fas fa-tags ml-1"></i> {{ auth()->user()->category->name_ar ?? auth()->user()->category->name_en }}
+                        </span>
+                    @else
+                        <span class="badge bg-secondary-transparent text-secondary px-3 py-2">لم يتم تحديد قسم</span>
+                    @endif
+                </div>
+            @else
+                <small class="text-muted">عرض جميع الطلبات والتحكم بها</small>
+            @endif
         </div>
     </div>
 @endsection
@@ -152,106 +165,98 @@
 
             <div class="table-responsive dataTables-wrapper">
                 <table id="ordersTable" class="table table-hover table-striped text-center align-middle">
-                    <thead class="bg-light">
+                    <thead class="bg-light text-center">
                         <tr>
-                            <th>#</th>
-                            <th>المستخدم</th>
-                            <th>الحالة</th>
-                            <th>الدفع</th>
-                            <th>الإجمالي</th>
-                            <th>تاريخ</th>
-                            @if(auth()->user()->hasRole('expert'))
-                                <th>تقييم الخبير</th>
-                            @endif
-                            <th>تقييم AI</th>
-                            <th>تقييم الخبير</th>
-                            <th>السعر النهائي</th>
-
-                            <th>التحكم</th>
+                            <th class="border-bottom-0">#</th>
+                            <th class="border-bottom-0">المستخدم</th>
+                            <th class="border-bottom-0">الحالة</th>
+                            <th class="border-bottom-0">الدفع</th>
+                            <th class="border-bottom-0">التاريخ</th>
+                            <th class="border-bottom-0">تقييم AI</th>
+                            <th class="border-bottom-0">تقييم الخبير</th>
+                            <th class="border-bottom-0">السعر النهائي</th>
+                            <th class="border-bottom-0">العمليات</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($orders as $key => $order)
                             <tr>
                                 <td>{{ $key + 1 }}</td>
-                                <td>{{ $order->user->first_name ?? '-' }}</td>
                                 <td>
-                                    <span class="badge bg-info">{{ $order->status }}</span>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="ml-2">
+                                            <div class="font-weight-bold">{{ $order->user->first_name ?? '-' }}</div>
+                                            <small class="text-muted text-ltr">{{ $order->user->phone ?? '' }}</small>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
-                                    @if($order->payment_status === 'paid')
-                                        <span class="badge bg-success">مدفوع</span>
-                                    @elseif($order->payment_status === 'failed')
-                                        <span class="badge bg-danger">فشل</span>
+                                    @php
+                                        $statusClasses = [
+                                            'pending' => 'bg-warning-transparent text-warning',
+                                            'orderReceived' => 'bg-info-transparent text-info',
+                                            'beingEstimated' => 'bg-primary-transparent text-primary',
+                                            'estimated' => 'bg-success-transparent text-success',
+                                            'cancelled' => 'bg-danger-transparent text-danger',
+                                        ];
+                                        $statusClass = $statusClasses[$order->status] ?? 'bg-secondary-transparent text-secondary';
+                                    @endphp
+                                    <span class="badge {{ $statusClass }} py-2 px-3">{{ $order->status }}</span>
+                                </td>
+                                <td>
+                                    @if($order->status !== 'pending' && $order->status !== 'failed')
+                                        <span class="text-success"><i class="fa fa-check-circle ml-1"></i> مدفوع</span>
                                     @else
-                                        <span class="badge bg-warning">لم يتم</span>
+                                        <span class="text-danger"><i class="fa fa-times-circle ml-1"></i> لم يتم</span>
                                     @endif
                                 </td>
-                                <td>{{ number_format($order->total_price, 2) }} SAR</td>
                                 <td>{{ $order->created_at->format('Y-m-d') }}</td>
-
-                                <td>
-                                    @if(auth()->user()->hasRole('expert'))
-                                        @if(!$order->expert_id)
-                                            {{-- لو مفيش خبير معين للأوردر، اعرض الزر --}}
-                                            <div class="toggle-switch d-flex justify-content-end gap-2">
-                                                <span class="text-danger">❌</span>
-                                                <label class="switch">
-                                                    <input type="checkbox" class="expert-select" data-order-id="{{ $order->id }}">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                                <span class="text-success">✅</span>
-                                            </div>
-                                        @else
-                                            {{-- لو في خبير بالفعل، اعرض اسمه --}}
-                                            <span class="badge bg-primary">
-                                                {{ $order->expert_price ?? 'قم بتحديد السعر الان' }}
-                                            </span>
-                                        @endif
-                                    @endif
-                                </td>
+                                
+                                {{-- تقييم AI --}}
                                 <td>
                                     @if($order->ai_price)
-                                        <span class="badge bg-primary">
-                                            {{ number_format($order->ai_price, 2) }} SAR
-                                        </span>
-                                        <br>
-                                        <small class="text-muted">
-                                            ثقة: {{ $order->ai_confidence }}%
-                                        </small>
+                                        <span class="font-weight-bold text-primary">{{ number_format($order->ai_price, 0) }}</span>
+                                        <small class="text-muted">SAR</small>
                                     @else
-                                        <span class="text-muted">—</span>
+                                        <span class="text-muted small">قيد الانتظار</span>
                                     @endif
                                 </td>
-
 
                                 {{-- تقييم الخبير --}}
                                 <td>
-                                    @if($order->expert_price)
-                                        <span class="badge bg-dark">
-                                            {{ number_format($order->expert_price, 2) }} SAR
-                                        </span>
-                                    @elseif(auth()->user()->hasRole('expert') && !$order->expert_id)
-                                        <span class="badge bg-warning text-dark">بانتظارك</span>
+                                    @if(auth()->user()->hasRole('expert') && !$order->expert_id)
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <label class="switch mb-0">
+                                                <input type="checkbox" class="expert-select" data-order-id="{{ $order->id }}">
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <small class="text-muted">استلام</small>
+                                        </div>
+                                    @elseif($order->expert_price)
+                                        <span class="font-weight-bold text-warning">{{ number_format($order->expert_price, 0) }}</span>
+                                        <small class="text-muted">SAR</small>
                                     @else
-                                        <span class="text-muted">—</span>
+                                        <span class="badge bg-light text-muted">لم يتم</span>
                                     @endif
                                 </td>
 
-
-
                                 {{-- السعر النهائي --}}
                                 <td>
-                                    <strong class="text-success">
-                                        {{ number_format($order->total_price, 2) }} SAR
-                                    </strong>
+                                    <strong class="text-dark">{{ number_format($order->total_price, 0) }}</strong>
+                                    <small class="text-muted">SAR</small>
                                 </td>
 
-
                                 <td>
-                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-outline-info btn-sm">
-                                        <i class="bx bx-show"></i>
-                                    </a>
+                                    <div class="btn-list">
+                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل">
+                                            <i class="bx bx-show fs-18"></i>
+                                        </a>
+                                        @can('orders_edit')
+                                        <a href="#" class="btn btn-sm btn-primary-light btn-icon" title="تعديل">
+                                            <i class="bx bx-edit fs-18"></i>
+                                        </a>
+                                        @endcan
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

@@ -16,7 +16,8 @@ class ExpertRegistrationController extends Controller
      */
     public function showForm()
     {
-        return view('public.expert-register');
+        $categories = \App\Models\Category::where('is_active', true)->get();
+        return view('public.expert-register', compact('categories'));
     }
 
     /**
@@ -34,6 +35,7 @@ class ExpertRegistrationController extends Controller
             'experience' => 'nullable|string',
             'expertise' => 'nullable|string',
             'certificates' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'experience_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:5120',
         ], [
@@ -88,8 +90,29 @@ class ExpertRegistrationController extends Controller
             // Send welcome email with password
             try {
                 Mail::to($user->email)->send(new ExpertRegistrationMail($user, $plainPassword));
+                
+                // Notify All SuperAdmins via WhatsApp & Email
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $admins = User::role('superadmin')->get();
+                
+                $msg = \App\Services\WhatsAppService::getTemplate('new_expert_reg', ['name' => $user->first_name . ' ' . $user->last_name]);
+
+                foreach ($admins as $admin) {
+                    // 1. WhatsApp
+                    if ($admin->phone) {
+                        $whatsapp->sendMessage($admin->phone, $msg);
+                    }
+                    
+                    // 2. Email
+                    Mail::to($admin->email)->send(new \App\Mail\SystemNotificationMail(
+                        'يا مدير، خبير جديد يبي ينضم لثمن!',
+                        "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\nادخل على لوحة التحكم وشيك على ملفه.",
+                        route('experts.show', $user->id)
+                    ));
+                }
+                
             } catch (\Exception $e) {
-                \Log::error('Expert Registration Email Failed: ' . $e->getMessage());
+                \Log::error('Expert Registration Notification Failed: ' . $e->getMessage());
             }
 
             return response()->json([

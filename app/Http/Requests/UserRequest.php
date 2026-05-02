@@ -32,6 +32,7 @@ class UserRequest extends FormRequest
             'certificates' => 'nullable|string',
             'notes' => 'nullable|string',
             'balance' => 'nullable|numeric',
+            'category_id' => 'nullable|exists:categories,id',
 
         ];
     }

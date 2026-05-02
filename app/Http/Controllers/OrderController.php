@@ -22,7 +22,10 @@ class OrderController extends Controller
                 $q->where('expert_id', Auth::id())
                     ->orWhereNull('expert_id');
             })
-                ->whereIn('status', ['orderReceived', 'beingEstimated'])
+                ->whereIn('status', ['orderReceived', 'beingEstimated', 'paid'])
+                ->when(auth()->user()->category_id, function ($q) {
+                    return $q->where('category_id', auth()->user()->category_id);
+                })
                 ->with('user')
                 ->latest()
                 ->paginate(20);
@@ -111,7 +114,7 @@ class OrderController extends Controller
             'expert_max_price' => $request->expert_max_price ?? $request->expert_price * 1.2,
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
-            'total_price' => $request->expert_price, 
+            'total_price' => $request->expert_price,
             'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
         ]);
         $user->balance += 10;
@@ -119,19 +122,28 @@ class OrderController extends Controller
         $order->user->notify(new OrderEvaluated($order, 'expert'));
 
         // إرسال إشعار للأدمن (Database)
-        $admins = User::role('admin')->get();
+        $admins = User::role('superadmin')->get();
         foreach ($admins as $admin) {
             $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
         }
 
-        // إرسال إيميل للأدمن
+        // Notify Customer via WhatsApp & Email
         try {
-            Mail::to(config('mail.from.address'))->send(new ExpertValuationMail($order, $user));
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+            $whatsapp->sendMessage($order->user->phone, $msg);
+            
+            // Email to Customer
+            Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
+                'بشرنااااك! تقييم طلبك صار جاهز',
+                "بشرى سارة! تقييم طلبك رقم {$order->id} صار جاهز الحين.\nتفضل شيك عليه بالمنصة وعطنا رايك.",
+                route('orders.show', $order->id)
+            ));
         } catch (\Throwable $e) {
-            \Log::error('Expert Valuation Mail Failed: ' . $e->getMessage());
+            \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'تم تقييم الأوردر بنجاح وتم إرسال إشعار للمستخدم');
+        return back()->with('success', 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!');
     }
 
     public function thamnEvaluate(Request $request, Order $order, ThamnEvaluationService $evaluationService)
@@ -175,7 +187,49 @@ class OrderController extends Controller
             'status' => 'beingEstimated' // ممكن تعدل الحالة حسب النظام
         ]);
 
-        return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك']);
+        // Notify Other Experts & Customer & Current Expert
+        try {
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            
+            // 1. Notify Customer
+            $customerMsg = \App\Services\WhatsAppService::getTemplate('order_evaluating_customer', ['id' => $order->id]);
+            $whatsapp->sendMessage($order->user->phone, $customerMsg);
+
+            // 2. Notify Current Expert (Urgency)
+            $expertMsg = \App\Services\WhatsAppService::getTemplate('order_accepted_expert', ['id' => $order->id]);
+            $whatsapp->sendMessage(auth()->user()->phone, $expertMsg);
+
+            // 3. Notify Other Experts in same category
+            $others = \App\Models\User::role('expert')
+                ->where('category_id', $order->category_id)
+                ->where('id', '!=', auth()->id())
+                ->get();
+            
+            $othersMsg = \App\Services\WhatsAppService::getTemplate('order_accepted_other', ['id' => $order->id]);
+            foreach ($others as $other) {
+                if ($other->phone) {
+                    $whatsapp->sendMessage($other->phone, $othersMsg);
+                }
+                // Notify Other via Email
+                Mail::to($other->email)->send(new \App\Mail\SystemNotificationMail(
+                    'معوض خير.. الطلب استلمه غيرك',
+                    "الطلب رقم {$order->id} استلمه خبير ثاني. خلك قريب للطلبات الجاية يا بطل.",
+                    route('orders.index')
+                ));
+            }
+
+            // Notify Customer via Email
+            Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
+                'بدينا العمل على طلبك!',
+                "خبيرنا المختص بدأ الحين يشتغل على طلبك رقم {$order->id}.\nشوي ويكون التقييم عندك بنبشرك قريب.",
+                route('orders.show', $order->id)
+            ));
+
+        } catch (\Exception $e) {
+            \Log::error('Assign Expert Notifications Failed: ' . $e->getMessage());
+        }
+
+        return response()->json(['status' => true, 'message' => 'تم تعيين الأوردر لك، شد حيلك بالتقييم!']);
     }
 
     public function updatePrice(Request $request, Order $order)

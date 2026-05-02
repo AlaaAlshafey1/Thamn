@@ -108,6 +108,17 @@
                         <option value="0" {{ $user->is_active == 0 ? 'selected' : '' }}>غير نشط</option>
                     </select>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">القسم التابع له (خاص بالفلترة)</label>
+                    <select name="category_id" class="form-select wide-select" required>
+                        <option value="" disabled>اختر قسم الخبير</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ $user->category_id == $category->id ? 'selected' : '' }}>
+                                {{ $category->name_ar ?? $category->name_en }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 

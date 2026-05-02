@@ -58,11 +58,17 @@ class AuthController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Send OTP via Email
+        // Send OTP via Email & WhatsApp
         try {
+            \Log::debug("Sending OTP Email/WhatsApp to: " . $user->email . " / " . $user->phone . " with OTP: " . $otp);
             Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
+            
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك في ثمن هو: $otp . لا تشاركه مع أحد يا غالي.");
+            
+            \Log::debug("OTP sent successfully.");
         } catch (\Exception $e) {
-            \Log::error('OTP Email Failed (Register): ' . $e->getMessage());
+            \Log::error('OTP Delivery Failed (Register): ' . $e->getMessage());
         }
 
         // هنا تبعته SMS لو عندك خدمة
@@ -287,11 +293,14 @@ class AuthController extends Controller
 
         $user = User::find($request->user_id);
 
-        // Send OTP via Email
+        // Send OTP via Email & WhatsApp
         try {
             Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
+            
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك الجديد في ثمن هو: $otp");
         } catch (\Exception $e) {
-            \Log::error('OTP Email Failed (Resend): ' . $e->getMessage());
+            \Log::error('OTP Delivery Failed (Resend): ' . $e->getMessage());
         }
 
         return response()->json([

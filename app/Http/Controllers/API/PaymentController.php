@@ -146,13 +146,47 @@ class PaymentController extends Controller
         // Send FCM: Order Received
         $this->notifyOrderReceived($order, $request);
 
-        // Send FCM & Email: Payment Success & Invoice
+        // Send FCM & Email & WhatsApp: Payment Success & Invoice
         try {
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            
+            // Notify Customer
+            $customerMsg = \App\Services\WhatsAppService::getTemplate('order_paid_customer', ['id' => $order->id]);
+            $whatsapp->sendMessage($order->user->phone, $customerMsg);
+
+            // Notify Experts of same category
+            $experts = \App\Models\User::role('expert')
+                ->where('category_id', $order->category_id)
+                ->get();
+            
+            $expertMsg = \App\Services\WhatsAppService::getTemplate('new_order_expert', [
+                'category' => $order->category->name_ar ?? $order->category->name_en
+            ]);
+
+            foreach ($experts as $expert) {
+                if ($expert->phone) {
+                    $whatsapp->sendMessage($expert->phone, $expertMsg);
+                }
+                // Notify Expert via Email
+                Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
+                    'جاك رزق! طلب تثمين جديد بقسمك',
+                    "يا خبيرنا، فيه طلب تثمين جديد بقسمك لا يفوتك.\nادخل على لوحة التحكم واستلم الطلب الحين.",
+                    route('orders.index')
+                ));
+            }
+
+            // Notify Customer via Email
+            Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
+                'وصلنا مبلغك.. وجاري العمل على طلبك!',
+                "يا هلا والله! استلمنا مبلغك لطلبك رقم {$order->id}.\nطلبك الحين عند أفضل خبرائنا، خلك قريب وبنبشرك بالنتيجة.",
+                route('orders.show', $order->id)
+            ));
+
             $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
             if ($fcmToken) {
                 $this->notifyByFirebase(
-                    lang('تم الدفع بنجاح', 'Payment Successful', $request),
-                    lang('تم استلام مبلغ ' . number_format($order->total_price, 2) . ' ريال بنجاح لطلبك رقم ' . $order->id, 'Payment of ' . number_format($order->total_price, 2) . ' SAR received successfully for order #' . $order->id, $request),
+                    'تم استلام طلبك',
+                    'يا هلا! استلمنا مبلغك لطلبك رقم ' . $order->id . '. الحين بدأنا الشغل!',
                     [$fcmToken],
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'payment_success']]
                 );

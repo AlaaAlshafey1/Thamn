@@ -62,6 +62,7 @@
                         <th>الصورة</th>
                         <th>الاسم</th>
                         <th>البريد الإلكتروني</th>
+                        <th>القسم</th>
                         <th>عدد الطلبات</th>
                         <th>الرصيد</th>
                         <th>الحالة</th>
@@ -78,6 +79,13 @@
                             </td>
                             <td>{{ $user->first_name }} {{ $user->last_name }}</td>
                             <td>{{ $user->email }}</td>
+                            <td>
+                                @if($user->category)
+                                    <span class="badge bg-primary-transparent text-primary">{{ $user->category->name_ar ?? $user->category->name_en }}</span>
+                                @else
+                                    <span class="text-muted">لم يحدد</span>
+                                @endif
+                            </td>
                             <td>{{ $user->expert_orders_count }}</td>
                             <td>{{ $user->balance ?? 0 }} SAR</td>
                             <td>

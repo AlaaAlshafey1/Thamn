@@ -31,61 +31,77 @@
 @endsection
 
 @section('content')
-<div class="card">
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0 fw-bold">سجلات عمليات السحب</h5>
+    </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table id="withdrawalsTable" class="table table-hover table-striped text-center align-middle">
+            <table id="withdrawalsTable" class="table table-hover align-middle">
                 <thead class="bg-light">
                     <tr>
-                        <th>#</th>
+                        <th class="text-center">#</th>
                         <th>الخبير</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th>الطريقة</th>
-                        <th>التاريخ</th>
-                        <th>التحكم</th>
+                        <th class="text-center">المبلغ</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center">التاريخ</th>
+                        <th class="text-center">التحكم</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($requests as $key => $req)
                         <tr>
-                            <td>{{ $key + 1 }}</td>
-                            <td>{{ $req->user->first_name }} {{ $req->user->last_name }}</td>
-                            <td>{{ $req->amount }}</td>
+                            <td class="text-center fw-bold text-muted">{{ $key + 1 }}</td>
                             <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm bg-primary-transparent text-primary rounded-circle ml-2">
+                                        {{ substr($req->user->first_name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $req->user->first_name }} {{ $req->user->last_name }}</div>
+                                        <small class="text-muted">{{ $req->user->phone }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold text-primary">{{ number_format($req->amount, 2) }}</span>
+                                <small class="text-muted">SAR</small>
+                            </td>
+                            <td class="text-center">
                                 @if($req->status == 'pending')
-                                    <span class="badge bg-warning">قيد الانتظار</span>
+                                    <span class="badge bg-warning-transparent text-warning px-3 py-2"><i class="bx bx-time-five ml-1"></i> قيد الانتظار</span>
                                 @elseif($req->status == 'approved')
-                                    <span class="badge bg-success">تمت الموافقة</span>
+                                    <span class="badge bg-success-transparent text-success px-3 py-2"><i class="bx bx-check-circle ml-1"></i> تمت الموافقة</span>
                                 @else
-                                    <span class="badge bg-danger">مرفوض</span>
+                                    <span class="badge bg-danger-transparent text-danger px-3 py-2"><i class="bx bx-x-circle ml-1"></i> مرفوض</span>
                                 @endif
                             </td>
-                            <td>{{ $req->method }}</td>
-                            <td>{{ $req->created_at->format('Y-m-d') }}</td>
-                            <td>
+                            <td class="text-center text-muted small">{{ $req->created_at->format('Y-m-d H:i') }}</td>
+                            <td class="text-center">
                                 @if($req->status == 'pending')
-                                    <form action="{{ route('withdrawals.approve', $req->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button class="btn btn-success btn-sm">موافقة</button>
-                                    </form>
+                                    <div class="btn-group">
+                                        <form action="{{ route('withdrawals.approve', $req->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-success-light btn-icon" title="موافقة">
+                                                <i class="bx bx-check fs-18"></i>
+                                            </button>
+                                        </form>
 
-                                    <form action="{{ route('withdrawals.reject', $req->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button class="btn btn-danger btn-sm">رفض</button>
-                                    </form>
+                                        <form action="{{ route('withdrawals.reject', $req->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-danger-light btn-icon" title="رفض">
+                                                <i class="bx bx-x fs-18"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 @else
-                                    <span class="text-muted">تم المعالجة</span>
+                                    <span class="badge bg-light text-muted">تمت المعالجة</span>
                                 @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-
-            @if($requests->count() == 0)
-                <p class="text-center mt-3">لا يوجد طلبات سحب الآن.</p>
-            @endif
         </div>
     </div>
 </div>

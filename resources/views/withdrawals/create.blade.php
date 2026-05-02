@@ -81,11 +81,22 @@
         </div>
     @endif
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                <strong>رصيدك الحالي:</strong>
-                {{ number_format(auth()->user()->balance, 2) }} ريال
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary-gradient text-white shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-2 op-7">رصيدك الحالي القابل للسحب</div>
+                    <h2 class="fw-bold mb-0">{{ number_format(auth()->user()->balance, 2) }} <small class="fs-14">SAR</small></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center">
+                <i class="bx bx-info-circle fs-30 ml-3"></i>
+                <div>
+                    <strong>تنبيه:</strong>
+                    سيتم مراجعة طلبك من قبل الإدارة، وتأكد من تحديث بياناتك البنكية في ملفك الشخصي لتجنب أي تأخير.
+                </div>
             </div>
         </div>
     </div>
@@ -94,31 +105,36 @@
         @csrf
 
         <div class="form-section mb-4">
-            <h6 class="form-section-title">💰 بيانات السحب</h6>
+            <h6 class="form-section-title">💰 تفاصيل طلب السحب</h6>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">المبلغ المطلوب</label>
-                    <input type="number" name="amount" class="form-control" min="1" max="{{ auth()->user()->balance }}" required>
-                    <small class="text-muted">لا يمكن طلب مبلغ أكبر من رصيدك الحالي.</small>
+                    <label class="form-label">المبلغ المطلوب سحبه</label>
+                    <div class="input-group">
+                        <input type="number" name="amount" class="form-control" min="1" max="{{ auth()->user()->balance }}" placeholder="أدخل المبلغ" required>
+                        <span class="input-group-text bg-light text-muted">SAR</span>
+                    </div>
+                    <small class="text-muted mt-1 d-block">الحد الأقصى المتاح لك هو {{ number_format(auth()->user()->balance, 2) }} ريال</small>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">طريقة السحب</label>
+                    <label class="form-label">طريقة السحب المفضلة</label>
                     <select name="method" class="form-select wide-select" required>
-                        <option value="">اختر الطريقة</option>
-                        <option value="bank">حساب بنكي</option>
+                        <option value="bank" selected>حساب بنكي (الافتراضي)</option>
                         <option value="wallet">محفظة إلكترونية</option>
+                        <option value="other">أخرى</option>
                     </select>
                 </div>
                 <div class="col-md-12">
-                    <label class="form-label">ملاحظات (اختياري)</label>
-                    <textarea name="notes" class="form-control" rows="3"></textarea>
+                    <label class="form-label">ملاحظات إضافية للأدمن (اختياري)</label>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="إذا كان لديك أي تعليمات خاصة..."></textarea>
                 </div>
             </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">إرسال الطلب</button>
-            <a href="{{ route('withdrawals.my') }}" class="btn btn-light border">إلغاء</a>
+            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+                <i class="bx bx-send ml-1"></i> إرسال الطلب الآن
+            </button>
+            <a href="{{ route('withdrawals.my') }}" class="btn btn-light border px-4">إلغاء</a>
         </div>
     </form>
 </div>
