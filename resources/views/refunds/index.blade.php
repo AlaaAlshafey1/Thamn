@@ -14,10 +14,6 @@
         border-radius: 8px !important;
         padding: 6px 12px !important;
     }
-
-    .dt-buttons .btn:hover {
-        background-color: #a67f31 !important;
-    }
 </style>
 @endsection
 
@@ -36,6 +32,9 @@
         <h5 class="card-title mb-0 fw-bold">سجلات عمليات الاسترداد</h5>
     </div>
     <div class="card-body">
+        @if(session('success'))
+            <div class="alert alert-success border-0 shadow-sm mb-3">{{ session('success') }}</div>
+        @endif
         <div class="table-responsive">
             <table id="refundsTable" class="table table-hover align-middle">
                 <thead class="bg-light">
@@ -46,7 +45,6 @@
                         <th class="text-center">المبلغ</th>
                         <th>بيانات الدفع</th>
                         <th class="text-center">الحالة</th>
-                        <th class="text-center">التاريخ</th>
                         <th class="text-center">التحكم</th>
                     </tr>
                 </thead>
@@ -72,53 +70,29 @@
                             </td>
                             <td class="text-center">
                                 @if($refund->status == 'pending')
-                                    <span class="badge bg-warning-transparent text-warning px-3 py-2"><i class="bx bx-time-five ml-1"></i> قيد الانتظار</span>
+                                    <span class="badge bg-warning-transparent text-warning px-3 py-2">قيد الانتظار</span>
                                 @elseif($refund->status == 'processed')
-                                    <span class="badge bg-success-transparent text-success px-3 py-2"><i class="bx bx-check-circle ml-1"></i> تم الاسترداد</span>
+                                    <span class="badge bg-success-transparent text-success px-3 py-2">تم الاسترداد</span>
                                 @else
-                                    <span class="badge bg-danger-transparent text-danger px-3 py-2"><i class="bx bx-x-circle ml-1"></i> مرفوض</span>
+                                    <span class="badge bg-danger-transparent text-danger px-3 py-2">مرفوض</span>
                                 @endif
                             </td>
-                            <td class="text-center text-muted small">{{ $refund->created_at->format('Y-m-d H:i') }}</td>
                             <td class="text-center">
                                 @if($refund->status == 'pending')
-                                    <button class="btn btn-sm btn-primary-light" data-bs-toggle="modal" data-bs-target="#processModal{{ $refund->id }}">
-                                        معالجة
-                                    </button>
-
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="processModal{{ $refund->id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form action="{{ route('refunds.process', $refund->id) }}" method="POST">
-                                                    @csrf
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">معالجة طلب الاسترداد #{{ $refund->id }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body text-start" style="direction: rtl;">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">الحالة</label>
-                                                            <select name="status" class="form-select">
-                                                                <option value="processed">تم التحويل (موافقة)</option>
-                                                                <option value="rejected">رفض الطلب</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label">ملاحظات الأدمن</label>
-                                                            <textarea name="admin_notes" class="form-control" rows="3"></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <form action="{{ route('refunds.process', $refund->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من إتمام عملية التحويل للعميل؟')">
+                                            @csrf
+                                            <input type="hidden" name="status" value="processed">
+                                            <button type="submit" class="btn btn-sm btn-success">تأكيد التحويل</button>
+                                        </form>
+                                        <form action="{{ route('refunds.process', $refund->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من رفض الطلب؟')">
+                                            @csrf
+                                            <input type="hidden" name="status" value="rejected">
+                                            <button type="submit" class="btn btn-sm btn-danger">رفض</button>
+                                        </form>
                                     </div>
                                 @else
-                                    <span class="text-muted small">لا يوجد إجراء</span>
+                                    <span class="text-muted small">تمت المعالجة</span>
                                 @endif
                             </td>
                         </tr>
@@ -131,7 +105,6 @@
 @endsection
 
 @section('js')
-<!-- DataTables Scripts -->
 <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
 <script>
