@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Notifications\NewRefundRequestNotification;
+use App\Notifications\RefundProcessedNotification;
+use App\Mail\SystemNotificationMail;
 
 class RefundRequestController extends Controller
 {
@@ -119,6 +121,20 @@ class RefundRequestController extends Controller
 
         if ($request->status === 'processed') {
             $refund->order->update(['status' => 'refunded']);
+
+            // Notify Customer
+            $refund->user->notify(new RefundProcessedNotification($refund));
+
+            // Send Email to Customer
+            try {
+                Mail::to($refund->user->email)->send(new SystemNotificationMail(
+                    'تم استرداد مبلغ طلبك من ثمن',
+                    "عزيزي العميل، نعتذر منك بشدة عن عدم تمكننا من تقييم طلبك رقم #{$refund->order_id} في الوقت المحدد. نود إبلاغك بأنه تم تحويل مبلغ الاسترداد إلى حسابك البنكي بنجاح. شكراً لتفهمك.",
+                    route('orders.show', $refund->order_id)
+                ));
+            } catch (\Exception $e) {
+                \Log::error('Customer Refund Email Failed: ' . $e->getMessage());
+            }
         }
 
         return back()->with('success', 'تم تحديث حالة طلب الاسترداد');
