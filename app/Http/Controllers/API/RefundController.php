@@ -5,9 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\RefundRequest;
+use App\Models\User;
+use App\Notifications\NewRefundRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
 
 class RefundController extends Controller
 {
@@ -85,6 +88,24 @@ class RefundController extends Controller
             'amount' => $order->total_price,
             'status' => 'pending'
         ]);
+
+        // Notify Admins
+        $admins = User::role('superadmin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new NewRefundRequestNotification($refund));
+        }
+
+        // Send Direct Email to Admin
+        try {
+            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                'طلب استرداد مبلغ جديد (من الموبايل)!',
+                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
+                route('refunds.index')
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Admin Refund API Email Failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'status' => true,

@@ -6,6 +6,9 @@ use App\Models\RefundRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use App\Notifications\NewRefundRequestNotification;
 
 class RefundRequestController extends Controller
 {
@@ -66,7 +69,7 @@ class RefundRequestController extends Controller
             return back()->with('error', 'هذا الطلب غير متاح للاسترداد');
         }
 
-        RefundRequest::create([
+        $refund = RefundRequest::create([
             'order_id' => $order->id,
             'user_id' => Auth::id(),
             'bank_name' => $request->bank_name,
@@ -75,6 +78,24 @@ class RefundRequestController extends Controller
             'amount' => $order->total_price,
             'status' => 'pending'
         ]);
+
+        // Notify Admins
+        $admins = User::role('superadmin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new NewRefundRequestNotification($refund));
+        }
+
+        // Send Direct Email to Admin
+        try {
+            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                'طلب استرداد مبلغ جديد!',
+                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
+                route('refunds.index')
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Admin Refund Email Failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('orders.show', $order->id)->with('success', 'تم إرسال طلب الاسترداد بنجاح، سيتم التواصل معك قريباً');
     }
