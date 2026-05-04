@@ -283,6 +283,16 @@
                             <span class="side-menu__label">إدارة طلبات السحب</span>
                         </a>
                     </li>
+
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('refunds.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.67-3.13 8.75-7 9.81-3.87-1.06-7-5.14-7-9.81v-4.7l7-3.12z"/>
+                            </svg>
+                            <span class="side-menu__label">طلبات الاسترداد</span>
+                        </a>
+                    </li>
                 @endrole
                 {{-- ============================================================ --}}
 

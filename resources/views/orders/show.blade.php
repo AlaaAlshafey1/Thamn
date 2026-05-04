@@ -135,7 +135,13 @@
                         <div class="col-md-4">
                             <div class="info-label">حالة الطلب</div>
                             <div class="info-value">
-                                <span class="status-badge bg-info-transparent text-info">{{ $order->status }}</span>
+                                @if($order->status == 'expired')
+                                    <span class="status-badge bg-danger-transparent text-danger">منتهي (لم يتم القبول)</span>
+                                @elseif($order->status == 'refunded')
+                                    <span class="status-badge bg-success-transparent text-success">تم الاسترداد</span>
+                                @else
+                                    <span class="status-badge bg-info-transparent text-info">{{ $order->status }}</span>
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -217,6 +223,27 @@
                     <h5><i class="bx bx-bar-chart-alt-2 text-warning"></i> نتائج التقييم</h5>
                 </div>
                 <div class="card-body">
+                    {{-- Refund Section --}}
+                    @if($order->status == 'expired' && $order->user_id == auth()->id())
+                        @if(!$order->refundRequest)
+                            <div class="alert alert-warning border-0 shadow-sm mb-4">
+                                <p class="mb-2 small font-weight-bold">نعتذر منك، لم يتم قبول طلبك خلال 24 ساعة. يمكنك طلب استرداد المبلغ الآن.</p>
+                                <a href="{{ route('refunds.create', $order->id) }}" class="btn btn-warning btn-sm btn-block fw-bold">
+                                    <i class="bx bx-refresh"></i> طلب استرداد المبلغ
+                                </a>
+                            </div>
+                        @else
+                            <div class="alert alert-success border-0 shadow-sm mb-4">
+                                <p class="mb-0 small font-weight-bold">لقد أرسلت طلب استرداد. حالة الطلب: 
+                                    <strong>
+                                        @if($order->refundRequest->status == 'pending') قيد المراجعة
+                                        @elseif($order->refundRequest->status == 'processed') تم التحويل
+                                        @else مرفوض @endif
+                                    </strong>
+                                </p>
+                            </div>
+                        @endif
+                    @endif
                     {{-- تقييم AI --}}
                     <div class="mb-4">
                         <h6 class="font-weight-bold d-flex align-items-center gap-2 mb-3">

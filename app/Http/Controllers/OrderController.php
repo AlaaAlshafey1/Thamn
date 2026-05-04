@@ -11,6 +11,7 @@ use App\Notifications\ExpertEvaluatedOrderAdminNotification;
 use App\Mail\ExpertValuationMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use App\Notifications\OrderAcceptedByExpertNotification;
 
 class OrderController extends Controller
 {
@@ -192,7 +193,8 @@ class OrderController extends Controller
         // تعيين الخبير الحالي على الأوردر
         $order->update([
             'expert_id' => auth()->id(),
-            'status' => 'beingEstimated' // ممكن تعدل الحالة حسب النظام
+            'status' => 'beingEstimated',
+            'accepted_at' => now(),
         ]);
 
         // Notify Other Experts & Customer & Current Expert
@@ -226,10 +228,13 @@ class OrderController extends Controller
                 ));
             }
 
+            // Notify Customer via Notification
+            $order->user->notify(new OrderAcceptedByExpertNotification($order));
+
             // Notify Customer via Email
             Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
                 'بدينا العمل على طلبك!',
-                "خبيرنا المختص بدأ الحين يشتغل على طلبك رقم {$order->id}.\nشوي ويكون التقييم عندك بنبشرك قريب.",
+                "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم {$order->id}.",
                 route('orders.show', $order->id)
             ));
 

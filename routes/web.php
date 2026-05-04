@@ -7,6 +7,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\RefundRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
@@ -73,6 +74,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
     Route::post('/withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
     Route::post('/withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
+
+    // Refund Routes
+    Route::get('/refunds', [RefundRequestController::class, 'index'])->name('refunds.index');
+    Route::get('/refunds/create/{order}', [RefundRequestController::class, 'create'])->name('refunds.create');
+    Route::post('/refunds', [RefundRequestController::class, 'store'])->name('refunds.store');
+    Route::post('/refunds/{id}/process', [RefundRequestController::class, 'process'])->name('refunds.process');
 
 
     Route::resource('categories', CategoryController::class);

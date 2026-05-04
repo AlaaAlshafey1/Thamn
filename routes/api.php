@@ -14,6 +14,7 @@ use App\Http\Controllers\API\SettingsController;
 use App\Http\Controllers\API\MarketplaceController;
 use App\Http\Controllers\API\FavoriteController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\RefundController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -154,5 +155,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::get('/all', [OrderController::class, 'getOrders']);
     });
+
+    // Refund API for Mobile
+    Route::get('refunds/pending', [RefundController::class, 'getPendingRefunds']);
+    Route::post('refunds/submit', [RefundController::class, 'submitRefundDetails']);
 
 });

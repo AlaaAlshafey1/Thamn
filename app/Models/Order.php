@@ -35,6 +35,7 @@ class Order extends Model
         'thamn_by',
         'thamn_at',
         'payment_type',
+        'accepted_at',
     ];
 
     protected $dates = ['deleted_at'];
@@ -87,5 +88,8 @@ class Order extends Model
         return $this->belongsTo(User::class, 'thamn_by');
     }
 
-
+    public function refundRequest()
+    {
+        return $this->hasOne(RefundRequest::class);
+    }
 }
