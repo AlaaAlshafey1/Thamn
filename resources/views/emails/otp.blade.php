@@ -3,175 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التحقق من تسجيلك في منصة ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <title>التحقق من تسجيلك - Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Reset styles for email clients */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; }
+
+        /* Basic styles */
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #e9e9e9;
-            padding: 50px 0;
-            margin: 0;
-            direction: rtl;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            background-color: #f4f4f4;
+            font-family: 'Cairo', 'Inter', sans-serif;
         }
-        .email-container {
-            max-width: 520px;
-            margin: auto;
-            background-color: #ffffff;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-        .top-bar {
-            background-color: #3d3d3d;
-            height: 12px;
-        }
-        .header-logo {
-            padding: 30px 0;
-            text-align: center;
-        }
-        .header-logo img {
-            width: 85px;
-        }
-        .hero-section {
-            padding: 0 25px;
-            text-align: center;
-        }
-        .banner-img {
-            border-radius: 15px;
+
+        .email-wrapper {
             width: 100%;
-            height: auto;
-            max-height: 250px;
-            object-fit: cover;
+            background-color: #f4f4f4;
+            padding: 20px 0;
         }
-        .content {
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .top-bar {
+            background-color: #333333;
+            height: 8px;
+            width: 100%;
+        }
+
+        .header {
+            padding: 30px 20px;
             text-align: center;
-            padding: 20px;
         }
+
+        .content {
+            padding: 0 30px 30px;
+            text-align: center;
+        }
+
+        .banner-img {
+            width: 100%;
+            max-width: 540px;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
         .otp-label {
             color: #7c4dff;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-top: 25px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
             display: block;
         }
-        .main-title {
+
+        .title {
             color: #1a232e;
+            font-size: 22px;
             font-weight: 700;
-            font-size: 1.5rem;
-            margin: 10px 0;
+            margin: 0 0 15px;
+            line-height: 1.3;
         }
+
         .description {
-            color: #8a94a0;
-            font-size: 0.85rem;
-            padding: 0 40px;
+            color: #666666;
+            font-size: 14px;
             line-height: 1.6;
             margin-bottom: 25px;
         }
+
         .otp-box {
-            background-color: #f1f3f9;
-            color: #1a232e;
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: 12px;
-            padding: 15px 0;
+            background-color: #f8f9fc;
             border-radius: 12px;
-            width: 85%;
-            margin: 0 auto 40px auto;
-            text-align: center;
+            padding: 20px;
+            margin: 0 auto 30px;
+            width: 80%;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 10px;
+            color: #1a232e;
+            border: 1px solid #edf2f7;
         }
+
         .footer {
-            padding: 25px 30px;
-            border-top: 1px solid #f0f0f0;
             background-color: #ffffff;
+            padding: 30px;
+            border-top: 1px solid #eeeeee;
         }
-        .footer-table {
-            width: 100%;
+
+        .social-icons {
+            margin-bottom: 15px;
         }
+
         .social-icons a {
-            color: #9ba4ae;
-            font-size: 1.4rem;
-            margin: 0 8px;
             text-decoration: none;
+            margin: 0 8px;
         }
-        .footer-info {
-            color: #9ba4ae;
-            font-size: 0.8rem;
-            margin-top: 5px;
+
+        .footer-text {
+            color: #999999;
+            font-size: 12px;
             line-height: 1.5;
-            text-align: right;
         }
-        .footer-logo {
-            text-align: left;
-        }
-        .footer-logo img {
-            width: 75px;
-            opacity: 0.9;
+
+        /* Responsive styles */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 95% !important;
+            }
+            .otp-box {
+                width: 90% !important;
+                font-size: 24px !important;
+                letter-spacing: 6px !important;
+            }
+            .title {
+                font-size: 20px !important;
+            }
         }
     </style>
 </head>
-<body>
+<body style="background-color: #f4f4f4; margin: 0; padding: 0;">
+    <div class="email-wrapper">
+        <div class="email-container">
+            <!-- Top Accent Bar -->
+            <div class="top-bar"></div>
 
-    <div class="email-container">
-        <div class="top-bar"></div>
+            <!-- Logo Section -->
+            <div class="header">
+                <img src="{{ asset('assets/emails/logo.png') }}" alt="Thamn Logo" width="100">
+            </div>
 
-        <div class="header-logo">
-            <img src="{{ asset('assets/emails/logo.png') }}" alt="شعار ثمن">
-        </div>
+            <!-- Content Section -->
+            <div class="content">
+                <!-- Hero Image -->
+                <img src="{{ asset('assets/emails/otp_banner.png') }}" alt="Verification" class="banner-img">
 
-        <hr style="margin: 0 25px; border: 0; border-top: 1px solid #eee; opacity: 0.5;">
+                <!-- OTP Info -->
+                <span class="otp-label">رمز التحقق (OTP) &bull; VERIFICATION CODE</span>
+                
+                <h1 class="title">
+                    التحقق من تسجيلك في منصة ثمن<br>
+                    <span style="font-size: 18px; font-weight: 400; color: #555;">Verify your registration in Thamn</span>
+                </h1>
 
-        <div class="hero-section" style="margin-top: 20px;">
-            <img src="{{ asset('assets/emails/otp_banner.png') }}" class="banner-img" alt="كود التحقق">
-        </div>
+                <div class="description">
+                    <p style="margin-bottom: 10px;">
+                        @if(isset($userName))
+                            مرحباً <strong>{{ $userName }}</strong>،<br>
+                        @endif
+                        تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
+                    </p>
+                    <p style="border-top: 1px solid #f0f0f0; padding-top: 10px; font-style: italic;">
+                        We received a registration attempt with the following code. Please enter it in the browser window or app where you started.
+                    </p>
+                </div>
 
-        <div class="content">
-            <span class="otp-label">رمز التحقق (OTP)</span>
-            <h1 class="main-title">التحقق من تسجيلك في منصة ثمن</h1>
-            <p class="description">
-                @if(isset($userName))
-                    مرحباً {{ $userName }}،<br>
-                @endif
-                تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
-            </p>
-            
-            <div class="otp-box">
-                @php
-                    $otp_spaced = implode(' ', str_split($otp));
-                @endphp
-                {{ $otp_spaced }}
+                <!-- OTP Code -->
+                <div class="otp-box">
+                    @php
+                        $otp_spaced = implode(' ', str_split($otp));
+                    @endphp
+                    {{ $otp_spaced }}
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <div class="footer">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <!-- Left/Right depending on direction - using table for alignment -->
+                        <td align="right" style="text-align: right;">
+                            <div class="social-icons">
+                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="24" alt="Facebook"></a>
+                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="24" alt="YouTube"></a>
+                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="24" alt="Instagram"></a>
+                            </div>
+                            <div class="footer-text">
+                                المملكة العربية السعودية، الجبيل<br>
+                                Kingdom of Saudi Arabia, Al Jubail
+                            </div>
+                        </td>
+                        <td align="left" style="text-align: left; vertical-align: middle;">
+                            <img src="{{ asset('assets/emails/logo.png') }}" alt="Thamn" width="80" style="opacity: 0.8;">
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
-
-        <div class="footer">
-            <table class="footer-table" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
-                <tr>
-                    <td style="text-align: right; vertical-align: middle;">
-                        <div class="social-icons" style="margin-bottom: 10px;">
-                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
-                                <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="18" height="18" alt="FB" style="vertical-align: middle; opacity: 0.6;">
-                            </a>
-                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
-                                <img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="18" height="18" alt="YT" style="vertical-align: middle; opacity: 0.6;">
-                            </a>
-                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
-                                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="18" height="18" alt="IG" style="vertical-align: middle; opacity: 0.6;">
-                            </a>
-                        </div>
-                        <div class="footer-info" style="color: #9ba4ae; font-size: 0.85rem; line-height: 1.5;">
-                            المملكة العربية السعودية،<br>
-                            الجبيل
-                        </div>
-                    </td>
-                    <td style="text-align: left; vertical-align: middle;">
-                        <div class="footer-logo">
-                            <img src="{{ asset('assets/emails/logo.png') }}" alt="Logo" style="width: 80px; opacity: 0.8;">
-                        </div>
-                    </td>
-                </tr>
-            </table>
+        
+        <!-- Legal / Unsubscribe -->
+        <div style="text-align: center; padding: 20px; color: #999999; font-size: 12px;">
+            &copy; {{ date('Y') }} منصة ثمن (Thamn Platform). جميع الحقوق محفوظة.<br>
+            All rights reserved.
         </div>
     </div>
-
 </body>
 </html>
