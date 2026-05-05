@@ -1,24 +1,30 @@
+@php
+    $locale = app()->getLocale();
+    $isRtl = $locale == 'ar';
+    $dir = $isRtl ? 'rtl' : 'ltr';
+    $textAlign = $isRtl ? 'right' : 'left';
+    $oppTextAlign = $isRtl ? 'left' : 'right';
+@endphp
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ $locale }}" dir="{{ $dir }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التحقق من تسجيلك - Verification</title>
+    <title>{{ $isRtl ? 'التحقق من تسجيلك' : 'Verify Your Registration' }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Reset styles for email clients */
         body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
         table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
         img { -ms-interpolation-mode: bicubic; }
 
-        /* Basic styles */
         body {
             height: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
             background-color: #f4f4f4;
-            font-family: 'Cairo', 'Inter', sans-serif;
+            font-family: @if($isRtl) 'Cairo' @else 'Inter' @endif, sans-serif;
+            direction: {{ $dir }};
         }
 
         .email-wrapper {
@@ -82,6 +88,7 @@
             font-size: 14px;
             line-height: 1.6;
             margin-bottom: 25px;
+            text-align: {{ $textAlign }};
         }
 
         .otp-box {
@@ -95,6 +102,7 @@
             letter-spacing: 10px;
             color: #1a232e;
             border: 1px solid #edf2f7;
+            text-align: center;
         }
 
         .footer {
@@ -103,74 +111,52 @@
             border-top: 1px solid #eeeeee;
         }
 
-        .social-icons {
-            margin-bottom: 15px;
-        }
-
-        .social-icons a {
-            text-decoration: none;
-            margin: 0 8px;
-        }
-
         .footer-text {
             color: #999999;
             font-size: 12px;
             line-height: 1.5;
+            text-align: {{ $textAlign }};
         }
 
-        /* Responsive styles */
         @media screen and (max-width: 600px) {
-            .email-container {
-                width: 95% !important;
-            }
-            .otp-box {
-                width: 90% !important;
-                font-size: 24px !important;
-                letter-spacing: 6px !important;
-            }
-            .title {
-                font-size: 20px !important;
-            }
+            .email-container { width: 95% !important; }
+            .otp-box { width: 90% !important; font-size: 24px !important; letter-spacing: 6px !important; }
+            .title { font-size: 20px !important; }
         }
     </style>
 </head>
 <body style="background-color: #f4f4f4; margin: 0; padding: 0;">
     <div class="email-wrapper">
         <div class="email-container">
-            <!-- Top Accent Bar -->
             <div class="top-bar"></div>
 
-            <!-- Logo Section -->
             <div class="header">
                 <img src="{{ asset('assets/emails/logo.png') }}" alt="Thamn Logo" width="100">
             </div>
 
-            <!-- Content Section -->
             <div class="content">
-                <!-- Hero Image -->
                 <img src="{{ asset('assets/emails/otp_banner.png') }}" alt="Verification" class="banner-img">
 
-                <!-- OTP Info -->
-                <span class="otp-label">رمز التحقق (OTP) &bull; VERIFICATION CODE</span>
+                <span class="otp-label">
+                    {{ $isRtl ? 'رمز التحقق (OTP)' : 'Verification Code (OTP)' }}
+                </span>
                 
                 <h1 class="title">
-                    التحقق من تسجيلك في منصة ثمن<br>
-                    <span style="font-size: 18px; font-weight: 400; color: #555;">Verify your registration in Thamn</span>
+                    {{ $isRtl ? 'التحقق من تسجيلك في منصة ثمن' : 'Verify your registration in Thamn' }}
                 </h1>
 
                 <div class="description">
-                    <p style="margin-bottom: 10px;">
-                        @if(isset($userName))
-                            مرحباً <strong>{{ $userName }}</strong>،<br>
+                    <p>
+                        @if($isRtl)
+                            @if(isset($userName)) مرحباً <strong>{{ $userName }}</strong>،<br> @endif
+                            تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
+                        @else
+                            @if(isset($userName)) Hi <strong>{{ $userName }}</strong>,<br> @endif
+                            We received a registration attempt with the following code. Please enter it in the browser window or app where you started.
                         @endif
-                        تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
-                    </p>
-                    <p style="border-top: 1px solid #f0f0f0; padding-top: 10px; font-style: italic;">
-                        We received a registration attempt with the following code. Please enter it in the browser window or app where you started.
                     </p>
                 </div>
 
-                <!-- OTP Code -->
                 <div class="otp-box">
                     @php
                         $otp_spaced = implode(' ', str_split($otp));
@@ -179,34 +165,29 @@
                 </div>
             </div>
 
-            <!-- Footer Section -->
             <div class="footer">
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
                     <tr>
-                        <!-- Left/Right depending on direction - using table for alignment -->
-                        <td align="right" style="text-align: right;">
-                            <div class="social-icons">
-                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="24" alt="Facebook"></a>
-                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="24" alt="YouTube"></a>
-                                <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="24" alt="Instagram"></a>
+                        <td align="{{ $textAlign }}" style="text-align: {{ $textAlign }}; vertical-align: middle;">
+                            <div style="margin-bottom: 8px;">
+                                <a href="#" style="text-decoration: none; @if($isRtl) margin-left: 10px; @else margin-right: 10px; @endif"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20" alt="FB"></a>
+                                <a href="#" style="text-decoration: none; @if($isRtl) margin-left: 10px; @else margin-right: 10px; @endif"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="20" alt="YT"></a>
+                                <a href="#" style="text-decoration: none;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="20" alt="IG"></a>
                             </div>
                             <div class="footer-text">
-                                المملكة العربية السعودية، الجبيل<br>
-                                Kingdom of Saudi Arabia, Al Jubail
+                                {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Kingdom of Saudi Arabia, Al Jubail' }}
                             </div>
                         </td>
-                        <td align="left" style="text-align: left; vertical-align: middle;">
-                            <img src="{{ asset('assets/emails/logo.png') }}" alt="Thamn" width="80" style="opacity: 0.8;">
+                        <td align="{{ $oppTextAlign }}" style="text-align: {{ $oppTextAlign }}; vertical-align: middle;">
+                            <img src="{{ asset('assets/emails/logo.png') }}" alt="Thamn" width="75" style="opacity: 0.8;">
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
         
-        <!-- Legal / Unsubscribe -->
         <div style="text-align: center; padding: 20px; color: #999999; font-size: 12px;">
-            &copy; {{ date('Y') }} منصة ثمن (Thamn Platform). جميع الحقوق محفوظة.<br>
-            All rights reserved.
+            &copy; {{ date('Y') }} {{ $isRtl ? 'منصة ثمن. جميع الحقوق محفوظة.' : 'Thamn Platform. All rights reserved.' }}
         </div>
     </div>
 </body>
