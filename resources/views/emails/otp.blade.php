@@ -144,16 +144,29 @@
         </div>
 
         <div class="footer">
-            <table class="footer-table">
+            <table class="footer-table" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
                 <tr>
-                    <td style="vertical-align: middle;">
-                        <div class="footer-info">
+                    <td style="text-align: right; vertical-align: middle;">
+                        <div class="social-icons" style="margin-bottom: 10px;">
+                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
+                                <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="18" height="18" alt="FB" style="vertical-align: middle; opacity: 0.6;">
+                            </a>
+                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
+                                <img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="18" height="18" alt="YT" style="vertical-align: middle; opacity: 0.6;">
+                            </a>
+                            <a href="#" style="color: #9ba4ae; text-decoration: none; margin-left: 15px;">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="18" height="18" alt="IG" style="vertical-align: middle; opacity: 0.6;">
+                            </a>
+                        </div>
+                        <div class="footer-info" style="color: #9ba4ae; font-size: 0.85rem; line-height: 1.5;">
                             المملكة العربية السعودية،<br>
                             الجبيل
                         </div>
                     </td>
-                    <td class="footer-logo" style="vertical-align: middle;">
-                        <img src="{{ asset('assets/emails/logo.png') }}" alt="Logo">
+                    <td style="text-align: left; vertical-align: middle;">
+                        <div class="footer-logo">
+                            <img src="{{ asset('assets/emails/logo.png') }}" alt="Logo" style="width: 80px; opacity: 0.8;">
+                        </div>
                     </td>
                 </tr>
             </table>
