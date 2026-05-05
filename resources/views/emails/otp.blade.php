@@ -1,79 +1,164 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقق من تسجيلك في منصة ثمن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Cairo', sans-serif;
+            background-color: #e9e9e9;
+            padding: 50px 0;
+            margin: 0;
+            direction: rtl;
         }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
+        .email-container {
+            max-width: 520px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
-
-        .header {
-            background-color: #c1953e;
-            color: white;
-            padding: 20px;
+        .top-bar {
+            background-color: #3d3d3d;
+            height: 12px;
+        }
+        .header-logo {
+            padding: 30px 0;
             text-align: center;
-            border-radius: 10px 10px 0 0;
         }
-
+        .header-logo img {
+            width: 85px;
+        }
+        .hero-section {
+            padding: 0 25px;
+            text-align: center;
+        }
+        .banner-img {
+            border-radius: 15px;
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: cover;
+        }
         .content {
+            text-align: center;
             padding: 20px;
+        }
+        .otp-label {
+            color: #7c4dff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 25px;
+            display: block;
+        }
+        .main-title {
+            color: #1a232e;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+        .description {
+            color: #8a94a0;
+            font-size: 0.85rem;
+            padding: 0 40px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .otp-box {
+            background-color: #f1f3f9;
+            color: #1a232e;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 12px;
+            padding: 15px 0;
+            border-radius: 12px;
+            width: 85%;
+            margin: 0 auto 40px auto;
+            text-align: center;
+        }
+        .footer {
+            padding: 25px 30px;
+            border-top: 1px solid #f0f0f0;
+            background-color: #ffffff;
+        }
+        .footer-table {
+            width: 100%;
+        }
+        .social-icons a {
+            color: #9ba4ae;
+            font-size: 1.4rem;
+            margin: 0 8px;
+            text-decoration: none;
+        }
+        .footer-info {
+            color: #9ba4ae;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            line-height: 1.5;
             text-align: right;
         }
-
-        .otp-box {
-            display: block;
-            width: fit-content;
-            margin: 20px auto;
-            padding: 15px 30px;
-            background-color: #f9f9f9;
-            border: 2px dashed #c1953e;
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 5px;
-            color: #c1953e;
-            border-radius: 5px;
+        .footer-logo {
+            text-align: left;
         }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 20px;
+        .footer-logo img {
+            width: 75px;
+            opacity: 0.9;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>كود التفعيل</h2>
+
+    <div class="email-container">
+        <div class="top-bar"></div>
+
+        <div class="header-logo">
+            <img src="{{ asset('assets/emails/logo.png') }}" alt="شعار ثمن">
         </div>
+
+        <hr style="margin: 0 25px; border: 0; border-top: 1px solid #eee; opacity: 0.5;">
+
+        <div class="hero-section" style="margin-top: 20px;">
+            <img src="{{ asset('assets/emails/otp_banner.png') }}" class="banner-img" alt="كود التحقق">
+        </div>
+
         <div class="content">
-            <p>مرحباً <strong>{{ $userName }}</strong>،</p>
-            <p>شكراً لتسجيلك في منصة ثمن. لتفعيل حسابك، يرجى استخدام كود التفعيل التالي:</p>
-
+            <span class="otp-label">رمز التحقق (OTP)</span>
+            <h1 class="main-title">التحقق من تسجيلك في منصة ثمن</h1>
+            <p class="description">
+                @if(isset($userName))
+                    مرحباً {{ $userName }}،<br>
+                @endif
+                تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
+            </p>
+            
             <div class="otp-box">
-                {{ $otp }}
+                @php
+                    $otp_spaced = implode(' ', str_split($otp));
+                @endphp
+                {{ $otp_spaced }}
             </div>
-
-            <p>هذا الكود صالح لمدة 5 دقائق فقط.</p>
-            <p>إذا لم تكن قد طلبت هذا الكود، يرجى تجاهل هذا البريد.</p>
         </div>
+
         <div class="footer">
-            <p>تم إرسال هذا البريد تلقائياً من منصة ثمن.</p>
+            <table class="footer-table">
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <div class="footer-info">
+                            المملكة العربية السعودية،<br>
+                            الجبيل
+                        </div>
+                    </td>
+                    <td class="footer-logo" style="vertical-align: middle;">
+                        <img src="{{ asset('assets/emails/logo.png') }}" alt="Logo">
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
-</body>
 
+</body>
 </html>
