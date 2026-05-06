@@ -1,12 +1,22 @@
 <?php
-
+ 
 namespace App\Services;
-
+ 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
+ 
 class WhatsAppService
 {
+    private string $baseUrl;
+    private string $token;
+ 
+    public function __construct()
+    {
+        $instance = config('services.ultramsg.instance');
+        $this->token   = config('services.ultramsg.token');
+        $this->baseUrl = "https://api.ultramsg.com/{$instance}";
+    }
+ 
     /**
      * Send a WhatsApp message
      * 
@@ -21,23 +31,71 @@ class WhatsAppService
         if (str_starts_with($phone, '05')) {
             $phone = '966' . substr($phone, 1);
         }
-
-        Log::info("WhatsApp Notification sent to $phone: $message");
-
-        // Here you would integrate with your WhatsApp provider API
-        // Example for Ultramsg:
-        /*
-        $params = [
-            'token' => config('services.whatsapp.token'),
-            'to' => $phone,
-            'body' => $message
-        ];
-        Http::post("https://api.ultramsg.com/" . config('services.whatsapp.instance') . "/messages/chat", $params);
-        */
-
-        return true;
+ 
+        try {
+            $response = Http::withoutVerifying()->post("{$this->baseUrl}/messages/chat", [
+                'token'    => $this->token,
+                'to'       => $phone,
+                'body'     => $message,
+                'priority' => 1, // Low priority = أبطأ = أأمن
+            ]);
+ 
+            if ($response->json('sent') === 'true') {
+                Log::info("WhatsApp Notification sent to $phone");
+                return true;
+            }
+ 
+            Log::error("WhatsApp failed to $phone", $response->json());
+            return false;
+ 
+        } catch (\Exception $e) {
+            Log::error("WhatsApp exception: " . $e->getMessage());
+            return false;
+        }
     }
 
+    /**
+     * Get instance status
+     */
+    public function getStatus()
+    {
+        try {
+            $response = Http::withoutVerifying()->get("{$this->baseUrl}/instance/status", [
+                'token' => $this->token,
+            ]);
+            return $response->json();
+
+        } catch (\Exception $e) {
+            Log::error("WhatsApp getStatus exception: " . $e->getMessage());
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+
+    }
+
+    /**
+     * Get QR Code
+     */
+    public function getQrCode()
+    {
+        return "{$this->baseUrl}/instance/qr?token={$this->token}";
+    }
+
+    /**
+     * Logout / Disconnect
+     */
+    public function logout()
+    {
+        try {
+            $response = Http::withoutVerifying()->post("{$this->baseUrl}/instance/logout", [
+                'token' => $this->token,
+            ]);
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+ 
     /**
      * Saudi Dialect Messages Templates
      */
@@ -53,7 +111,7 @@ class WhatsAppService
             'order_evaluating_customer' => "بشرى سارة! خبيرنا المختص بدأ الحين يشتغل على طلبك رقم {$data['id']}. شوي ويكون التقييم عندك.",
             'order_ready_customer' => "بشرنااااك! تقييم طلبك رقم {$data['id']} صار جاهز الحين. تفضل شيك عليه بالمنصة وعطنا رايك.",
         ];
-
+ 
         return $templates[$type] ?? $type;
     }
 }

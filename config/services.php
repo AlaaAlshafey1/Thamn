@@ -41,6 +41,10 @@ return [
     'openai' => [
         'OPENAI_API_KEY' => env('OPENAI_KEY'),
     ],
+    'ultramsg' => [
+        'token'    => env('ULTRAMSG_TOKEN'),
+        'instance' => env('ULTRAMSG_INSTANCE'),
+    ],
 
 
 ];

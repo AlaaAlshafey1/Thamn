@@ -135,7 +135,12 @@ Route::middleware('auth')->group(function () {
         [OrderController::class, 'thamnEvaluate']
     )->name('orders.thamn.evaluate');
 
+    // WhatsApp Settings
+    Route::get('/whatsapp', [\App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('admin.whatsapp.index');
+    Route::post('/whatsapp/logout', [\App\Http\Controllers\Admin\WhatsAppController::class, 'logout'])->name('admin.whatsapp.logout');
+
 });
+
 Route::get('lang/{locale}', function ($locale) {
     if (in_array($locale, ['ar', 'en'])) {
         session(['locale' => $locale]);

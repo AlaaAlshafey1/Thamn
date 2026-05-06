@@ -4,6 +4,21 @@
     $dir = $isRtl ? 'rtl' : 'ltr';
     $textAlign = $isRtl ? 'right' : 'left';
     $oppTextAlign = $isRtl ? 'left' : 'right';
+
+    // Fetch social media from settings
+    $contact = \App\Models\Contact::first();
+    $socials = $contact ? ($contact->social_media ?? []) : [];
+    
+    $fbUrl = '#';
+    $ytUrl = '#';
+    $igUrl = '#';
+    
+    foreach($socials as $social) {
+        $name = strtolower($social['name'] ?? '');
+        if(str_contains($name, 'facebook')) $fbUrl = $social['url'] ?? '#';
+        if(str_contains($name, 'youtube')) $ytUrl = $social['url'] ?? '#';
+        if(str_contains($name, 'instagram')) $igUrl = $social['url'] ?? '#';
+    }
 @endphp
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="{{ $locale }}" dir="{{ $dir }}">
@@ -85,7 +100,7 @@
             </td>
         </tr>
 
-        <!-- OTP BOX (instead of CTA button for security/clarity) -->
+        <!-- OTP BOX -->
         <tr>
           <td style="padding:0 24px 36px;" align="center">
             <table cellpadding="0" cellspacing="0" border="0" style="width:80%;background-color:#f1f3f9;border-radius:12px;border:1px solid #e1e4e8;">
@@ -119,16 +134,16 @@
                   <!-- Social Icons -->
                   <table cellpadding="0" cellspacing="0" border="0" align="{{ $textAlign }}">
                     <tr>
-                      <td width="30" height="30" bgcolor="#999999" align="center" style="border-radius:50%;">
-                        <a href="#" style="color:#ffffff;text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="16" style="vertical-align:middle;filter:invert(1);"></a>
+                      <td width="30" height="30" align="center" style="border-radius:50%;">
+                        <a href="{{ $fbUrl }}" style="text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20" style="vertical-align:middle;"></a>
                       </td>
                       <td width="8">&nbsp;</td>
-                      <td width="30" height="30" bgcolor="#999999" align="center" style="border-radius:50%;">
-                        <a href="#" style="color:#ffffff;text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="16" style="vertical-align:middle;filter:invert(1);"></a>
+                      <td width="30" height="30" align="center" style="border-radius:50%;">
+                        <a href="{{ $ytUrl }}" style="text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="20" style="vertical-align:middle;"></a>
                       </td>
                       <td width="8">&nbsp;</td>
-                      <td width="30" height="30" bgcolor="#999999" align="center" style="border-radius:50%;">
-                        <a href="#" style="color:#ffffff;text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" style="vertical-align:middle;filter:invert(1);"></a>
+                      <td width="30" height="30" align="center" style="border-radius:50%;">
+                        <a href="{{ $igUrl }}" style="text-decoration:none;display:block;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="20" style="vertical-align:middle;"></a>
                       </td>
                     </tr>
                   </table>
