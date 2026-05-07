@@ -137,7 +137,19 @@ class SocialAuthController extends Controller
             );
         }
 
+        // Send WhatsApp Welcome Message if phone is provided
+        if ($user->phone) {
+            try {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $message = \App\Services\WhatsAppService::getTemplate('welcome_social', ['name' => $user->first_name]);
+                $whatsapp->sendMessage($user->phone, $message);
+            } catch (\Exception $e) {
+                \Log::error('WhatsApp Welcome Social Failed: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
+
             'status' => true,
             'message' => 'Social Login successful',
             'data' => [

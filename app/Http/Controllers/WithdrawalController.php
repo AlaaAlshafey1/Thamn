@@ -106,6 +106,17 @@ class WithdrawalController extends Controller
         $req->status = 'approved';
         $req->save();
 
+        // Notify Expert via WhatsApp
+        try {
+            if ($user->phone) {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $msg = \App\Services\WhatsAppService::getTemplate('withdrawal_approved', ['amount' => $req->amount]);
+                $whatsapp->sendMessage($user->phone, $msg);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Withdrawal Approved WhatsApp Failed: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'تم الموافقة على طلب السحب');
     }
 
@@ -120,6 +131,17 @@ class WithdrawalController extends Controller
 
         $req->status = 'rejected';
         $req->save();
+
+        // Notify Expert via WhatsApp
+        try {
+            if ($req->user->phone) {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $msg = \App\Services\WhatsAppService::getTemplate('withdrawal_rejected');
+                $whatsapp->sendMessage($req->user->phone, $msg);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Withdrawal Rejected WhatsApp Failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'تم رفض طلب السحب');
     }

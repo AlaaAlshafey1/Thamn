@@ -139,6 +139,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/whatsapp', [\App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('admin.whatsapp.index');
     Route::post('/whatsapp/logout', [\App\Http\Controllers\Admin\WhatsAppController::class, 'logout'])->name('admin.whatsapp.logout');
 
+    // Manual Notifications Center
+    Route::get('/notifications-center', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');
+    Route::post('/notifications-center/send', [\App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('admin.notifications.send');
+
 });
 
 Route::get('lang/{locale}', function ($locale) {

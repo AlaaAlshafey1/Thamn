@@ -399,6 +399,15 @@ class AuthController extends Controller
             'updated_at' => now(),
         ]);
 
+        // Send OTP via WhatsApp
+        try {
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp");
+        } catch (\Exception $e) {
+            \Log::error('Forgot Password WhatsApp Failed: ' . $e->getMessage());
+        }
+
+
 
         return response()->json([
             'status' => true,

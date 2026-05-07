@@ -174,6 +174,17 @@ class OrderController extends Controller
 
         $order->user->notify(new OrderEvaluated($order, 'thamn'));
 
+        // Notify Customer via WhatsApp
+        try {
+            if ($order->user->phone) {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+                $whatsapp->sendMessage($order->user->phone, $msg);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Thamn Evaluation WhatsApp Failed: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'تم اعتماد تقييم ثمن بنجاح');
     }
 

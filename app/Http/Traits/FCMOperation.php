@@ -71,14 +71,16 @@ public function notifyByFirebase($title, $body, $tokens, array $data = [], bool 
         $report = $messaging->sendMulticast($message, $tokens);
 
         $errors = [];
-        foreach ($report->failures() as $failure) {
-            $errors[] = [
-                'token' => method_exists($failure->target(), 'value')
-                    ? $failure->target()->value()
-                    : null,
-                'error' => $failure->error()->getMessage(),
-            ];
+        if ($report->hasFailures()) {
+            foreach ($report->failures()->getItems() as $failure) {
+                $errors[] = [
+                    'error' => $failure->error()->getMessage(),
+                ];
+            }
         }
+
+
+
 
         return [
             'success' => true,

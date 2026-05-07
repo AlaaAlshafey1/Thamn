@@ -170,20 +170,6 @@
                         </a>
                     </li>
                     @endcan
-
-
-
-                    {{-- <li class="slide">
-                        @can('app_pages_view')
-                            <a class="side-menu__item" href="{{ route('app_pages.index') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
-                                    <path d="M0 0h24v24H0V0z" fill="none"/>
-                                    <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
-                                </svg>
-                                <span class="side-menu__label">الصفحات</span>
-                            </a>
-                        @endcan
-                    </li> --}}
                 <li class="slide">
                     @can('terms_view')
                         <a class="side-menu__item" href="{{ route('terms.index') }}">
@@ -294,11 +280,8 @@
                         </a>
                     </li>
                 @endrole
-                {{-- ============================================================ --}}
-
-
                     <li class="side-item side-item-category">الاعدادات</li>
-                    <li class="slide">
+                    <!-- <li class="slide">
                         <a class="side-menu__item" href="{{ route('admin.whatsapp.index') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0V0z" fill="none"/>
@@ -306,7 +289,17 @@
                             </svg>
                             <span class="side-menu__label">إعدادات واتساب</span>
                         </a>
+                    </li> -->
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('admin.notifications.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                            </svg>
+                            <span class="side-menu__label">مركز الإشعارات</span>
+                        </a>
                     </li>
+
                     <li class="slide">
                         <a class="side-menu__item" href="{{ route('profile.edit') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">

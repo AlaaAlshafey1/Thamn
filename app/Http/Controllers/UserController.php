@@ -106,7 +106,16 @@ public function storeExpert(UserRequest $request)
     $user = User::create($data);
 
     // Assign role expert
-    $user->assignRole('expert');
+    // Notify Expert via WhatsApp
+    try {
+        if ($user->phone && $user->is_active) {
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+            $whatsapp->sendMessage($user->phone, $msg);
+        }
+    } catch (\Exception $e) {
+        \Log::error('Expert Creation WhatsApp Failed: ' . $e->getMessage());
+    }
 
     return redirect()->route('experts.index')->with('success', 'تم إضافة الخبير بنجاح');
 }
@@ -155,9 +164,22 @@ public function updateExpert(UserRequest $request, User $user)
         unset($data['password']);
     }
 
+    $wasActive = $user->is_active;
     $user->update($data);
+    $user->syncRoles(['expert']); 
 
-    $user->syncRoles(['expert']); // تأكد أنه خبير فقط
+    // If activated now, send WhatsApp
+    if (!$wasActive && $user->is_active) {
+        try {
+            if ($user->phone) {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+                $whatsapp->sendMessage($user->phone, $msg);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Expert Approval WhatsApp Failed: ' . $e->getMessage());
+        }
+    }
 
     return redirect()->route('experts.index')->with('success', 'تم تحديث بيانات الخبير بنجاح');
 }

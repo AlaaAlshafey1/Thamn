@@ -33,12 +33,13 @@ class WhatsAppService
         }
  
         try {
-            $response = Http::withoutVerifying()->post("{$this->baseUrl}/messages/chat", [
+            $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/chat", [
                 'token'    => $this->token,
                 'to'       => $phone,
                 'body'     => $message,
                 'priority' => 1, // Low priority = أبطأ = أأمن
             ]);
+
  
             if ($response->json('sent') === 'true') {
                 Log::info("WhatsApp Notification sent to $phone");
@@ -57,20 +58,69 @@ class WhatsAppService
     /**
      * Get instance status
      */
+    /**
+     * Send Image message
+     */
+    public function sendImage($phone, $imagePath, $caption = '')
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        try {
+            $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/image", [
+                'token'   => $this->token,
+                'to'      => $phone,
+                'image'   => $imagePath,
+                'caption' => $caption,
+            ]);
+            return $response->json('sent') === 'true';
+        } catch (\Exception $e) {
+            Log::error("WhatsApp sendImage error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send Document/File message
+     */
+    public function sendDocument($phone, $filePath, $fileName, $caption = '')
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        try {
+            $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/document", [
+                'token'    => $this->token,
+                'to'       => $phone,
+                'document' => $filePath,
+                'filename' => $fileName,
+                'caption'  => $caption,
+            ]);
+            return $response->json('sent') === 'true';
+        } catch (\Exception $e) {
+            Log::error("WhatsApp sendDocument error: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getStatus()
+
     {
         try {
             $response = Http::withoutVerifying()->get("{$this->baseUrl}/instance/status", [
                 'token' => $this->token,
             ]);
-            return $response->json();
+            $data = $response->json();
+
+            // Normalize status based on UltraMsg response structure
+            if (isset($data['status']['accountStatus']['status'])) {
+                $data['account_status'] = $data['status']['accountStatus']['status'];
+            }
+
+            return $data;
 
         } catch (\Exception $e) {
             Log::error("WhatsApp getStatus exception: " . $e->getMessage());
             return ['status' => 'error', 'message' => $e->getMessage()];
         }
-
     }
+
 
     /**
      * Get QR Code
@@ -86,10 +136,11 @@ class WhatsAppService
     public function logout()
     {
         try {
-            $response = Http::withoutVerifying()->post("{$this->baseUrl}/instance/logout", [
+            $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/instance/logout", [
                 'token' => $this->token,
             ]);
             return $response->json();
+
         } catch (\Exception $e) {
             return ['status' => 'error', 'message' => $e->getMessage()];
         }
@@ -110,6 +161,12 @@ class WhatsAppService
             'order_paid_customer' => "يا هلا والله! تم استلام مبلغك لطلبك رقم {$data['id']}. طلبك الحين عند أفضل خبرائنا، خلك قريب بنبشرك قريب.",
             'order_evaluating_customer' => "بشرى سارة! خبيرنا المختص بدأ الحين يشتغل على طلبك رقم {$data['id']}. شوي ويكون التقييم عندك.",
             'order_ready_customer' => "بشرنااااك! تقييم طلبك رقم {$data['id']} صار جاهز الحين. تفضل شيك عليه بالمنصة وعطنا رايك.",
+            'welcome_social' => "يا هلا والله بك يا {$data['name']} في ثمن! نورتنا وشرفتنا، وأي خدمة حنا بالخدمة.",
+            'withdrawal_approved' => "بشرى سارة! تم الموافقة على طلب سحب أرباحك بمبلغ {$data['amount']} ريال. الحوالة في طريقها لك يا بطل.",
+            'withdrawal_rejected' => "عذراً يا خبيرنا، تم رفض طلب سحب الأرباح الخاص بك. لمزيد من التفاصيل يرجى مراجعة لوحة التحكم أو التواصل مع الدعم.",
+            'expert_approved' => "مبروك! تم تفعيل حسابك كخبير في منصة ثمن. الحين تقدر تستلم طلبات التثمين وتبدأ رحلتك معنا. نورتنا يا وحش!",
+
+
         ];
  
         return $templates[$type] ?? $type;
