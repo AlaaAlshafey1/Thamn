@@ -35,19 +35,25 @@ class HomeController extends Controller
             ->get();
 
 
-        $stages = $questions->groupBy('stageing')->map(function ($questions, $stage) use ($request) {
+        $locale = strtolower($request->header('Accept-Language', 'en'));
+        $groupedQuestions = $questions->groupBy('stageing');
 
-            $Question_step = QuestionStep::where("id", $stage)->value("name_ar");
-            $locale = strtolower($request->header('Accept-Language', 'en'));
+        // جلب جميع الخطوات دفعة واحدة لتجنب N+1 وللترتيب حسب sort_order
+        $steps = QuestionStep::whereIn('id', $groupedQuestions->keys())->get()->keyBy('id');
+
+        $stages = $groupedQuestions->map(function ($questionsOfStep, $stageId) use ($steps, $locale) {
+            $step = $steps->get($stageId);
 
             return [
-                'step' => (int) $stage,
-                'name' => $locale == "ar" ? QuestionStep::where("id", $stage)->value("name_ar") : QuestionStep::where("id", $stage)->value("name_en"),
-                'questions' => $questions->isNotEmpty()
-                    ? QuestionResource::collection($questions)
-                    : collect(),
+                'step' => (int) $stageId,
+                'name' => $locale == "ar" ? ($step->name_ar ?? "") : ($step->name_en ?? ""),
+                'questions' => QuestionResource::collection($questionsOfStep),
+                'sort_order' => $step ? $step->sort_order : 999,
             ];
-        })->values();
+        })->sortBy('sort_order')->values()->map(function ($item) {
+            unset($item['sort_order']);
+            return $item;
+        });
 
         return response()->json([
             'success' => true,
