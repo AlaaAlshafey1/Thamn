@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثمن — التقييم الذكي للمقتنيات الفاخرة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:ital,wght@0,400;0,700;1,400&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 <style>
@@ -29,7 +29,7 @@ html{scroll-behavior:smooth}
 body{
   background:var(--bg);
   color:var(--text-main);
-  font-family:'Cairo',sans-serif;
+  font-family:'Tajawal',sans-serif;
   line-height:1.6;
   overflow-x:hidden;
 }
@@ -52,7 +52,7 @@ nav.scrolled { padding: 0.7rem 5%; box-shadow: var(--shadow-md); }
 .logo{ display:flex;align-items:center;gap:0.8rem; text-decoration: none; color: inherit; }
 .logo img { height: 45px; transition: transform 0.3s; }
 .logo:hover img { transform: scale(1.05); }
-.logo span{color:var(--primary); font-family: 'Amiri', serif; font-size: 1.8rem; font-weight: 700;}
+.logo span{color:var(--primary); font-family: 'Tajawal', sans-serif; font-size: 1.8rem; font-weight: 800;}
 
 nav ul{list-style:none;display:flex;gap:2.5rem}
 nav ul a{
@@ -100,7 +100,7 @@ nav ul a:hover{color:var(--gold)}
 }
 
 h1 {
-    font-family: 'Amiri', serif;
+    font-family: 'Tajawal', sans-serif;
     font-size: clamp(2.5rem, 5vw, 4.8rem);
     line-height: 1.1;
     font-weight: 700;
@@ -168,7 +168,7 @@ h1 em::after {
 section { padding: 120px 5%; }
 .section-header { text-align: center; max-width: 800px; margin: 0 auto 80px; }
 .section-label { color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 1rem; display: block; }
-.section-title { font-family: 'Amiri', serif; font-size: 3.2rem; color: var(--primary); line-height: 1.2; }
+.section-title { font-family: 'Tajawal', sans-serif; font-size: 3.2rem; color: var(--primary); line-height: 1.2; font-weight: 800; }
 
 /* FEATURES */
 .features-grid {
@@ -231,7 +231,7 @@ section { padding: 120px 5%; }
     text-align: center; color: white;
     position: relative; overflow: hidden;
 }
-.app-section h2 { font-family: 'Amiri', serif; font-size: 3.5rem; margin-bottom: 1.5rem; }
+.app-section h2 { font-family: 'Tajawal', sans-serif; font-size: 3.5rem; margin-bottom: 1.5rem; font-weight: 800; }
 .app-section p { font-size: 1.2rem; opacity: 0.8; margin-bottom: 3rem; max-width: 600px; margin-inline: auto; }
 .app-btns { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
 .app-btns img { height: 55px; transition: 0.3s; }
@@ -243,7 +243,7 @@ footer { padding: 100px 5% 50px; border-top: 1px solid var(--border); background
     display: grid; grid-template-columns: 2fr 1fr 1fr;
     gap: 5rem; max-width: 1400px; margin: 0 auto;
 }
-.footer-brand h2 { font-family: 'Amiri', serif; font-size: 2.2rem; color: var(--gold); margin-bottom: 1.5rem; }
+.footer-brand h2 { font-family: 'Tajawal', sans-serif; font-size: 2.2rem; color: var(--gold); margin-bottom: 1.5rem; font-weight: 800; }
 .footer-brand p { color: var(--text-muted); max-width: 350px; }
 .footer-links h4 { font-size: 1.1rem; margin-bottom: 2rem; color: var(--primary); }
 .footer-links ul { list-style: none; }
@@ -342,7 +342,7 @@ footer { padding: 100px 5% 50px; border-top: 1px solid var(--border); background
 <section id="features">
     <div class="section-header" data-aos="fade-up">
         <span class="section-label">لماذا ثمن؟</span>
-        <h2 class="section-title">المكان الأمثل لمعرفة <em>القيمة العادلة</em></h2>
+        <h2 class="section-title">لماذا منصة <em>ثمن؟</em></h2>
     </div>
     <div class="features-grid">
         <div class="feature-card" data-aos="fade-up">
@@ -443,7 +443,7 @@ footer { padding: 100px 5% 50px; border-top: 1px solid var(--border); background
 <footer>
     <div class="footer-content">
         <div class="footer-brand">
-            <h2>ثمن</h2>
+            <h2 style="font-family: 'Tajawal', sans-serif; font-weight: 800;">ثمن</h2>
             <p>المنصة الرائدة في تثمين المقتنيات الثمينة والأصول الفاخرة باستخدام أحدث تقنيات الذكاء الاصطناعي وخبرات المثمنين المعتمدين.</p>
         </div>
         <div class="footer-links">

@@ -17,7 +17,8 @@ class ExpertRegistrationController extends Controller
     public function showForm()
     {
         $categories = \App\Models\Category::where('is_active', true)->get();
-        return view('public.expert-register', compact('categories'));
+        $terms = \App\Models\TermCondition::where('is_active', true)->whereNotNull('file')->orderBy('sort_order')->first();
+        return view('public.expert-register', compact('categories', 'terms'));
     }
 
     /**
