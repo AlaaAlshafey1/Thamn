@@ -27,6 +27,8 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('check-phone', [AuthController::class, 'checkPhone']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('change-password', [AuthController::class, 'changePassword']);
+
 
     Route::post('verifyOtp', [AuthController::class, 'verifyOtp']);
     Route::post('resendOtp', [AuthController::class, 'resendOtp']);
@@ -85,7 +87,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('user')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile/update', [AuthController::class, 'updateProfile']);
-        Route::post('change-password', [AuthController::class, 'changePassword']);
         Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
     });
 

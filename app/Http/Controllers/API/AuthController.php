@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Notifications\AccountDeletedNotification;
 use App\Mail\WelcomeMail;
 use App\Mail\OTPMail;
+use App\Mail\ResetPasswordOTPMail;
+
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -399,12 +401,14 @@ class AuthController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Send OTP via WhatsApp
+        // Send OTP via WhatsApp & Email
         try {
             $whatsapp = app(\App\Services\WhatsAppService::class);
-            $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp");
+            $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp . لا تشاركه مع أحد.");
+            
+            Mail::to($user->email)->send(new ResetPasswordOTPMail($otp, $user->first_name . ' ' . $user->last_name));
         } catch (\Exception $e) {
-            \Log::error('Forgot Password WhatsApp Failed: ' . $e->getMessage());
+            \Log::error('Forgot Password Delivery Failed: ' . $e->getMessage());
         }
 
 
@@ -425,7 +429,60 @@ class AuthController extends Controller
 
     public function changePassword(Request $request)
     {
+        // 1. Reset Password Flow (using OTP)
+        if ($request->has('otp')) {
+            $validator = Validator::make($request->all(), [
+                'phone' => 'required|string|exists:users,phone',
+                'otp' => 'required|digits:4',
+                'new_password' => 'required|min:6|confirmed',
+            ], [
+                'phone.required' => lang('رقم الهاتف مطلوب', 'Phone is required', $request),
+                'otp.required' => lang('الرمز مطلوب', 'OTP is required', $request),
+                'new_password.required' => lang('كلمة المرور الجديدة مطلوبة', 'New password is required', $request),
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
+            }
+
+            $otp = \DB::table('otps')
+                ->join('users', 'otps.user_id', '=', 'users.id')
+                ->where('users.phone', $request->phone)
+                ->where('otps.otp', $request->otp)
+                ->where('otps.type', 'reset_password')
+                ->where('otps.is_used', false)
+                ->where('otps.expires_at', '>=', now())
+                ->select('otps.*')
+                ->first();
+
+            if (!$otp) {
+                return response()->json([
+                    'status' => false,
+                    'message' => lang('الرمز غير صحيح أو منتهي الصلاحية', 'OTP invalid or expired', $request)
+                ], 400);
+            }
+
+            // mark otp used
+            \DB::table('otps')->where('id', $otp->id)->update(['is_used' => true]);
+
+            $user = User::where('phone', $request->phone)->first();
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            // Revoke tokens
+            $user->tokens()->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => lang('تم إعادة تعيين كلمة المرور بنجاح', 'Password reset successfully', $request)
+            ]);
+        }
+
+        // 2. Normal Change Password Flow (Authenticated)
         $user = $request->user();
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
 
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
@@ -436,36 +493,24 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first()
-            ], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
         }
 
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => false,
-                'message' => lang(
-                    'كلمة المرور الحالية غير صحيحة',
-                    'Current password is incorrect',
-                    $request
-                )
+                'message' => lang('كلمة المرور الحالية غير صحيحة', 'Current password is incorrect', $request)
             ], 400);
         }
 
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        // إلغاء كل التوكنات
         $user->tokens()->delete();
 
         return response()->json([
             'status' => true,
-            'message' => lang(
-                'تم تغيير كلمة المرور بنجاح',
-                'Password changed successfully',
-                $request
-            )
+            'message' => lang('تم تغيير كلمة المرور بنجاح', 'Password changed successfully', $request)
         ]);
     }
 
@@ -493,4 +538,6 @@ class AuthController extends Controller
 
 
 
+
 }
+
