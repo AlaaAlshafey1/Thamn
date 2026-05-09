@@ -12,7 +12,12 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Cairo', 'Almarai', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                primary: '#FF9F0A',
+                'dark-bg': '#1C1C1E',
+                'light-bg': '#FDFDFC',
             },
         },
     },

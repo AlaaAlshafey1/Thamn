@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>انضم كخبير — منصة ثمن</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Outfit:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
@@ -26,9 +25,9 @@
             --bg-alt: #F9F9FB;
             --primary: #1A1A1A;
             --secondary: #555555;
-            --gold: #C1953E;
-            --gold-light: #D4AF37;
-            --gold-soft: rgba(193, 149, 62, 0.1);
+            --gold: #FF9F0A;
+            --gold-light: #FFA521;
+            --gold-soft: rgba(255, 159, 10, 0.1);
             --text-main: #1A1A1A;
             --text-muted: #666666;
             --border: rgba(0, 0, 0, 0.08);
@@ -43,7 +42,7 @@
         body {
             background: var(--bg-alt);
             color: var(--text-main);
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             line-height: 1.6;
         }
 
