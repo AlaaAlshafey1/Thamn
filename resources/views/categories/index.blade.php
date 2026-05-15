@@ -53,6 +53,79 @@
         color: #333;
         cursor: pointer;
     }
+
+    /* Drag & Drop styles */
+    .sortable-row {
+        cursor: grab;
+        transition: background-color 0.2s ease;
+    }
+    .sortable-row:active {
+        cursor: grabbing;
+    }
+    .sortable-ghost {
+        opacity: 0.4;
+        background-color: #fff3cd !important;
+    }
+    .sortable-chosen {
+        background-color: #f8f0e0 !important;
+        box-shadow: 0 4px 12px rgba(193, 149, 62, 0.3);
+    }
+    .drag-handle {
+        cursor: grab;
+        color: #aaa;
+        font-size: 18px;
+        padding: 0 8px;
+    }
+    .drag-handle:hover {
+        color: #c1953e;
+    }
+    .sortable-row:active .drag-handle {
+        cursor: grabbing;
+    }
+
+    /* Save order button */
+    .save-order-btn {
+        display: none;
+        background-color: #28a745;
+        border-color: #28a745;
+        color: #fff;
+        transition: all 0.3s ease;
+        animation: fadeIn 0.3s ease;
+    }
+    .save-order-btn:hover {
+        background-color: #218838;
+        border-color: #218838;
+        color: #fff;
+    }
+    .save-order-btn.show {
+        display: inline-flex !important;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Toast notification */
+    .order-toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        z-index: 9999;
+        padding: 12px 24px;
+        border-radius: 10px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        transition: transform 0.4s ease;
+    }
+    .order-toast.show {
+        transform: translateX(-50%) translateY(0);
+    }
+    .order-toast.success { background-color: #28a745; }
+    .order-toast.error { background-color: #dc3545; }
 </style>
 @endsection
 
@@ -60,10 +133,13 @@
 <div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3" style="direction: rtl;">
     <div class="d-flex flex-column">
         <h4 class="content-title mb-1 fw-bold text-primary">إدارة الفئات</h4>
-        <small class="text-muted">عرض جميع الفئات والتحكم بها</small>
+        <small class="text-muted">عرض جميع الفئات والتحكم بها — اسحب وأفلت لإعادة الترتيب</small>
     </div>
 
     <div class="d-flex flex-wrap justify-content-start gap-2">
+        <button id="saveOrderBtn" class="btn btn-sm save-order-btn d-flex align-items-center gap-1">
+            <i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>
+        </button>
         <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
             <i class="bx bx-plus-circle fs-5"></i> <span>إضافة فئة جديدة</span>
         </a>
@@ -72,10 +148,13 @@
 @endsection
 
 @section('content')
+<!-- Toast notification -->
+<div id="orderToast" class="order-toast"></div>
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">قائمة الفئات</h5>
-        <small class="text-muted">عرض جميع الفئات المسجلة</small>
+        <small class="text-muted">اسحب الصفوف لإعادة ترتيب الفئات — الترتيب سيظهر في التطبيق</small>
     </div>
 
     <div class="card-body">
@@ -87,6 +166,7 @@
             <table id="categoriesTable" class="table table-hover table-striped text-center align-middle">
                 <thead class="bg-light">
                     <tr>
+                        <th style="width: 50px;">ترتيب</th>
                         <th>#</th>
                         <th>الاسم</th>
                         <th>الوصف</th>
@@ -94,10 +174,15 @@
                         <th>التحكم</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="sortableBody">
                     @foreach($categories as $key => $category)
-                        <tr>
-                            <td>{{ $key + 1 }}</td>
+                        <tr class="sortable-row" data-id="{{ $category->id }}">
+                            <td>
+                                <span class="drag-handle" title="اسحب لإعادة الترتيب">
+                                    <i class="bx bx-menu"></i>
+                                </span>
+                            </td>
+                            <td class="row-number">{{ $key + 1 }}</td>
                             <td>{{ $category->name_ar }}</td>
                             <td>{{ $category->description_ar ?? '-' }}</td>
                             <td>
@@ -132,40 +217,77 @@
 @endsection
 
 @section('js')
-<!-- DataTables Scripts -->
-<script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
-
-<!-- Buttons Extension -->
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+<!-- SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
 $(document).ready(function() {
-    let table = $('#categoriesTable').DataTable({
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/ar.json' },
-        pageLength: 10,
-        dom: '<"d-flex justify-content-between align-items-center mb-3"<"btn-left"B><"search-box"f>>rtip',
-        buttons: [
-            { extend: 'copy', text: '📋 نسخ', className: 'btn-sm mx-1' },
-            { extend: 'excel', text: '📊 Excel', className: 'btn-sm mx-1' },
-            { extend: 'pdf', text: '📄 PDF', className: 'btn-sm mx-1' },
-            { extend: 'print', text: '🖨️ طباعة', className: 'btn-sm mx-1' }
-        ]
+    let orderChanged = false;
+    const saveBtn = document.getElementById('saveOrderBtn');
+    const toast = document.getElementById('orderToast');
+
+    // Initialize SortableJS on the table body
+    const sortable = new Sortable(document.getElementById('sortableBody'), {
+        handle: '.drag-handle',
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function() {
+            orderChanged = true;
+            saveBtn.classList.add('show');
+            updateRowNumbers();
+        }
     });
 
-    // تنسيق الأزرار
-    $('.dt-buttons').addClass('d-flex flex-wrap gap-2 align-items-center');
-    $('.dt-buttons .btn').addClass('btn-primary').css({
-        'background-color': '#c1953e',
-        'border-color': '#c1953e',
-        'color': '#fff'
+    // Update row numbers after drag
+    function updateRowNumbers() {
+        $('#sortableBody .sortable-row').each(function(index) {
+            $(this).find('.row-number').text(index + 1);
+        });
+    }
+
+    // Show toast notification
+    function showToast(message, type) {
+        toast.textContent = message;
+        toast.className = 'order-toast ' + type;
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Save order via AJAX
+    saveBtn.addEventListener('click', function() {
+        if (!orderChanged) return;
+
+        const order = [];
+        document.querySelectorAll('#sortableBody .sortable-row').forEach(function(row) {
+            order.push(parseInt(row.dataset.id));
+        });
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin fs-5"></i> <span>جاري الحفظ...</span>';
+
+        $.ajax({
+            url: '{{ route("categories.reorder") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                order: order
+            },
+            success: function(response) {
+                orderChanged = false;
+                saveBtn.classList.remove('show');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>';
+                showToast('✅ ' + response.message, 'success');
+            },
+            error: function() {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>';
+                showToast('❌ حدث خطأ أثناء حفظ الترتيب', 'error');
+            }
+        });
     });
 });
 </script>

@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::resource('categories', CategoryController::class);
+    Route::post('categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
     Route::resource('questions', QuestionController::class);
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);

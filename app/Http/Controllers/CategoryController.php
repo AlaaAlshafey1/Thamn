@@ -9,7 +9,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->paginate(10);
+        $categories = Category::orderBy('sort_order')->paginate(100);
         return view('categories.index', compact('categories'));
     }
 
@@ -33,6 +33,10 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
         }
+
+        // Set sort_order to be last
+        $data['sort_order'] = Category::max('sort_order') + 1;
+
         Category::create($data);
 
         return redirect()->route('categories.index')->with('success', 'تمت إضافة الفئة بنجاح');
@@ -66,5 +70,25 @@ class CategoryController extends Controller
     {
         $category->delete();
         return redirect()->route('categories.index')->with('success', 'تم حذف الفئة بنجاح');
+    }
+
+    /**
+     * Reorder categories via drag-and-drop from dashboard
+     */
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:categories,id',
+        ]);
+
+        foreach ($request->order as $index => $id) {
+            Category::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'تم إعادة ترتيب الفئات بنجاح',
+        ]);
     }
 }

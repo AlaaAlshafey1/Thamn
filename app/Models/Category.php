@@ -16,5 +16,6 @@ class Category extends Model
         'description_en',
         'is_active',
         'image',
+        'sort_order',
     ];
 }

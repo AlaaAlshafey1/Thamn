@@ -15,7 +15,7 @@ class HomeController extends Controller
 {
     public function categories(Request $request)
     {
-        $categories = Category::orderBy('id', 'desc')->get();
+        $categories = Category::orderBy('sort_order')->get();
 
         return response()->json([
             'status' => true,
