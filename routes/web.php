@@ -22,6 +22,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeStepController;
 use App\Http\Controllers\IntroController;
 
+use App\Http\Controllers\ArbitratorDeclarationController;
+
 Route::get('/', [App\Http\Controllers\PublicPageController::class, 'index'])->name('home');
 
 // Public Pages for App Store Compliance
@@ -34,6 +36,14 @@ Route::post('/contact-us', [App\Http\Controllers\PublicPageController::class, 's
 // Expert Registration
 Route::get('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'showForm'])->name('experts.register');
 Route::post('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'register'])->name('experts.register.submit');
+
+// ======= إقرار السرية للمحكمين المستقلين =======
+Route::prefix('declaration')->group(function () {
+    Route::get('/{token}', [ArbitratorDeclarationController::class, 'show'])->name('declaration.show');
+    Route::post('/{token}', [ArbitratorDeclarationController::class, 'submit'])->name('declaration.submit');
+    Route::get('/{token}/success', [ArbitratorDeclarationController::class, 'success'])->name('declaration.success');
+    Route::get('/{token}/download', [ArbitratorDeclarationController::class, 'download'])->name('declaration.download');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -64,6 +74,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', [UserController::class, 'storeExpert'])->name('experts.store');
         Route::get('/{user}/edit', [UserController::class, 'editExpert'])->name('experts.edit');
         Route::put('/{user}', [UserController::class, 'updateExpert'])->name('experts.update');
+
+        // ======= إقرار السرية والتفعيل =======
+        Route::post('/{user}/send-declaration', [UserController::class, 'sendDeclaration'])->name('experts.sendDeclaration');
+        Route::post('/{user}/activate', [UserController::class, 'toggleActivate'])->name('experts.activate');
     });
     // Expert Routes
     Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
@@ -82,8 +96,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/refunds/{id}/process', [RefundRequestController::class, 'process'])->name('refunds.process');
 
 
-    Route::resource('categories', CategoryController::class);
     Route::post('categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
+    Route::resource('categories', CategoryController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);

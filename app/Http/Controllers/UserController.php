@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\ArbitratorDeclaration;
+use App\Mail\ArbitratorDeclarationMail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -35,14 +39,16 @@ public function experts()
         $ordersCount = $orders->count();
         $totalEarned = $ordersCount * 4;
 
-        // بيانات البنك (لو عندك في DB غيرها)
         $bank = [
-            'bank_name' => $user->bank_name ?? 'مصرف الراجحي',
-            'iban' => $user->iban ?? 'SA0000000000000000000000',
+            'bank_name'      => $user->bank_name ?? 'مصرف الراجحي',
+            'iban'           => $user->iban ?? 'SA0000000000000000000000',
             'account_number' => $user->account_number ?? '1234567890',
-            'account_name' => $user->first_name . ' ' . $user->last_name,
-            'swift' => $user->swift ?? 'RJHISARI',
+            'account_name'   => $user->first_name . ' ' . $user->last_name,
+            'swift'          => $user->swift ?? 'RJHISARI',
         ];
+
+        // جلب وثيقة الإقرار إن وجدت
+        $user->load('declaration');
 
         return view('users.expert_show', compact('user', 'orders', 'ordersCount', 'totalEarned', 'bank'));
     }
@@ -220,6 +226,57 @@ public function updateExpert(UserRequest $request, User $user)
         }
 
         return redirect()->route('users.index')->with('success', 'تم تحديث المستخدم بنجاح');
+    }
+
+    /**
+     * إرسال وثيقة الإقرار للخبير بالبريد الإلكتروني
+     */
+    public function sendDeclaration(User $user)
+    {
+        // إنشاء أو جلب token الإقرار
+        $declaration = ArbitratorDeclaration::firstOrCreate(
+            ['user_id' => $user->id],
+            ['token' => Str::random(64)]
+        );
+
+        $url = route('declaration.show', ['token' => $declaration->token]);
+
+        try {
+            Mail::to($user->email)->send(new ArbitratorDeclarationMail($user, $url));
+            return redirect()->route('experts.show', $user->id)
+                ->with('success', '✅ تم إرسال رابط وثيقة الإقرار إلى ' . $user->email . ' بنجاح');
+        } catch (\Exception $e) {
+            \Log::error('Declaration Mail Failed: ' . $e->getMessage());
+            return redirect()->route('experts.show', $user->id)
+                ->with('error', '❌ فشل إرسال الإيميل: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * تفعيل / إيقاف الخبير
+     */
+    public function toggleActivate(User $user)
+    {
+        $wasActive = $user->is_active;
+        $user->update(['is_active' => !$wasActive]);
+
+        if (!$wasActive && $user->is_active) {
+            // تم التفعيل → أرسل WhatsApp للخبير
+            try {
+                if ($user->phone) {
+                    $whatsapp = app(\App\Services\WhatsAppService::class);
+                    $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+                    $whatsapp->sendMessage($user->phone, $msg);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Expert Activation WhatsApp Failed: ' . $e->getMessage());
+            }
+            return redirect()->route('experts.show', $user->id)
+                ->with('success', '✅ تم تفعيل الخبير بنجاح، سيتمكن من استلام الطلبات الآن');
+        } else {
+            return redirect()->route('experts.show', $user->id)
+                ->with('success', '⏸️ تم إيقاف تفعيل الخبير');
+        }
     }
 
     public function destroy(User $user)

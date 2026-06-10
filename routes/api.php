@@ -15,6 +15,7 @@ use App\Http\Controllers\API\MarketplaceController;
 use App\Http\Controllers\API\FavoriteController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\RefundController;
+use App\Http\Controllers\ArbitratorDeclarationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -160,5 +161,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Refund API for Mobile
     Route::get('refunds/pending', [RefundController::class, 'getPendingRefunds']);
     Route::post('refunds/submit', [RefundController::class, 'submitRefundDetails']);
+
+    // ======= إقرار السرية للمحكمين =======
+    Route::post('arbitrators/{userId}/send-declaration', [ArbitratorDeclarationController::class, 'sendLink']);
 
 });

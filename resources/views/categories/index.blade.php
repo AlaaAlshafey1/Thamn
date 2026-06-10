@@ -2,10 +2,6 @@
 @section('title', 'الفئات')
 
 @section('css')
-<!-- DataTables -->
-<link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap5.min.css') }}" rel="stylesheet" />
-
 <style>
     .page-header {
         display: flex;
@@ -13,45 +9,6 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 30px;
-    }
-
-    .dt-buttons .btn {
-        background-color: #c1953e !important;
-        border: none !important;
-        color: #fff !important;
-        border-radius: 8px !important;
-        padding: 6px 12px !important;
-    }
-
-    .dt-buttons .btn:hover {
-        background-color: #a67f31 !important;
-    }
-
-    #colvisList {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    #colvisList .form-check {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 0;
-    }
-
-    #colvisList .form-check-input {
-        margin: 0;
-        transform: scale(1.1);
-        cursor: pointer;
-    }
-
-    #colvisList .form-check-label {
-        margin: 0;
-        line-height: 1;
-        font-size: 14px;
-        color: #333;
-        cursor: pointer;
     }
 
     /* Drag & Drop styles */
@@ -83,22 +40,21 @@
         cursor: grabbing;
     }
 
-    /* Save order button */
-    .save-order-btn {
-        display: none;
+    /* Save order button — hidden by default */
+    #saveOrderBtn {
+        display: none !important;
+    }
+    #saveOrderBtn.visible {
+        display: inline-flex !important;
         background-color: #28a745;
         border-color: #28a745;
         color: #fff;
-        transition: all 0.3s ease;
         animation: fadeIn 0.3s ease;
     }
-    .save-order-btn:hover {
+    #saveOrderBtn.visible:hover {
         background-color: #218838;
         border-color: #218838;
         color: #fff;
-    }
-    .save-order-btn.show {
-        display: inline-flex !important;
     }
 
     @keyframes fadeIn {
@@ -137,7 +93,7 @@
     </div>
 
     <div class="d-flex flex-wrap justify-content-start gap-2">
-        <button id="saveOrderBtn" class="btn btn-sm save-order-btn d-flex align-items-center gap-1">
+        <button type="button" id="saveOrderBtn" class="btn btn-sm align-items-center gap-1">
             <i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>
         </button>
         <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
@@ -163,7 +119,7 @@
         @endif
 
         <div class="table-responsive">
-            <table id="categoriesTable" class="table table-hover table-striped text-center align-middle">
+            <table class="table table-hover table-striped text-center align-middle">
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 50px;">ترتيب</th>
@@ -222,22 +178,34 @@
 
 <script>
 $(document).ready(function() {
-    let orderChanged = false;
-    const saveBtn = document.getElementById('saveOrderBtn');
-    const toast = document.getElementById('orderToast');
+    var orderChanged = false;
+    var saveBtn = document.getElementById('saveOrderBtn');
+    var toastEl = document.getElementById('orderToast');
+    var sortableEl = document.getElementById('sortableBody');
+
+    if (!sortableEl) {
+        console.error('sortableBody element not found!');
+        return;
+    }
 
     // Initialize SortableJS on the table body
-    const sortable = new Sortable(document.getElementById('sortableBody'), {
-        handle: '.drag-handle',
-        animation: 200,
-        ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
-        onEnd: function() {
-            orderChanged = true;
-            saveBtn.classList.add('show');
-            updateRowNumbers();
-        }
-    });
+    try {
+        var sortable = Sortable.create(sortableEl, {
+            handle: '.drag-handle',
+            animation: 200,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function(evt) {
+                console.log('Drag ended. Old index:', evt.oldIndex, 'New index:', evt.newIndex);
+                orderChanged = true;
+                saveBtn.classList.add('visible');
+                updateRowNumbers();
+            }
+        });
+        console.log('SortableJS initialized successfully');
+    } catch(e) {
+        console.error('SortableJS initialization error:', e);
+    }
 
     // Update row numbers after drag
     function updateRowNumbers() {
@@ -248,41 +216,46 @@ $(document).ready(function() {
 
     // Show toast notification
     function showToast(message, type) {
-        toast.textContent = message;
-        toast.className = 'order-toast ' + type;
-        setTimeout(() => toast.classList.add('show'), 10);
-        setTimeout(() => {
-            toast.classList.remove('show');
+        toastEl.textContent = message;
+        toastEl.className = 'order-toast ' + type;
+        setTimeout(function() { toastEl.classList.add('show'); }, 10);
+        setTimeout(function() {
+            toastEl.classList.remove('show');
         }, 3000);
     }
 
     // Save order via AJAX
-    saveBtn.addEventListener('click', function() {
+    $(saveBtn).on('click', function() {
         if (!orderChanged) return;
 
-        const order = [];
-        document.querySelectorAll('#sortableBody .sortable-row').forEach(function(row) {
-            order.push(parseInt(row.dataset.id));
+        var order = [];
+        $('#sortableBody .sortable-row').each(function() {
+            order.push(parseInt($(this).data('id')));
         });
+
+        console.log('Saving order:', order);
 
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin fs-5"></i> <span>جاري الحفظ...</span>';
 
         $.ajax({
             url: '{{ route("categories.reorder") }}',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                order: order
+            type: 'POST',
+            data: JSON.stringify({ order: order }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             success: function(response) {
+                console.log('Reorder success:', response);
                 orderChanged = false;
-                saveBtn.classList.remove('show');
+                saveBtn.classList.remove('visible');
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = '<i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>';
                 showToast('✅ ' + response.message, 'success');
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Reorder error:', status, error, xhr.responseText);
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = '<i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>';
                 showToast('❌ حدث خطأ أثناء حفظ الترتيب', 'error');

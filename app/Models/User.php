@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\ArbitratorDeclaration;
 
 class User extends Authenticatable
 {
@@ -73,5 +74,9 @@ class User extends Authenticatable
         return $this->hasMany(Order::class, 'expert_id');
     }
 
+    public function declaration()
+    {
+        return $this->hasOne(ArbitratorDeclaration::class);
+    }
 
 }
