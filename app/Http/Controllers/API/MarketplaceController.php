@@ -113,7 +113,7 @@ class MarketplaceController extends Controller
                 'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
                 'created_at' => $order->created_at->format('Y-m-d H:i:s'),
-                'payload' => is_string($order->payload) ? json_decode($order->payload, true) : $order->payload,
+                'payload' => $order->payload,
                 'user' => [
                     'id' => $order->user->id,
                     'name' => $order->user->first_name . ' ' . $order->user->last_name,
@@ -185,7 +185,7 @@ class MarketplaceController extends Controller
                 ],
                 'price' => $order->total_price,
                 'status' => $order->status,
-                'description' => is_string($order->payload) ? json_decode($order->payload, true) : $order->payload,
+                'description' => $order->payload,
                 'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
                 "payment_type" => $order->payment_type,
