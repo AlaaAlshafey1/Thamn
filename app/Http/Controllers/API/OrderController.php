@@ -726,7 +726,8 @@ class OrderController extends Controller
 
     public function reEvaluate(Request $request, $orderId)
     {
-        $order = Order::findOrFail($orderId);
+        $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user'])
+            ->findOrFail($orderId);
 
         // Reset previous evaluation
         $order->update([
@@ -743,6 +744,9 @@ class OrderController extends Controller
             'thamn_at' => null,
         ]);
 
+        // Refresh the model so the relations reflect the latest DB state
+        $order->refresh();
+
         $rateTypeAnswer = $order->details()
             ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
             ->first();
@@ -751,7 +755,8 @@ class OrderController extends Controller
 
         switch ($evaluationType) {
             case 'ai':
-                $this->runAiEvaluation($order);
+                // Use ThamnEvaluationService which correctly attaches images to the AI prompt
+                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
                 break;
 
             case 'expert':
@@ -759,12 +764,14 @@ class OrderController extends Controller
                 break;
 
             case 'best':
-                $this->runPricingEvaluation($order);
+                // Use ThamnEvaluationService which correctly attaches images to the AI prompt
+                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
                 break;
 
             default:
                 Log::warning('Unknown evaluation type on re-evaluate', [
-                    'order_id' => $order->id
+                    'order_id' => $order->id,
+                    'evaluation_type' => $evaluationType,
                 ]);
         }
 
@@ -772,54 +779,17 @@ class OrderController extends Controller
             'status' => true,
             'message' => 'Order re-evaluation requested successfully',
             'order_id' => $order->id,
-            'new_status' => 'beingReEstimated',
+            'new_status' => $order->fresh()->status,
         ]);
     }
 
+    /**
+     * @deprecated Use ThamnEvaluationService::runAiEvaluation() instead — it correctly attaches images.
+     */
     private function runAiEvaluation(Order $order): void
     {
-        $qaText = '';
-
-        foreach ($order->details as $detail) {
-            $question = $detail->question->question_ar ?? null;
-            $answer = $detail->option->option_ar ?? $detail->value ?? null;
-
-            if ($question && $answer) {
-                $qaText .= "- {$question}: {$answer}\n";
-            }
-        }
-        $prompt = <<<PROMPT
-أنت خبير محترف في تثمين السلع في السوق السعودي.
-
-الدولة: المملكة العربية السعودية
-العملة: ريال سعودي (SAR)
-فئة السلعة: {$order->category->name_ar}
-
-تفاصيل السلعة:
-{$qaText}
-
-ممنوع كتابة أي نص خارج JSON.
-
-{
-"min_price": رقم,
-"max_price": رقم,
-"recommended_price": رقم,
-"currency": "SAR",
-"confidence": رقم,
-"reasoning": "شرح مختصر"
-}
-PROMPT;
-
-        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt);
-
-        $order->update([
-            'status' => "estimated" ?? null,
-            'ai_min_price' => $aiResult['min_price'] ?? null,
-            'ai_max_price' => $aiResult['max_price'] ?? null,
-            'ai_price' => $aiResult['recommended_price'] ?? null,
-            'ai_confidence' => $aiResult['confidence'] ?? null,
-            'ai_reasoning' => $aiResult['reasoning'] ?? null,
-        ]);
+        // Delegate to the service that properly handles image attachments
+        app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
     }
 
     // ===============================

@@ -136,7 +136,9 @@ class PaymentController extends Controller
         $order = Order::with([
             'details.question',
             'details.option',
-            'category'
+            'category',
+            'files',   // ← مهم: الصور لازم تكون محملة عشان الـ AI يشوفها
+            'user',    // ← مهم: للإشعارات
         ])->findOrFail($payment->order->id);
 
         $order->update([
