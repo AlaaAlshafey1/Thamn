@@ -158,17 +158,25 @@ class MarketplaceController extends Controller
             ], 404);
         }
 
-        // ─── بناء الـ description من الأسئلة والأجوبة ───────────────────────
-        $descriptionParts = [];
-        foreach ($order->details as $detail) {
-            $answer = $lang === 'ar'
-                ? ($detail->option->option_ar ?? $detail->option->option_en ?? $detail->value ?? null)
-                : ($detail->option->option_en ?? $detail->option->option_ar ?? $detail->value ?? null);
-            if ($answer) {
-                $descriptionParts[] = $answer;
+        // ─── description: reasoning من الـ AI أو الخبير أو fallback من الإجابات ──
+        $description = $order->thamn_reasoning
+            ?? $order->expert_reasoning
+            ?? $order->ai_reasoning
+            ?? null;
+
+        // Fallback: لو مفيش reasoning نبني من إجابات المستخدم
+        if (!$description) {
+            $descriptionParts = [];
+            foreach ($order->details as $detail) {
+                $answer = $lang === 'ar'
+                    ? ($detail->option->option_ar ?? $detail->option->option_en ?? $detail->value ?? null)
+                    : ($detail->option->option_en ?? $detail->option->option_ar ?? $detail->value ?? null);
+                if ($answer) {
+                    $descriptionParts[] = $answer;
+                }
             }
+            $description = implode('، ', array_filter($descriptionParts));
         }
-        $description = implode('، ', array_filter($descriptionParts));
 
         $groups = [];
         foreach ($order->details as $detail) {
