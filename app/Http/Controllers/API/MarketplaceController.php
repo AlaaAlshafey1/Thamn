@@ -168,7 +168,7 @@ class MarketplaceController extends Controller
                 $descriptionParts[] = $answer;
             }
         }
-        $description = implode(' | ', array_filter($descriptionParts));
+        $description = implode('، ', array_filter($descriptionParts));
 
         $groups = [];
         foreach ($order->details as $detail) {
