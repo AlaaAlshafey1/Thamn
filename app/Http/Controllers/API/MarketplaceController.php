@@ -158,6 +158,18 @@ class MarketplaceController extends Controller
             ], 404);
         }
 
+        // ─── بناء الـ description من الأسئلة والأجوبة ───────────────────────
+        $descriptionParts = [];
+        foreach ($order->details as $detail) {
+            $answer = $lang === 'ar'
+                ? ($detail->option->option_ar ?? $detail->option->option_en ?? $detail->value ?? null)
+                : ($detail->option->option_en ?? $detail->option->option_ar ?? $detail->value ?? null);
+            if ($answer) {
+                $descriptionParts[] = $answer;
+            }
+        }
+        $description = implode(' | ', array_filter($descriptionParts));
+
         $groups = [];
         foreach ($order->details as $detail) {
             $groupId = $detail->stageing ?? 'default';
@@ -185,7 +197,7 @@ class MarketplaceController extends Controller
                 ],
                 'price' => $order->total_price,
                 'status' => $order->status,
-                'description' => $order->payload,
+                'description' => $description,
                 'images' => $order->files->where('type', 'image')->map(fn($f) => Storage::url($f->file_path)),
                 'files' => $order->files->where('type', 'file')->map(fn($f) => Storage::url($f->file_path)),
                 "payment_type" => $order->payment_type,
