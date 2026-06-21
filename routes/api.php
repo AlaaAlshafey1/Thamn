@@ -44,6 +44,7 @@ Route::prefix('auth')->group(function () {
 
 // ------------------ PUBLIC ENDPOINTS ------------------
 Route::get('categories', [HomeController::class, 'categories']);
+Route::get('valuation-orders/{order}/pdf', [OrderController::class, 'generatePdf'])->name('valuation-order.pdf')->middleware('signed');
 
 Route::get('terms', [HomeController::class, 'terms']);
 Route::get('/test-fcm', function () {

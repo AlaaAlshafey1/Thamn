@@ -26,6 +26,12 @@ return [
             'B'  => 'Tajawal-Bold.ttf',
             'useOTL' => 0xFF,
             'useKashida' => 75,
+        ],
+        'cairo' => [
+            'R'  => 'Cairo-Regular.ttf',
+            'B'  => 'Cairo-Bold.ttf',
+            'useOTL' => 0xFF,
+            'useKashida' => 75,
         ]
     ],
     'auto_language_detection'  => true,

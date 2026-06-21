@@ -371,8 +371,8 @@ class OrderController extends Controller
         | TITLE
         |--------------------------------------------------------------------------
         */
-        $title = $order->category->name_en
-            ?? $order->category->name_ar
+        $title = $order->category?->name_en
+            ?? $order->category?->name_ar
             ?? 'Valuation Order';
 
         /*
@@ -607,8 +607,8 @@ class OrderController extends Controller
             ->firstOrFail();
 
         /* ===================== CATEGORY ===================== */
-        $category = $order->category->name_en
-            ?? $order->category->name_ar
+        $category = $order->category?->name_en
+            ?? $order->category?->name_ar
             ?? '';
 
         /* ===================== DESCRIPTION ===================== */
@@ -645,7 +645,7 @@ class OrderController extends Controller
         $imageFile = $order->files->firstWhere('type', 'image');
         $image = $imageFile ? full_url($imageFile->file_path) : '';
 
-        if ($order->category->name_en == "cars") {
+        if ($order->category?->name_en == "cars") {
             $image = URL::asset('/assets/img/Cars-result.jpeg');
         }
 
@@ -718,8 +718,75 @@ class OrderController extends Controller
             'reasoning' => $reasoning,
             'prices' => $prices,
             'details' => $details,
+            'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
         ]);
+    }
+
+    public function generatePdf(Request $request, $orderId)
+    {
+        $order = \App\Models\Order::with([
+            'details.question',
+            'details.option',
+            'category',
+            'files',
+            'user'
+        ])->findOrFail($orderId);
+
+        /* ===================== CATEGORY ===================== */
+        $category = $order->category?->name_ar
+            ?? $order->category?->name_en
+            ?? '';
+
+        /* ===================== PRICES ===================== */
+        $prices = [
+            'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
+            'average' => (float) (
+                $order->thamn_price
+                ?? $order->ai_price
+                ?? 0
+            ),
+            'lowest' => $order->ai_min_price ? (float) $order->ai_min_price : null,
+        ];
+
+        /* ===================== DETAILS ===================== */
+        $details = [];
+        foreach ($order->details as $detail) {
+            if (!$detail->question) continue;
+
+            $title = $detail->question->question_ar
+                ?? $detail->question->question_en;
+
+            $value = $detail->option?->option_ar
+                ?? $detail->option?->option_en
+                ?? $detail->value;
+
+            if ($title && $value) {
+                $details[] = [
+                    'title' => $title,
+                    'value' => (string) $value,
+                ];
+            }
+        }
+        
+        $reasoning = $order->thamn_reasoning
+            ?? $order->expert_reasoning
+            ?? $order->ai_reasoning
+            ?? '';
+
+        /* ===================== MAIN IMAGE ===================== */
+        $imageFile = $order->files->firstWhere('type', 'image');
+        $image = $imageFile ? public_path('storage/' . $imageFile->file_path) : null;
+
+        if ($order->category?->name_en == "cars") {
+            $image = public_path('assets/img/Cars-result.jpeg');
+        }
+
+        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.order-valuation-result', compact(
+            'order', 'category', 'prices', 'details', 'reasoning', 'image'
+        ));
+
+        return $pdf->stream('valuation-order-' . $order->id . '.pdf');
     }
 
 
