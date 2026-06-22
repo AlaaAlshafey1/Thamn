@@ -18,4 +18,9 @@ class Category extends Model
         'image',
         'sort_order',
     ];
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
 }

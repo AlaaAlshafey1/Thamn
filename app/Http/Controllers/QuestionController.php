@@ -12,27 +12,34 @@ class QuestionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Question::with('category');
-
-
-        if ($request->filled('flow')) {
-
-            if ($request->flow === 'valuation') {
-                $query->whereIn('flow', ['valuation', 'both']);
+        $categories = Category::with(['questions' => function ($query) use ($request) {
+            if ($request->filled('flow')) {
+                if ($request->flow === 'valuation') {
+                    $query->whereIn('flow', ['valuation', 'both']);
+                } elseif ($request->flow === 'market') {
+                    $query->whereIn('flow', ['market', 'both']);
+                }
             }
+            // Order questions by order ASC, then by created_at ASC
+            $query->orderBy('order', 'asc')->orderBy('created_at', 'asc');
+        }])->orderBy('created_at', 'asc')->get();
 
-            elseif ($request->flow === 'market') {
-                $query->whereIn('flow', ['market', 'both']);
+        $uncategorizedQuestions = Question::whereNull('category_id')->where(function($query) use ($request) {
+            if ($request->filled('flow')) {
+                if ($request->flow === 'valuation') {
+                    $query->whereIn('flow', ['valuation', 'both']);
+                } elseif ($request->flow === 'market') {
+                    $query->whereIn('flow', ['market', 'both']);
+                }
             }
-        }else{
+        })->orderBy('order', 'asc')->orderBy('created_at', 'asc')->get();
 
-
-        }
-
-        $questions = $query->latest()->get();
+        $steps = \App\Models\QuestionStep::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
 
         return view('questions.index', [
-            'questions' => $questions,
+            'categories' => $categories,
+            'uncategorizedQuestions' => $uncategorizedQuestions,
+            'steps' => $steps,
             'flow'      => $request->flow
         ]);
     }
@@ -271,6 +278,21 @@ class QuestionController extends Controller
 
         return redirect()->route('questions.index')
             ->with('success', 'تم تحديث السؤال والخيارات بنجاح');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:questions,id',
+            'order.*.position' => 'required|integer',
+        ]);
+
+        foreach ($request->order as $item) {
+            Question::where('id', $item['id'])->update(['order' => $item['position']]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'تم تحديث الترتيب بنجاح']);
     }
 
     public function destroy(Question $question)
