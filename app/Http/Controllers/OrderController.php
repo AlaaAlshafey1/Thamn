@@ -23,9 +23,21 @@ class OrderController extends Controller
                 $q->where('expert_id', Auth::id())
                     ->orWhereNull('expert_id');
             })
-            ->whereIn('status', ['orderReceived', 'beingEstimated', 'paid'])
+            ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid'])
             ->when(auth()->user()->category_id, function ($q) {
-                return $q->where('category_id', auth()->user()->category_id);
+                return $q->where(function ($sub) {
+                    $sub->where('category_id', auth()->user()->category_id)
+                        ->orWhereNull('category_id');
+                });
+            })
+            ->whereHas('details', function ($q) {
+                $q->whereHas('question', function ($q2) {
+                    $q2->where('type', 'rateTypeSelection');
+                })->where(function ($q3) {
+                    $q3->whereHas('option', function ($q4) {
+                        $q4->where('badge', 'expert');
+                    })->orWhere('value', 'expert');
+                });
             })
             ->with('user')
             ->latest()
@@ -33,7 +45,7 @@ class OrderController extends Controller
 
             // الطلبات السابقة: اللي هو خلصها
             $completedOrders = Order::where('expert_id', Auth::id())
-                ->whereIn('status', ['evaluated', 'finished', 'completed'])
+                ->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
                 ->with('user')
                 ->latest()
                 ->get();
@@ -58,6 +70,24 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
+        if (auth()->user()->hasRole('expert')) {
+            $isAiOnly = $order->details()->whereHas('question', function($q) {
+                $q->where('type', 'rateTypeSelection');
+            })->where(function($q) {
+                $q->whereHas('option', function($q2) {
+                    $q2->where('badge', 'ai');
+                })->orWhere('value', 'ai');
+            })->exists();
+
+            if ($isAiOnly) {
+                return redirect()->route('orders.index')->with('error', 'هذا الطلب مخصص للتقييم بواسطة الذكاء الاصطناعي فقط ولا يمكنك الدخول إليه.');
+            }
+
+            if ($order->expert_id !== auth()->id()) {
+                return redirect()->route('orders.index')->with('error', 'يجب عليك استلام الطلب أولاً من لوحة التحكم قبل التمكن من عرضه أو تقييمه.');
+            }
+        }
+
         $order->load(['details', 'files', 'user', 'payments']);
 
         return view('orders.show', compact('order'));

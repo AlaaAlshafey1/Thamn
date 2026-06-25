@@ -8,6 +8,12 @@
 		<meta name="Author" content="Spruko Technologies Private Limited">
 		<meta name="Keywords" content="admin,admin dashboard,admin dashboard template,admin panel template,admin template,admin theme,bootstrap 4 admin template,bootstrap 4 dashboard,bootstrap admin,bootstrap admin dashboard,bootstrap admin panel,bootstrap admin template,bootstrap admin theme,bootstrap dashboard,bootstrap form template,bootstrap panel,bootstrap ui kit,dashboard bootstrap 4,dashboard design,dashboard html,dashboard template,dashboard ui kit,envato templates,flat ui,html,html and css templates,html dashboard template,html5,jquery html,premium,premium quality,sidebar bootstrap 4,template admin bootstrap 4"/>
 		@include('layouts.head')
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+			body, h1, h2, h3, h4, h5, h6, p, a, div, span, button, input, select, textarea, table, th, td, .btn, .alert, .badge {
+				font-family: 'Tajawal', sans-serif !important;
+			}
+		</style>
 	</head>
 
 	<body class="main-body app sidebar-mini">

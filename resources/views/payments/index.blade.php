@@ -2,6 +2,7 @@
 @section('title','إدارة المدفوعات')
 
 @section('css')
+@include('partials.modern-table-css')
 <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
 <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap5.min.css') }}" rel="stylesheet" />
 <style>
@@ -12,33 +13,39 @@
     border-radius: 8px !important;
     padding: 6px 12px !important;
 }
+.dataTables-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+#paymentsTable {
+    min-width: 1000px;
+}
 </style>
 @endsection
 
 @section('page-header')
 <div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3" style="direction: rtl;">
     <div class="d-flex flex-column">
-        <h4 class="content-title mb-1 fw-bold text-primary">إدارة المدفوعات</h4>
+        <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-money"></i> إدارة المدفوعات</h4>
         <small class="text-muted">عرض جميع المدفوعات والتحكم بها</small>
     </div>
 </div>
 @endsection
 
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h5 class="card-title mb-0">قائمة المدفوعات</h5>
-        <small class="text-muted">عرض جميع المدفوعات المسجلة</small>
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0 fw-bold">قائمة المدفوعات</h5>
     </div>
 
     <div class="card-body">
         @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
         @endif
 
-        <div class="table-responsive">
-            <table id="paymentsTable" class="table table-hover table-striped text-center align-middle">
-                <thead class="bg-light">
+        <div class="table-responsive dataTables-wrapper">
+            <table id="paymentsTable" class="table modern-table text-center align-middle w-100">
+                <thead class="bg-light text-center">
                     <tr>
                         <th>#</th>
                         <th>رقم الطلب</th>
@@ -53,34 +60,49 @@
                     @foreach($payments as $key => $payment)
                     <tr>
                         <td>{{ $key + 1 }}</td>
-                        <td>{{ $payment->order->id ?? '-' }}</td>
-                        <td>{{ $payment->order->user->first_name ?? '-' }}</td>
-                        <td>{{ number_format($payment->amount,2) }} SAR</td>
+                        <td class="fw-bold">#{{ $payment->order->id ?? '-' }}</td>
+                        <td>
+                            <span class="fw-bold text-dark">{{ $payment->order->user->first_name ?? '-' }}</span>
+                        </td>
+                        <td><strong class="text-success">{{ number_format($payment->amount,2) }}</strong> <small>SAR</small></td>
                         <td>
                             @if($payment->status === 'paid')
-                                <span class="badge bg-success">مدفوع</span>
+                                <span class="badge bg-success-transparent text-success px-3 py-2"><i class="bx bx-check-circle ml-1"></i> مدفوع</span>
                             @elseif($payment->status === 'failed')
-                                <span class="badge bg-danger">فشل</span>
+                                <span class="badge bg-danger-transparent text-danger px-3 py-2"><i class="bx bx-x-circle ml-1"></i> فشل</span>
                             @else
-                                <span class="badge bg-warning">{{ $payment->status }}</span>
+                                <span class="badge bg-warning-transparent text-warning px-3 py-2">{{ $payment->status }}</span>
                             @endif
                         </td>
-                        <td>{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="text-muted small">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
                         <td>
-                            <a href="{{ route('payments.show', $payment->id) }}" class="btn btn-outline-info btn-sm">
-                                <i class="bx bx-show"></i>
-                            </a>
-                            <form action="{{ route('payments.destroy', $payment->id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('هل أنت متأكد من الحذف؟')">
-                                    <i class="bx bx-trash"></i>
-                                </button>
-                            </form>
+                            <div class="btn-group">
+                                <a href="{{ route('payments.show', $payment->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل">
+                                    <i class="bx bx-show fs-18"></i>
+                                </a>
+                                <form action="{{ route('payments.destroy', $payment->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger-light btn-icon" onclick="return confirm('هل أنت متأكد من الحذف؟')" title="حذف">
+                                        <i class="bx bx-trash fs-18"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
+                <tfoot class="bg-light text-center">
+                    <tr>
+                        <th>#</th>
+                        <th>رقم الطلب</th>
+                        <th>المستخدم</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الدفع</th>
+                        <th>التحكم</th>
+                    </tr>
+                </tfoot>
             </table>
 
             <div class="mt-3">
@@ -105,6 +127,16 @@
 
 <script>
 $(document).ready(function() {
+    // Setup - add a text input to each footer cell
+    $('#paymentsTable tfoot th').each(function () {
+        var title = $(this).text();
+        if(title !== 'التحكم' && title !== '#') {
+            $(this).html('<input type="text" class="form-control form-control-sm" placeholder="بحث ' + title + '" />');
+        } else {
+            $(this).html('');
+        }
+    });
+
     $('#paymentsTable').DataTable({
         language: { url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/ar.json' },
         pageLength: 10,
@@ -114,7 +146,18 @@ $(document).ready(function() {
             { extend: 'excel', text: '📊 Excel', className: 'btn-sm mx-1' },
             { extend: 'pdf', text: '📄 PDF', className: 'btn-sm mx-1' },
             { extend: 'print', text: '🖨️ طباعة', className: 'btn-sm mx-1' }
-        ]
+        ],
+        initComplete: function () {
+            // Apply the search
+            this.api().columns().every(function () {
+                var that = this;
+                $('input', this.footer()).on('keyup change clear', function () {
+                    if (that.search() !== this.value) {
+                        that.search(this.value).draw();
+                    }
+                });
+            });
+        }
     });
 });
 </script>

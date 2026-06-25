@@ -111,7 +111,7 @@ class ArbitratorDeclarationController extends Controller
         // إرسال إيميل للمشرفين بأن الخبير وقع
         try {
             $admins = User::role('superadmin')->get();
-            $adminEmail = config('mail.admin_email', 'alaa.alshafey12345@gmail.com');
+            $adminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
             $expertName = $declaration->full_name ?? ($declaration->user->first_name . ' ' . $declaration->user->last_name);
             $viewUrl = route('experts.show', $declaration->user_id);
 

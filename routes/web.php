@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
 
     // Admin Routes
     Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::get('/withdrawals/{id}/show', [WithdrawalController::class, 'show'])->name('withdrawals.show');
     Route::post('/withdrawals/{id}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
     Route::post('/withdrawals/{id}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
@@ -158,6 +159,9 @@ Route::middleware('auth')->group(function () {
     // Manual Notifications Center
     Route::get('/notifications-center', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');
     Route::post('/notifications-center/send', [\App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('admin.notifications.send');
+
+    // AI Dashboard Route
+    Route::post('/ai/ask', [\App\Http\Controllers\Admin\DashboardController::class, 'askAI'])->name('admin.ai.ask');
 
 });
 

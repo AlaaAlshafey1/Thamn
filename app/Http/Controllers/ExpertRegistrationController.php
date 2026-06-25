@@ -91,14 +91,14 @@ class ExpertRegistrationController extends Controller
             // Send welcome email with password
             try {
                 Mail::to($user->email)->send(new ExpertRegistrationMail($user, $plainPassword));
-                
+
                 // Notify All SuperAdmins via WhatsApp & Email
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 $admins = User::role('superadmin')->get();
-                
+
                 $msg = \App\Services\WhatsAppService::getTemplate('new_expert_reg', ['name' => $user->first_name . ' ' . $user->last_name]);
 
-                $adminEmail = 'alaa.alshafey12345@gmail.com';
+                $adminEmail = 'thmmnapplic@gmail.com';
                 Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                     'يا مدير، خبير جديد يبي ينضم لثمن!',
                     "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\nادخل على لوحة التحكم وشيك على ملفه.",
@@ -111,7 +111,7 @@ class ExpertRegistrationController extends Controller
                         $whatsapp->sendMessage($admin->phone, $msg);
                     }
                 }
-                
+
             } catch (\Exception $e) {
                 \Log::error('Expert Registration Notification Failed: ' . $e->getMessage());
             }

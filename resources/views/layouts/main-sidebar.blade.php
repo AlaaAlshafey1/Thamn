@@ -183,28 +183,56 @@
                     @endcan
                 </li>
                 @can('orders_view')
-                <li class="side-item side-item-category">Orders Management</li>
-                @endcan
-                <li class="slide">
-                    @can('orders_view')
+                <li class="side-item side-item-category">إدارة الطلبات</li>
+                
+                @if(auth()->user()->hasRole('expert'))
+                    @php
+                        $newOrdersCount = \App\Models\Order::where('status', 'pending')
+                            ->when(auth()->user()->category_id, function ($q) {
+                                return $q->where(function ($sub) {
+                                    $sub->where('category_id', auth()->user()->category_id)
+                                        ->orWhereNull('category_id');
+                                });
+                            })
+                            ->whereHas('details', function ($q) {
+                                $q->whereHas('question', function ($q2) {
+                                    $q2->where('type', 'rateTypeSelection');
+                                })->where(function ($q3) {
+                                    $q3->whereHas('option', function ($q4) {
+                                        $q4->where('badge', 'expert');
+                                    })->orWhere('value', 'expert');
+                                });
+                            })->count();
+                            
+                        $evaluatedOrdersCount = \App\Models\Order::where('expert_id', auth()->id())
+                            ->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
+                            ->count();
+                    @endphp
+                    <li class="slide">
                         <a class="side-menu__item" href="{{ route('orders.index') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="side-menu__icon"
-                                viewBox="0 0 24 24">
-                                <path d="M0 0h24v24H0V0z" fill="none"/>
-                                <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2
-                                        2-.9 2-2-.9-2-2-2zm10 0c-1.1
-                                        0-2 .9-2 2s.9 2 2 2 2-.9
-                                        2-2-.9-2-2-2zM7.16 14h9.45c.75
-                                        0 1.41-.41 1.75-1.03l3.58-6.49
-                                        -1.74-.97-3.58 6.49H8.53L4.27
-                                        4H1v2h2l3.6 7.59-1.35 2.44C4.52
-                                        16.37 5.48 18 7 18h12v-2H7l1.16-2z"/>
-                            </svg>
-                            <span class="side-menu__label">الطلبات</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.16 14h9.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49-1.74-.97-3.58 6.49H8.53L4.27 4H1v2h2l3.6 7.59-1.35 2.44C4.52 16.37 5.48 18 7 18h12v-2H7l1.16-2z"/></svg>
+                            <span class="side-menu__label">الطلبات الجديدة</span>
+                            @if($newOrdersCount > 0)
+                                <span class="badge badge-warning side-badge" style="border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0;">{{ $newOrdersCount }}</span>
+                            @endif
                         </a>
-                    @endcan
-                </li>
+                    </li>
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('orders.index', ['tab' => 'completed']) }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                            <span class="side-menu__label">الطلبات المقيمة</span>
+                            <span class="badge badge-success side-badge" style="border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0;">{{ $evaluatedOrdersCount }}</span>
+                        </a>
+                    </li>
+                @else
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('orders.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.16 14h9.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49-1.74-.97-3.58 6.49H8.53L4.27 4H1v2h2l3.6 7.59-1.35 2.44C4.52 16.37 5.48 18 7 18h12v-2H7l1.16-2z"/></svg>
+                            <span class="side-menu__label">جميع الطلبات</span>
+                        </a>
+                    </li>
+                @endif
+                @endcan
                  @can('payments_view')
 
                 <li class="side-item side-item-category">Payments Management</li>
@@ -290,6 +318,7 @@
                             <span class="side-menu__label">إعدادات واتساب</span>
                         </a>
                     </li> -->
+                    @hasanyrole('admin|superadmin')
                     <li class="slide">
                         <a class="side-menu__item" href="{{ route('admin.notifications.index') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
@@ -299,6 +328,7 @@
                             <span class="side-menu__label">مركز الإشعارات</span>
                         </a>
                     </li>
+                    @endhasanyrole
 
                     <li class="slide">
                         <a class="side-menu__item" href="{{ route('profile.edit') }}">

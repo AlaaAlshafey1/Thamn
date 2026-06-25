@@ -78,8 +78,11 @@
                             </td>
                             <td class="text-center text-muted small">{{ $req->created_at->format('Y-m-d H:i') }}</td>
                             <td class="text-center">
-                                @if($req->status == 'pending')
                                     <div class="btn-group">
+                                        <a href="{{ route('withdrawals.show', $req->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل">
+                                            <i class="bx bx-show fs-18"></i>
+                                        </a>
+                                        @if($req->status == 'pending')
                                         <form action="{{ route('withdrawals.approve', $req->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-success-light btn-icon" title="موافقة">
@@ -93,10 +96,8 @@
                                                 <i class="bx bx-x fs-18"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
-                                @else
-                                    <span class="badge bg-light text-muted">تمت المعالجة</span>
-                                @endif
                             </td>
                         </tr>
                     @endforeach

@@ -89,7 +89,7 @@ class RefundRequestController extends Controller
 
         // Send Direct Email to Admin
         try {
-            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            $adminEmail = 'thmmnapplic@gmail.com';
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                 'طلب استرداد مبلغ جديد!',
                 "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",

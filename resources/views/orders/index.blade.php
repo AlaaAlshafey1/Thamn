@@ -84,13 +84,13 @@
         <div class="card-header bg-white pb-0 border-0">
             <ul class="nav nav-tabs card-header-tabs" id="expertTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold px-4 py-3" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-orders" type="button" role="tab">
+                    <button class="nav-link {{ request('tab') == 'completed' ? '' : 'active' }} fw-bold px-4 py-3" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-orders" type="button" role="tab">
                         <i class="bx bx-list-ul ml-1"></i> الطلبات الحالية 
                         <span class="badge bg-primary ms-1">{{ $activeOrders->count() }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold px-4 py-3 text-muted" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-orders" type="button" role="tab">
+                    <button class="nav-link {{ request('tab') == 'completed' ? 'active' : 'text-muted' }} fw-bold px-4 py-3" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-orders" type="button" role="tab">
                         <i class="bx bx-history ml-1"></i> الطلبات السابقة
                         <span class="badge bg-success ms-1">{{ $completedOrders->count() }}</span>
                     </button>
@@ -99,10 +99,10 @@
         </div>
         <div class="card-body p-0">
             <div class="tab-content p-4" id="expertTabsContent">
-                <div class="tab-pane fade show active" id="active-orders" role="tabpanel">
+                <div class="tab-pane fade {{ request('tab') == 'completed' ? '' : 'show active' }}" id="active-orders" role="tabpanel">
                     @include('orders.partials.table', ['orders' => $activeOrders, 'tableId' => 'activeOrdersTable'])
                 </div>
-                <div class="tab-pane fade" id="completed-orders" role="tabpanel">
+                <div class="tab-pane fade {{ request('tab') == 'completed' ? 'show active' : '' }}" id="completed-orders" role="tabpanel">
                     @include('orders.partials.table', ['orders' => $completedOrders, 'tableId' => 'completedOrdersTable'])
                 </div>
             </div>
@@ -137,7 +137,17 @@
 
     <script>
         $(document).ready(function () {
-            $('.table').DataTable({
+            // Setup - add a text input to each footer cell
+            $('.table tfoot th').each(function () {
+                var title = $(this).text();
+                if(title !== 'العمليات' && title !== '#') {
+                    $(this).html('<input type="text" class="form-control form-control-sm" placeholder="بحث ' + title + '" />');
+                } else {
+                    $(this).html('');
+                }
+            });
+
+            var table = $('.table').DataTable({
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/ar.json' },
                 pageLength: 10,
                 dom: '<"d-flex justify-content-between align-items-center mb-3"<"btn-left"B><"search-box"f>>rtip',
@@ -146,15 +156,25 @@
                     { extend: 'excel', text: 'Excel', className: 'btn-sm mx-1' },
                     { extend: 'pdf', text: 'PDF', className: 'btn-sm mx-1' },
                     { extend: 'print', text: 'طباعة', className: 'btn-sm mx-1' }
-                ]
+                ],
+                initComplete: function () {
+                    // Apply the search
+                    this.api().columns().every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                }
             });
 
             // Expert Assignment logic
-            $(document).on('change', '.expert-select', function () {
+            $(document).on('click', '.expert-receive-btn', function () {
                 let orderId = $(this).data('order-id');
-                let checked = $(this).is(':checked');
 
-                if (checked) {
+                if (confirm('هل أنت متأكد أنك تريد استلام هذا الطلب؟')) {
                     $.ajax({
                         url: '{{ route("orders.assignExpert") }}',
                         method: 'POST',

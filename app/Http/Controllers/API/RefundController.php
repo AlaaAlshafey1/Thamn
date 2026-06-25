@@ -21,7 +21,7 @@ class RefundController extends Controller
     public function getPendingRefunds()
     {
         $user = Auth::user();
-        
+
         $orders = Order::where('user_id', $user->id)
             ->where('status', 'expired')
             ->whereDoesntHave('refundRequest')
@@ -73,7 +73,7 @@ class RefundController extends Controller
 
         // Check if already submitted
         if ($order->refundRequest) {
-             return response()->json([
+            return response()->json([
                 'status' => false,
                 'message' => 'تم إرسال بيانات الاسترداد مسبقاً لهذا الطلب'
             ], 400);
@@ -97,7 +97,7 @@ class RefundController extends Controller
 
         // Send Direct Email to Admin
         try {
-            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            $adminEmail = 'thmmnapplic@gmail.com';
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                 'طلب استرداد مبلغ جديد (من الموبايل)!',
                 "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",

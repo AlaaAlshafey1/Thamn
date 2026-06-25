@@ -1,141 +1,135 @@
 @extends('layouts.master')
-@section('title', 'طلب سحب رصيد')
+@section('title', 'طلب سحب رصيد جديد')
 
 @section('css')
 <style>
-    .user-form-card {
-        background-color: #fff;
-        border-radius: 15px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        padding: 25px;
+    .form-wrapper {
+        max-width: 650px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        padding: 40px;
     }
-    .form-section-title {
-        font-size: 16px;
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 2px solid #f1f1f1;
+        font-size: 1.05rem;
+        transition: all 0.2s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #2a5298;
+        box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.1);
+    }
+    .input-group-text {
+        background: #f8f9fa;
+        border: 2px solid #f1f1f1;
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        font-weight: bold;
+        color: #555;
+    }
+    .form-control.amount-input {
+        border-right: none;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1e3c72;
+    }
+    .submit-btn {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: #0d6efd;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 5px;
-    }
-    label.form-label {
-        font-weight: 500;
-        color: #333;
-    }
-    input.form-control, select.form-select, textarea.form-control {
-        border-radius: 10px;
-        padding: 10px 14px;
-        min-height: 45px;
         width: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    select.form-select {
-        background-color: #fff;
-        border: 1px solid #ced4da;
-        font-size: 15px;
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
     }
-    .wide-select {
-        width: 100%;
+    .balance-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        border: 1px solid #eef0f2;
     }
 </style>
 @endsection
 
-@section('page-header')
-<div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3" style="direction: rtl;">
-    <div class="d-flex flex-column">
-        <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-wallet"></i> طلب سحب رصيد</h4>
-        <small class="text-muted">قم بتقديم طلب سحب الرصيد الخاص بك</small>
-    </div>
-    <div>
-        <a href="{{ route('withdrawals.my') }}" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
-            <i class="bx bx-arrow-back fs-5"></i> <span>رجوع</span>
-        </a>
-    </div>
-</div>
-@endsection
-
 @section('content')
-<div class="user-form-card">
+<div class="container-fluid pt-5 pb-5">
 
-    {{-- alerts --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    {{-- validation errors --}}
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-primary-gradient text-white shadow-sm border-0 rounded-3">
-                <div class="card-body p-4 text-center">
-                    <div class="mb-2 op-7">رصيدك الحالي القابل للسحب</div>
-                    <h2 class="fw-bold mb-0">{{ number_format(auth()->user()->balance, 2) }} <small class="fs-14">SAR</small></h2>
-                </div>
+    <div class="form-wrapper">
+        <div class="text-center mb-4">
+            <div class="avatar avatar-lg bg-primary-transparent text-primary rounded-circle mb-3 mx-auto" style="width:70px;height:70px;display:flex;align-items:center;justify-content:center;">
+                <i class="bx bx-money" style="font-size:2rem;"></i>
             </div>
+            <h3 class="fw-bold text-dark">سحب رصيد</h3>
+            <p class="text-muted">قم بتحديد المبلغ الذي ترغب بسحبه لحسابك البنكي</p>
         </div>
-        <div class="col-md-8">
-            <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center">
-                <i class="bx bx-info-circle fs-30 ml-3"></i>
-                <div>
-                    <strong>تنبيه:</strong>
-                    سيتم مراجعة طلبك من قبل الإدارة، وتأكد من تحديث بياناتك البنكية في ملفك الشخصي لتجنب أي تأخير.
-                </div>
+
+        @if($errors->any())
+            <div class="alert alert-danger" style="border-radius: 10px;">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
+        @endif
+
+        <div class="balance-info">
+            <div>
+                <small class="text-muted d-block mb-1">رصيدك المتاح للسحب</small>
+                <h5 class="mb-0 fw-bold text-success">{{ number_format(auth()->user()->balance, 2) }} <small>SAR</small></h5>
+            </div>
+            <a href="{{ route('withdrawals.my') }}" class="btn btn-sm btn-light border rounded-pill px-3">
+                <i class="bx bx-list-ul"></i> سجل السحوبات
+            </a>
         </div>
+
+        <form action="{{ route('withdrawals.store') }}" method="POST">
+            @csrf
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">المبلغ المطلوب <span class="text-danger">*</span></label>
+                <div class="input-group" style="flex-direction: row-reverse;">
+                    <span class="input-group-text" style="border-radius: 12px 0 0 12px; border-right: none; border-left: 2px solid #f1f1f1;">SAR</span>
+                    <input type="number" name="amount" class="form-control amount-input text-start" style="border-radius: 0 12px 12px 0; border-left: none;" min="1" max="{{ auth()->user()->balance }}" step="0.01" placeholder="0.00" required>
+                </div>
+                <small class="text-muted mt-2 d-block"><i class="bx bx-info-circle"></i> يمكنك سحب أي مبلغ بحد أقصى للرصيد المتاح.</small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">طريقة الاستلام <span class="text-danger">*</span></label>
+                <select name="method" class="form-select" required>
+                    <option value="bank" selected>حساب بنكي (الافتراضي المضاف في ملفك)</option>
+                    <option value="wallet">محفظة إلكترونية</option>
+                    <option value="other">أخرى</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">ملاحظات إضافية (اختياري)</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="أدخل أي ملاحظات إضافية بخصوص التحويل البنكي..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn mt-2">
+                تأكيد طلب السحب <i class="bx bx-check-shield ml-1"></i>
+            </button>
+            <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+                <i class="bx bx-lock-alt"></i> يتم مراجعة وتحويل الطلب بأمان عبر إدارة منصة ثمن.
+            </p>
+        </form>
     </div>
 
-    <form action="{{ route('withdrawals.store') }}" method="POST">
-        @csrf
-
-        <div class="form-section mb-4">
-            <h6 class="form-section-title">💰 تفاصيل طلب السحب</h6>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">المبلغ المطلوب سحبه</label>
-                    <div class="input-group">
-                        <input type="number" name="amount" class="form-control" min="1" max="{{ auth()->user()->balance }}" placeholder="أدخل المبلغ" required>
-                        <span class="input-group-text bg-light text-muted">SAR</span>
-                    </div>
-                    <small class="text-muted mt-1 d-block">الحد الأقصى المتاح لك هو {{ number_format(auth()->user()->balance, 2) }} ريال</small>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">طريقة السحب المفضلة</label>
-                    <select name="method" class="form-select wide-select" required>
-                        <option value="bank" selected>حساب بنكي (الافتراضي)</option>
-                        <option value="wallet">محفظة إلكترونية</option>
-                        <option value="other">أخرى</option>
-                    </select>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label">ملاحظات إضافية للأدمن (اختياري)</label>
-                    <textarea name="notes" class="form-control" rows="3" placeholder="إذا كان لديك أي تعليمات خاصة..."></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
-                <i class="bx bx-send ml-1"></i> إرسال الطلب الآن
-            </button>
-            <a href="{{ route('withdrawals.my') }}" class="btn btn-light border px-4">إلغاء</a>
-        </div>
-    </form>
 </div>
 @endsection

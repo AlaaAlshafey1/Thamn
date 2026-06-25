@@ -151,7 +151,7 @@ class PaymentController extends Controller
         // Send FCM & Email & WhatsApp: Payment Success & Invoice
         try {
             $whatsapp = app(\App\Services\WhatsAppService::class);
-            
+
             // Notify Customer
             $customerMsg = \App\Services\WhatsAppService::getTemplate('order_paid_customer', ['id' => $order->id]);
             $whatsapp->sendMessage($order->user->phone, $customerMsg);
@@ -160,7 +160,7 @@ class PaymentController extends Controller
             $experts = \App\Models\User::role('expert')
                 ->where('category_id', $order->category_id)
                 ->get();
-            
+
             $expertMsg = \App\Services\WhatsAppService::getTemplate('new_order_expert', [
                 'category' => $order->category->name_ar ?? $order->category->name_en
             ]);
@@ -185,7 +185,7 @@ class PaymentController extends Controller
             ));
 
             // Notify Admin
-            $adminEmail = 'alaa.alshafey12345@gmail.com';
+            $adminEmail = 'thmmnapplic@gmail.com';
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                 'يا مدير، فيه طلب تثمين جديد اندفع!',
                 "بشرى سارة! العميل {$order->user->first_name} دفع قيمة طلب التثمين رقم {$order->id}.\nشيك على الطلب في لوحة التحكم.",
