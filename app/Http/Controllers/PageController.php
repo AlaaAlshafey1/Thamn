@@ -35,9 +35,16 @@ class PageController extends Controller
             'type' => 'required|string',
             'content_ar' => 'required|string',
             'content_en' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        About::create($request->only(['type', 'content_ar', 'content_en']));
+        $data = $request->only(['type', 'content_ar', 'content_en']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('pages', 'public');
+        }
+
+        About::create($data);
 
         return redirect()->route('pages.index', $request->type)
             ->with('success', 'تم إضافة المحتوى بنجاح');
@@ -56,10 +63,20 @@ class PageController extends Controller
         $request->validate([
             'content_ar' => 'required|string',
             'content_en' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $page = About::findOrFail($id);
-        $page->update($request->only(['content_ar', 'content_en']));
+        $data = $request->only(['content_ar', 'content_en']);
+
+        if ($request->hasFile('image')) {
+            if ($page->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($page->image);
+            }
+            $data['image'] = $request->file('image')->store('pages', 'public');
+        }
+
+        $page->update($data);
 
         return redirect()->route('pages.index', $page->type)
             ->with('success', 'تم تحديث المحتوى بنجاح');

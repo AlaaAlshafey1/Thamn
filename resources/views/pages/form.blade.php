@@ -50,11 +50,21 @@
         <div class="alert alert-info">{{ session('info') }}</div>
     @endif
 
-    <form id="pageForm" action="{{ isset($page) ? route('pages.update', $page->id) : route('pages.store') }}" method="POST">
+    <form id="pageForm" action="{{ isset($page) ? route('pages.update', $page->id) : route('pages.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @if(isset($page)) @method('PUT') @endif
 
         <input type="hidden" name="type" value="{{ $type ?? $page->type ?? 'about' }}">
+
+        <div class="mb-3">
+            <label class="form-label">صورة الغلاف (اختياري)</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+            @if(isset($page) && $page->image)
+                <div class="mt-2">
+                    <img src="{{ Storage::url($page->image) }}" width="150" class="rounded shadow-sm">
+                </div>
+            @endif
+        </div>
 
         {{-- CKEditor سيأخذ مكان هذه الـ textarea --}}
         <div class="mb-3">

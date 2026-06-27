@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class About extends Model
 {
-    protected $fillable = ['type', 'content_ar', 'content_en'];
+    protected $fillable = ['type', 'content_ar', 'content_en', 'image'];
 
     // Scope لجلب الصفحة حسب النوع
     public function scopeOfType($query, $type)

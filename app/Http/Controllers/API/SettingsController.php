@@ -194,7 +194,8 @@ class SettingsController extends Controller
             'status' => true,
             'message' => $lang === 'ar' ? 'تم إرجاع محتوى صفحة عن ثمن بنجاح' : 'About page fetched successfully',
             'data' => [
-                'content' => $lang === 'ar' ? $about->content_ar : $about->content_en
+                'content' => $lang === 'ar' ? $about->content_ar : $about->content_en,
+                'image' => $about->image ? full_url($about->image) : null,
             ]
         ]);
     }
@@ -380,7 +381,8 @@ class SettingsController extends Controller
             'message' => $lang === 'ar' ? 'تم إرجاع محتوى الصفحة بنجاح' : 'Page content fetched successfully',
             'data' => [
                 'type' => $page->type,
-                'content' => $lang === 'ar' ? $page->content_ar : $page->content_en
+                'content' => $lang === 'ar' ? $page->content_ar : $page->content_en,
+                'image' => $page->image ? full_url($page->image) : null,
             ]
         ]);
     }
