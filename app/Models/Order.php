@@ -90,6 +90,28 @@ class Order extends Model
         return round(($aiPrice + $expPrice) / 2, 2);
     }
 
+    public function getAverageMarketPriceAttribute()
+    {
+        // Get the chosen evaluation type
+        $rateTypeAnswer = $this->details()->whereHas('question', function ($q) { 
+            $q->where('type', 'rateTypeSelection'); 
+        })->first();
+        $evaluationType = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value;
+
+        $min = 0;
+        $max = 0;
+        $fallback = 0;
+
+        if ($evaluationType === 'ai') {
+            return $this->ai_price ?? 0;
+        } elseif ($evaluationType === 'expert') {
+            return $this->expert_price ?? 0;
+        } else {
+            // thamn or default
+            return $this->thamn_price ?? $this->expert_price ?? $this->ai_price ?? 0;
+        }
+    }
+
     public function thamnUser()
     {
         return $this->belongsTo(User::class, 'thamn_by');

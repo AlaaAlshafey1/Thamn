@@ -668,9 +668,6 @@ class OrderController extends Controller
         $imageFile = $order->files->firstWhere('type', 'image');
         $image = $imageFile ? full_url($imageFile->file_path) : '';
 
-        if ($order->category?->name_en == "cars") {
-            $image = URL::asset('/assets/img/Cars-result.jpeg');
-        }
 
         /* ===================== IMAGES & FILES ===================== */
         $images = $order->files
@@ -803,9 +800,6 @@ class OrderController extends Controller
         $imageFile = $order->files->firstWhere('type', 'image');
         $image = $imageFile ? public_path('storage/' . $imageFile->file_path) : null;
 
-        if ($order->category?->name_en == "cars") {
-            $image = public_path('assets/img/Cars-result.jpeg');
-        }
 
         $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.order-valuation-result', compact(
             'order', 'category', 'prices', 'details', 'reasoning', 'image'
