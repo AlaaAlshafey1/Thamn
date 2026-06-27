@@ -382,6 +382,18 @@
                                 <div class="badge bg-success-transparent text-success mt-2">ثقة: {{ $order->ai_confidence }}%</div>
                                 <hr class="my-2 border-top-0 border-light">
                                 <div class="small text-dark">{{ $order->ai_reasoning }}</div>
+                                
+                                @if(is_array($order->ai_features) && count($order->ai_features) > 0)
+                                    <hr class="my-2 border-top-0 border-light">
+                                    <h6 class="font-weight-bold text-primary mb-2"><i class="bx bx-list-check"></i> الخصائص المستخرجة:</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach($order->ai_features as $feature)
+                                            <span class="badge bg-light text-dark border p-2 mb-1 mr-1" style="font-size: 0.9rem;">
+                                                <i class="bx bx-check-circle text-success align-middle"></i> {{ $feature }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @else
                             <div class="text-center py-3 bg-light rounded">

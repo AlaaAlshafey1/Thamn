@@ -184,8 +184,12 @@ class MarketPlaceOrderController extends Controller
             ];
         });
 
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         return response()->json([
             'status' => true,
+            'message' => $lang === 'ar' ? 'تم إضافة المنتج للسوق بنجاح' : 'Product added to marketplace successfully',
             'order' => [
                 'id' => $order->id,
                 'user_id' => $order->user_id,
@@ -306,8 +310,12 @@ class MarketPlaceOrderController extends Controller
             ];
         });
 
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         return response()->json([
             'status' => true,
+            'message' => $lang === 'ar' ? 'تم تحديث المنتج بنجاح' : 'Product updated successfully',
             'order' => [
                 'id' => $order->id,
                 'total_price' => $totalPrice,
@@ -369,6 +377,9 @@ class MarketPlaceOrderController extends Controller
      */
     public function destroy(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::where('id', $orderId)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
@@ -377,7 +388,7 @@ class MarketPlaceOrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Product deleted successfully'
+            'message' => $lang === 'ar' ? 'تم حذف المنتج بنجاح' : 'Product deleted successfully'
         ]);
     }
 
@@ -386,6 +397,9 @@ class MarketPlaceOrderController extends Controller
      */
     public function cancel(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::where('id', $orderId)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
@@ -394,7 +408,7 @@ class MarketPlaceOrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Product cancelled successfully'
+            'message' => $lang === 'ar' ? 'تم إلغاء المنتج بنجاح' : 'Product cancelled successfully'
         ]);
     }
 
@@ -403,6 +417,9 @@ class MarketPlaceOrderController extends Controller
      */
     public function publish(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::where('id', $orderId)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
@@ -411,7 +428,7 @@ class MarketPlaceOrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Product published successfully'
+            'message' => $lang === 'ar' ? 'تم نشر المنتج بنجاح' : 'Product published successfully'
         ]);
     }
 }

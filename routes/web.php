@@ -140,6 +140,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/ai-evaluate', [OrderController::class, 'aiEvaluate'])
         ->name('orders.ai.evaluate');
 
+    Route::post('/orders/{order}/generate-image', [OrderController::class, 'generateVirtualImage'])
+        ->name('orders.generateImage');
 
     Route::get('payments', [TapPaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [TapPaymentController::class, 'show'])->name('payments.show');

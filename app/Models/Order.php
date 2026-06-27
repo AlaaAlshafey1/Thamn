@@ -36,9 +36,16 @@ class Order extends Model
         'thamn_at',
         'payment_type',
         'accepted_at',
+        'evaluated_at',
+        're_evaluation_count',
+        'ai_features',
     ];
 
-    protected $dates = ['deleted_at'];
+    protected $casts = [
+        'ai_features' => 'array',
+    ];
+
+    protected $dates = ['deleted_at', 'evaluated_at'];
 
     public function details()
     {

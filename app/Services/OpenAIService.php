@@ -13,7 +13,7 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->http = new Client(['timeout' => 60]);
+        $this->http = new Client(['timeout' => 120]);
 
         // نفس الإعدادات اللي عندك
         $this->base = rtrim(
@@ -112,5 +112,45 @@ class OpenAIService
         }
 
         return $json;
+    }
+    /**
+     * ===============================
+     * توليد صور (DALL-E)
+     * ===============================
+     */
+    public function generateImage(string $prompt, string $size = '1024x1024'): ?string
+    {
+        try {
+            $res = $this->http->post($this->base . '/images/generations', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->key,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'gpt-image-2',
+                    'prompt' => $prompt,
+                    'n' => 1,
+                    'size' => $size,
+                ],
+            ]);
+
+            $json = json_decode((string) $res->getBody(), true);
+
+            if (isset($json['data'][0]['url'])) {
+                return $json['data'][0]['url'];
+            } elseif (isset($json['data'][0]['b64_json'])) {
+                return 'data:image/png;base64,' . $json['data'][0]['b64_json'];
+            }
+
+            return null;
+
+        } catch (\Throwable $e) {
+            Log::error('OpenAI Image Generation failed', [
+                'message' => $e->getMessage(),
+                'prompt' => $prompt,
+            ]);
+
+            return null;
+        }
     }
 }

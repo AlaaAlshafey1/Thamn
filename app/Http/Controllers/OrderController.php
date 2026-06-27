@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\ThamnEvaluationService;
 use App\Notifications\ExpertEvaluatedOrderAdminNotification;
 use App\Mail\ExpertValuationMail;
+use App\Mail\ValuationResultMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Notifications\OrderAcceptedByExpertNotification;
@@ -154,7 +155,8 @@ class OrderController extends Controller
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
             'total_price' => $request->expert_price,
-            'status' => 'estimated' // ممكن تحدد حالة الأوردر بعد التقييم
+            'status' => 'estimated',
+            'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
         $user->balance += 10;
         $user->save();
@@ -316,10 +318,56 @@ class OrderController extends Controller
             $evaluationService->runAiEvaluation($order);
             $order->user->notify(new OrderEvaluated($order, 'ai'));
 
+            // تسجيل وقت التقييم
+            if (!$order->evaluated_at) {
+                $order->update(['evaluated_at' => now()]);
+            }
+
             return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
         } catch (\Throwable $e) {
             return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
         }
     }
 
+    public function generateVirtualImage(Order $order)
+    {
+        // بناء وصف مبسط للصورة بناءً على تفاصيل الطلب
+        $qaLines = [];
+        foreach ($order->details as $detail) {
+            $question = $detail->question->question_en ?? $detail->question->question_ar;
+            $answer = $detail->option->option_en ?? $detail->option->option_ar ?? $detail->value;
+            if ($question && $answer) {
+                $qaLines[] = "{$question}: {$answer}";
+            }
+        }
+        $qaText = implode(", ", $qaLines);
+        $category = $order->category->name_en ?? 'product';
+
+        // توجيه لإنشاء صورة بخلفية بيضاء
+        $prompt = "A highly realistic, professional studio photograph of a {$category} with the following specifications: {$qaText}. Pure white background, centered, well lit, high quality.";
+
+        try {
+            $imageUrl = app(\App\Services\OpenAIService::class)->generateImage($prompt);
+            if ($imageUrl) {
+                $imageContents = file_get_contents($imageUrl);
+                $filename = 'ai_generated_manual_' . \Illuminate\Support\Str::random(10) . '.png';
+                $path = 'orders/images/' . $filename;
+                
+                \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageContents);
+
+                \App\Models\OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_path' => $path,
+                    'file_name' => $filename,
+                    'type' => 'image',
+                ]);
+
+                return back()->with('success', 'تم توليد الصورة الافتراضية بنجاح وإرفاقها بالطلب.');
+            }
+            
+            return back()->with('error', 'تعذر توليد الصورة، حاول مرة أخرى.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'حدث خطأ أثناء توليد الصورة: ' . $e->getMessage());
+        }
+    }
 }

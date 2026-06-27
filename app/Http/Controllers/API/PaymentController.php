@@ -206,6 +206,47 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             \Log::error('Payment Success Notification/Mail Failed: ' . $e->getMessage());
         }
+        $rateTypeAnswer = $order->details()->whereHas('question', function ($q) { $q->where('type', 'rateTypeSelection'); })->first();
+        $evaluationType = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value;
+
+        // توليد صورة ديناميكية إذا لم يرفع العميل صورة (فقط للخبراء وثمن، أما الـ AI فيولدها بنفسه من الـ prompt الخاص به)
+        if ($payment->status === 'orderReceived' && $evaluationType !== 'ai' && $order->files->where('type', 'image')->count() === 0) {
+            try {
+                $qaLines = [];
+                foreach ($order->details as $detail) {
+                    $question = $detail->question->question_en ?? $detail->question->question_ar;
+                    $answer = $detail->option->option_en ?? $detail->option->option_ar ?? $detail->value;
+                    if ($question && $answer) {
+                        $qaLines[] = "{$question}: {$answer}";
+                    }
+                }
+                $qaText = implode(", ", $qaLines);
+                $category = $order->category->name_en ?? 'product';
+
+                $prompt = "A highly realistic, professional studio photograph of a {$category} with the following specifications: {$qaText}. Pure white background, centered, well lit, high quality.";
+                
+                $imageUrl = app(OpenAIService::class)->generateImage($prompt);
+                if ($imageUrl) {
+                    $imageContents = file_get_contents($imageUrl);
+                    $filename = 'ai_generated_auto_' . \Illuminate\Support\Str::random(10) . '.png';
+                    $path = 'orders/images/' . $filename;
+                    
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageContents);
+
+                    \App\Models\OrderFiles::create([
+                        'order_id' => $order->id,
+                        'file_path' => $path,
+                        'file_name' => $filename,
+                        'type' => 'image',
+                    ]);
+                    
+                    // Reload order files relation
+                    $order->load('files');
+                }
+            } catch (\Exception $e) {
+                Log::error('Dynamic Image Generation Failed in Callback: ' . $e->getMessage());
+            }
+        }
 
         $this->handleEvaluationRouting($order);
 

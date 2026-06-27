@@ -72,11 +72,13 @@ class OrderController extends Controller
 
 
         if ($rateTypeAnswer) {
-
             $totalPrice = $rateTypeAnswer->option->price;
-
         }
 
+        // إضافة رسوم الصورة الافتراضية إذا لم يقم العميل برفع صورة
+        if (!$request->hasFile('images') || count($request->file('images')) === 0) {
+            $totalPrice += env('IMAGE_GENERATION_FEE', 5); // زيادة 5 ريال افتراضياً
+        }
 
         $order->update(['total_price' => $totalPrice]);
         $images = [];
@@ -356,6 +358,9 @@ class OrderController extends Controller
 
     public function show(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::with([
             'details.question.step',
             'details.option',
@@ -371,9 +376,9 @@ class OrderController extends Controller
         | TITLE
         |--------------------------------------------------------------------------
         */
-        $title = $order->category?->name_en
-            ?? $order->category?->name_ar
-            ?? 'Valuation Order';
+        $title = $lang === 'ar'
+            ? ($order->category?->name_ar ?? $order->category?->name_en ?? 'طلب تقييم')
+            : ($order->category?->name_en ?? $order->category?->name_ar ?? 'Valuation Order');
 
         /*
         |--------------------------------------------------------------------------
@@ -406,9 +411,9 @@ class OrderController extends Controller
 
             $question_steps = QuestionStep::find($detail->question->step);
             $groupId = $detail->stageing ?? 0;
-            $groupTitle = $question_steps?->name_ar
-                ?? $question_steps?->name_en
-                ?? 'تفاصيل';
+            $groupTitle = $lang === 'ar'
+                ? ($question_steps?->name_ar ?? $question_steps?->name_en ?? 'تفاصيل')
+                : ($question_steps?->name_en ?? $question_steps?->name_ar ?? 'Details');
 
             if (!isset($groups[$groupId])) {
                 $groups[$groupId] = [
@@ -420,11 +425,12 @@ class OrderController extends Controller
 
             $groups[$groupId]['items'][] = [
                 'id' => $detail->id,
-                'label' => $detail->question->question_ar
-                    ?? $detail->question->question_en,
-                'value' => $detail->option?->option_ar
-                    ?? $detail->option?->option_en
-                    ?? $detail->value,
+                'label' => $lang === 'ar'
+                    ? ($detail->question->question_ar ?? $detail->question->question_en)
+                    : ($detail->question->question_en ?? $detail->question->question_ar),
+                'value' => $lang === 'ar'
+                    ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
+                    : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value),
             ];
         }
 
@@ -445,6 +451,9 @@ class OrderController extends Controller
 
     public function destroy(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::where('id', $orderId)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
@@ -453,12 +462,15 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order deleted successfully'
+            'message' => $lang === 'ar' ? 'تم حذف الطلب بنجاح' : 'Order deleted successfully'
         ]);
     }
 
     public function cancel(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::where('id', $orderId)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
@@ -469,12 +481,15 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order cancelled successfully'
+            'message' => $lang === 'ar' ? 'تم إلغاء الطلب بنجاح' : 'Order cancelled successfully'
         ]);
     }
 
     public function getOrders(Request $request)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $query = Order::where('user_id', Auth::id())->where("status", "!=", "in_market")
             ->with([
                 'category',
@@ -495,7 +510,7 @@ class OrderController extends Controller
             if (!array_key_exists($request->statsCategory, $statusGroups)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid statsCategory'
+                    'message' => $lang === 'ar' ? 'تصنيف الحالة غير صالح' : 'Invalid statsCategory'
                 ], 400);
             }
             $query->whereIn('status', $statusGroups[$request->statsCategory]);
@@ -503,7 +518,7 @@ class OrderController extends Controller
             if (!in_array($request->status, $validStatuses)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid status'
+                    'message' => $lang === 'ar' ? 'الحالة غير صالحة' : 'Invalid status'
                 ], 400);
             }
             $query->where('status', $request->status);
@@ -522,15 +537,19 @@ class OrderController extends Controller
         $orders = $query->latest()->get();
 
         // ========================== Map response ==========================
-        $orders = $orders->map(function ($order) use ($request) {
+        $orders = $orders->map(function ($order) use ($lang) {
             $titleParts = [];
 
-            $categoryName = $order->category?->name_en ?? $order->category?->name_ar;
+            $categoryName = $lang === 'ar'
+                ? ($order->category?->name_ar ?? $order->category?->name_en)
+                : ($order->category?->name_en ?? $order->category?->name_ar);
             if ($categoryName)
-                $titleParts[] = $request->header('Accept-Language') == 'ar' ? $order->category?->name_ar : $order->category?->name_en;
+                $titleParts[] = $categoryName;
 
             $detailValues = $order->details
-                ->map(fn($d) => $request->header('Accept-Language') == 'ar' ? $d->option?->option_ar : $d->option?->option_en ?? $d->value)
+                ->map(fn($d) => $lang === 'ar'
+                    ? ($d->option?->option_ar ?? $d->option?->option_en ?? $d->value)
+                    : ($d->option?->option_en ?? $d->option?->option_ar ?? $d->value))
                 ->filter()
                 ->unique()
                 ->values()
@@ -539,7 +558,7 @@ class OrderController extends Controller
 
             $titleParts = array_merge($titleParts, $detailValues);
             if (empty($titleParts))
-                $titleParts[] = "Order #{$order->id}";
+                $titleParts[] = $lang === 'ar' ? "طلب #{$order->id}" : "Order #{$order->id}";
 
             $files = $order->files
                 ->where('type', 'file')
@@ -597,6 +616,9 @@ class OrderController extends Controller
 
     public function result(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::with([
             'details.question',
             'details.option',
@@ -607,9 +629,9 @@ class OrderController extends Controller
             ->firstOrFail();
 
         /* ===================== CATEGORY ===================== */
-        $category = $order->category?->name_en
-            ?? $order->category?->name_ar
-            ?? '';
+        $category = $lang === 'ar'
+            ? ($order->category?->name_ar ?? $order->category?->name_en ?? '')
+            : ($order->category?->name_en ?? $order->category?->name_ar ?? '');
 
         /* ===================== DESCRIPTION ===================== */
         $year = null;
@@ -623,14 +645,15 @@ class OrderController extends Controller
             switch ($detail->question->type) {
                 case 'year':
                     $year = $detail->value
-                        ?? $detail->option?->option_en
-                        ?? $detail->option?->option_ar;
+                        ?? ($lang === 'ar'
+                            ? ($detail->option?->option_ar ?? $detail->option?->option_en)
+                            : ($detail->option?->option_en ?? $detail->option?->option_ar));
                     break;
 
                 case 'condition':
-                    $condition = $detail->option?->option_en
-                        ?? $detail->option?->option_ar
-                        ?? $detail->value;
+                    $condition = $lang === 'ar'
+                        ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
+                        : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value);
                     break;
             }
         }
@@ -687,12 +710,13 @@ class OrderController extends Controller
                 continue;
             }
 
-            $title = $detail->question->question_en
-                ?? $detail->question->question_ar;
+            $title = $lang === 'ar'
+                ? ($detail->question->question_ar ?? $detail->question->question_en)
+                : ($detail->question->question_en ?? $detail->question->question_ar);
 
-            $value = $detail->option?->option_en
-                ?? $detail->option?->option_ar
-                ?? $detail->value;
+            $value = $lang === 'ar'
+                ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
+                : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value);
 
             if ($title && $value) {
                 $details[] = [
@@ -717,6 +741,7 @@ class OrderController extends Controller
             'files' => $files,
             'reasoning' => $reasoning,
             'prices' => $prices,
+            'features' => $order->ai_features ?? [],
             'details' => $details,
             'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
@@ -793,8 +818,41 @@ class OrderController extends Controller
 
     public function reEvaluate(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user'])
             ->findOrFail($orderId);
+
+        // ─── التحقق: إعادة التثمين مرة واحدة فقط ───
+        if ($order->re_evaluation_count >= 1) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'لقد استنفذت فرصة إعادة التثمين المتاحة'
+                    : 'You have already used your re-evaluation opportunity.',
+            ], 400);
+        }
+
+        // ─── التحقق: خلال 24 ساعة من التقييم الأصلي ───
+        if ($order->evaluated_at && $order->evaluated_at->diffInHours(now()) > 24) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'انتهت مهلة إعادة التثمين (24 ساعة)'
+                    : 'Re-evaluation window has expired (24 hours).',
+            ], 400);
+        }
+
+        // ─── التحقق: لازم يكون متقيم أصلاً ───
+        if (!$order->evaluated_at) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'لا يمكن إعادة التثمين لطلب لم يتم تقييمه بعد'
+                    : 'Cannot re-evaluate an order that has not been evaluated yet.',
+            ], 400);
+        }
 
         // Reset previous evaluation
         $order->update([
@@ -810,6 +868,9 @@ class OrderController extends Controller
             'thamn_by' => null,
             'thamn_at' => null,
         ]);
+
+        // زيادة عداد إعادة التثمين
+        $order->increment('re_evaluation_count');
 
         // Refresh the model so the relations reflect the latest DB state
         $order->refresh();
@@ -844,7 +905,7 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order re-evaluation requested successfully',
+            'message' => $lang === 'ar' ? 'تم طلب إعادة التقييم بنجاح' : 'Order re-evaluation requested successfully',
             'order_id' => $order->id,
             'new_status' => $order->fresh()->status,
         ]);
@@ -927,8 +988,11 @@ class OrderController extends Controller
         ]);
     }
 
-    public function resendOrder($orderId)
+    public function resendOrder(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::findOrFail($orderId);
 
         // نرسل Notification للمستخدم بأن الطلب تم إعادة إرساله
@@ -936,22 +1000,39 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order request resent successfully',
+            'message' => $lang === 'ar' ? 'تم إعادة إرسال الطلب بنجاح' : 'Order request resent successfully',
             'order_id' => $order->id,
         ]);
     }
     public function sendToMarket(Request $request, $orderId)
     {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
         $order = Order::findOrFail($orderId);
 
         $request->validate([
             'send' => 'required|boolean', // true => نرسل للسوق، false => لا
         ]);
 
+        // ─── يجب أن يكون المنتج متقيم قبل إرساله للسوق ───
+        $isEvaluated = $order->thamn_price || $order->ai_price || $order->expert_price;
+
+        if (!$isEvaluated) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'يجب تقييم المنتج قبل إرساله للسوق'
+                    : 'Product must be evaluated before sending to market.',
+            ], 400);
+        }
+
         if (!$order->total_price) {
             return response()->json([
                 'status' => false,
-                'message' => 'Product price must be calculated before sending to market.'
+                'message' => $lang === 'ar'
+                    ? 'يجب حساب سعر المنتج قبل إرساله للسوق'
+                    : 'Product price must be calculated before sending to market.',
             ], 400);
         }
 
@@ -966,14 +1047,18 @@ class OrderController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Order sent to market successfully',
+                'message' => $lang === 'ar'
+                    ? 'تم إرسال الطلب للسوق بنجاح'
+                    : 'Order sent to market successfully',
                 'order_id' => $order->id,
             ]);
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Order not sent to market',
+            'message' => $lang === 'ar'
+                ? 'لم يتم إرسال الطلب للسوق'
+                : 'Order not sent to market',
             'order_id' => $order->id,
         ]);
     }

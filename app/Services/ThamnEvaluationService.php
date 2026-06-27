@@ -3,9 +3,14 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\OrderFiles;
+use App\Mail\ValuationResultMail;
 use App\Services\OpenAIService;
 use App\Http\Traits\FCMOperation;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ThamnEvaluationService
 {
@@ -55,7 +60,7 @@ class ThamnEvaluationService
         $prompt = <<<PROMPT
 أنت مثمّن معتمد ومتخصص في السوق السعودي للسلع المستعملة.
 تاريخ التقييم: {$today}
-المرجع السوقي: منصة حراج، سوق.com، أسعار الوكالات، ومزادات السلع المحلية.
+المرجع السوقي: منصة حراج، تطبيق موجز، وتطبيق نجم. استخدم هذه المنصات كمرجع أساسي لجلب بيانات السوق وتقييم السيارة بدقة بناءً على المدخلات.
 
 ━━━ بيانات السلعة ━━━
 الفئة: {$categoryAr}
@@ -70,6 +75,9 @@ class ThamnEvaluationService
 3. recommended_price يجب أن يقع دائماً بين min_price و max_price.
 4. confidence يعبّر عن مدى ثقتك بالتقييم من 0.0 إلى 1.0 (1.0 = ثقة تامة، 0.5 = بيانات ناقصة).
 5. إذا كانت البيانات غير كافية لتقييم دقيق، أعطِ نطاقاً أوسع وخفّض confidence.
+6. استخرج أبرز 6 خصائص للسيارة كـ features بناء على البيانات (مثل: دفع رباعي، عدد المقاعد، الجير، نوع الوقود، إلخ).
+7. يجب أن تكون جميع الردود والقيم المستخرجة (بما فيها reasoning و features) باللغة العربية الفصحى حصراً، بغض النظر عن لغة المدخلات.
+8. إذا لم توجد صور للسيارة، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية للسيارة بخلفية بيضاء في حقل image_prompt.
 
 ━━━ هيكل الرد (JSON فقط — لا نص خارجه) ━━━
 {
@@ -78,7 +86,9 @@ class ThamnEvaluationService
   "recommended_price": <رقم صحيح بالريال السعودي>,
   "currency": "SAR",
   "confidence": <رقم عشري من 0.0 إلى 1.0>,
-  "reasoning": "<تحليل احترافي مباشر: سبب التسعير، تأثير الحالة، مقارنة السوق، وأثر الصور إن وجدت — بلا عبارات احتمالية>"
+  "reasoning": "<تحليل احترافي مباشر: سبب التسعير، تأثير الحالة، مقارنة السوق، وأثر الصور إن وجدت — بلا عبارات احتمالية>",
+  "features": ["خاصية 1", "خاصية 2", "خاصية 3", "خاصية 4", "خاصية 5", "خاصية 6"],
+  "image_prompt": "<وصف بالإنجليزية للصورة إن لم تكن هناك صور، أو null>"
 }
 PROMPT;
 
@@ -98,10 +108,44 @@ PROMPT;
             'ai_price' => $aiResult['recommended_price'] ?? null,
             'ai_confidence' => $aiResult['confidence'] ?? null,
             'ai_reasoning' => $aiResult['reasoning'] ?? null,
+            'ai_features' => $aiResult['features'] ?? null,
+            'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
+
+        // Generate Virtual Image if no images exist and prompt provided
+        if (!$hasImages && !empty($aiResult['image_prompt'])) {
+            try {
+                $imageUrl = app(OpenAIService::class)->generateImage($aiResult['image_prompt']);
+                if ($imageUrl) {
+                    $imageContents = file_get_contents($imageUrl);
+                    $filename = 'ai_generated_' . Str::random(10) . '.png';
+                    $path = 'orders/images/' . $filename;
+                    
+                    Storage::disk('public')->put($path, $imageContents);
+
+                    OrderFiles::create([
+                        'order_id' => $order->id,
+                        'file_path' => $path,
+                        'file_name' => $filename,
+                        'type' => 'image',
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to generate virtual image via DALL-E', ['error' => $e->getMessage()]);
+            }
+        }
 
         // Send FCM Notification
         $this->sendEvaluationNotification($order);
+
+        // Send Email with Valuation Result
+        try {
+            if ($order->user?->email) {
+                Mail::to($order->user->email)->send(new ValuationResultMail($order, 'ai'));
+            }
+        } catch (\Throwable $e) {
+            Log::error('AI Valuation Result Email Failed: ' . $e->getMessage());
+        }
 
         return $aiResult;
     }
@@ -153,6 +197,15 @@ PROMPT;
                     [$fcmToken],
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_ready']]
                 );
+            }
+
+            // Send Email with Thamn Valuation Result
+            try {
+                if ($user->email) {
+                    Mail::to($user->email)->send(new ValuationResultMail($order, 'thamn'));
+                }
+            } catch (\Throwable $e) {
+                Log::error('Thamn Valuation Result Email Failed: ' . $e->getMessage());
             }
         }
     }
