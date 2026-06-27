@@ -69,8 +69,7 @@ class FavoriteController extends Controller
         ]);
 
         $order = Order::findOrFail($request->productId);
-
-        if ($order->status !== 'sent_to_market' || $order->status !== 'in_market') {
+        if ($order->status != 'sent_to_market' || $order->status != 'in_market') {
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar' ? 'هذا المنتج غير موجود في السوق' : 'This product is not in the marketplace',
