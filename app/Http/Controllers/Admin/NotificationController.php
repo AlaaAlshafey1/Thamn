@@ -15,7 +15,14 @@ class NotificationController extends Controller
 
     public function index()
     {
-        $users = User::all();
+        $users = User::where(function($q) {
+            $q->whereNotNull('fcm_token')
+              ->orWhereNotNull('fcm_token_android')
+              ->orWhereNotNull('fcm_token_ios');
+        })->get()->filter(function($user) {
+            return !empty($user->getFcmTokens());
+        });
+
         return view('admin.notifications.index', compact('users'));
     }
 
