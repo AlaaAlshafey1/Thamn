@@ -911,6 +911,17 @@ class OrderController extends Controller
                 ]);
         }
 
+        // FCM Notification لإعادة التقييم
+        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        if ($fcmToken) {
+            $this->notifyByFirebase(
+                'طلب إعادة التقييم ✅',
+                "تم استلام طلب إعادة تقييم منتجك رقم #{$order->id} بنجاح. سنبدأ التقييم الجديد في أقرب وقت ممكن.",
+                [$fcmToken],
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
+            );
+        }
+
         return response()->json([
             'status' => true,
             'message' => $lang === 'ar' ? 'تم طلب إعادة التقييم بنجاح' : 'Order re-evaluation requested successfully',
@@ -953,6 +964,17 @@ class OrderController extends Controller
 
         // إرسال Notification للمستخدم
         $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
+
+        // FCM Notification للمستخدم
+        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        if ($fcmToken) {
+            $this->notifyByFirebase(
+                'جارٍ تقييم منتجك 🔍',
+                "لقد استلم خبيرنا طلبك رقم #{$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.",
+                [$fcmToken],
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_expert']]
+            );
+        }
 
         Log::info("Order sent to expert", [
             'order_id' => $order->id,
@@ -1052,6 +1074,17 @@ class OrderController extends Controller
 
             // Notification للمستخدم أن المنتج أرسل للسوق
             $order->user->notify(new \App\Notifications\OrderSentToMarket($order));
+
+            // FCM Notification
+            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+            if ($fcmToken) {
+                $this->notifyByFirebase(
+                    '🛒 منتجك في السوق الآن!',
+                    "تم إدراج منتجك رقم #{$order->id} في سوق ثمن بنجاح. يمكن للمشترين رؤيته الآن.",
+                    [$fcmToken],
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
+                );
+            }
 
             return response()->json([
                 'status' => true,

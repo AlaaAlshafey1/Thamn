@@ -6,11 +6,13 @@ use Illuminate\Console\Command;
 use App\Models\Order;
 use App\Notifications\OrderExpiredNotification;
 use App\Mail\SystemNotificationMail;
+use App\Http\Traits\FCMOperation;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class CheckExpiredOrders extends Command
 {
+    use FCMOperation;
     /**
      * The name and signature of the console command.
      *
@@ -60,8 +62,19 @@ class CheckExpiredOrders extends Command
     {
         $order->update(['status' => 'expired']);
 
-        // Notify user
+        // Notify user (Database)
         $order->user->notify(new OrderExpiredNotification($order));
+
+        // FCM Notification
+        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        if ($fcmToken) {
+            $this->notifyByFirebase(
+                '⚠️ انتهت مهلة تقييم منتجك',
+                "نعتذر، لم يتم قبول طلبك رقم #{$order->id} من أي خبير في الوقت المحدد (24 ساعة). يمكنك طلب استرداد المبلغ.",
+                [$fcmToken],
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_expired']]
+            );
+        }
 
         // Email
         try {

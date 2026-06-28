@@ -50,11 +50,16 @@ class SocialAuthController extends Controller
         // ✅ الحساب موجود → اعمل Login
         $token = $user->createToken('API Token')->plainTextToken;
 
-        // Read FCM Token from header or body and save it
-        $incomingFcm = $request->header('FCM-Token') ?? $request->fcm_token;
-        if ($incomingFcm) {
-            $user->update(['fcm_token' => $incomingFcm]);
-        }
+        // Read FCM Tokens from header or body and save them
+        $fcmUpdate = [];
+        $incomingFcm      = $request->header('FCM-Token')      ?? $request->fcm_token;
+        $incomingFcmIos   = $request->header('FCM-Token-iOS')  ?? $request->fcm_token_ios;
+        $incomingFcmDroid = $request->header('FCM-Token-Android') ?? $request->fcm_token_android;
+
+        if ($incomingFcm)      $fcmUpdate['fcm_token']         = $incomingFcm;
+        if ($incomingFcmIos)   $fcmUpdate['fcm_token_ios']     = $incomingFcmIos;
+        if ($incomingFcmDroid) $fcmUpdate['fcm_token_android'] = $incomingFcmDroid;
+        if (!empty($fcmUpdate)) $user->update($fcmUpdate);
 
         // Send FCM: Social Login Successful
         $fcmToken = $incomingFcm ?? $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
@@ -132,11 +137,16 @@ class SocialAuthController extends Controller
 
         $token = $user->createToken('API Token')->plainTextToken;
 
-        // Read FCM Token from header or body and save it
-        $incomingFcm = $request->header('FCM-Token') ?? $request->fcm_token;
-        if ($incomingFcm) {
-            $user->update(['fcm_token' => $incomingFcm]);
-        }
+        // Read FCM Tokens from header or body and save them
+        $fcmUpdate = [];
+        $incomingFcm      = $request->header('FCM-Token')         ?? $request->fcm_token;
+        $incomingFcmIos   = $request->header('FCM-Token-iOS')     ?? $request->fcm_token_ios;
+        $incomingFcmDroid = $request->header('FCM-Token-Android') ?? $request->fcm_token_android;
+
+        if ($incomingFcm)      $fcmUpdate['fcm_token']         = $incomingFcm;
+        if ($incomingFcmIos)   $fcmUpdate['fcm_token_ios']     = $incomingFcmIos;
+        if ($incomingFcmDroid) $fcmUpdate['fcm_token_android'] = $incomingFcmDroid;
+        if (!empty($fcmUpdate)) $user->update($fcmUpdate);
 
         // Send FCM: Social Register/Login Successful
         $fcmToken = $incomingFcm ?? $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;

@@ -30,6 +30,8 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'image' => 'nullable|image|max:2048',
             'fcm_token' => 'nullable|string',
+            'fcm_token_ios' => 'nullable|string',
+            'fcm_token_android' => 'nullable|string',
             'device_type' => 'nullable|string|in:ios,android',
         ]);
 
@@ -40,7 +42,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $data = $request->only(['first_name', 'last_name', 'email', 'phone', 'fcm_token', 'device_type']);
+        $data = $request->only(['first_name', 'last_name', 'email', 'phone', 'fcm_token', 'fcm_token_ios', 'fcm_token_android', 'device_type']);
         $data['password'] = Hash::make($request->password);
 
         if ($request->hasFile('image')) {
@@ -533,6 +535,35 @@ class AuthController extends Controller
                 'Account permanently deleted successfully',
                 $request
             )
+        ]);
+    }
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'nullable|string',
+            'fcm_token_ios' => 'nullable|string',
+            'fcm_token_android' => 'nullable|string',
+        ]);
+
+        $user = $request->user();
+        $fcmUpdate = [];
+
+        // نقرأ من الـ Headers أو من الـ Body
+        $incomingFcm      = $request->header('FCM-Token')         ?? $request->fcm_token;
+        $incomingFcmIos   = $request->header('FCM-Token-iOS')     ?? $request->fcm_token_ios;
+        $incomingFcmDroid = $request->header('FCM-Token-Android') ?? $request->fcm_token_android;
+
+        if ($incomingFcm)      $fcmUpdate['fcm_token']         = $incomingFcm;
+        if ($incomingFcmIos)   $fcmUpdate['fcm_token_ios']     = $incomingFcmIos;
+        if ($incomingFcmDroid) $fcmUpdate['fcm_token_android'] = $incomingFcmDroid;
+
+        if (!empty($fcmUpdate)) {
+            $user->update($fcmUpdate);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => lang('تم تحديث رمز الإشعارات بنجاح', 'FCM Token updated successfully', $request)
         ]);
     }
 
