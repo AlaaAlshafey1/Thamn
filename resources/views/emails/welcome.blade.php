@@ -43,15 +43,16 @@
 <body>
     <div class="container">
         <div class="header">
+            <img src="{{ asset('assets/img/Logo2.png') }}" alt="شعار ثمن" style="max-height: 80px; margin-bottom: 10px;">
             <h2>{{ $title }}</h2>
         </div>
         <div class="content">
             <p>مرحباً <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>،</p>
-            <p>مرحباً بك في منصة <strong>ثمن</strong>. نحن سعداء بانضمامك إلينا.</p>
-            <p>يمكنك الآن البدء في استخدام كافة مميزات المنصة لتقييم مقتنياتك بكل سهولة واحترافية.</p>
+            <p>مرحباً بك في تطبيق <strong>ثمن</strong>. نحن سعداء بانضمامك إلينا.</p>
+            <p>يمكنك الآن البدء في استخدام كافة مميزات التطبيق لتقييم مقتنياتك بكل سهولة واحترافية.</p>
         </div>
         <div class="footer">
-            <p>تم إرسال هذا البريد من منصة ثمن.</p>
+            <p>تم إرسال هذا البريد من تطبيق ثمن.</p>
         </div>
     </div>
 </body>
