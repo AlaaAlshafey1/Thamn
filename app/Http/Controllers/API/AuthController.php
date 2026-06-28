@@ -129,8 +129,11 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'phone' => 'required',
             'password' => 'required',
             'fcm_token' => 'nullable|string',
+            'fcm_token_ios' => 'nullable|string',
+            'fcm_token_android' => 'nullable|string',
             'device_type' => 'nullable|string|in:ios,android',
         ], [
             'phone.required' => lang(' رقم الهاتف مطلوب', ' phone is required', $request),
@@ -167,11 +170,15 @@ class AuthController extends Controller
         $token = $user->createToken('API Token')->plainTextToken;
 
         // Update FCM Token if provided
-        if ($request->fcm_token) {
-            $user->update([
-                'fcm_token' => $request->fcm_token,
-                'device_type' => $request->device_type ?? $user->device_type
-            ]);
+        $fcmUpdate = [];
+        if ($request->fcm_token) $fcmUpdate['fcm_token'] = $request->fcm_token;
+        if ($request->fcm_token_ios) $fcmUpdate['fcm_token_ios'] = $request->fcm_token_ios;
+        if ($request->fcm_token_android) $fcmUpdate['fcm_token_android'] = $request->fcm_token_android;
+        if ($request->device_type) $fcmUpdate['device_type'] = $request->device_type;
+        
+        if (!empty($fcmUpdate)) {
+            $user->update($fcmUpdate);
+            $user->refresh();
         }
 
         // Send FCM: Login Successful
