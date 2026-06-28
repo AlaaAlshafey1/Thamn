@@ -35,7 +35,7 @@ class FavoriteController extends Controller
                     'id' => $order->category_id,
                     'name' => $lang === 'ar' ? ($order->category->name_ar ?? '') : ($order->category->name_en ?? ''),
                 ],
-                'price' => $order->total_price,
+                'price' => $order->average_market_price,
                 'image' => $order->files->where('type', 'image')->first()
                     ? full_url($order->files->where('type', 'image')->first()->file_path)
                     : null,
