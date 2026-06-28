@@ -7,14 +7,11 @@ class FcmTestRunner {
     use App\Http\Traits\FCMOperation;
 }
 
-// Find user dynamically by email or phone
-$user = App\Models\User::where('email', 'alaa.alshafey12345@gmail.com')
-    ->orWhere('phone', '+966555555553')
-    ->orWhere('phone', '503921251005')
-    ->first();
+// Find the specific testing account
+$user = App\Models\User::where('email', 'alaa.alshafey12345@gmail.com')->first();
 
 if (!$user) {
-    echo "Error: User Alaa not found in database!\n";
+    echo "Error: Testing user with email alaa.alshafey12345@gmail.com not found in database!\n";
     exit(1);
 }
 
