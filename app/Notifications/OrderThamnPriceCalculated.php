@@ -20,7 +20,7 @@ class OrderThamnPriceCalculated extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -31,5 +31,10 @@ class OrderThamnPriceCalculated extends Notification
             'message' => "تم تثمين ثمن منتجك: طلب رقم #{$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي",
             'thamn_price' => $this->order->thamn_price,
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "تم تثمين ثمن منتجك: طلب رقم #{$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي";
     }
 }

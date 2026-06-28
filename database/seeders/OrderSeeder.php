@@ -28,6 +28,7 @@ class OrderSeeder extends Seeder
 
         foreach ($questions as $question) {
             $selectedOptionId = null;
+            $value = null;
             $price = 0;
 
             if ($question->options->count()) {
@@ -46,14 +47,24 @@ class OrderSeeder extends Seeder
                     $selectedOptionId = $subOption->id;
                     $price += $subOption->price ?? 0;
                 }
+            } else {
+                // سؤال بدون options → يستخدم value نصية حسب النوع
+                $value = match ($question->type ?? 'text') {
+                    'number'   => rand(1, 100),
+                    'price'    => rand(5000, 80000),
+                    'year'     => rand(2010, 2024),
+                    'location' => 'الرياض',
+                    'textarea' => 'وصف تجريبي للسلعة',
+                    default    => 'قيمة تجريبية',
+                };
             }
 
             OrderDetails::create([
-                'order_id' => $order->id,
-                'question_id' => $question->id,
-                'option_id' => $selectedOptionId,
-                'value' => null,
-                'price' => $price,
+                'order_id'   => $order->id,
+                'question_id'=> $question->id,
+                'option_id'  => $selectedOptionId,
+                'value'      => $value,
+                'price'      => $price,
             ]);
         }
 

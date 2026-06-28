@@ -25,10 +25,10 @@ public function notifyByFirebase($title, $body, $tokens, array $data = [], bool 
 
         $unreadCount = 0;
         if (isset($data['data']['user_id'])) {
-            $unreadCount = \App\Models\Notification::where('read', 'no')
-                ->where('user_id', $data['data']['user_id'])
+            $unreadCount = \Illuminate\Support\Facades\DB::table('notifications')
+                ->whereNull('read_at')
+                ->where('notifiable_id', $data['data']['user_id'])
                 ->count();
-
         }
 
         $android = AndroidConfig::fromArray([

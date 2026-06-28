@@ -20,7 +20,7 @@ class OrderSentForExpertEvaluation extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -30,5 +30,10 @@ class OrderSentForExpertEvaluation extends Notification
             'title' => 'بدأ تقييم الخبير',
             'message' => "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم #{$this->order->id}",
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم #{$this->order->id}";
     }
 }

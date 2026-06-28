@@ -11,7 +11,7 @@ class AccountDeletedNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -24,5 +24,10 @@ class AccountDeletedNotification extends Notification
             'message_ar' => 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً',
             'message_en' => 'Your account has been deleted successfully',
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً';
     }
 }

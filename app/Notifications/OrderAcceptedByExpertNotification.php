@@ -19,7 +19,7 @@ class OrderAcceptedByExpertNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -29,5 +29,10 @@ class OrderAcceptedByExpertNotification extends Notification
             'title' => 'جاري العمل على طلبك',
             'message' => "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}",
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}";
     }
 }

@@ -20,7 +20,7 @@ class OrderReadyForExpertsNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable): array
@@ -32,5 +32,10 @@ class OrderReadyForExpertsNotification extends Notification
             'message' => "طلب تقييم جديد متاح الآن (رقم {$this->order->id}) لمن يرغب في البدء.",
             'type' => 'new_expert_order'
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "طلب تقييم جديد متاح الآن (رقم {$this->order->id}) لمن يرغب في البدء.";
     }
 }

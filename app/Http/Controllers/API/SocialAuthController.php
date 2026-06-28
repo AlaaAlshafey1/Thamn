@@ -50,8 +50,14 @@ class SocialAuthController extends Controller
         // ✅ الحساب موجود → اعمل Login
         $token = $user->createToken('API Token')->plainTextToken;
 
+        // Read FCM Token from header or body and save it
+        $incomingFcm = $request->header('FCM-Token') ?? $request->fcm_token;
+        if ($incomingFcm) {
+            $user->update(['fcm_token' => $incomingFcm]);
+        }
+
         // Send FCM: Social Login Successful
-        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
+        $fcmToken = $incomingFcm ?? $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
         if ($fcmToken) {
             $this->notifyByFirebase(
                 lang('مرحباً بك في ثمن', 'Welcome back to Thamn', $request),
@@ -126,8 +132,14 @@ class SocialAuthController extends Controller
 
         $token = $user->createToken('API Token')->plainTextToken;
 
+        // Read FCM Token from header or body and save it
+        $incomingFcm = $request->header('FCM-Token') ?? $request->fcm_token;
+        if ($incomingFcm) {
+            $user->update(['fcm_token' => $incomingFcm]);
+        }
+
         // Send FCM: Social Register/Login Successful
-        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
+        $fcmToken = $incomingFcm ?? $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
         if ($fcmToken) {
             $this->notifyByFirebase(
                 lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request),

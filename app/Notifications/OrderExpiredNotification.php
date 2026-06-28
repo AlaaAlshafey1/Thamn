@@ -19,7 +19,7 @@ class OrderExpiredNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -29,5 +29,10 @@ class OrderExpiredNotification extends Notification
             'title' => 'لم يتم قبول الطلب',
             'message' => "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم #{$this->order->id}",
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم #{$this->order->id}";
     }
 }

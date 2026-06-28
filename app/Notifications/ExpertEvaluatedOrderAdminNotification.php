@@ -22,7 +22,7 @@ class ExpertEvaluatedOrderAdminNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable): array
@@ -34,5 +34,10 @@ class ExpertEvaluatedOrderAdminNotification extends Notification
             'message' => "قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.",
             'type' => 'expert_evaluation_completed'
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.";
     }
 }

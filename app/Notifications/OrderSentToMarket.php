@@ -19,7 +19,7 @@ class OrderSentToMarket extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -29,5 +29,10 @@ class OrderSentToMarket extends Notification
             'title' => 'تم إرسال الطلب للسوق',
             'message' => "تم إرسال منتجك للسوق: طلب رقم #{$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي"
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "تم إرسال منتجك للسوق: طلب رقم #{$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي";
     }
 }

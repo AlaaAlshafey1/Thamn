@@ -19,7 +19,7 @@ class OrderResent extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -29,5 +29,10 @@ class OrderResent extends Notification
             'title' => 'تم إعادة إرسال الطلب',
             'message' => "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}"
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}";
     }
 }

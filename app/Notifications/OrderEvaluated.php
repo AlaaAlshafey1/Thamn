@@ -21,7 +21,7 @@ class OrderEvaluated extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail']; // تقدر تحذف mail لو مش محتاج
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class]; // تقدر تحذف mail لو مش محتاج
     }
 
     public function toMail($notifiable)
@@ -43,5 +43,10 @@ class OrderEvaluated extends Notification
             'title' => 'تم تقييم طلبك',
             'message' => "تم تقييم طلبك رقم #{$this->order->id} بنجاح"
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "تم تقييم طلبك رقم #{$this->order->id} بنجاح";
     }
 }

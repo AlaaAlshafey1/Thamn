@@ -46,21 +46,35 @@ class OrderController extends Controller
         foreach ($request->answers as $answer) {
             $optionIds = is_array($answer['option_id'] ?? null) ? $answer['option_id'] : [$answer['option_id'] ?? null];
 
+            // لو مفيش option_id → الإجابة عبارة عن value نصية (سؤال حر)
+            if (empty(array_filter($optionIds))) {
+                $details[] = OrderDetails::create([
+                    'order_id'     => $order->id,
+                    'question_id'  => $answer['question_id'],
+                    'option_id'    => null,
+                    'sub_option_id'=> $answer['sub_option_id'] ?? null,
+                    'value'        => $answer['value'] ?? null,
+                    'price'        => $answer['price'] ?? null,
+                    'status'       => $answer['status'] ?? 1,
+                    'stageing'     => $answer['stageing'] ?? null,
+                ]);
+                continue;
+            }
+
             foreach ($optionIds as $optionId) {
                 if ($optionId === null)
                     continue;
 
                 $details[] = OrderDetails::create([
-                    'order_id' => $order->id,
-                    'question_id' => $answer['question_id'],
-                    'option_id' => $optionId,
-                    'sub_option_id' => $answer['sub_option_id'] ?? null,
-                    'value' => $answer['value'] ?? null,
-                    'price' => $answer['price'] ?? null,
-                    'status' => $answer['status'] ?? 1,
-                    'stageing' => $answer['stageing'] ?? null,
+                    'order_id'     => $order->id,
+                    'question_id'  => $answer['question_id'],
+                    'option_id'    => $optionId,
+                    'sub_option_id'=> $answer['sub_option_id'] ?? null,
+                    'value'        => $answer['value'] ?? null,
+                    'price'        => $answer['price'] ?? null,
+                    'status'       => $answer['status'] ?? 1,
+                    'stageing'     => $answer['stageing'] ?? null,
                 ]);
-
             }
         }
 

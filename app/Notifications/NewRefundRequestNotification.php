@@ -19,7 +19,7 @@ class NewRefundRequestNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -30,5 +30,10 @@ class NewRefundRequestNotification extends Notification
             'title' => 'طلب استرداد جديد',
             'message' => "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم #{$this->refund->order_id}",
         ];
+    }
+
+    public function toWhatsApp($notifiable)
+    {
+        return "منصة ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ ";
     }
 }
