@@ -175,12 +175,12 @@ class AuthController extends Controller
         }
 
         // Send FCM: Login Successful
-        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
-        if ($fcmToken) {
+        $tokens = $user->getFcmTokens();
+        if (!empty($tokens)) {
             $this->notifyByFirebase(
                 lang('مرحباً بعودتك', 'Welcome back', $request),
                 lang('تم تسجيل الدخول بنجاح إلى تثمين', 'Successfully logged into Thamn', $request),
-                [$fcmToken],
+                $tokens,
                 ['data' => ['user_id' => $user->id, 'type' => 'login_success']]
             );
         }
@@ -205,7 +205,20 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        // Send FCM: Logout Successful
+        $tokens = $user->getFcmTokens();
+        if (!empty($tokens)) {
+            $this->notifyByFirebase(
+                lang('تسجيل الخروج بأمان', 'Logged out safely', $request),
+                lang('تم تسجيل الخروج بنجاح من حسابك في ثمن. نراك قريباً!', 'Successfully logged out from your Thamn account. See you soon!', $request),
+                $tokens,
+                ['data' => ['user_id' => $user->id, 'type' => 'logout_success']]
+            );
+        }
+
+        $user->currentAccessToken()->delete();
 
         return response()->json([
             'status' => true,
@@ -246,12 +259,12 @@ class AuthController extends Controller
         $user = User::find($request->user_id);
 
         // Send FCM Notification for Register/Verify
-        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
-        if ($fcmToken) {
+        $tokens = $user->getFcmTokens();
+        if (!empty($tokens)) {
             $this->notifyByFirebase(
                 lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request),
                 lang('تم تفعيل حسابك بنجاح، استكشف عالم التثمين الآن', 'Account verified successfully, explore the world of evaluation now', $request),
-                [$fcmToken],
+                $tokens,
                 ['data' => ['user_id' => $user->id, 'type' => 'register_success']]
             );
         }
