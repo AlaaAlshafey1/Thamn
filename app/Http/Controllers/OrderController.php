@@ -13,9 +13,11 @@ use App\Mail\ValuationResultMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Notifications\OrderAcceptedByExpertNotification;
+use App\Http\Traits\FCMOperation;
 
 class OrderController extends Controller
 {
+    use FCMOperation;
     public function index()
     {
         if (auth()->user()->hasRole('expert')) {
@@ -24,7 +26,7 @@ class OrderController extends Controller
                 $q->where('expert_id', Auth::id())
                     ->orWhereNull('expert_id');
             })
-            ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid'])
+            ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
             ->when(auth()->user()->category_id, function ($q) {
                 return $q->where(function ($sub) {
                     $sub->where('category_id', auth()->user()->category_id)
@@ -139,6 +141,11 @@ class OrderController extends Controller
             abort(403, 'غير مسموح لك بهذا الإجراء');
         }
 
+        // منع الخبير من تقييم الأوردر مرة أخرى إذا تم تقييمه بالفعل وليس في وضع إعادة التقييم
+        if (in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated') {
+            return back()->with('error', 'لقد قمت بتقييم هذا الطلب بالفعل ولا يمكن تعديله.');
+        }
+
         $request->validate([
             'expert_price' => 'required|numeric|min:0',
             'expert_min_price' => 'nullable|numeric|min:0',
@@ -180,7 +187,7 @@ class OrderController extends Controller
                 $adminEmail = 'thmmnapplic@gmail.com';
                 Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                     "خبير قيم طلب تثمين احترافي رقم #{$order->id}",
-                    "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} الذي من نوع التثمين الاحترافي.\nيرجى الدخول إلى لوحة التحكم واعتماد التقييم النهائي في أقرب وقت.",
+                    "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} الذي من نوع التثمين الإحترافي.\nيرجى الدخول إلى لوحة التحكم واعتماد التقييم النهائي في أقرب وقت.",
                     route('orders.show', $order->id)
                 ));
             } catch (\Throwable $e) {
@@ -220,6 +227,17 @@ class OrderController extends Controller
                 \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
             }
 
+            // FCM Notification to Customer (Saudi Phrasing)
+            $tokens = $order->user->getFcmTokens();
+            if (!empty($tokens)) {
+                $this->notifyByFirebase(
+                    'بشرنااااك! تقييمك صار جاهز 🧡',
+                    "يا هلا بك يا غالي! تم تقييم منتجك رقم #{$order->id} بنجاح من قبل خبيرنا. تفضل شيك عليه بالتطبيق الحين.",
+                    $tokens,
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_expert']]
+                );
+            }
+
             $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!';
         }
 
@@ -254,6 +272,17 @@ class OrderController extends Controller
             }
         } catch (\Exception $e) {
             \Log::error('Thamn Evaluation WhatsApp Failed: ' . $e->getMessage());
+        }
+
+        // FCM Notification to Customer (Saudi Phrasing)
+        $tokens = $order->user->getFcmTokens();
+        if (!empty($tokens)) {
+            $this->notifyByFirebase(
+                'بشرى سارة يا غالي! التقييم صار جاهز ⚖️',
+                "يا هلا بك! تم اعتماد التقييم النهائي لمنتجك رقم #{$order->id} بنجاح. تفضل شيك عليه الحين بالتطبيق.",
+                $tokens,
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
+            );
         }
 
         return back()->with('success', 'تم اعتماد تقييم ثمن بنجاح');

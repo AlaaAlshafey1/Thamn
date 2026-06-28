@@ -187,7 +187,7 @@
                 
                 @if(auth()->user()->hasRole('expert'))
                     @php
-                        $newOrdersCount = \App\Models\Order::whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid'])
+                        $newOrdersCount = \App\Models\Order::whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
                             ->whereNull('expert_id')
                             ->when(auth()->user()->category_id, function ($q) {
                                 return $q->where(function ($sub) {

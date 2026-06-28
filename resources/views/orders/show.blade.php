@@ -191,48 +191,85 @@
             </div>
 
             <div class="col-lg-5">
-                {{-- نموذج التقييم --}}
-                <div class="card order-card" style="border: 2px solid #28a745;">
-                    <div class="card-header bg-success-transparent border-bottom-0 pb-0">
-                        <h5 class="text-success font-weight-bold mb-0">
-                            <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك كخبير
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
-                            @csrf
-                            <div class="mb-4">
-                                <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span class="text-danger">*</span></label>
-                                <input type="number" name="expert_price" class="form-control form-control-lg border-success text-success font-weight-bold" 
-                                    style="font-size: 1.5rem; text-align: center; background: #f4fdf6;"
-                                    step="0.01" min="0" value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
+                @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
+                    {{-- عرض التقييم الحالي (قراءة فقط) --}}
+                    <div class="card order-card shadow-sm border" style="border: 2px solid #ffc107 !important;">
+                        <div class="card-header bg-warning-transparent border-bottom-0 pb-0">
+                            <h5 class="text-warning font-weight-bold mb-0">
+                                <i class="bx bx-check-shield text-warning" style="font-size: 1.5rem; vertical-align: middle;"></i> تقييمك المعتمد لهذا المنتج
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4 text-center">
+                                <span class="text-muted d-block mb-1">السعر الذي أوصيت به</span>
+                                <h2 class="text-warning font-weight-bold m-0" style="font-size: 2.5rem;">{{ number_format($order->expert_price, 2) }} <span style="font-size: 1.2rem;">SAR</span></h2>
                             </div>
 
-                            <div class="row mb-4">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
-                                    <input type="number" name="expert_min_price" class="form-control bg-light" 
-                                        step="0.01" min="0" value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
+                            <div class="row mb-4 text-center">
+                                <div class="col-6 border-left">
+                                    <span class="text-muted small d-block mb-1">الحد الأدنى للسعر</span>
+                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_min_price, 2) }} SAR</span>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
-                                    <input type="number" name="expert_max_price" class="form-control bg-light" 
-                                        step="0.01" min="0" value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
+                                    <span class="text-muted small d-block mb-1">الحد الأعلى للسعر</span>
+                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_max_price, 2) }} SAR</span>
                                 </div>
                             </div>
 
-                            <div class="mb-4">
-                                <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span class="text-danger">*</span></label>
-                                <textarea name="expert_reasoning" class="form-control bg-light" rows="5" 
-                                    placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)" required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+                            <div class="mb-4 text-right" style="direction: rtl;">
+                                <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات:</label>
+                                <div class="p-3 bg-light rounded text-dark" style="white-space: pre-line;">{{ $order->expert_reasoning }}</div>
                             </div>
 
-                            <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm" style="font-size: 1.1rem; padding: 12px;">
-                                <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد التقييم وإرساله
-                            </button>
-                        </form>
+                            <div class="alert alert-info text-center border-0 mb-0" style="direction: rtl;">
+                                <i class="bx bx-info-circle ml-1"></i> لقد قمت بتقديم هذا التقييم مسبقاً. ولا يمكن تعديله إلا إذا طلب العميل إعادة تقييم المنتج.
+                            </div>
+                        </div>
                     </div>
-                </div>
+                @else
+                    {{-- نموذج التقييم --}}
+                    <div class="card order-card" style="border: 2px solid #28a745;">
+                        <div class="card-header bg-success-transparent border-bottom-0 pb-0">
+                            <h5 class="text-success font-weight-bold mb-0">
+                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك كخبير
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
+                                @csrf
+                                <div class="mb-4 text-right" style="direction: rtl;">
+                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span class="text-danger">*</span></label>
+                                    <input type="number" name="expert_price" class="form-control form-control-lg border-success text-success font-weight-bold" 
+                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;"
+                                        step="0.01" min="0" value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
+                                </div>
+
+                                <div class="row mb-4 text-right" style="direction: rtl;">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
+                                        <input type="number" name="expert_min_price" class="form-control bg-light" 
+                                            step="0.01" min="0" value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
+                                        <input type="number" name="expert_max_price" class="form-control bg-light" 
+                                            step="0.01" min="0" value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4 text-right" style="direction: rtl;">
+                                    <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span class="text-danger">*</span></label>
+                                    <textarea name="expert_reasoning" class="form-control bg-light" rows="5" 
+                                        placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)" required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm" style="font-size: 1.1rem; padding: 12px;">
+                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد التقييم وإرساله
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
             </div>
         @else
         {{-- الجانب الأيمن: بيانات العميل والمنتج --}}

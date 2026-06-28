@@ -843,7 +843,7 @@ class OrderController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
-        $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user'])
+        $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user', 'expert'])
             ->findOrFail($orderId);
 
         // ─── التحقق: إعادة التثمين مرة واحدة فقط ───
@@ -876,7 +876,10 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Reset previous evaluation
+        $originalExpertId = $order->expert_id;
+        $originalExpert = $order->expert;
+
+        // Reset previous evaluation details but keep expert_id for re-evaluation
         $order->update([
             'status' => 'beingReEstimated',
             'ai_min_price' => null,
@@ -886,6 +889,7 @@ class OrderController extends Controller
             'ai_reasoning' => null,
             'expert_price' => null,
             'expert_reasoning' => null,
+            'expert_evaluated' => 0,
             'thamn_price' => null,
             'thamn_by' => null,
             'thamn_at' => null,
@@ -910,15 +914,29 @@ class OrderController extends Controller
                 break;
 
             case 'expert':
-                $this->sendToExperts($order);
+                if ($originalExpertId) {
+                    $order->update([
+                        'expert_id' => $originalExpertId,
+                        'status' => 'beingReEstimated',
+                        'expert_evaluated' => 0,
+                    ]);
+                } else {
+                    $this->sendToExperts($order);
+                }
                 break;
 
             case 'best':
                 app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
-                app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
+                if ($originalExpertId) {
+                    $order->update([
+                        'expert_id' => $originalExpertId,
+                        'status' => 'beingReEstimated',
+                        'expert_evaluated' => 0,
+                    ]);
+                } else {
+                    app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
+                }
                 break;
-
-
 
             default:
                 Log::warning('Unknown evaluation type on re-evaluate', [
@@ -927,12 +945,26 @@ class OrderController extends Controller
                 ]);
         }
 
-        // FCM Notification لإعادة التقييم
+        // Notify Expert about re-evaluation request via Email
+        if ($originalExpert && $originalExpert->email) {
+            try {
+                $customerName = $order->user->first_name . ' ' . $order->user->last_name;
+                \Illuminate\Support\Facades\Mail::to($originalExpert->email)->send(new \App\Mail\SystemNotificationMail(
+                    'يا هلا بك.. طلب إعادة تقييم لمنتج! 🔄',
+                    "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}.\nيرجى الدخول وتدقيق السعر والتقييم مرة أخرى من خلال الرابط التالي.",
+                    route('orders.show', $order->id)
+                ));
+            } catch (\Exception $e) {
+                Log::error('Re-evaluation Expert Notification Mail Failed: ' . $e->getMessage());
+            }
+        }
+
+        // FCM Notification لإعادة التقييم (Saudi Phrasing)
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
             $this->notifyByFirebase(
-                'طلب إعادة التقييم ✅',
-                "تم استلام طلب إعادة تقييم منتجك رقم #{$order->id} بنجاح. سنبدأ التقييم الجديد في أقرب وقت ممكن.",
+                'تم استلام طلبك يا غالي 🔄',
+                "يا هلا بك! استلمنا طلب إعادة التقييم لمنتجك رقم #{$order->id}. بنباشر التقييم الجديد في أقرب وقت ونبشرك بالنتيجة.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
