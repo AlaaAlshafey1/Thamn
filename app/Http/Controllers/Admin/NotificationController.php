@@ -97,14 +97,6 @@ class NotificationController extends Controller
                     if (isset($res['sent']) && $res['sent'] > 0) {
                         $sentToUser = true;
                     }
-                    
-                    // الـ dd التي طلبتها للمعاينة السريعة
-                    dd([
-                        'user_id' => $user->id,
-                        'user_name' => $user->first_name,
-                        'token_used' => $token,
-                        'fcm_response' => $res
-                    ]);
                 }
             }
 
