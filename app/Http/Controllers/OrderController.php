@@ -36,8 +36,8 @@ class OrderController extends Controller
                     $q2->where('type', 'rateTypeSelection');
                 })->where(function ($q3) {
                     $q3->whereHas('option', function ($q4) {
-                        $q4->where('badge', 'expert');
-                    })->orWhere('value', 'expert');
+                        $q4->whereIn('badge', ['expert', 'best']);
+                    })->orWhereIn('value', ['expert', 'best']);
                 });
             })
             ->with('user')
@@ -160,31 +160,70 @@ class OrderController extends Controller
         ]);
         $user->balance += 10;
         $user->save();
-        $order->user->notify(new OrderEvaluated($order, 'expert'));
+        if ($order->evaluation_type === 'best') {
+            // Notify Admin (Email & WhatsApp)
+            try {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                
+                // Admin WhatsApp
+                $admins = User::role('superadmin')->get();
+                $expertName = $user->first_name . ' ' . $user->last_name;
+                $msg = "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} اللى من نوع التثمين الاحترافى. ادخل قيموا ف اقرب وقت.";
+                
+                foreach ($admins as $admin) {
+                    if ($admin->phone) {
+                        $whatsapp->sendMessage($admin->phone, $msg);
+                    }
+                }
 
-        // إرسال إشعار للأدمن (Database)
-        $admins = User::role('superadmin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
+                // Admin Email
+                $adminEmail = 'thmmnapplic@gmail.com';
+                Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                    "خبير قيم طلب تثمين احترافي رقم #{$order->id}",
+                    "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} الذي من نوع التثمين الاحترافي.\nيرجى الدخول إلى لوحة التحكم واعتماد التقييم النهائي في أقرب وقت.",
+                    route('orders.show', $order->id)
+                ));
+            } catch (\Throwable $e) {
+                \Log::error('Expert Valuation best-type Admin Notification Failed: ' . $e->getMessage());
+            }
+
+            // DB Notification to Admin
+            $admins = User::role('superadmin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
+            }
+
+            $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا الأدمن بالنتيجة!';
+        } else {
+            // Regular expert type flow: notify user directly
+            $order->user->notify(new OrderEvaluated($order, 'expert'));
+
+            // إرسال إشعار للأدمن (Database)
+            $admins = User::role('superadmin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
+            }
+
+            // Notify Customer via WhatsApp & Email
+            try {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+                $whatsapp->sendMessage($order->user->phone, $msg);
+                
+                // Email to Customer
+                Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
+                    'بشرنااااك! تقييم طلبك صار جاهز',
+                    "بشرى سارة! تقييم طلبك رقم {$order->id} صار جاهز الحين.\nتفضل شيك عليه بالمنصة وعطنا رايك.",
+                    route('orders.show', $order->id)
+                ));
+            } catch (\Throwable $e) {
+                \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
+            }
+
+            $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!';
         }
 
-        // Notify Customer via WhatsApp & Email
-        try {
-            $whatsapp = app(\App\Services\WhatsAppService::class);
-            $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
-            $whatsapp->sendMessage($order->user->phone, $msg);
-            
-            // Email to Customer
-            Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
-                'بشرنااااك! تقييم طلبك صار جاهز',
-                "بشرى سارة! تقييم طلبك رقم {$order->id} صار جاهز الحين.\nتفضل شيك عليه بالمنصة وعطنا رايك.",
-                route('orders.show', $order->id)
-            ));
-        } catch (\Throwable $e) {
-            \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
-        }
-
-        return back()->with('success', 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!');
+        return back()->with('success', $successMsg);
     }
 
     public function thamnEvaluate(Request $request, Order $order, ThamnEvaluationService $evaluationService)

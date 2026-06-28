@@ -90,6 +90,14 @@ class Order extends Model
         return round(($aiPrice + $expPrice) / 2, 2);
     }
 
+    public function getEvaluationTypeAttribute()
+    {
+        $rateTypeAnswer = $this->details()->whereHas('question', function ($q) { 
+            $q->where('type', 'rateTypeSelection'); 
+        })->first();
+        return $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value ?? 'expert';
+    }
+
     public function getAverageMarketPriceAttribute()
     {
         // Get the chosen evaluation type

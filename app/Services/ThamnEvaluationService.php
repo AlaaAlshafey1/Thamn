@@ -223,4 +223,65 @@ PROMPT;
             );
         }
     }
+
+    /**
+     * Notify all experts and admins about a new Professional Valuation order.
+     */
+    public function sendBestOrderToExperts(Order $order): void
+    {
+        $order->update([
+            'status' => 'beingEstimated',
+            'expert_evaluated' => 0,
+        ]);
+
+        $whatsapp = app(\App\Services\WhatsAppService::class);
+
+        // 1. Notify ALL Experts via Email and WhatsApp
+        $experts = \App\Models\User::role('expert')->get();
+        foreach ($experts as $expert) {
+            // Send WhatsApp
+            if ($expert->phone) {
+                $whatsapp->sendMessage(
+                    $expert->phone,
+                    "يا خبيرنا، فيه طلب تثمين احترافي جديد رقم {$order->id} متاح الآن بالمنصة. نرجو منك الدخول وتقييم الطلب في أسرع وقت للأدمن."
+                );
+            }
+            // Send Email
+            if ($expert->email) {
+                try {
+                    Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
+                        "طلب تثمين احترافي جديد بانتظارك رقم #{$order->id}",
+                        "يا خبيرنا العزيز، تم تقديم طلب تثمين احترافي جديد رقم {$order->id}. نرجو منك الدخول إلى لوحة التحكم وتقييم الطلب في أسرع وقت للأدمن.",
+                        route('orders.show', $order->id)
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error("Failed to send expert email for best order: " . $e->getMessage());
+                }
+            }
+        }
+
+        // 2. Notify Admin via Email and WhatsApp
+        // Admin Email
+        $adminEmail = 'thmmnapplic@gmail.com';
+        try {
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                "طلب تثمين احترافي جديد رقم #{$order->id}",
+                "بشرى سارة! تم دفع طلب التثمين الاحترافي الجديد رقم {$order->id}.\nتم إرسال تنبيه لكافة الخبراء للتقييم بأسرع وقت للأدمن.",
+                route('orders.show', $order->id)
+            ));
+        } catch (\Throwable $e) {
+            Log::error("Failed to send admin email for best order: " . $e->getMessage());
+        }
+
+        // Admin WhatsApp
+        $admins = \App\Models\User::role('superadmin')->get();
+        foreach ($admins as $admin) {
+            if ($admin->phone) {
+                $whatsapp->sendMessage(
+                    $admin->phone,
+                    "يا مدير، فيه طلب تثمين احترافي جديد رقم {$order->id} تم دفعه وتوجيهه للخبراء. شيك عليه بالمنصة."
+                );
+            }
+        }
+    }
 }

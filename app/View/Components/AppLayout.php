@@ -31,7 +31,8 @@ class AppLayout extends Component
                 'users_count' => 0,
                 'experts_count' => 0,
                 'orders_count' => \App\Models\Order::where('expert_id', $user->id)->count(),
-                'pending_orders' => \App\Models\Order::where('status', 'pending')
+                'pending_orders' => \App\Models\Order::whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid'])
+                    ->whereNull('expert_id')
                     ->when($user->category_id, function ($q) use ($user) {
                         return $q->where(function ($sub) use ($user) {
                             $sub->where('category_id', $user->category_id)

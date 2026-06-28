@@ -187,7 +187,8 @@
                 
                 @if(auth()->user()->hasRole('expert'))
                     @php
-                        $newOrdersCount = \App\Models\Order::where('status', 'pending')
+                        $newOrdersCount = \App\Models\Order::whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid'])
+                            ->whereNull('expert_id')
                             ->when(auth()->user()->category_id, function ($q) {
                                 return $q->where(function ($sub) {
                                     $sub->where('category_id', auth()->user()->category_id)
@@ -199,8 +200,8 @@
                                     $q2->where('type', 'rateTypeSelection');
                                 })->where(function ($q3) {
                                     $q3->whereHas('option', function ($q4) {
-                                        $q4->where('badge', 'expert');
-                                    })->orWhere('value', 'expert');
+                                        $q4->whereIn('badge', ['expert', 'best']);
+                                    })->orWhereIn('value', ['expert', 'best']);
                                 });
                             })->count();
                             

@@ -296,7 +296,8 @@ class PaymentController extends Controller
                     break;
 
                 case 'best':
-                    $this->runPricingEvaluation($order);
+                    $this->runAiEvaluation($order);
+                    app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
                     break;
 
                 default:

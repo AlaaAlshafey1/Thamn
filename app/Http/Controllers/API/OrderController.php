@@ -775,15 +775,26 @@ class OrderController extends Controller
             ?? '';
 
         /* ===================== PRICES ===================== */
+        $evalType = $order->evaluation_type;
         $prices = [
-            'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
-            'average' => (float) (
-                $order->thamn_price
-                ?? $order->ai_price
-                ?? 0
-            ),
-            'lowest' => $order->ai_min_price ? (float) $order->ai_min_price : null,
+            'highest' => null,
+            'average' => 0.0,
+            'lowest' => null,
         ];
+
+        if ($evalType === 'expert') {
+            $prices['highest'] = $order->expert_max_price ? (float) $order->expert_max_price : null;
+            $prices['lowest'] = $order->expert_min_price ? (float) $order->expert_min_price : null;
+            $prices['average'] = (float) ($order->expert_price ?? 0);
+        } elseif ($evalType === 'best') {
+            $prices['highest'] = $order->thamn_max_price ? (float) $order->thamn_max_price : null;
+            $prices['lowest'] = $order->thamn_min_price ? (float) $order->thamn_min_price : null;
+            $prices['average'] = (float) ($order->thamn_price ?? 0);
+        } else { // ai
+            $prices['highest'] = $order->ai_max_price ? (float) $order->ai_max_price : null;
+            $prices['lowest'] = $order->ai_min_price ? (float) $order->ai_min_price : null;
+            $prices['average'] = (float) ($order->ai_price ?? 0);
+        }
 
         /* ===================== DETAILS ===================== */
         $details = [];
@@ -900,9 +911,11 @@ class OrderController extends Controller
                 break;
 
             case 'best':
-                // Use ThamnEvaluationService which correctly attaches images to the AI prompt
                 app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+                app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
                 break;
+
+
 
             default:
                 Log::warning('Unknown evaluation type on re-evaluate', [

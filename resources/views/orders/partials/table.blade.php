@@ -23,6 +23,7 @@
             <tr>
                 <th>#</th>
                 <th>المستخدم</th>
+                <th>نوع التثمين</th>
                 <th>الحالة</th>
                 <th>الدفع</th>
                 <th>التاريخ</th>
@@ -45,6 +46,24 @@
                             <span class="fw-bold">{{ $order->user->first_name ?? '-' }}</span>
                             <small class="text-muted">{{ $order->user->phone ?? '' }}</small>
                         </div>
+                    </td>
+                    <td>
+                        @php
+                            $evalType = $order->evaluation_type;
+                            $typeLabels = [
+                                'ai' => 'bg-info-transparent text-info border border-info',
+                                'expert' => 'bg-warning-transparent text-warning border border-warning',
+                                'best' => 'bg-primary-transparent text-primary border border-primary',
+                            ];
+                            $typeNames = [
+                                'ai' => 'ذكاء اصطناعي',
+                                'expert' => 'تقييم خبراء',
+                                'best' => 'تثمين احترافي',
+                            ];
+                            $typeClass = $typeLabels[$evalType] ?? 'bg-secondary-transparent text-secondary';
+                            $typeName = $typeNames[$evalType] ?? 'غير محدد';
+                        @endphp
+                        <span class="badge {{ $typeClass }} py-2 px-3">{{ $typeName }}</span>
                     </td>
                     <td>
                         @php
@@ -136,6 +155,7 @@
             <tr>
                 <th>#</th>
                 <th>المستخدم</th>
+                <th>نوع التثمين</th>
                 <th>الحالة</th>
                 <th>الدفع</th>
                 <th>التاريخ</th>

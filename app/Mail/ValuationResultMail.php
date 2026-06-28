@@ -38,6 +38,7 @@ class ValuationResultMail extends Mailable
                 $this->reasoning = $order->expert_reasoning;
                 break;
 
+            case 'best':
             case 'thamn':
                 $this->minPrice = $order->thamn_min_price ? (float) $order->thamn_min_price : null;
                 $this->maxPrice = $order->thamn_max_price ? (float) $order->thamn_max_price : null;
