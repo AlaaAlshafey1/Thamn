@@ -43,9 +43,10 @@ class Order extends Model
 
     protected $casts = [
         'ai_features' => 'array',
+        'evaluated_at' => 'datetime',
+        'accepted_at' => 'datetime',
+        'thamn_at' => 'datetime',
     ];
-
-    protected $dates = ['deleted_at', 'evaluated_at'];
 
     public function details()
     {
