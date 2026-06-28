@@ -7,15 +7,20 @@ class FcmTestRunner {
     use App\Http\Traits\FCMOperation;
 }
 
-$user = App\Models\User::find(38); // Alaa
+// Find user dynamically by email or phone
+$user = App\Models\User::where('email', 'alaa.alshafey12345@gmail.com')
+    ->orWhere('phone', '+966555555553')
+    ->orWhere('phone', '503921251005')
+    ->first();
 
 if (!$user) {
-    echo "Error: User ID 38 not found in database!\n";
+    echo "Error: User Alaa not found in database!\n";
     exit(1);
 }
 
-echo "Testing notification for user Alaa (ID: 38)\n";
+echo "Testing notification for user Alaa (ID: {$user->id})\n";
 echo "Email: " . $user->email . "\n";
+echo "Phone: " . $user->phone . "\n";
 
 $tokens = $user->getFcmTokens();
 echo "Valid filtered FCM tokens found: " . count($tokens) . "\n";
