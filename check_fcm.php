@@ -7,34 +7,40 @@ class FcmTestRunner {
     use App\Http\Traits\FCMOperation;
 }
 
-// Find the specific testing account
-$user = App\Models\User::where('email', 'alaa.alshafey12345@gmail.com')->first();
+echo "Scanning database for users with active FCM tokens...\n";
 
-if (!$user) {
-    echo "Error: Testing user with email alaa.alshafey12345@gmail.com not found in database!\n";
+$users = App\Models\User::all();
+$allTokens = [];
+$targetedUsers = [];
+
+foreach ($users as $user) {
+    $tokens = $user->getFcmTokens();
+    if (!empty($tokens)) {
+        foreach ($tokens as $token) {
+            $allTokens[] = $token;
+        }
+        $targetedUsers[] = "ID: {$user->id} | Name: {$user->first_name} {$user->last_name} | Email: {$user->email} | Tokens: " . count($tokens);
+    }
+}
+
+echo "Total targeted users found: " . count($targetedUsers) . "\n";
+foreach ($targetedUsers as $info) {
+    echo " - " . $info . "\n";
+}
+echo "Total unique FCM tokens to send: " . count($allTokens) . "\n";
+
+if (empty($allTokens)) {
+    echo "\nError: No active or valid FCM tokens found in the database. Sending cancelled.\n";
     exit(1);
 }
 
-echo "Testing notification for user Alaa (ID: {$user->id})\n";
-echo "Email: " . $user->email . "\n";
-echo "Phone: " . $user->phone . "\n";
-
-$tokens = $user->getFcmTokens();
-echo "Valid filtered FCM tokens found: " . count($tokens) . "\n";
-print_r($tokens);
-
-if (empty($tokens)) {
-    echo "Error: No valid filtered FCM tokens found. Sending cancelled.\n";
-    exit(1);
-}
-
-echo "\nSending welcome push notification...\n";
+echo "\nSending general test push notification to all devices...\n";
 $runner = new FcmTestRunner();
 $result = $runner->notifyByFirebase(
-    "أهلاً بك في ثمن! 🎉",
-    "يا هلا بك يا أستاذ علاء، هذي رسالة ترحيبية تجريبية للتأكد من عمل التنبيهات بالشكل الصحيح.",
-    $tokens,
-    ['data' => ['type' => 'welcome_test', 'user_id' => $user->id]]
+    "تنبيه عام من تطبيق ثمن! 📣",
+    "يا هلا بالغالين! هذي رسالة تنبيه تجريبية عامة مرسلة لجميع مستخدمي التطبيق للتأكد من وصول الإشعارات.",
+    $allTokens,
+    ['data' => ['type' => 'general_announcement']]
 );
 
 echo "\nFirebase Response:\n";
