@@ -15,13 +15,21 @@ class NotificationController extends Controller
 
     public function index()
     {
-        $users = User::where(function($q) {
-            $q->whereNotNull('fcm_token')
-              ->orWhereNotNull('fcm_token_android')
-              ->orWhereNotNull('fcm_token_ios');
-        })->get()->filter(function($user) {
-            return !empty($user->getFcmTokens());
-        });
+        // Filter at DB level - only select columns we need to avoid memory issues
+        $users = User::select('id', 'first_name', 'last_name', 'phone', 'fcm_token', 'fcm_token_android', 'fcm_token_ios')
+            ->where(function ($q) {
+                $q->where(function ($inner) {
+                    $inner->whereNotNull('fcm_token')
+                          ->where('fcm_token', 'not like', 'fcm_%_token_%');
+                })->orWhere(function ($inner) {
+                    $inner->whereNotNull('fcm_token_android')
+                          ->where('fcm_token_android', 'not like', 'fcm_%_token_%');
+                })->orWhere(function ($inner) {
+                    $inner->whereNotNull('fcm_token_ios')
+                          ->where('fcm_token_ios', 'not like', 'fcm_%_token_%');
+                });
+            })
+            ->get();
 
         return view('admin.notifications.index', compact('users'));
     }
