@@ -65,6 +65,26 @@ class User extends Authenticatable
         'sms_enabled' => 'boolean',
     ];
 
+    public function getFcmTokens()
+    {
+        $tokens = array_filter([
+            $this->fcm_token,
+            $this->fcm_token_android,
+            $this->fcm_token_ios
+        ]);
+
+        return array_values(array_filter($tokens, function($t) {
+            return !in_array(strtolower($t), [
+                'fcm_android_token_123',
+                'fcm_ios_token_123',
+                'test',
+                'null',
+                'undefined',
+                '123456'
+            ]);
+        }));
+    }
+
     public function mainRole()
     {
         return $this->belongsTo(Role::class);

@@ -928,12 +928,12 @@ class OrderController extends Controller
         }
 
         // FCM Notification لإعادة التقييم
-        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
-        if ($fcmToken) {
+        $tokens = $order->user->getFcmTokens();
+        if (!empty($tokens)) {
             $this->notifyByFirebase(
                 'طلب إعادة التقييم ✅',
                 "تم استلام طلب إعادة تقييم منتجك رقم #{$order->id} بنجاح. سنبدأ التقييم الجديد في أقرب وقت ممكن.",
-                [$fcmToken],
+                $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
         }
@@ -982,12 +982,12 @@ class OrderController extends Controller
         $order->user->notify(new \App\Notifications\OrderSentForExpertEvaluation($order));
 
         // FCM Notification للمستخدم
-        $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
-        if ($fcmToken) {
+        $tokens = $order->user->getFcmTokens();
+        if (!empty($tokens)) {
             $this->notifyByFirebase(
-                'جارٍ تقييم منتجك 🔍',
+                'يجارٍ تقييم منتجك 🔍',
                 "لقد استلم خبيرنا طلبك رقم #{$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.",
-                [$fcmToken],
+                $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_expert']]
             );
         }
@@ -1092,12 +1092,12 @@ class OrderController extends Controller
             $order->user->notify(new \App\Notifications\OrderSentToMarket($order));
 
             // FCM Notification
-            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
-            if ($fcmToken) {
+            $tokens = $order->user->getFcmTokens();
+            if (!empty($tokens)) {
                 $this->notifyByFirebase(
                     '🛒 منتجك في السوق الآن!',
                     "تم إدراج منتجك رقم #{$order->id} في سوق ثمن بنجاح. يمكن للمشترين رؤيته الآن.",
-                    [$fcmToken],
+                    $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
                 );
             }

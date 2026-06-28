@@ -85,12 +85,12 @@ class NotificationController extends Controller
 
             // 2. Push Notification
             if (in_array('push', $request->channels)) {
-                $token = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
-                if ($token) {
+                $tokens = $user->getFcmTokens();
+                if (!empty($tokens)) {
                     $res = $this->notifyByFirebase(
                         $request->title ?? 'إشعار من ثمن',
                         $request->message,
-                        $token,
+                        $tokens,
                         ['data' => ['type' => 'manual_notification']]
                     );
                     

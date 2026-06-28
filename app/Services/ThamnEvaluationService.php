@@ -189,12 +189,12 @@ PROMPT;
         // Send Notification if price is now calculated
         if ($thamnPrice) {
             $user = $order->user;
-            $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
-            if ($fcmToken) {
+            $tokens = $user->getFcmTokens();
+            if (!empty($tokens)) {
                 $this->notifyByFirebase(
                     lang('تم حساب السعر العادل', 'Fair Price Calculated', request()),
                     lang('لقد قام فريق ثمن بحساب السعر العادل لمنتجك: ' . $thamnPrice . ' ريال', 'Thamn team calculated the fair price for your product: ' . $thamnPrice . ' SAR', request()),
-                    [$fcmToken],
+                    $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_ready']]
                 );
             }
@@ -213,12 +213,12 @@ PROMPT;
     private function sendEvaluationNotification(Order $order)
     {
         $user = $order->user;
-        $fcmToken = $user->fcm_token ?? $user->fcm_token_android ?? $user->fcm_token_ios;
-        if ($fcmToken) {
+        $tokens = $user->getFcmTokens();
+        if (!empty($tokens)) {
             $this->notifyByFirebase(
                 lang('تم تقييم منتجك بنجاح', 'Product Evaluated Successfully', request()),
                 lang('تم الانتهاء من تقييم طلبك رقم ' . $order->id . ' يمكنك الاطلاع على النتائج الآن', 'Evaluation for order #' . $order->id . ' is finished, check the results now', request()),
-                [$fcmToken],
+                $tokens,
                 ['data' => ['user_id' => $user->id, 'order_id' => $order->id, 'type' => 'evaluation_ready']]
             );
         }
