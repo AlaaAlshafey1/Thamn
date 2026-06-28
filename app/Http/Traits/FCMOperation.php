@@ -77,10 +77,8 @@ public function notifyByFirebase($title, $body, $tokens, array $data = [], bool 
                     'error' => $failure->error()->getMessage(),
                 ];
             }
+            \Illuminate\Support\Facades\Log::warning('FCM Multicast failures: ' . json_encode($errors));
         }
-
-
-
 
         return [
             'success' => true,
@@ -91,6 +89,9 @@ public function notifyByFirebase($title, $body, $tokens, array $data = [], bool 
         ];
 
     } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\Log::error('FCM notifyByFirebase Exception: ' . $e->getMessage(), [
+            'exception' => $e
+        ]);
 
         return [
             'success' => false,
