@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\OpenAIService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use App\Http\Traits\FCMOperation;
 
 class OrderController extends Controller
 {
+    use FCMOperation;
+
     public function store(Request $request)
     {
         $user = $request->user();
