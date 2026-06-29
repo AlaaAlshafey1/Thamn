@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('questions', QuestionController::class);
     Route::post('questions/reorder', [QuestionController::class, 'reorder'])->name('questions.reorder');
+    Route::post('questions/toggle-active', [QuestionController::class, 'toggleActive'])->name('questions.toggleActive');
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);

@@ -295,6 +295,20 @@ class QuestionController extends Controller
         return response()->json(['success' => true, 'message' => 'تم تحديث الترتيب بنجاح']);
     }
 
+    public function toggleActive(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:questions,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $question = Question::findOrFail($request->id);
+        $question->is_active = $request->is_active;
+        $question->save();
+
+        return response()->json(['success' => true, 'message' => 'تم تحديث حالة السؤال بنجاح']);
+    }
+
     public function destroy(Question $question)
     {
         $question->delete();

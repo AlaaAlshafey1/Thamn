@@ -376,6 +376,9 @@ body {
                                             </div>
                                             
                                             <div class="question-actions-group">
+                                                <div class="form-check form-switch me-3" style="display: flex; align-items: center;" title="تفعيل/تعطيل">
+                                                    <input class="form-check-input toggle-active-btn m-0" type="checkbox" role="switch" data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }} style="cursor: pointer; width: 2.5em; height: 1.25em;">
+                                                </div>
                                                 <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="action-icon action-edit" title="تعديل">
                                                     <i class="bx bx-edit-alt"></i>
                                                 </a>
@@ -451,6 +454,9 @@ body {
                             </div>
                             
                             <div class="question-actions-group">
+                                <div class="form-check form-switch me-3" style="display: flex; align-items: center;" title="تفعيل/تعطيل">
+                                    <input class="form-check-input toggle-active-btn m-0" type="checkbox" role="switch" data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }} style="cursor: pointer; width: 2.5em; height: 1.25em;">
+                                </div>
                                 <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="action-icon action-edit" title="تعديل">
                                     <i class="bx bx-edit-alt"></i>
                                 </a>
@@ -617,6 +623,29 @@ $(document).ready(function() {
                         showToast('<i class="bx bx-x-circle fs-4 text-danger"></i> حدث خطأ أثناء حفظ الترتيب', 'error');
                     }
                 });
+            }
+        });
+    });
+
+    $('.toggle-active-btn').on('change', function() {
+        let id = $(this).data('id');
+        let isActive = $(this).is(':checked') ? 1 : 0;
+
+        $.ajax({
+            url: '{{ route("questions.toggleActive") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                id: id,
+                is_active: isActive
+            },
+            success: function(response) {
+                if(response.success) {
+                    showToast('<i class="bx bx-check-circle fs-4 text-success"></i> ' + response.message, 'success');
+                }
+            },
+            error: function() {
+                showToast('<i class="bx bx-x-circle fs-4 text-danger"></i> حدث خطأ أثناء تحديث الحالة', 'error');
             }
         });
     });
