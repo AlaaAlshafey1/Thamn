@@ -34,7 +34,7 @@ class QuestionController extends Controller
             }
         })->orderBy('order', 'asc')->orderBy('created_at', 'asc')->get();
 
-        $steps = \App\Models\QuestionStep::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
+        $steps = \App\Models\QuestionStep::orderBy('sort_order', 'asc')->get();
 
         return view('questions.index', [
             'categories' => $categories,
