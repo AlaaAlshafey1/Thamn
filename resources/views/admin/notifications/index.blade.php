@@ -1,565 +1,459 @@
 @extends('layouts.master')
-@section('title', 'مركز الإشعارات')
+@section('title', 'مركز البث')
 
-@push('css')
+@section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
-    .notify-page { direction: rtl; text-align: right; }
+:root{
+  --ink:#1c2230; --ink-soft:#2b3346; --paper:#f3efe6; --card:#ffffff;
+  --gold:#b8893f; --gold-deep:#8a6428; --gold-soft:#f1e6d2;
+  --line:#e6e1d3; --muted:#8b8779; --text:#211e1a; --wa:#1ea854;
+}
+.notify-page{direction:rtl;text-align:right;font-family:'Tajawal',sans-serif;color:var(--text);}
+.notify-page .wrap{max-width:1180px;margin:0 auto;}
 
-    /* Emoji Picker */
-    .field-wrapper { position: relative; }
+.console{
+  background:var(--ink); border-radius:18px; padding:22px 28px;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  position:relative; overflow:hidden; margin-bottom:28px;
+}
+.console::after{
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 26px);
+  pointer-events:none;
+}
+.console-left{display:flex;align-items:center;gap:16px;position:relative;z-index:1;}
+.console-mark{
+  width:50px;height:50px;border-radius:12px;background:var(--gold-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--gold-deep);font-size:1.5rem;flex:none;
+}
+.console-left h1{margin:0;font-size:1.25rem;font-weight:800;color:#fff;}
+.console-left p{margin:2px 0 0;font-size:.8rem;color:#9aa3b8;font-weight:500;}
+.on-air{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:8px 16px;border-radius:30px;position:relative;z-index:1;}
+.on-air .dot{width:8px;height:8px;border-radius:50%;background:#ff5b5b;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,91,91,.55);}70%{box-shadow:0 0 0 9px rgba(255,91,91,0);}100%{box-shadow:0 0 0 0 rgba(255,91,91,0);}}
+.on-air span{font-size:.78rem;color:#cfd4e0;font-weight:700;letter-spacing:.3px;}
 
-    .emoji-icon-btn {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.4rem;
-        cursor: pointer;
-        user-select: none;
-        z-index: 10;
-        line-height: 1;
-    }
-    .emoji-icon-btn.for-textarea {
-        top: 16px;
-        transform: none;
-    }
+.notify-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:24px;align-items:start;}
+@media (max-width:980px){.notify-grid{grid-template-columns:1fr;}}
 
-    .emoji-panel {
-        display: none;
-        position: absolute;
-        left: 0;
-        z-index: 1050;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        width: 340px;
-        overflow: hidden;
-    }
-    .emoji-panel.panel-for-header { top: 50px; }
-    .emoji-panel.panel-for-body   { top: 115px; }
+.panel{background:var(--card);border-radius:18px;border:1px solid var(--line);}
+.panel-head{padding:20px 26px;border-bottom:1px solid var(--line);}
+.panel-head .eyebrow{font-size:.68rem;font-weight:800;letter-spacing:1.5px;color:var(--gold-deep);text-transform:uppercase;display:block;}
+.panel-head h2{margin:2px 0 0;font-size:1.05rem;font-weight:800;}
+.panel-body{padding:26px;}
 
-    .emoji-panel-tabs {
-        display: flex;
-        background: #f5f5f5;
-        border-bottom: 1px solid #eee;
-        padding: 4px 6px;
-        gap: 4px;
-    }
-    .emoji-panel-tab {
-        flex: 1;
-        background: none;
-        border: none;
-        border-radius: 6px;
-        padding: 5px 0;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-    .emoji-panel-tab:hover, .emoji-panel-tab.active {
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .emoji-panel-search {
-        padding: 6px 8px;
-        border-bottom: 1px solid #eee;
-    }
-    .emoji-panel-search input {
-        width: 100%;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 5px 10px;
-        font-size: 0.85rem;
-        direction: ltr;
-    }
-    .emoji-grid {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 2px;
-        padding: 8px;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-    .emoji-cell {
-        font-size: 1.35rem;
-        text-align: center;
-        padding: 4px 2px;
-        border-radius: 5px;
-        cursor: pointer;
-        user-select: none;
-        transition: background 0.1s, transform 0.1s;
-    }
-    .emoji-cell:hover {
-        background: #f0f0f0;
-        transform: scale(1.2);
-    }
+.field-label{font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.field-label i{color:var(--gold);font-size:1.1rem;}
+.step-no{width:20px;height:20px;border-radius:6px;background:var(--gold-soft);color:var(--gold-deep);font-size:.7rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex:none;}
 
-    /* Selected users tags */
-    .user-tags-box {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        padding: 10px 12px;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        min-height: 46px;
-    }
-    .user-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #c1953e22;
-        border: 1px solid #c1953e55;
-        color: #8a6520;
-        border-radius: 20px;
-        padding: 3px 10px 3px 6px;
-        font-size: 0.82rem;
-        font-weight: 600;
-    }
-    .user-tag .remove-tag {
-        cursor: pointer;
-        font-size: 0.9rem;
-        color: #c0392b;
-        font-weight: bold;
-    }
+.switch-row{display:flex;flex-direction:column;gap:10px;}
+.switch-opt{cursor:pointer;display:block;}
+.switch-opt input{display:none;}
+.switch{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:14px;padding:14px 18px;transition:.2s;background:#fdfcfa;}
+.switch:hover{border-color:#d8cfb6;}
+.switch-info{display:flex;align-items:center;gap:12px;}
+.switch-ic{width:38px;height:38px;border-radius:10px;background:#f0ede4;display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:#9b9686;}
+.switch-ic.wa{background:#eafaf0;color:var(--wa);}
+.switch-info strong{display:block;font-size:.92rem;font-weight:700;}
+.switch-info small{color:var(--muted);font-size:.76rem;font-weight:500;}
+.toggle{width:42px;height:24px;border-radius:30px;background:#ddd6c4;position:relative;transition:.2s;flex:none;}
+.toggle::after{content:'';position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.switch-opt input:checked + .switch{border-color:var(--gold);background:var(--gold-soft);}
+.switch-opt input:checked + .switch .switch-ic{background:var(--gold);color:#fff;}
+.switch-opt input:checked + .switch .switch-ic.wa{background:var(--wa);}
+.switch-opt input:checked + .switch .toggle{background:var(--gold);}
+.switch-opt input:checked + .switch.wa .toggle, .switch-opt:has(input[value="whatsapp"]):has(input:checked) .toggle{background:var(--wa);}
+.switch-opt input:checked + .switch .toggle::after{right:21px;}
 
-    /* Channel badges */
-    .channel-opt { cursor: pointer; }
-    .channel-opt input[type=checkbox] { display: none; }
-    .channel-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border: 2px solid #dee2e6;
-        border-radius: 10px;
-        background: #f8f9fa;
-        font-weight: bold;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-    .channel-opt input:checked + .channel-label {
-        border-color: #c1953e;
-        background: #c1953e11;
-        color: #7a5e1c;
-    }
+select.console-select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:13px 16px;font-family:'Tajawal',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
+select.console-select:focus{outline:none;border-color:var(--gold);}
 
-    /* Select2 */
-    .select2-container--default .select2-selection--single {
-        height: 44px !important;
-        border: 1px solid #ced4da !important;
-        border-radius: 8px !important;
-        padding: 6px 12px !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 44px !important;
-    }
+.custom-box{background:#fdfcfa;border:1px dashed #d8cfb6;border-radius:14px;padding:18px;margin-top:14px;}
 
-    /* Preview box */
-    .preview-wrap {
-        background: #fafafa;
-        border: 1px dashed #c1953e55;
-        border-radius: 10px;
-        padding: 16px;
-        margin-top: 24px;
-    }
-    .preview-app-bar {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.75rem;
-        color: #888;
-        margin-bottom: 6px;
-        font-weight: bold;
-    }
-    .preview-app-dot {
-        width: 14px; height: 14px;
-        background: #c1953e;
-        border-radius: 3px;
-        display: inline-block;
-    }
-    .preview-title { font-weight: bold; font-size: 0.92rem; color: #111; margin-bottom: 2px; }
-    .preview-body  { font-size: 0.84rem; color: #555; line-height: 1.45; }
+.field-wrap{position:relative;}
+.tinput, textarea.tinput{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:14px 46px 14px 16px;font-family:'Tajawal',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
+textarea.tinput{padding-top:16px;resize:vertical;}
+.tinput:focus, textarea.tinput:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,63,.12);}
+.emoji-btn{position:absolute;left:14px;top:16px;font-size:1.25rem;cursor:pointer;opacity:.7;z-index:5;}
+.emoji-btn:hover{opacity:1;}
+.char-count{font-size:.72rem;color:var(--muted);margin-top:6px;text-align:left;font-weight:600;}
+
+.wa-attach{border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:6px;background:#fafaf5;}
+.wa-attach h6{margin:0 0 12px;font-size:.85rem;font-weight:800;display:flex;align-items:center;gap:8px;color:var(--wa);}
+.file-input{border:1px dashed #d8cfb6;border-radius:10px;padding:10px 12px;font-size:.8rem;width:100%;background:#fff;}
+
+.submit-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:17px;font-size:1rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:.2s;font-family:'Tajawal',sans-serif;}
+.submit-btn i{color:var(--gold);font-size:1.3rem;}
+.submit-btn:hover{background:#0f1320;color:#fff;}
+
+.preview-sticky{position:sticky;top:24px;}
+.meter-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:18px;}
+.meter-title{font-size:.78rem;font-weight:800;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.bars{display:flex;align-items:flex-end;gap:5px;height:32px;}
+.bars i{width:7px;border-radius:3px;background:#e6e1d3;transition:.25s;font-style:normal;}
+.bars i:nth-child(1){height:30%;}.bars i:nth-child(2){height:50%;}.bars i:nth-child(3){height:70%;}.bars i:nth-child(4){height:85%;}.bars i:nth-child(5){height:100%;}
+.bars.l1 i:nth-child(1){background:var(--gold);}
+.bars.l2 i:nth-child(1),.bars.l2 i:nth-child(2){background:var(--gold);}
+.bars.l3 i:nth-child(1),.bars.l3 i:nth-child(2),.bars.l3 i:nth-child(3){background:var(--gold);}
+.bars.l4 i:nth-child(1),.bars.l4 i:nth-child(2),.bars.l4 i:nth-child(3),.bars.l4 i:nth-child(4){background:var(--gold);}
+.bars.l5 i{background:var(--gold);}
+
+.phone{width:290px;height:430px;background:var(--ink);border-radius:38px;padding:10px;margin:0 auto;box-shadow:0 18px 40px rgba(28,34,48,.22);position:relative;}
+.phone-screen{width:100%;height:100%;border-radius:28px;background:linear-gradient(165deg,#3a4258 0%, #1c2230 60%);position:relative;overflow:hidden;}
+.phone-notch{width:110px;height:22px;background:#000;border-radius:0 0 14px 14px;position:absolute;top:0;right:50%;transform:translateX(50%);z-index:5;}
+.phone-time{position:absolute;top:8px;left:20px;color:#fff;font-size:.78rem;font-weight:700;z-index:4;}
+.notif-card{margin:54px 14px 0;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);border-radius:16px;padding:13px 15px;box-shadow:0 8px 22px rgba(0,0,0,.18);}
+.notif-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.notif-app{display:flex;align-items:center;gap:6px;}
+.notif-app i{width:18px;height:18px;background:var(--gold);border-radius:5px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;}
+.notif-app span{font-size:.68rem;font-weight:800;letter-spacing:.4px;color:#333;}
+.notif-time{font-size:.65rem;color:#777;}
+.notif-title{font-weight:800;font-size:.9rem;color:#111;margin-bottom:2px;}
+.notif-body{font-size:.78rem;color:#333;line-height:1.45;}
+
+.wa-bubble-wrap{display:none;margin:54px 14px 0;}
+.wa-bubble{background:#dcf8c6;border-radius:10px;border-top-right-radius:2px;padding:10px 12px;font-size:.78rem;color:#1b1b1b;line-height:1.5;box-shadow:0 2px 5px rgba(0,0,0,.12);position:relative;}
+.wa-bubble .wa-title{font-weight:800;margin-bottom:2px;}
+.wa-bubble .wa-time{display:block;text-align:left;font-size:.62rem;color:#5a8c5a;margin-top:4px;}
+
+.hint{font-size:.78rem;color:var(--muted);text-align:center;margin-top:14px;font-weight:600;}
+
+.tags-area{margin-top:14px;display:none;}
+.tags-area span.tt{font-size:.76rem;color:var(--muted);font-weight:700;display:block;margin-bottom:8px;}
+.tag{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:30px;padding:6px 12px;font-size:.78rem;font-weight:700;margin:0 4px 8px 0;}
+.tag .remove-tag{width:16px;height:16px;border-radius:50%;background:#fbe3e3;color:#d24545;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;cursor:pointer;}
+
+.emoji-panel{display:none;position:absolute;left:0;top:50px;z-index:1050;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:16px;box-shadow:0 15px 35px rgba(0,0,0,.15);width:300px;overflow:hidden;}
+.emoji-panel-tabs{display:flex;background:#f8f6f0;border-bottom:1px solid var(--line);padding:6px;gap:6px;}
+.emoji-panel-tab{flex:1;background:transparent;border:none;border-radius:8px;padding:6px 0;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;}
+.emoji-panel-tab.active{background:#fff;color:var(--gold-deep);}
+.emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:10px;max-height:200px;overflow-y:auto;}
+.emoji-cell{font-size:1.3rem;text-align:center;padding:6px 2px;border-radius:8px;cursor:pointer;}
+.emoji-cell:hover{background:#f1f0ea;}
+
+.select2-container--default .select2-selection--multiple{border:1px solid var(--line) !important;border-radius:12px !important;background:#fdfcfa !important;min-height:48px !important;}
+.alert-success-console{background:#eef7ee;color:#2c6b2c;border:1px solid #cfe8cf;border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:10px;margin-bottom:20px;font-weight:700;}
 </style>
-@endpush
+@endsection
 
 @section('page-header')
-<div class="notify-page container-fluid">
-    <div class="page-header py-3 px-4 mt-3 mb-4 bg-white shadow-sm rounded-3 border">
-        <h4 class="mb-1 fw-bold text-primary"><i class="bx bx-paper-plane"></i> مركز إرسال الإشعارات</h4>
-        <p class="text-muted mb-0 small">أرسل تنبيهات فورية (Push) أو رسائل واتساب للعملاء بشكل فردي أو جماعي</p>
+<div class="notify-page container-fluid mt-4">
+    <div class="wrap">
+        <div class="console">
+            <div class="console-left">
+                <div class="console-mark"><i class='bx bx-broadcast'></i></div>
+                <div>
+                    <h1>مركز البث</h1>
+                    <p>إرسال إشعارات فورية ورسائل واتساب لعملاء ثمن</p>
+                </div>
+            </div>
+            <div class="on-air"><span class="dot"></span><span>جاهز للإرسال</span></div>
+        </div>
     </div>
 </div>
 @endsection
 
 @section('content')
 <div class="notify-page container-fluid">
-    <div class="row">
-        <div class="col-lg-7 col-md-10 mx-auto">
+    <div class="wrap">
 
-            @if(session('success'))
-            <div class="alert alert-success border-0 shadow-sm mb-4 rounded-3 d-flex align-items-center gap-2">
-                <i class="bx bx-check-circle fs-5 text-success"></i>
-                <strong>{{ session('success') }}</strong>
-            </div>
-            @endif
+        @if(session('success'))
+        <div class="alert-success-console">
+            <i class="bx bx-check-circle fs-4"></i> {{ session('success') }}
+        </div>
+        @endif
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bx bx-cog text-warning align-middle me-1"></i> إعداد الإشعار</h5>
+        <div class="notify-grid">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">إعداد الرسالة</span>
+                        <h2>تفاصيل البث</h2>
+                    </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="panel-body">
                     <form id="notificationForm" action="{{ route('admin.notifications.send') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        {{-- 1. القنوات --}}
-                        <div class="mb-4">
-                            <label class="fw-bold d-block mb-2 text-dark"><i class="bx bx-broadcast text-warning me-1"></i>قنوات الإرسال:</label>
-                            <div class="d-flex gap-3 flex-wrap">
-                                <label class="channel-opt m-0">
+                        {{-- القنوات --}}
+                        <div style="margin-bottom:28px;">
+                            <div class="field-label"><span class="step-no">١</span> قنوات الإرسال</div>
+                            <div class="switch-row">
+                                <label class="switch-opt">
                                     <input type="checkbox" name="channels[]" value="push" id="chPush" checked>
-                                    <div class="channel-label">
-                                        <i class="bx bx-mobile-alt fs-5"></i> إشعارات الهاتف (Push)
+                                    <div class="switch">
+                                        <div class="switch-info">
+                                            <div class="switch-ic"><i class='bx bx-mobile-alt'></i></div>
+                                            <div><strong>إشعار فوري (Push)</strong><small>يظهر مباشرة على شاشة جوال العميل</small></div>
+                                        </div>
+                                        <div class="toggle"></div>
                                     </div>
                                 </label>
-                                <label class="channel-opt m-0">
+                                <label class="switch-opt">
                                     <input type="checkbox" name="channels[]" value="whatsapp" id="chWhatsapp">
-                                    <div class="channel-label">
-                                        <i class="bx bxl-whatsapp fs-5 text-success"></i> رسائل الواتساب
+                                    <div class="switch wa">
+                                        <div class="switch-info">
+                                            <div class="switch-ic wa"><i class='bx bxl-whatsapp'></i></div>
+                                            <div><strong>واتساب</strong><small>رسالة نصية مع إمكانية إرفاق صورة أو ملف</small></div>
+                                        </div>
+                                        <div class="toggle"></div>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
-                        {{-- 2. الجمهور --}}
-                        <div class="mb-4">
-                            <label class="fw-bold d-block mb-2 text-dark" for="recipientType"><i class="bx bx-group text-warning me-1"></i>الجمهور المستهدف:</label>
-                            <select id="recipientType" name="recipients_type" class="form-select form-select-lg" style="border-radius:8px; height:46px; font-size:0.95rem;">
-                                <option value="users" selected>👥 كل العملاء (إرسال جماعي)</option>
-                                <option value="custom">🎯 مستخدم أو أكثر بعينهم</option>
-                            </select>
-                        </div>
-
-                        {{-- قائمة اختيار المستخدمين (مخفية) --}}
-                        <div id="customDiv" class="mb-4" style="display:none;">
-                            <label class="fw-bold d-block mb-2 text-dark"><i class="bx bx-search text-warning me-1"></i>اختر المستخدمين (يظهر من لديهم توكن فعال فقط):</label>
-                            <select id="specificUsers" name="specific_users[]" class="form-control" style="width:100%;" multiple>
-                                @foreach($users as $user)
-                                    <option
-                                        value="{{ $user->id }}"
-                                        data-name="{{ $user->first_name }} {{ $user->last_name }}"
-                                        data-phone="{{ $user->phone }}"
-                                    >{{ $user->first_name }} {{ $user->last_name }} &mdash; {{ $user->phone }}</option>
-                                @endforeach
+                        {{-- الجمهور --}}
+                        <div style="margin-bottom:28px;">
+                            <div class="field-label"><span class="step-no">٢</span> الجمهور المستهدف</div>
+                            <select id="recipientType" name="recipients_type" class="console-select">
+                                <option value="users" selected>جميع العملاء — إرسال جماعي</option>
+                                <option value="custom">عملاء محددون</option>
                             </select>
 
-                            {{-- تاقات المستخدمين المختارين --}}
-                            <div id="tagsBox" class="user-tags-box mt-3" style="display:none;">
-                                <span class="text-muted small fw-bold w-100 d-block mb-1">📋 المستلمون المختارون:</span>
-                                <div id="tagsList" class="d-flex flex-wrap gap-2 w-100"></div>
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        {{-- 3. عنوان الإشعار --}}
-                        <div class="mb-4" id="headerDiv">
-                            <label class="fw-bold d-block mb-2 text-dark" for="inputTitle">
-                                <i class="bx bx-heading text-warning me-1"></i>عنوان الإشعار – Header:
-                            </label>
-                            <div class="field-wrapper">
-                                <input
-                                    type="text"
-                                    id="inputTitle"
-                                    name="title"
-                                    class="form-control form-control-lg ps-5"
-                                    placeholder="اكتب العنوان هنا..."
-                                    style="border-radius:8px; padding-left:42px !important;"
-                                >
-                                <span class="emoji-icon-btn" data-target="inputTitle" data-panel="emojiPanelTitle" title="أضف إيموجي">😊</span>
-                                {{-- لوحة الإيموجي للعنوان --}}
-                                <div class="emoji-panel panel-for-header" id="emojiPanelTitle"></div>
-                            </div>
-                        </div>
-
-                        {{-- 4. محتوى الرسالة --}}
-                        <div class="mb-4">
-                            <label class="fw-bold d-block mb-2 text-dark" for="inputMessage">
-                                <i class="bx bx-message-square-detail text-warning me-1"></i>نص الرسالة – Body:
-                            </label>
-                            <div class="field-wrapper">
-                                <textarea
-                                    id="inputMessage"
-                                    name="message"
-                                    class="form-control"
-                                    rows="5"
-                                    placeholder="اكتب نص الرسالة والإشعار هنا..."
-                                    style="border-radius:8px; padding-left:42px !important;"
-                                    required
-                                ></textarea>
-                                <span class="emoji-icon-btn for-textarea" data-target="inputMessage" data-panel="emojiPanelBody" title="أضف إيموجي">😊</span>
-                                {{-- لوحة الإيموجي للرسالة --}}
-                                <div class="emoji-panel panel-for-body" id="emojiPanelBody"></div>
-                            </div>
-                        </div>
-
-                        {{-- مرفقات الواتساب (مخفية) --}}
-                        <div id="waMediaDiv" style="display:none;" class="mb-4">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="fw-bold small d-block mb-1"><i class="bx bx-image me-1"></i>صورة مرفقة (للواتساب):</label>
-                                    <input type="file" name="image" class="form-control" accept="image/*" style="border-radius:8px;">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="fw-bold small d-block mb-1"><i class="bx bx-file me-1"></i>ملف مرفق (للواتساب):</label>
-                                    <input type="file" name="file" class="form-control" style="border-radius:8px;">
+                            <div id="customDiv" class="custom-box" style="display:none;">
+                                <div class="field-label" style="margin-bottom:8px;"><i class='bx bx-search-alt'></i> ابحث بالاسم أو رقم الجوال</div>
+                                <select id="specificUsers" name="specific_users[]" style="width:100%;" multiple>
+                                    @foreach($users as $user)
+                                        <option
+                                            value="{{ $user->id }}"
+                                            data-name="{{ $user->first_name }} {{ $user->last_name }}"
+                                            data-phone="{{ $user->phone }}"
+                                        >{{ $user->first_name }} {{ $user->last_name }} &mdash; {{ $user->phone }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="tagsBox" class="tags-area">
+                                    <span class="tt">المستلمون المختارون</span>
+                                    <div id="tagsList"></div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- معاينة حية Push --}}
-                        <div id="pushPreview" class="preview-wrap">
-                            <div class="preview-app-bar">
-                                <span class="preview-app-dot"></span>
-                                <span>ثمن · Thamn</span>
-                                <span class="ms-auto text-muted small">الآن</span>
+                        {{-- العنوان --}}
+                        <div id="headerDiv" style="margin-bottom:24px;">
+                            <div class="field-label"><span class="step-no">٣</span> عنوان الإشعار</div>
+                            <div class="field-wrap">
+                                <input type="text" id="inputTitle" name="title" class="tinput" placeholder="مثال: عرض اليوم على المنتجات المختارة">
+                                <span class="emoji-btn" data-target="inputTitle" data-panel="emojiPanelTitle">🙂</span>
+                                <div class="emoji-panel" id="emojiPanelTitle"></div>
                             </div>
-                            <div class="preview-title" id="pvTitle">عنوان الإشعار سيظهر هنا...</div>
-                            <div class="preview-body"  id="pvBody">محتوى الرسالة سيظهر هنا فور الكتابة...</div>
+                        </div>
+
+                        {{-- الرسالة --}}
+                        <div style="margin-bottom:8px;">
+                            <div class="field-label"><span class="step-no">٤</span> نص الرسالة</div>
+                            <div class="field-wrap">
+                                <textarea id="inputMessage" name="message" class="tinput" rows="5" required placeholder="اكتب تفاصيل الإشعار بوضوح ووضّح أي إجراء مطلوب من العميل"></textarea>
+                                <span class="emoji-btn" data-target="inputMessage" data-panel="emojiPanelBody" style="top:16px;">🙂</span>
+                                <div class="emoji-panel" id="emojiPanelBody" style="top:60px;"></div>
+                            </div>
+                            <div class="char-count" id="charCount">0 حرف</div>
+                        </div>
+
+                        {{-- مرفقات واتساب --}}
+                        <div id="waMediaDiv" class="wa-attach" style="display:none;">
+                            <h6><i class='bx bxl-whatsapp'></i> مرفقات واتساب (اختياري)</h6>
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                <div style="flex:1;min-width:140px;">
+                                    <small style="font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">صورة</small>
+                                    <input type="file" name="image" class="file-input" accept="image/*">
+                                </div>
+                                <div style="flex:1;min-width:140px;">
+                                    <small style="font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">فيديو</small>
+                                    <input type="file" name="video" class="file-input" accept="video/*">
+                                </div>
+                                <div style="flex:1;min-width:140px;">
+                                    <small style="font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">ملف (PDF..)</small>
+                                    <input type="file" name="file" class="file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                                </div>
+                            </div>
                         </div>
 
                         <input type="hidden" name="recipients" id="finalRecipients" value="users">
 
-                        {{-- زر الإرسال --}}
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-lg w-100 fw-bold text-white shadow-sm" style="background:#c1953e; border-radius:10px; padding:13px; font-size:1.05rem;">
-                                <i class="bx bx-send me-1"></i> إرسال الآن
-                            </button>
+                        <div style="margin-top:30px;">
+                            <button type="submit" class="submit-btn">إرسال الإشعار الآن <i class='bx bx-send'></i></button>
                         </div>
-
                     </form>
                 </div>
             </div>
 
+            <div class="preview-sticky" id="pushPreviewArea">
+                <div class="meter-card">
+                    <div class="meter-title"><i class='bx bx-pulse'></i> قوة الرسالة</div>
+                    <div class="bars" id="bars"><i></i><i></i><i></i><i></i><i></i></div>
+                    <p style="font-size:.74rem;color:var(--muted);margin:10px 0 0;font-weight:600;" id="meterLabel">ابدأ بالكتابة لمعاينة قوة الرسالة</p>
+                </div>
+
+                <div class="phone">
+                    <div class="phone-screen">
+                        <div class="phone-notch"></div>
+                        <div class="phone-time">٩:٤١</div>
+
+                        <div class="notif-card" id="iosNotifyNode">
+                            <div class="notif-top">
+                                <div class="notif-app"><i class='bx bx-cube'></i><span>ثمن</span></div>
+                                <span class="notif-time">الآن</span>
+                            </div>
+                            <div class="notif-title" id="pvTitle">عنوان الإشعار</div>
+                            <div class="notif-body" id="pvBody">سيظهر نص رسالتك هنا فور كتابتها...</div>
+                        </div>
+
+                        <div class="wa-bubble-wrap" id="waPreview">
+                            <div class="wa-bubble">
+                                <div class="wa-title" id="waPvTitle">عنوان الإشعار</div>
+                                <div id="waPvBody">سيظهر نص رسالتك هنا فور كتابتها...</div>
+                                <span class="wa-time">9:41 ص ✓✓</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="hint">هكذا سيرى العميل رسالتك على هاتفه</p>
+            </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('js')
+@section('js')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(function() {
-
-    /* ===================================================
-       1. بيانات الإيموجي
-    =================================================== */
     const EMOJI_CATS = {
-        '😊 ابتسامات': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','😉','😌','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','😒','😢','😭','😤','😠','😡','😳','😱','😨','😰','🤗','🤔','😶','😐','😑','🙄','😯','😮','😲','🥱','😴','🤐','😷','🤒'],
-        '❤️ قلوب': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','🫀','💌'],
-        '👍 إيماءات': ['👍','👎','👌','🤌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👋','🤚','✋','🙌','👏','🙏','💪','✍️','💅'],
-        '✨ رموز': ['📣','🎉','✅','🔔','🔥','🚀','✨','⭐','🌟','💫','🎁','🎊','🏆','🔑','💡','📌','📍','🔗','💬','📩','📢','⚡','🌙','☀️','🌈','🌺','🌸'],
+        '😊 وجوه': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','😉','😌','😍','🥰','😘','😋','😎','🤩','🥳','😏','😢','😭','😤','😠','😡','🤔','😶','🙄','😯','😲','😴','🤐','😷'],
+        '❤️ قلوب': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','♥️'],
+        '👍 إيماءات': ['👍','👎','👌','✌️','🤞','🤟','🤙','👈','👉','👆','👋','🙌','👏','🙏','💪'],
+        '✨ رموز': ['📣','🎉','✅','🔔','🔥','🚀','✨','⭐','🌟','💫','🎁','🎊','🏆','🔑','💡','📌','📍','🔗','💬','📩','📢','⚡','🌙','☀️','🌈'],
     };
 
-    /* بناء لوحة إيموجي كاملة */
     function buildEmojiPanel(panelId) {
         const $panel = $('#' + panelId);
-        if ($panel.find('.emoji-grid').length) return; // مبنية مسبقاً
-
+        if ($panel.find('.emoji-grid').length) return;
         let tabs = '<div class="emoji-panel-tabs">';
         let grids = '';
         let isFirst = true;
-
         for (let cat in EMOJI_CATS) {
             let catKey = cat.replace(/[^a-zA-Z0-9]/g, '_');
-            let activeTab = isFirst ? 'active' : '';
-            let activeGrid = isFirst ? '' : 'style="display:none"';
-            tabs += `<button type="button" class="emoji-panel-tab ${activeTab}" data-cat="${catKey}">${cat.split(' ')[0]}</button>`;
-            grids += `<div class="emoji-grid" data-grid="${catKey}" ${activeGrid}>`;
+            tabs += `<button type="button" class="emoji-panel-tab ${isFirst?'active':''}" data-cat="${catKey}">${cat.split(' ')[0]}</button>`;
+            grids += `<div class="emoji-grid" data-grid="${catKey}" ${isFirst?'':'style="display:none"'}>`;
             EMOJI_CATS[cat].forEach(e => { grids += `<span class="emoji-cell">${e}</span>`; });
             grids += '</div>';
             isFirst = false;
         }
-
         tabs += '</div>';
-        let search = `<div class="emoji-panel-search"><input type="text" placeholder="ابحث عن إيموجي..." id="emojiSearch_${panelId}"></div>`;
-        let body = `<div class="emoji-panel-body" style="padding:6px;">${grids}</div>`;
-
-        $panel.html(tabs + search + body);
-
-        // تبويبات
+        $panel.html(tabs + `<div class="emoji-panel-body">${grids}</div>`);
         $panel.on('click', '.emoji-panel-tab', function() {
             $panel.find('.emoji-panel-tab').removeClass('active');
             $(this).addClass('active');
             $panel.find('.emoji-grid').hide();
             $panel.find(`.emoji-grid[data-grid="${$(this).data('cat')}"]`).show();
         });
-
-        // بحث
-        $panel.on('input', `#emojiSearch_${panelId}`, function() {
-            let q = $(this).val().trim();
-            if (!q) {
-                $panel.find('.emoji-panel-tab.active').click();
-                return;
-            }
-            $panel.find('.emoji-grid').hide();
-            // عرض كل الإيموجي للبحث
-            let allEmojis = [];
-            for (let c in EMOJI_CATS) allEmojis = allEmojis.concat(EMOJI_CATS[c]);
-            let results = allEmojis.filter(e => e.includes(q));
-            // استخدم أول جريد لعرض النتائج
-            let $first = $panel.find('.emoji-grid').first();
-            $first.empty().show();
-            results.forEach(e => $first.append(`<span class="emoji-cell">${e}</span>`));
-            if (!results.length) $first.html('<span class="text-muted small p-2">لا توجد نتائج</span>');
-        });
     }
 
-    /* 2. إظهار/إخفاء لوحة الإيموجي بالنقر على الأيقونة */
-    $(document).on('click', '.emoji-icon-btn', function(e) {
+    $(document).on('click', '.emoji-btn', function(e) {
         e.stopPropagation();
         let panelId = $(this).data('panel');
         buildEmojiPanel(panelId);
         let $panel = $('#' + panelId);
-        // أغلق أي لوحة أخرى
         $('.emoji-panel').not($panel).hide();
-        $panel.toggle();
+        $panel.fadeToggle(150);
     });
 
-    /* 3. إدراج الإيموجي عند النقر */
     $(document).on('click', '.emoji-cell', function(e) {
         e.stopPropagation();
         let emoji = $(this).text();
         let $panel = $(this).closest('.emoji-panel');
-        let panelId = $panel.attr('id');
-        // اعرف الـ input المرتبط بهذه اللوحة
-        let targetId = $('[data-panel="' + panelId + '"]').data('target');
+        let targetId = $('[data-panel="' + $panel.attr('id') + '"]').data('target');
         let $input = $('#' + targetId);
-
         let el = $input[0];
-        let start = el.selectionStart || 0;
-        let end   = el.selectionEnd   || 0;
-        let val   = el.value;
+        let start = el.selectionStart || 0, end = el.selectionEnd || 0, val = el.value;
         el.value = val.slice(0, start) + emoji + val.slice(end);
         el.setSelectionRange(start + emoji.length, start + emoji.length);
         $input.focus().trigger('input');
-
-        $panel.hide();
+        $panel.fadeOut(150);
     });
 
-    /* إغلاق اللوحة عند النقر خارجها */
     $(document).on('click', function(e) {
-        if (!$(e.target).closest('.field-wrapper').length) {
-            $('.emoji-panel').hide();
-        }
+        if (!$(e.target).closest('.field-wrap').length) $('.emoji-panel').fadeOut(150);
     });
 
-    /* ===================================================
-       4. Select2 للمستخدمين
-    =================================================== */
-    $('#specificUsers').select2({
-        placeholder: '🔍 ابحث بالاسم أو رقم الجوال...',
-        allowClear: true,
-        dir: 'rtl',
-        width: '100%',
-    });
+    $('#specificUsers').select2({ placeholder: 'ابحث بالاسم أو رقم الجوال...', allowClear: true, dir: 'rtl', width: '100%' });
 
-    /* تحديث تاقات المستلمين */
     $('#specificUsers').on('change', function() {
         let selected = $(this).select2('data');
-        let $list = $('#tagsList');
-        let $box  = $('#tagsBox');
+        let $list = $('#tagsList'), $box = $('#tagsBox');
         $list.empty();
-
         if (selected && selected.length) {
-            $box.show();
+            $box.slideDown(150);
             selected.forEach(function(opt) {
-                let name  = $(opt.element).data('name')  || opt.text;
-                let phone = $(opt.element).data('phone') || '';
-                $list.append(
-                    `<span class="user-tag" data-id="${opt.id}">
-                        <i class="bx bx-user-circle"></i> ${name}
-                        <small class="text-muted">(${phone})</small>
-                        <span class="remove-tag" data-id="${opt.id}" title="إزالة">✕</span>
-                    </span>`
-                );
+                let name = $(opt.element).data('name') || opt.text;
+                $list.append(`<span class="tag" data-id="${opt.id}">${name}<span class="remove-tag" data-id="${opt.id}">×</span></span>`);
             });
-        } else {
-            $box.hide();
-        }
+        } else { $box.slideUp(150); }
     });
 
-    /* حذف تاق من القائمة */
     $(document).on('click', '.remove-tag', function() {
-        let id  = $(this).data('id').toString();
-        let cur = $('#specificUsers').val() || [];
-        cur = cur.filter(v => v !== id);
+        let id = $(this).data('id').toString();
+        let cur = ($('#specificUsers').val() || []).filter(v => v !== id);
         $('#specificUsers').val(cur).trigger('change');
     });
 
-    /* ===================================================
-       5. إظهار/إخفاء قسم المستخدمين
-    =================================================== */
     $('#recipientType').on('change', function() {
         if ($(this).val() === 'custom') {
-            $('#customDiv').slideDown(200);
+            $('#customDiv').slideDown(250);
             $('#finalRecipients').val('');
         } else {
-            $('#customDiv').slideUp(200);
+            $('#customDiv').slideUp(250);
             $('#finalRecipients').val($(this).val());
         }
     });
 
-    /* ===================================================
-       6. إظهار/إخفاء حسب القنوات
-    =================================================== */
     function updateChannelUI() {
         let isPush = $('#chPush').is(':checked');
-        let isWa   = $('#chWhatsapp').is(':checked');
-
-        isPush ? $('#headerDiv,#pushPreview').show() : $('#headerDiv,#pushPreview').hide();
-        isWa   ? $('#waMediaDiv').show() : $('#waMediaDiv').hide();
+        let isWa = $('#chWhatsapp').is(':checked');
+        isPush ? $('#headerDiv, #pushPreviewArea').fadeIn(200) : $('#headerDiv, #pushPreviewArea').hide();
+        isWa ? $('#waMediaDiv').slideDown(200) : $('#waMediaDiv').slideUp(200);
+        $('#inputTitle').prop('required', isPush);
+        $('#iosNotifyNode').toggle(isPush);
+        $('#waPreview').toggle(isWa);
     }
-
-    $('.channel-opt input').on('change', updateChannelUI);
+    $('.switch-opt input').on('change', updateChannelUI);
     updateChannelUI();
 
-    /* ===================================================
-       7. معاينة حية
-    =================================================== */
     function updatePreview() {
-        let t = $('#inputTitle').val().trim();
-        let b = $('#inputMessage').val().trim();
-        $('#pvTitle').text(t || 'عنوان الإشعار سيظهر هنا...');
-        $('#pvBody').text(b  || 'محتوى الرسالة سيظهر هنا فور الكتابة...');
+        let t = $('#inputTitle').val().trim() || 'عنوان الإشعار';
+        let b = $('#inputMessage').val().trim() || 'سيظهر نص رسالتك هنا فور كتابتها...';
+        $('#pvTitle, #waPvTitle').text(t);
+        $('#pvBody, #waPvBody').text(b);
+
+        let len = $('#inputTitle').val().length + $('#inputMessage').val().length;
+        $('#charCount').text(len + ' حرف');
+        let level = len === 0 ? 0 : Math.min(5, Math.ceil(len / 20));
+        $('#bars').attr('class', 'bars l' + level);
+        let labels = ['ابدأ بالكتابة لمعاينة قوة الرسالة','رسالة مختصرة','رسالة جيدة الطول','رسالة واضحة ومتكاملة','رسالة مفصلة','أقصى وضوح ممكن'];
+        $('#meterLabel').text(labels[level]);
     }
     $('#inputTitle, #inputMessage').on('input change', updatePreview);
+    updatePreview();
 
-    /* ===================================================
-       8. التحقق قبل الإرسال
-    =================================================== */
     $('#notificationForm').on('submit', function(e) {
         let type = $('#recipientType').val();
-
         if (type === 'custom') {
             let ids = $('#specificUsers').val();
             if (!ids || ids.length === 0) {
-                alert('⚠️ اختر مستخدماً واحداً على الأقل.');
+                alert('الرجاء اختيار مستخدم واحد على الأقل.');
                 e.preventDefault(); return;
             }
             $('#finalRecipients').val(ids.join(','));
         } else {
             $('#finalRecipients').val(type);
         }
-
-        if ($('.channel-opt input:checked').length === 0) {
-            alert('⚠️ فعّل قناة إرسال واحدة على الأقل.');
+        if ($('.switch-opt input:checked').length === 0) {
+            alert('الرجاء تفعيل قناة إرسال واحدة على الأقل (إشعارات أو واتساب).');
             e.preventDefault();
         }
     });
-
 });
 </script>
-@endpush
+@endsection

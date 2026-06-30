@@ -42,6 +42,7 @@ class NotificationController extends Controller
             'title'      => 'nullable|string',
             'message'    => 'required|string',
             'image'      => 'nullable|image|max:5120',
+            'video'      => 'nullable|mimes:mp4,mov,avi,wmv,mkv|max:30720',
             'file'       => 'nullable|file|max:10240',
         ]);
 
@@ -64,19 +65,40 @@ class NotificationController extends Controller
         $successCount = 0;
         $failCount = 0;
 
-        $imageUrl = null;
-        $fileUrl = null;
+        $imagePayload = null;
+        $videoPayload = null;
+        $filePayload = null;
         $fileName = null;
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('notifications/images', 'public');
-            $imageUrl = asset('storage/' . $path);
+            $file = $request->file('image');
+            $path = $file->store('notifications/images', 'public');
+            if (in_array(request()->getHost(), ['127.0.0.1', 'localhost'])) {
+                $imagePayload = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+            } else {
+                $imagePayload = asset('storage/' . $path);
+            }
+        }
+
+        if ($request->hasFile('video')) {
+            $file = $request->file('video');
+            $path = $file->store('notifications/videos', 'public');
+            if (in_array(request()->getHost(), ['127.0.0.1', 'localhost'])) {
+                $videoPayload = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+            } else {
+                $videoPayload = asset('storage/' . $path);
+            }
         }
 
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('notifications/files', 'public');
-            $fileUrl = asset('storage/' . $path);
-            $fileName = $request->file('file')->getClientOriginalName();
+            $file = $request->file('file');
+            $path = $file->store('notifications/files', 'public');
+            $fileName = $file->getClientOriginalName();
+            if (in_array(request()->getHost(), ['127.0.0.1', 'localhost'])) {
+                $filePayload = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+            } else {
+                $filePayload = asset('storage/' . $path);
+            }
         }
 
         foreach ($targets as $user) {
@@ -85,10 +107,12 @@ class NotificationController extends Controller
             // 1. WhatsApp
             if (in_array('whatsapp', $request->channels) && $user->phone) {
                 try {
-                    if ($imageUrl) {
-                        $res = $whatsappService->sendImage($user->phone, $imageUrl, $request->message);
-                    } elseif ($fileUrl) {
-                        $res = $whatsappService->sendDocument($user->phone, $fileUrl, $fileName, $request->message);
+                    if ($imagePayload) {
+                        $res = $whatsappService->sendImage($user->phone, $imagePayload, $request->message);
+                    } elseif ($videoPayload) {
+                        $res = $whatsappService->sendVideo($user->phone, $videoPayload, $request->message);
+                    } elseif ($filePayload) {
+                        $res = $whatsappService->sendDocument($user->phone, $filePayload, $fileName, $request->message);
                     } else {
                         $res = $whatsappService->sendMessage($user->phone, $request->message);
                     }

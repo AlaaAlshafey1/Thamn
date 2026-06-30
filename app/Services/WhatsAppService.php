@@ -79,6 +79,26 @@ class WhatsAppService
     }
 
     /**
+     * Send Video message
+     */
+    public function sendVideo($phone, $videoPath, $caption = '')
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        try {
+            $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/video", [
+                'token'   => $this->token,
+                'to'      => $phone,
+                'video'   => $videoPath,
+                'caption' => $caption,
+            ]);
+            return $response->json('sent') === 'true';
+        } catch (\Exception $e) {
+            Log::error("WhatsApp sendVideo error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Send Document/File message
      */
     public function sendDocument($phone, $filePath, $fileName, $caption = '')
