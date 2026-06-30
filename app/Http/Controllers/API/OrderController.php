@@ -46,6 +46,22 @@ class OrderController extends Controller
         $totalPrice = 0;
         $details = [];
 
+        // Validate option_ids upfront to prevent foreign key constraint violations
+        $allOptionIds = [];
+        foreach ($request->answers as $answer) {
+            $opt = $answer['option_id'] ?? null;
+            if (is_array($opt)) {
+                $allOptionIds = array_merge($allOptionIds, $opt);
+            } elseif ($opt !== null) {
+                $allOptionIds[] = $opt;
+            }
+            $subOpt = $answer['sub_option_id'] ?? null;
+            if ($subOpt !== null) {
+                $allOptionIds[] = $subOpt;
+            }
+        }
+        $validOptionIds = \App\Models\QuestionOption::whereIn('id', $allOptionIds)->pluck('id')->toArray();
+
         foreach ($request->answers as $answer) {
             $optionIds = is_array($answer['option_id'] ?? null) ? $answer['option_id'] : [$answer['option_id'] ?? null];
 
@@ -55,7 +71,7 @@ class OrderController extends Controller
                     'order_id'     => $order->id,
                     'question_id'  => $answer['question_id'],
                     'option_id'    => null,
-                    'sub_option_id'=> $answer['sub_option_id'] ?? null,
+                    'sub_option_id'=> (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
                     'value'        => $answer['value'] ?? null,
                     'price'        => $answer['price'] ?? null,
                     'status'       => $answer['status'] ?? 1,
@@ -65,14 +81,14 @@ class OrderController extends Controller
             }
 
             foreach ($optionIds as $optionId) {
-                if ($optionId === null)
+                if ($optionId === null || !in_array($optionId, $validOptionIds))
                     continue;
 
                 $details[] = OrderDetails::create([
                     'order_id'     => $order->id,
                     'question_id'  => $answer['question_id'],
                     'option_id'    => $optionId,
-                    'sub_option_id'=> $answer['sub_option_id'] ?? null,
+                    'sub_option_id'=> (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
                     'value'        => $answer['value'] ?? null,
                     'price'        => $answer['price'] ?? null,
                     'status'       => $answer['status'] ?? 1,
@@ -282,20 +298,53 @@ class OrderController extends Controller
         $totalPrice = 0;
         $details = [];
 
+        // Validate option_ids upfront to prevent foreign key constraint violations
+        $allOptionIds = [];
+        foreach ($request->answers as $answer) {
+            $opt = $answer['option_id'] ?? null;
+            if (is_array($opt)) {
+                $allOptionIds = array_merge($allOptionIds, $opt);
+            } elseif ($opt !== null) {
+                $allOptionIds[] = $opt;
+            }
+            $subOpt = $answer['sub_option_id'] ?? null;
+            if ($subOpt !== null) {
+                $allOptionIds[] = $subOpt;
+            }
+        }
+        $validOptionIds = \App\Models\QuestionOption::whereIn('id', $allOptionIds)->pluck('id')->toArray();
+
         foreach ($request->answers as $answer) {
             $optionIds = is_array($answer['option_id'] ?? null)
                 ? $answer['option_id']
                 : [$answer['option_id'] ?? null];
 
+            // لو مفيش option_id → الإجابة عبارة عن value نصية (سؤال حر)
+            if (empty(array_filter($optionIds))) {
+                $details[] = OrderDetails::create([
+                    'order_id' => $order->id,
+                    'question_id' => $answer['question_id'],
+                    'option_id' => null,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
+                    'value' => $answer['value'] ?? null,
+                    'price' => $answer['price'] ?? null,
+                    'status' => $answer['status'] ?? 1,
+                    'stageing' => $answer['stageing'] ?? null,
+                ]);
+                $totalPrice += floatval($answer['price'] ?? 0);
+                continue;
+            }
+
             foreach ($optionIds as $optionId) {
-                if ($optionId === null)
+                if ($optionId === null || !in_array($optionId, $validOptionIds)) {
                     continue;
+                }
 
                 $details[] = OrderDetails::create([
                     'order_id' => $order->id,
                     'question_id' => $answer['question_id'],
                     'option_id' => $optionId,
-                    'sub_option_id' => $answer['sub_option_id'] ?? null,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
                     'value' => $answer['value'] ?? null,
                     'price' => $answer['price'] ?? null,
                     'status' => $answer['status'] ?? 1,
