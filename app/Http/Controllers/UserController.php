@@ -285,7 +285,7 @@ public function updateExpert(UserRequest $request, User $user)
             unlink(public_path('uploads/users/' . $user->image));
         }
 
-        $user->delete();
+        $user->forceDelete();
         return redirect()->route('users.index')->with('success', 'تم حذف المستخدم بنجاح');
     }
 }

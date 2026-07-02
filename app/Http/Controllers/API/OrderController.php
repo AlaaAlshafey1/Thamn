@@ -664,6 +664,7 @@ class OrderController extends Controller
                 'thamn_by' => $order->thamn_by,
                 'thamn_at' => $order->thamn_at,
                 'deleted_at' => $order->deleted_at,
+                'is_re_evaluated' => $order->re_evaluation_count > 0,
 
                 'title' => implode(' - ', $titleParts),
                 'category' => $order->category,
@@ -808,6 +809,8 @@ class OrderController extends Controller
             'details' => $details,
             'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
+            'is_re_evaluated' => $order->re_evaluation_count > 0,
+            're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
         ]);
     }
 
