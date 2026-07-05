@@ -21,6 +21,7 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeStepController;
 use App\Http\Controllers\IntroController;
+use App\Http\Controllers\BannerController;
 
 use App\Http\Controllers\ArbitratorDeclarationController;
 
@@ -118,6 +119,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('colors', ColorController::class);
     Route::resource('home_steps', HomeStepController::class);
     Route::resource('intros', IntroController::class);
+    Route::resource('banners', BannerController::class);
 
 
 

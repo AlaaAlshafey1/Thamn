@@ -81,6 +81,8 @@ Route::prefix('settings')->group(function () {
 });
 
 
+// ------------------ BANNER ENDPOINT ------------------
+Route::get('banners', [\App\Http\Controllers\API\BannerController::class, 'index']);
 
 // ------------------ PROTECTED ENDPOINTS ------------------
 Route::middleware('auth:sanctum')->group(function () {
