@@ -501,9 +501,9 @@ class AuthController extends Controller
         }
 
         // 2. Normal Change Password Flow (Authenticated)
-        $user = $request->user();
+        $user = auth('sanctum')->user();
         if (!$user) {
-            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+            return response()->json(['status' => false, 'message' => lang('غير مصرح', 'Unauthorized', $request)], 401);
         }
 
         $validator = Validator::make($request->all(), [
