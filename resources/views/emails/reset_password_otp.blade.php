@@ -1,23 +1,17 @@
 @php
     $locale = app()->getLocale();
-    $isRtl = $locale == 'ar';
-    $dir = $isRtl ? 'rtl' : 'ltr';
-    $textAlign = $isRtl ? 'right' : 'left';
-    $oppTextAlign = $isRtl ? 'left' : 'right';
-
-    // Fetch social media from settings
+    $isRtl  = $locale == 'ar';
+    $dir    = $isRtl ? 'rtl' : 'ltr';
+    $textAlign    = $isRtl ? 'right' : 'left';
+    $oppTextAlign = $isRtl ? 'left'  : 'right';
     $contact = \App\Models\Contact::first();
-    $socials = $contact ? ($contact->social_media ?? []) : [];
-    
-    $fbUrl = '#';
-    $ytUrl = '#';
-    $igUrl = '#';
-    
-    foreach($socials as $social) {
+    $socials  = $contact ? ($contact->social_media ?? []) : [];
+    $fbUrl = $ytUrl = $igUrl = '#';
+    foreach ($socials as $social) {
         $name = strtolower($social['name'] ?? '');
-        if(str_contains($name, 'facebook')) $fbUrl = $social['url'] ?? '#';
-        if(str_contains($name, 'youtube')) $ytUrl = $social['url'] ?? '#';
-        if(str_contains($name, 'instagram')) $igUrl = $social['url'] ?? '#';
+        if (str_contains($name, 'facebook'))  $fbUrl = $social['url'] ?? '#';
+        if (str_contains($name, 'youtube'))   $ytUrl = $social['url'] ?? '#';
+        if (str_contains($name, 'instagram')) $igUrl = $social['url'] ?? '#';
     }
 @endphp
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -25,114 +19,137 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ $isRtl ? 'إعادة تعيين كلمة المرور' : 'Reset Your Password' }}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>{{ $isRtl ? 'إعادة تعيين كلمة المرور – ثمن' : 'Reset Your Password – Thamn' }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style type="text/css">
-    body {
-        font-family: @if($isRtl) 'Cairo' @else 'Inter' @endif, Arial, sans-serif;
-    }
-    .otp-char {
-        display: inline-block;
-        width: 50px;
-        height: 60px;
-        line-height: 60px;
-        background: #ffffff;
-        border: 2px solid #ff9800;
-        border-radius: 8px;
-        margin: 0 5px;
-        font-size: 28px;
-        font-weight: bold;
-        color: #333;
-        text-align: center;
+    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}
+    img{-ms-interpolation-mode:bicubic;border:0;height:auto;outline:none;text-decoration:none}
+    body{margin:0;padding:0;background-color:#fff7ed;font-family:Arial,sans-serif;}
+    @media only screen and (max-width:640px){
+      .wrap{padding:16px 8px !important}
+      .card{border-radius:14px !important}
+      .hdr{padding:28px 16px !important}
+      .body-pad{padding:24px 16px 28px !important}
+      .h1{font-size:18px !important;line-height:1.35 !important}
+      .desc{font-size:13px !important}
+      .otp-td{width:40px !important;height:48px !important;font-size:20px !important;border-radius:8px !important;padding:0 2px !important}
+      .otp-gap{width:5px !important}
+      .ftr{padding:20px 16px !important}
+      .ftr-logo{width:46px !important}
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f9f9f9;direction:{{ $dir }};">
+<body style="margin:0;padding:0;background-color:#fff7ed;">
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f9f9f9">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#fff7ed">
   <tr>
-    <td align="center" style="padding:40px 10px;">
+    <td class="wrap" align="center" style="padding:36px 16px;">
 
-      <!-- ===== WRAPPER 600px ===== -->
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
+      <table role="presentation" class="card" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;
+                    box-shadow:0 16px 50px rgba(234,88,12,.12);">
 
-        <!-- HEADER IMAGE -->
+        <!-- HEADER -->
         <tr>
-            <td align="center" bgcolor="#FFF8F0" style="padding:40px 20px;">
-                <img src="{{ asset('assets/emails/reset_password.png') }}" width="280" alt="Security" style="display:block;border:0;max-width:100%;">
-            </td>
-        </tr>
-
-        <!-- CONTENT AREA -->
-        <tr>
-            <td style="padding:40px 40px 20px;">
-                <h1 style="margin:0 0 15px;font-size:24px;font-weight:700;color:#1a1a1a;text-align:center;">
-                    {{ $isRtl ? 'طلب إعادة تعيين كلمة المرور' : 'Password Reset Request' }}
-                </h1>
-                <p style="margin:0;font-size:16px;color:#666666;text-align:center;line-height:1.6;">
-                    @if($isRtl)
-                        مرحباً <strong>{{ $userName }}</strong>،<br>
-                        تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بحسابك في ثمن. استخدم الرمز التالي لإتمام العملية:
-                    @else
-                        Hi <strong>{{ $userName }}</strong>,<br>
-                        We received a request to reset your password for your Thamn account. Use the following code to complete the process:
-                    @endif
-                </p>
-            </td>
-        </tr>
-
-        <!-- OTP BOX -->
-        <tr>
-          <td style="padding:20px 40px 40px;" align="center">
-            <table cellpadding="0" cellspacing="0" border="0" style="background-color:#FFF8F0;border-radius:12px;border:1px dashed #ff9800;padding:20px;" align="center">
+          <td class="hdr" align="center"
+              style="background:linear-gradient(135deg,#c2410c 0%,#ea580c 55%,#fb923c 100%);padding:38px 28px 34px;">
+            <img class="ftr-logo" src="{{ asset('assets/emails/logo.png') }}" width="78" alt="ثمن"
+                 style="display:block;margin:0 auto 20px;border:0;filter:brightness(0) invert(1);">
+            <table cellpadding="0" cellspacing="0" border="0" align="center">
               <tr>
-                @php $otpChars = str_split($otp); @endphp
-                @foreach($otpChars as $char)
-                <td align="center" style="width:54px;height:64px;border:2px solid #ff9800;border-radius:8px;background:#ffffff;font-size:28px;font-weight:bold;color:#333333;padding:0 8px;vertical-align:middle;{{ !$loop->first ? 'margin-left:8px;' : '' }}">
-                    {{ $char }}
-                </td>
-                @if(!$loop->last)
-                <td width="8">&nbsp;</td>
-                @endif
-                @endforeach
+                <td style="width:70px;height:70px;background:rgba(255,255,255,.18);border-radius:50%;
+                           text-align:center;vertical-align:middle;font-size:30px;line-height:70px;">🔑</td>
               </tr>
             </table>
-            <p style="margin:20px 0 0;font-size:13px;color:#999;text-align:center;">
-                {{ $isRtl ? 'هذا الرمز صالح لمدة 5 دقائق فقط' : 'This code is valid for 5 minutes only' }}
+            <p style="margin:16px 0 0;font-size:11px;font-weight:600;color:rgba(255,255,255,.85);
+                      letter-spacing:2px;text-transform:uppercase;">
+              {{ $isRtl ? 'إعادة تعيين كلمة المرور' : 'Password Reset' }}
             </p>
           </td>
         </tr>
 
-        <!-- WARNING -->
+        <!-- BRIDGE -->
         <tr>
-            <td style="padding:0 40px 30px;">
-                <div style="background-color:#fef2f2;border-radius:8px;padding:15px;border:1px solid #fee2e2;">
-                    <p style="margin:0;font-size:13px;color:#991b1b;text-align:center;">
-                        {{ $isRtl ? 'إذا لم تطلب أنت هذا التغيير، يرجى تجاهل هذا البريد الإلكتروني.' : 'If you did not request this change, please ignore this email.' }}
-                    </p>
-                </div>
-            </td>
+          <td height="18"
+              style="background:linear-gradient(180deg,#ea580c 0%,#ea580c 49%,#ffffff 50%);
+                     font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td class="body-pad" style="padding:10px 44px 36px;text-align:center;">
+
+            <h1 class="h1" style="margin:0 0 12px;font-size:21px;font-weight:700;color:#1a1a1a;
+                                   line-height:1.4;text-align:center;">
+              {{ $isRtl ? 'طلب إعادة تعيين كلمة المرور' : 'Password Reset Request' }}
+            </h1>
+
+            <p class="desc" style="margin:0 0 30px;font-size:14px;color:#64748b;line-height:1.85;
+                                    text-align:center;word-break:break-word;">
+              @if($isRtl)
+                مرحباً <strong style="color:#c2410c;">{{ $userName }}</strong>،<br>
+                تلقينا طلباً لإعادة تعيين كلمة المرور بحسابك في ثمن.<br>استخدم الرمز أدناه لإتمام العملية.
+              @else
+                Hi <strong style="color:#c2410c;">{{ $userName }}</strong>,<br>
+                We received a request to reset your Thamn account password.<br>Use the code below to complete the process.
+              @endif
+            </p>
+
+            <!-- OTP -->
+            <table cellpadding="0" cellspacing="0" border="0" align="center"
+                   style="margin:0 auto 8px;background:#fff7ed;border-radius:16px;border:1px dashed #fb923c;padding:18px 22px;">
+              <tr>
+                @php $otpChars = str_split($otp); @endphp
+                @foreach($otpChars as $char)
+                  <td class="otp-td"
+                      style="width:54px;height:62px;background:#ffffff;border:2px solid #ea580c;
+                             border-radius:12px;font-size:28px;font-weight:800;color:#c2410c;
+                             text-align:center;vertical-align:middle;padding:0 6px;">{{ $char }}</td>
+                  @if(!$loop->last)<td class="otp-gap" width="10">&nbsp;</td>@endif
+                @endforeach
+              </tr>
+            </table>
+
+            <p style="margin:0 0 26px;font-size:12px;color:#94a3b8;text-align:center;">
+              ⏱&nbsp;{{ $isRtl ? 'هذا الرمز صالح لمدة 5 دقائق فقط' : 'This code is valid for 5 minutes only' }}
+            </p>
+
+            <table cellpadding="0" cellspacing="0" border="0" width="100%"
+                   style="background:#fef2f2;border-radius:10px;border:1px solid #fecaca;">
+              <tr>
+                <td style="padding:14px 18px;font-size:12px;color:#991b1b;text-align:center;line-height:1.7;">
+                  🛡&nbsp;{{ $isRtl
+                    ? 'إذا لم تطلب أنت هذا التغيير، يرجى تجاهل هذا البريد الإلكتروني.'
+                    : 'If you did not request this change, please ignore this email.' }}
+                </td>
+              </tr>
+            </table>
+
+          </td>
         </tr>
 
         <!-- FOOTER -->
         <tr>
-          <td bgcolor="#1a232e" style="padding:30px 40px;">
+          <td class="ftr" style="background:#1a232e;padding:24px 44px;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="direction:{{ $dir }};">
               <tr>
-                <td align="{{ $textAlign }}">
-                  <img src="{{ asset('assets/emails/logo.png') }}" width="80" alt="Logo" style="display:block;border:0;filter: brightness(0) invert(1);">
-                  <div style="margin-top:15px;font-size:12px;color:#999;">
-                    {{ $isRtl ? 'منصة ثمن - خيارك الأول للتقييم العقاري' : 'Thamn Platform - Your first choice for real estate evaluation' }}
-                  </div>
+                <td align="{{ $textAlign }}" valign="middle">
+                  <img class="ftr-logo" src="{{ asset('assets/emails/logo.png') }}" width="56" alt="ثمن"
+                       style="display:block;filter:brightness(0) invert(1);opacity:.8;border:0;">
+                  <p style="margin:7px 0 0;font-size:11px;color:#ea580c;">
+                    {{ $isRtl ? 'منصة ثمن – خيارك الأول للتقييم العقاري' : 'Thamn Platform – Real Estate Evaluation' }}
+                  </p>
                 </td>
                 <td align="{{ $oppTextAlign }}" valign="middle">
-                    <table cellpadding="0" cellspacing="0" border="0" align="{{ $oppTextAlign }}">
-                        <tr>
-                          <td style="padding:0 5px;"><a href="{{ $fbUrl }}"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20" style="filter: brightness(0) invert(1);"></a></td>
-                          <td style="padding:0 5px;"><a href="{{ $ytUrl }}"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="20" style="filter: brightness(0) invert(1);"></a></td>
-                          <td style="padding:0 5px;"><a href="{{ $igUrl }}"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="20" style="filter: brightness(0) invert(1);"></a></td>
-                        </tr>
-                    </table>
+                  <table cellpadding="0" cellspacing="0" border="0" align="{{ $oppTextAlign }}">
+                    <tr>
+                      <td style="padding:0 5px;"><a href="{{ $fbUrl }}" style="text-decoration:none;"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20" style="display:block;filter:brightness(0) invert(1);opacity:.6;border:0;"></a></td>
+                      <td style="padding:0 5px;"><a href="{{ $ytUrl }}" style="text-decoration:none;"><img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="20" style="display:block;filter:brightness(0) invert(1);opacity:.6;border:0;"></a></td>
+                      <td style="padding:0 5px;"><a href="{{ $igUrl }}" style="text-decoration:none;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="20" style="display:block;filter:brightness(0) invert(1);opacity:.6;border:0;"></a></td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -140,8 +157,6 @@
         </tr>
 
       </table>
-      <!-- ===== END WRAPPER ===== -->
-
     </td>
   </tr>
 </table>
