@@ -89,14 +89,16 @@
         
         <!-- DESCRIPTION -->
         <tr>
-            <td align="center" style="padding:0 40px 18px;font-size:14px;color:#666666;text-align:center;line-height:1.7;">
+            <td align="center" style="padding:0 40px 18px;">
+                <p style="margin:0;font-size:14px;color:#666666;text-align:center;line-height:1.8;word-break:break-word;white-space:normal;">
                 @if($isRtl)
                     @if(isset($userName)) مرحباً <strong>{{ $userName }}</strong>،<br> @endif
-                    تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
+                    تلقينا محاولة تسجيل باستخدام الرمز التالي.<br>يرجى إدخاله في نافذة المتصفح أو التطبيق التي بدأت منها عملية التسجيل.
                 @else
                     @if(isset($userName)) Hi <strong>{{ $userName }}</strong>,<br> @endif
-                    We received a registration attempt with the following code. Please enter it in the browser window or app where you started.
+                    We received a registration attempt with the following code.<br>Please enter it in the browser window or app where you started.
                 @endif
+                </p>
             </td>
         </tr>
 

@@ -28,7 +28,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:255|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image',
             'fcm_token' => 'nullable|string',
             'fcm_token_ios' => 'nullable|string',
             'fcm_token_android' => 'nullable|string',

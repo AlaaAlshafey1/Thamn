@@ -84,14 +84,19 @@
         <!-- OTP BOX -->
         <tr>
           <td style="padding:20px 40px 40px;" align="center">
-            <div style="background-color:#FFF8F0;padding:30px;border-radius:12px;display:inline-block;border:1px dashed #ff9800;">
-                @php
-                    $otpChars = str_split($otp);
-                @endphp
+            <table cellpadding="0" cellspacing="0" border="0" style="background-color:#FFF8F0;border-radius:12px;border:1px dashed #ff9800;padding:20px;" align="center">
+              <tr>
+                @php $otpChars = str_split($otp); @endphp
                 @foreach($otpChars as $char)
-                    <span class="otp-char">{{ $char }}</span>
+                <td align="center" style="width:54px;height:64px;border:2px solid #ff9800;border-radius:8px;background:#ffffff;font-size:28px;font-weight:bold;color:#333333;padding:0 8px;vertical-align:middle;{{ !$loop->first ? 'margin-left:8px;' : '' }}">
+                    {{ $char }}
+                </td>
+                @if(!$loop->last)
+                <td width="8">&nbsp;</td>
+                @endif
                 @endforeach
-            </div>
+              </tr>
+            </table>
             <p style="margin:20px 0 0;font-size:13px;color:#999;text-align:center;">
                 {{ $isRtl ? 'هذا الرمز صالح لمدة 5 دقائق فقط' : 'This code is valid for 5 minutes only' }}
             </p>
