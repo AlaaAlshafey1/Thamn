@@ -167,8 +167,21 @@ class PaymentController extends Controller
             'status' => $payment->status,
         ]);
 
-        // لو الدفع ما اكتمل بنجاح، وقف هنا وما تبدأش التثمين ولا تبعت إشعارات
+        // لو الدفع ما اكتمل بنجاح، ابعت إشعار للمستخدم وارجع
         if ($payment->status !== 'orderReceived') {
+            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+            if ($fcmToken) {
+                $this->notifyByFirebase(
+                    lang('لم يتم الدفع', 'Payment Not Completed', $request),
+                    lang(
+                        'لم تكتمل عملية الدفع لطلبك رقم ' . $order->id . '. يمكنك المحاولة مرة أخرى.',
+                        'Payment for order #' . $order->id . ' was not completed. You can try again.',
+                        $request
+                    ),
+                    [$fcmToken],
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'payment_failed']]
+                );
+            }
             return response()->json($statusResponse);
         }
 
