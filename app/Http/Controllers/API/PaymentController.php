@@ -167,6 +167,11 @@ class PaymentController extends Controller
             'status' => $payment->status,
         ]);
 
+        // لو الدفع ما اكتمل بنجاح، وقف هنا وما تبدأش التثمين ولا تبعت إشعارات
+        if ($payment->status !== 'orderReceived') {
+            return response()->json($statusResponse);
+        }
+
         // Send FCM: Order Received
         $this->notifyOrderReceived($order, $request);
 
@@ -214,16 +219,7 @@ class PaymentController extends Controller
                 route('orders.show', $order->id)
             ));
 
-            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
-            if ($fcmToken) {
-                $this->notifyByFirebase(
-                    'تم استلام طلبك',
-                    'يا هلا! استلمنا مبلغك لطلبك رقم ' . $order->id . '. الحين بدأنا الشغل!',
-                    [$fcmToken],
-                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'payment_success']]
-                );
-            }
-
+            // تم مسح الإشعار المكرر الثابت بالعربي من هنا، لأن الدالة notifyOrderReceived بتعمل نفس الشيء مع دعم اللغتين
             Mail::to($order->user->email)->send(new InvoiceMail($order));
         } catch (\Exception $e) {
             \Log::error('Payment Success Notification/Mail Failed: ' . $e->getMessage());
