@@ -30,14 +30,36 @@ class PaymentController extends Controller
     // ===============================
     public function payOrder($order_id)
     {
-        $order = Order::with('user')->findOrFail($order_id);
+        $order = Order::with(['user', 'details.question', 'details.option', 'files'])->findOrFail($order_id);
         $amount = (float) $order->total_price;
 
+        // لو السعر = 0 (مثلاً بعد كنسل دفع سابق)، نحسبه تاني من إجابات الأوردر
         if ($amount <= 0) {
-            return response()->json([
-                'status' => false,
-                'message' => 'قيمة الطلب غير صالحة للدفع'
-            ], 400);
+            $rateTypeAnswer = $order->details()
+                ->whereHas('question', function ($q) {
+                    $q->where('type', 'rateTypeSelection');
+                })
+                ->first();
+
+            if ($rateTypeAnswer && $rateTypeAnswer->option) {
+                $amount = (float) $rateTypeAnswer->option->price;
+            }
+
+            // نضيف رسوم الصورة لو مفيش صورة مرفوعة
+            if ($order->files->where('type', 'image')->count() === 0) {
+                $amount += (float) env('IMAGE_GENERATION_FEE', 5);
+            }
+
+            // لو لسه 0 بعد إعادة الحساب → رفض
+            if ($amount <= 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'قيمة الطلب غير صالحة للدفع'
+                ], 400);
+            }
+
+            // نحفظ السعر الصحيح في الـ DB عشان المرة الجاية
+            $order->update(['total_price' => $amount]);
         }
 
         $customerName = $order->user->name ?? 'Unknown Customer';

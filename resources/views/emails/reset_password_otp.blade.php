@@ -55,8 +55,8 @@
         <tr>
           <td class="hdr" align="center"
               style="background:linear-gradient(135deg,#c2410c 0%,#ea580c 55%,#fb923c 100%);padding:38px 28px 34px;">
-            <img class="ftr-logo" src="{{ asset('assets/emails/logo.png') }}" width="78" alt="ثمن"
-                 style="display:block;margin:0 auto 20px;border:0;filter:brightness(0) invert(1);">
+            <img class="ftr-logo" src="{{ asset('assets/emails/logo_white.png') }}" width="78" alt="ثمن"
+                 style="display:block;margin:0 auto 20px;border:0;">
             <table cellpadding="0" cellspacing="0" border="0" align="center">
               <tr>
                 <td style="width:70px;height:70px;background:rgba(255,255,255,.18);border-radius:50%;
@@ -136,8 +136,8 @@
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="direction:{{ $dir }};">
               <tr>
                 <td align="{{ $textAlign }}" valign="middle">
-                  <img class="ftr-logo" src="{{ asset('assets/emails/logo.png') }}" width="56" alt="ثمن"
-                       style="display:block;filter:brightness(0) invert(1);opacity:.8;border:0;">
+                  <img class="ftr-logo" src="{{ asset('assets/emails/logo_white.png') }}" width="56" alt="ثمن"
+                       style="display:block;border:0;opacity:.9;">
                   <p style="margin:7px 0 0;font-size:11px;color:#ea580c;">
                     {{ $isRtl ? 'منصة ثمن – خيارك الأول للتقييم العقاري' : 'Thamn Platform – Real Estate Evaluation' }}
                   </p>
