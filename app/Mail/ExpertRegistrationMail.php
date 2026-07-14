@@ -22,7 +22,7 @@ class ExpertRegistrationMail extends Mailable
 
     public function build()
     {
-        return $this->subject('شكراً لتسجيلك كخبير في منصة ثمن')
+        return $this->subject('شكراً لتسجيلك كخبير في تطبيق ثمن')
             ->view('emails.expert_registration');
     }
 }

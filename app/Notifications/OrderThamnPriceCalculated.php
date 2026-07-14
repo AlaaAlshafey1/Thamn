@@ -35,6 +35,6 @@ class OrderThamnPriceCalculated extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "تم تثمين ثمن منتجك: طلب رقم #{$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي";
+        return "تطبيق ثمن 🔔\n" . "تم تثمين ثمن منتجك: طلب رقم #{$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي";
     }
 }

@@ -34,6 +34,6 @@ class RefundProcessedNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "تم تحويل مبلغ الاسترداد الخاص بالطلب #{$this->refund->order_id} إلى حسابك البنكي بنجاح.";
+        return "تطبيق ثمن 🔔\n" . "تم تحويل مبلغ الاسترداد الخاص بالطلب #{$this->refund->order_id} إلى حسابك البنكي بنجاح.";
     }
 }

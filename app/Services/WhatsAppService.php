@@ -1,22 +1,22 @@
 <?php
- 
+
 namespace App\Services;
- 
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
- 
+
 class WhatsAppService
 {
     private string $baseUrl;
     private string $token;
- 
+
     public function __construct()
     {
         $instance = config('services.ultramsg.instance');
-        $this->token   = config('services.ultramsg.token');
+        $this->token = config('services.ultramsg.token');
         $this->baseUrl = "https://api.ultramsg.com/{$instance}";
     }
- 
+
     /**
      * Send a WhatsApp message
      * 
@@ -31,24 +31,24 @@ class WhatsAppService
         if (str_starts_with($phone, '05')) {
             $phone = '966' . substr($phone, 1);
         }
- 
+
         try {
             $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/chat", [
-                'token'    => $this->token,
-                'to'       => $phone,
-                'body'     => $message,
+                'token' => $this->token,
+                'to' => $phone,
+                'body' => $message,
                 'priority' => 1, // Low priority = أبطأ = أأمن
             ]);
 
- 
+
             if ($response->json('sent') === 'true') {
                 Log::info("WhatsApp Notification sent to $phone");
                 return true;
             }
- 
+
             Log::error("WhatsApp failed to $phone", $response->json());
             return false;
- 
+
         } catch (\Exception $e) {
             Log::error("WhatsApp exception: " . $e->getMessage());
             return false;
@@ -66,9 +66,9 @@ class WhatsAppService
         $phone = preg_replace('/[^0-9]/', '', $phone);
         try {
             $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/image", [
-                'token'   => $this->token,
-                'to'      => $phone,
-                'image'   => $imagePath,
+                'token' => $this->token,
+                'to' => $phone,
+                'image' => $imagePath,
                 'caption' => $caption,
             ]);
             return $response->json('sent') === 'true';
@@ -86,9 +86,9 @@ class WhatsAppService
         $phone = preg_replace('/[^0-9]/', '', $phone);
         try {
             $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/video", [
-                'token'   => $this->token,
-                'to'      => $phone,
-                'video'   => $videoPath,
+                'token' => $this->token,
+                'to' => $phone,
+                'video' => $videoPath,
                 'caption' => $caption,
             ]);
             return $response->json('sent') === 'true';
@@ -106,11 +106,11 @@ class WhatsAppService
         $phone = preg_replace('/[^0-9]/', '', $phone);
         try {
             $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/document", [
-                'token'    => $this->token,
-                'to'       => $phone,
+                'token' => $this->token,
+                'to' => $phone,
                 'document' => $filePath,
                 'filename' => $fileName,
-                'caption'  => $caption,
+                'caption' => $caption,
             ]);
             return $response->json('sent') === 'true';
         } catch (\Exception $e) {
@@ -120,7 +120,6 @@ class WhatsAppService
     }
 
     public function getStatus()
-
     {
         try {
             $response = Http::withoutVerifying()->get("{$this->baseUrl}/instance/status", [
@@ -166,7 +165,7 @@ class WhatsAppService
         }
     }
 
- 
+
     /**
      * Saudi Dialect Messages Templates
      */
@@ -184,11 +183,11 @@ class WhatsAppService
             'welcome_social' => "يا هلا والله بك يا {$data['name']} في ثمن! نورتنا وشرفتنا، وأي خدمة حنا بالخدمة.",
             'withdrawal_approved' => "بشرى سارة! تم الموافقة على طلب سحب أرباحك بمبلغ {$data['amount']} ريال. الحوالة في طريقها لك يا بطل.",
             'withdrawal_rejected' => "عذراً يا خبيرنا، تم رفض طلب سحب الأرباح الخاص بك. لمزيد من التفاصيل يرجى مراجعة لوحة التحكم أو التواصل مع الدعم.",
-            'expert_approved' => "مبروك! تم تفعيل حسابك كخبير في منصة ثمن. الحين تقدر تستلم طلبات التثمين وتبدأ رحلتك معنا. نورتنا يا وحش!",
+            'expert_approved' => "مبروك! تم تفعيل حسابك كخبير في تطبيق ثمن. الحين تقدر تستلم طلبات التثمين وتبدأ رحلتك معنا. نورتنا يا وحش!",
 
 
         ];
- 
+
         return $templates[$type] ?? $type;
     }
 }

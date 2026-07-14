@@ -35,6 +35,6 @@ class OrderAssignedToExpert extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "تم إرسال طلب تقييم جديد لك: طلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "تم إرسال طلب تقييم جديد لك: طلب رقم #{$this->order->id}";
     }
 }

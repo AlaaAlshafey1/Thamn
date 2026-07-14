@@ -3,7 +3,7 @@ $files = glob(__DIR__ . '/app/Notifications/*.php');
 
 foreach ($files as $file) {
     $content = file_get_contents($file);
-    
+
     // Replace via
     $content = str_replace(
         "return ['database'];",
@@ -22,20 +22,20 @@ foreach ($files as $file) {
     );
 
     // Get message line
-    $messageExtract = '"إشعار جديد من منصة ثمن"';
+    $messageExtract = '"إشعار جديد من تطبيق ثمن"';
     if (preg_match("/'message'\s*=>\s*(['\"].*?['\"])/", $content, $m)) {
         $messageExtract = $m[1];
     } elseif (preg_match("/->line\((['\"].*?['\"])\)/", $content, $m)) {
         $messageExtract = $m[1];
     }
-    
+
     // Add WhatsApp
     if (strpos($content, 'function toWhatsApp') === false) {
         $toWhatsApp = <<<PHP
 
     public function toWhatsApp(\$notifiable)
     {
-        return "منصة ثمن 🔔\\n" . $messageExtract;
+        return "تطبيق ثمن 🔔\\n" . $messageExtract;
     }
 }
 PHP;
@@ -45,7 +45,7 @@ PHP;
             $content = substr_replace($content, $toWhatsApp, $pos, strlen($content) - $pos);
         }
     }
-    
+
     file_put_contents($file, $content);
     echo "Fixed: " . basename($file) . "\n";
 }

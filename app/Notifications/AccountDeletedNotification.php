@@ -28,6 +28,6 @@ class AccountDeletedNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً';
+        return "تطبيق ثمن 🔔\n" . 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً';
     }
 }

@@ -34,6 +34,6 @@ class NewRefundRequestNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ ";
+        return "تطبيق ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ ";
     }
 }

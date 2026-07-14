@@ -339,28 +339,8 @@ class PaymentController extends Controller
                     $this->sendToExperts($order);
             }
 
-            // Send FCM: Method Selection Confirmation
-            $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
-            if ($fcmToken) {
-                $methodNameAr = [
-                    'ai' => 'تقييم الذكاء الاصطناعي',
-                    'expert' => 'تقييم الخبراء',
-                    'best' => 'أفضل تقييم (ثمن)'
-                ][$evaluationType] ?? 'طريقة التثمين المختارة';
-
-                $methodNameEn = [
-                    'ai' => 'AI Evaluation',
-                    'expert' => 'Expert Evaluation',
-                    'best' => 'Thamn Best Evaluation'
-                ][$evaluationType] ?? 'Chosen Evaluation Method';
-
-                $this->notifyByFirebase(
-                    lang('تم اختيار طريقة التثمين', 'Evaluation Method Selected', request()),
-                    lang('لقد اخترت طريقة: ' . $methodNameAr, 'You have selected: ' . $methodNameEn, request()),
-                    [$fcmToken],
-                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'method_selected', 'method' => $evaluationType]]
-                );
-            }
+            // Note: No extra FCM sent here — each evaluation type (AI/expert/best)
+            // sends its own result notification when the evaluation is complete.
 
         } catch (\Throwable $e) {
             Log::error('Evaluation Routing Failed', [

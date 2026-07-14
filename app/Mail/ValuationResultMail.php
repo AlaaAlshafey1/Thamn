@@ -61,7 +61,7 @@ class ValuationResultMail extends Mailable
 
     public function build()
     {
-        return $this->subject('نتيجة تقييم طلبك رقم #' . $this->order->id . ' — منصة ثمن')
+        return $this->subject('نتيجة تقييم طلبك رقم #' . $this->order->id . ' — تطبيق ثمن')
             ->view('emails.valuation_result');
     }
 }

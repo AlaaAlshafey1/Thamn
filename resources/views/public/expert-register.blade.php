@@ -4,10 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انضم كخبير — منصة ثمن</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
-        rel="stylesheet">
+    <title>انضم كخبير — تطبيق ثمن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -455,7 +453,7 @@
 
     <footer>
         <a href="{{ route('home') }}" class="footer-logo">ثمن</a>
-        <p class="footer-copy">&copy; 2025 منصة ثمن. جميع الحقوق محفوظة.</p>
+        <p class="footer-copy">&copy; 2025 تطبيق ثمن. جميع الحقوق محفوظة.</p>
     </footer>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>

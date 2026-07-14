@@ -33,6 +33,6 @@ class OrderResent extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}";
     }
 }

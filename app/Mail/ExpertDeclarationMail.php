@@ -26,7 +26,7 @@ class ExpertDeclarationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'وثيقة الشروط والأحكام وإقرار السرية للمحكمين المستقلين - منصة ثمن',
+            subject: 'وثيقة الشروط والأحكام وإقرار السرية للمحكمين المستقلين - تطبيق ثمن',
         );
     }
 

@@ -33,6 +33,6 @@ class OrderSentToMarket extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "تم إرسال منتجك للسوق: طلب رقم #{$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي";
+        return "تطبيق ثمن 🔔\n" . "تم إرسال منتجك للسوق: طلب رقم #{$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي";
     }
 }

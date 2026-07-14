@@ -64,7 +64,7 @@
         </div>
         <div class="content">
             <p>مرحباً <strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong>،</p>
-            <p>شكراً لثقتك في منصة ثمن. تم استلام مبلغ الدفع لطلبك رقم <strong>#{{ $order->id }}</strong> بنجاح.</p>
+            <p>شكراً لثقتك في تطبيق ثمن. تم استلام مبلغ الدفع لطلبك رقم <strong>#{{ $order->id }}</strong> بنجاح.</p>
 
             <table class="invoice-table">
                 <thead>
@@ -96,7 +96,7 @@
             <p style="margin-top: 20px;">بدأنا العمل على طلبك وسوف نوافيك بالنتائج في أقرب وقت.</p>
         </div>
         <div class="footer">
-            <p>تم إرسال هذا البريد تلقائياً من منصة ثمن.</p>
+            <p>تم إرسال هذا البريد تلقائياً من تطبيق ثمن.</p>
         </div>
     </div>
 </body>

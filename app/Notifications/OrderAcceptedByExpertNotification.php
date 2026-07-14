@@ -33,6 +33,6 @@ class OrderAcceptedByExpertNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}";
     }
 }

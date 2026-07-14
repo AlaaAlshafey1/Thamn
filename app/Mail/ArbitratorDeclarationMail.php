@@ -24,7 +24,7 @@ class ArbitratorDeclarationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'وثيقة الشروط والأحكام وإقرار السرية - منصة ثمن',
+            subject: 'وثيقة الشروط والأحكام وإقرار السرية - تطبيق ثمن',
         );
     }
 

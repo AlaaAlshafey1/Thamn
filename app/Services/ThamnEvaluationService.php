@@ -147,9 +147,6 @@ PROMPT;
             }
         }
 
-        // Send FCM Notification
-        $this->sendEvaluationNotification($order);
-
         // Send Email with Valuation Result
         try {
             if ($order->user?->email) {
@@ -222,19 +219,8 @@ PROMPT;
         }
     }
 
-    private function sendEvaluationNotification(Order $order)
-    {
-        $user = $order->user;
-        $tokens = $user->getFcmTokens();
-        if (!empty($tokens)) {
-            $this->notifyByFirebase(
-                lang('تم تقييم منتجك بنجاح', 'Product Evaluated Successfully', request()),
-                lang('تم الانتهاء من تقييم طلبك رقم ' . $order->id . ' يمكنك الاطلاع على النتائج الآن', 'Evaluation for order #' . $order->id . ' is finished, check the results now', request()),
-                $tokens,
-                ['data' => ['user_id' => $user->id, 'order_id' => $order->id, 'type' => 'evaluation_ready']]
-            );
-        }
-    }
+    // Note: FCM notification is sent by the caller (OrderController::aiEvaluate or PaymentController)
+    // to avoid duplicate notifications.
 
     /**
      * Notify all experts and admins about a new Professional Valuation order.

@@ -47,6 +47,6 @@ class ExpertEvaluatedOrderAdminNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "منصة ثمن 🔔\n" . "قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.";
+        return "تطبيق ثمن 🔔\n" . "قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.";
     }
 }

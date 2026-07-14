@@ -139,7 +139,7 @@ class WithdrawalController extends Controller
                             "withdrawal_id" => $req->id,
                             "expert_id" => $user->id
                         ],
-                        "description" => "سحب رصيد الخبير " . $user->first_name . ' من منصة ثمن'
+                        "description" => "سحب رصيد الخبير " . $user->first_name . ' من تطبيق ثمن'
                     ];
 
                     // Execute the POST request to Tap Transfers API
