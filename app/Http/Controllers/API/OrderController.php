@@ -756,14 +756,29 @@ class OrderController extends Controller
             ->values();
 
         /* ===================== PRICES ===================== */
+        // Priority: thamn (best) → expert → AI
+        if ($order->thamn_price) {
+            $priceAvg     = (float) $order->thamn_price;
+            $priceHighest = $order->thamn_max_price  ? (float) $order->thamn_max_price  : null;
+            $priceLowest  = $order->thamn_min_price  ? (float) $order->thamn_min_price  : null;
+        } elseif ($order->expert_price) {
+            $priceAvg     = (float) $order->expert_price;
+            $priceHighest = $order->expert_max_price ? (float) $order->expert_max_price : null;
+            $priceLowest  = $order->expert_min_price ? (float) $order->expert_min_price : null;
+        } elseif ($order->ai_price) {
+            $priceAvg     = (float) $order->ai_price;
+            $priceHighest = $order->ai_max_price     ? (float) $order->ai_max_price     : null;
+            $priceLowest  = $order->ai_min_price     ? (float) $order->ai_min_price     : null;
+        } else {
+            $priceAvg     = 0;
+            $priceHighest = null;
+            $priceLowest  = null;
+        }
+
         $prices = [
-            'highest' => $order->ai_max_price ? (float) $order->ai_max_price : null,
-            'average' => (float) (
-                $order->thamn_price
-                ?? $order->ai_price
-                ?? 0
-            ),
-            'lowest' => $order->ai_min_price ? (float) $order->ai_min_price : null,
+            'highest' => $priceHighest,
+            'average' => $priceAvg,
+            'lowest'  => $priceLowest,
         ];
 
         /* ===================== DETAILS ===================== */
@@ -1015,8 +1030,8 @@ class OrderController extends Controller
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
             $this->notifyByFirebase(
-                'تم استلام طلبك يا غالي 🔄',
-                "يا هلا بك! استلمنا طلب إعادة التقييم لمنتجك رقم #{$order->id}. بنباشر التقييم الجديد في أقرب وقت ونبشرك بالنتيجة.",
+                lang('تم استلام طلب إعادة التقييم 🔄', 'Re-evaluation Request Received 🔄', $request),
+                lang("استلمنا طلب إعادة التقييم لمنتجك رقم #{$order->id}. سنباشر التقييم الجديد في أقرب وقت.", "We received your re-evaluation request for product #{$order->id}. We will start the new evaluation shortly.", $request),
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
@@ -1069,8 +1084,8 @@ class OrderController extends Controller
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
             $this->notifyByFirebase(
-                'يجارٍ تقييم منتجك 🔍',
-                "لقد استلم خبيرنا طلبك رقم #{$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.",
+                lang('جارِ تقييم منتجك 🔍', 'Your product is being evaluated 🔍', request()),
+                lang("لقد استلم خبيرنا طلبك رقم #{$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.", "Our expert has received your order #{$order->id} and will notify you with the result shortly.", request()),
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_expert']]
             );
@@ -1179,8 +1194,8 @@ class OrderController extends Controller
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $this->notifyByFirebase(
-                    '🛒 منتجك في السوق الآن!',
-                    "تم إدراج منتجك رقم #{$order->id} في سوق ثمن بنجاح. يمكن للمشترين رؤيته الآن.",
+                    lang('🛍️ منتجك في السوق الآن!', '🛍️ Your product is live on the Market!', $request),
+                    lang("تم إدراج منتجك رقم #{$order->id} في سوق ثمن بنجاح. يمكن للمشترين رؤيته الآن.", "Your product #{$order->id} has been successfully listed on Thamn Market. Buyers can now see it!", $request),
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
                 );

@@ -67,10 +67,13 @@ class CheckExpiredOrders extends Command
 
         // FCM Notification
         $fcmToken = $order->user->fcm_token ?? $order->user->fcm_token_android ?? $order->user->fcm_token_ios;
+        $userLang = $order->user->preferredLang();
         if ($fcmToken) {
             $this->notifyByFirebase(
-                '⚠️ انتهت مهلة تقييم منتجك',
-                "نعتذر، لم يتم قبول طلبك رقم #{$order->id} من أي خبير في الوقت المحدد (24 ساعة). يمكنك طلب استرداد المبلغ.",
+                $userLang === 'ar' ? '⚠️ انتهت مهلة تقييم منتجك' : '⚠️ Evaluation Time Expired',
+                $userLang === 'ar'
+                    ? "نعتذر، لم يتم قبول طلبك رقم #{$order->id} من أي خبير في الوقت المحدد (24 ساعة). يمكنك طلب استرداد المبلغ."
+                    : "We're sorry, your order #{$order->id} was not accepted by any expert within the allowed time (24 hours). You can request a refund.",
                 [$fcmToken],
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_expired']]
             );
@@ -79,8 +82,10 @@ class CheckExpiredOrders extends Command
         // Email
         try {
             Mail::to($order->user->email)->send(new SystemNotificationMail(
-                'لم يتم قبول طلبك من قبل الخبراء',
-                "نعتذر منك، طلبك رقم {$order->id} لم يتم قبوله من قبل أي خبير في الوقت المحدد (24 ساعة). يمكنك الآن طلب استرداد المبلغ.",
+                $userLang === 'ar' ? 'لم يتم قبول طلبك من قبل الخبراء' : 'Your order was not accepted by experts',
+                $userLang === 'ar'
+                    ? "نعتذر منك، طلبك رقم {$order->id} لم يتم قبوله من قبل أي خبير في الوقت المحدد (24 ساعة). يمكنك الآن طلب استرداد المبلغ."
+                    : "We're sorry, your order #{$order->id} was not accepted by any expert within 24 hours. You may now request a refund.",
                 route('orders.show', $order->id)
             ));
         } catch (\Exception $e) {

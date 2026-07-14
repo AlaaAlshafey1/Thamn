@@ -231,8 +231,8 @@ class OrderController extends Controller
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $this->notifyByFirebase(
-                    'بشرنااااك! تقييمك صار جاهز 🧡',
-                    "يا هلا بك يا غالي! تم تقييم منتجك رقم #{$order->id} بنجاح من قبل خبيرنا. تفضل شيك عليه بالتطبيق الحين.",
+                    lang('تم تقييم منتجك بنجاح 🧡', 'Your evaluation is ready! 🧡', request()),
+                    lang("تم تقييم منتجك رقم #{$order->id} بنجاح من قبل خبيرنا. تفضل اطلع عليه الآن.", "Your product #{$order->id} has been successfully evaluated by our expert. Check it now!", request()),
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_expert']]
                 );
@@ -278,8 +278,8 @@ class OrderController extends Controller
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
             $this->notifyByFirebase(
-                'بشرى سارة يا غالي! التقييم صار جاهز ⚖️',
-                "يا هلا بك! تم اعتماد التقييم النهائي لمنتجك رقم #{$order->id} بنجاح. تفضل شيك عليه الحين بالتطبيق.",
+                lang('تم اعتماد التقييم النهائي ⚖️', 'Final Evaluation Approved ⚖️', request()),
+                lang("تم اعتماد التقييم النهائي لمنتجك رقم #{$order->id} بنجاح. تفضل اطلع عليه الآن.", "The final evaluation for your product #{$order->id} has been approved successfully. Check it now!", request()),
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
             );

@@ -175,7 +175,11 @@ class AuthController extends Controller
         if ($request->fcm_token_ios) $fcmUpdate['fcm_token_ios'] = $request->fcm_token_ios;
         if ($request->fcm_token_android) $fcmUpdate['fcm_token_android'] = $request->fcm_token_android;
         if ($request->device_type) $fcmUpdate['device_type'] = $request->device_type;
-        
+
+        // Save user's language preference for background notifications
+        $lang = strtolower($request->header('Accept-Language', 'ar'));
+        $fcmUpdate['preferred_language'] = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
+
         if (!empty($fcmUpdate)) {
             $user->update($fcmUpdate);
             $user->refresh();

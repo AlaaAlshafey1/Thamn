@@ -44,6 +44,7 @@ class User extends Authenticatable
         'email_enabled',
         'sms_enabled',
         'category_id',
+        'preferred_language', // 'ar' or 'en', set by mobile app on login/register
     ];
 
     public function category()
@@ -83,6 +84,15 @@ class User extends Authenticatable
                 '123456'
             ]);
         }));
+    }
+
+    /**
+     * Get the user's preferred language for notifications.
+     * Falls back to 'ar' if not set.
+     */
+    public function preferredLang(): string
+    {
+        return in_array($this->preferred_language, ['ar', 'en']) ? $this->preferred_language : 'ar';
     }
 
     public function mainRole()
