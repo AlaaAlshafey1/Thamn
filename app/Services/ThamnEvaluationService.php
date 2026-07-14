@@ -114,13 +114,14 @@ PROMPT;
         $aiResult = app(OpenAIService::class)->evaluateProduct($prompt, $imagePaths);
 
         $order->update([
-            'status' => "estimated",
+            'status'       => "estimated",
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
-            'ai_price' => $aiResult['recommended_price'] ?? null,
-            'ai_confidence' => $aiResult['confidence'] ?? null,
+            'ai_price'     => $aiResult['recommended_price'] ?? null,
+            'total_price'  => $aiResult['recommended_price'] ?? null, // sync total_price with AI result
+            'ai_confidence'=> $aiResult['confidence'] ?? null,
             'ai_reasoning' => $aiResult['reasoning'] ?? null,
-            'ai_features' => $aiResult['features'] ?? null,
+            'ai_features'  => $aiResult['features'] ?? null,
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
 
