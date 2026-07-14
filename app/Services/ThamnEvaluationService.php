@@ -114,7 +114,7 @@ PROMPT;
         $aiResult = app(OpenAIService::class)->evaluateProduct($prompt, $imagePaths);
 
         $order->update([
-            'status'       => "estimated",
+            'status'       => $order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated', // keep it in pricing for user, wait for admin
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
             'ai_price'     => $aiResult['recommended_price'] ?? null,
@@ -148,13 +148,46 @@ PROMPT;
             }
         }
 
-        // Send Email with Valuation Result
+        // Notify Admin (Email & WhatsApp)
         try {
-            if ($order->user?->email) {
-                Mail::to($order->user->email)->send(new ValuationResultMail($order, 'ai'));
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            
+            $categoryName = $order->category->name_ar ?? 'القسم';
+            $productName = "الطلب رقم {$order->id}";
+            $msg = "يا مدير، تم الانتهاء من التقييم عبر الذكاء الاصطناعي لمنتج {$productName} من قسم {$categoryName} والتثمين نوعه تثمين ذكي. ادخل قيموا ف اقرب وقت.";
+            
+            // Admin WhatsApp - specific numbers
+            $adminPhones = ['+201021443985', '+966503955098'];
+            foreach ($adminPhones as $phone) {
+                $whatsapp->sendMessage($phone, $msg);
             }
+
+            // Admin Email
+            $adminEmail = 'thmmnapplic@gmail.com';
+            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
+                "تقييم ذكاء اصطناعي جاهز لطلب رقم #{$order->id}",
+                $msg,
+                route('orders.show', $order->id)
+            ));
         } catch (\Throwable $e) {
-            Log::error('AI Valuation Result Email Failed: ' . $e->getMessage());
+            Log::error('AI Valuation Admin Notification Failed: ' . $e->getMessage());
+        }
+
+        // DB Notification to Admin
+        $admins = \App\Models\User::role('superadmin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\ExpertEvaluatedOrderAdminNotification($order, $order->user));
+        }
+
+        // FCM Notification to Customer (Saudi Phrasing)
+        $tokens = $order->user->getFcmTokens();
+        if (!empty($tokens)) {
+            $this->notifyByFirebase(
+                lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
+                lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في المراجعة النهائية.', 'We are almost done, please be patient. Your order is in final review.', request()),
+                $tokens,
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
+            );
         }
 
         return $aiResult;

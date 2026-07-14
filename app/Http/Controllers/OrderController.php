@@ -27,6 +27,9 @@ class OrderController extends Controller
                     ->orWhereNull('expert_id');
             })
             ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
+            ->where(function($q) {
+                $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+            })
             ->when(auth()->user()->category_id, function ($q) {
                 return $q->where(function ($sub) {
                     $sub->where('category_id', auth()->user()->category_id)
@@ -48,7 +51,13 @@ class OrderController extends Controller
 
             // الطلبات السابقة: اللي هو خلصها
             $completedOrders = Order::where('expert_id', Auth::id())
-                ->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
+                ->where(function($q) {
+                    $q->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
+                      ->orWhere(function($sub) {
+                          $sub->whereIn('status', ['beingEstimated', 'beingReEstimated'])
+                              ->where('expert_evaluated', 1);
+                      });
+                })
                 ->with('user')
                 ->latest()
                 ->get();
@@ -162,7 +171,7 @@ class OrderController extends Controller
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
             'total_price' => $request->expert_price,
-            'status' => 'estimated',
+            'status' => $order->evaluation_type === 'expert' ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
         $user->balance += 10;
@@ -172,22 +181,22 @@ class OrderController extends Controller
             try {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 
-                // Admin WhatsApp
-                $admins = User::role('superadmin')->get();
                 $expertName = $user->first_name . ' ' . $user->last_name;
-                $msg = "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} اللى من نوع التثمين الاحترافى. ادخل قيموا ف اقرب وقت.";
+                $categoryName = $order->category->name_ar ?? 'القسم';
+                $productName = "الطلب رقم {$order->id}";
+                $msg = "يا مدير، الخبير {$expertName} من قسم {$categoryName} قام بتقييم {$productName} والتثمين نوعه تثمين احترافي (هجين). ادخل قيموا ف اقرب وقت.";
                 
-                foreach ($admins as $admin) {
-                    if ($admin->phone) {
-                        $whatsapp->sendMessage($admin->phone, $msg);
-                    }
+                // Admin WhatsApp - specific numbers
+                $adminPhones = ['+201021443985', '+966503955098'];
+                foreach ($adminPhones as $phone) {
+                    $whatsapp->sendMessage($phone, $msg);
                 }
 
                 // Admin Email
-                $adminEmail = 'thmmnapplic@gmail.com';
+                $adminEmail = 'alaa.alshafey12345@gmail.com';
                 Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                     "خبير قيم طلب تثمين احترافي رقم #{$order->id}",
-                    "يا مدير، الخبير {$expertName} قام بتقييم الطلب رقم {$order->id} الذي من نوع التثمين الإحترافي.\nيرجى الدخول إلى لوحة التحكم واعتماد التقييم النهائي في أقرب وقت.",
+                    $msg,
                     route('orders.show', $order->id)
                 ));
             } catch (\Throwable $e) {
@@ -198,6 +207,17 @@ class OrderController extends Controller
             $admins = User::role('superadmin')->get();
             foreach ($admins as $admin) {
                 $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
+            }
+
+            // FCM Notification to Customer (Saudi Phrasing)
+            $tokens = $order->user->getFcmTokens();
+            if (!empty($tokens)) {
+                $this->notifyByFirebase(
+                    lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
+                    lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في المراجعة النهائية.', 'We are almost done, please be patient. Your order is in final review.', request()),
+                    $tokens,
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
+                );
             }
 
             $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا الأدمن بالنتيجة!';
@@ -259,6 +279,7 @@ class OrderController extends Controller
         $order->update([
             'thamn_reasoning' => $request->thamn_reasoning,
             'total_price' => $order->thamn_price, // السعر النهائي
+            'status' => 'estimated', // Update status so customer can see it
         ]);
 
         $order->user->notify(new OrderEvaluated($order, 'thamn'));
@@ -384,7 +405,6 @@ class OrderController extends Controller
 
         try {
             $evaluationService->runAiEvaluation($order);
-            $order->user->notify(new OrderEvaluated($order, 'ai'));
 
             // تسجيل وقت التقييم
             if (!$order->evaluated_at) {
