@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\OrderFiles;
 use App\Mail\ValuationResultMail;
-use App\Services\OpenAIService;
+use App\Services\ClaudeService;
 use App\Http\Traits\FCMOperation;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -111,7 +111,7 @@ PROMPT;
             ->values()
             ->toArray();
 
-        $aiResult = app(OpenAIService::class)->evaluateProduct($prompt, $imagePaths);
+        $aiResult = app(ClaudeService::class)->evaluateProduct($prompt, $imagePaths);
 
         $order->update([
             'status'       => $order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated', // keep it in pricing for user, wait for admin
@@ -128,7 +128,7 @@ PROMPT;
         // Generate Virtual Image if no images exist and prompt provided
         if (!$hasImages && !empty($aiResult['image_prompt'])) {
             try {
-                $imageUrl = app(OpenAIService::class)->generateImage($aiResult['image_prompt']);
+                $imageUrl = app(ClaudeService::class)->generateImage($aiResult['image_prompt']);
                 if ($imageUrl) {
                     $imageContents = file_get_contents($imageUrl);
                     $filename = 'ai_generated_' . Str::random(10) . '.png';
