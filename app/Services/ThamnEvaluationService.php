@@ -208,8 +208,8 @@ PROMPT;
 
         if ($aiPrice && $expertPrice) {
             $thamnPrice = round(($aiPrice + $expertPrice) / 2, 2);
-            $minPrice = round(($order->ai_min_price + $order->expert_min_price) / 2, 2);
-            $maxPrice = round(($order->ai_max_price + $order->expert_max_price) / 2, 2);
+            $minPrice = max(0, $thamnPrice - 5000);
+            $maxPrice = $thamnPrice + 5000;
         } elseif ($aiPrice) {
             $thamnPrice = $aiPrice;
             $minPrice = $order->ai_min_price;
