@@ -177,50 +177,66 @@ class OrderController extends Controller
         $user->balance += 10;
         $user->save();
         if ($order->evaluation_type === 'best') {
-            // Notify Admin (Email & WhatsApp)
-            try {
-                $whatsapp = app(\App\Services\WhatsAppService::class);
-                
-                $expertName = $user->first_name . ' ' . $user->last_name;
-                $categoryName = $order->category->name_ar ?? 'القسم';
-                $productName = "الطلب رقم {$order->id}";
-                $msg = "يا مدير، الخبير {$expertName} من قسم {$categoryName} قام بتقييم {$productName} والتثمين نوعه تثمين احترافي (هجين). ادخل قيموا ف اقرب وقت.";
-                
-                // Admin WhatsApp - specific numbers
-                $adminPhones = ['+201021443985', '+966503955098'];
-                foreach ($adminPhones as $phone) {
-                    $whatsapp->sendMessage($phone, $msg);
-                }
+            // ─── حساب السعر النهائي الهجين تلقائياً ────────────────────────
+            $aiPrice     = $order->ai_price;
+            $expertPrice = $request->expert_price;
+            $thamnPrice  = $aiPrice ? round(($aiPrice + $expertPrice) / 2, 2) : $expertPrice;
+            $minPrice    = round($thamnPrice * 0.93);
+            $maxPrice    = round($thamnPrice * 1.07);
 
-                // Admin Email
-                $adminEmail = 'alaa.alshafey12345@gmail.com';
-                Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                    "خبير قيم طلب تثمين احترافي رقم #{$order->id}",
-                    $msg,
-                    route('orders.show', $order->id)
-                ));
-            } catch (\Throwable $e) {
-                \Log::error('Expert Valuation best-type Admin Notification Failed: ' . $e->getMessage());
-            }
+            // الـ reasoning يكون من الـ AI (وصف احترافي أدق)
+            $aiReasoning = $order->ai_reasoning ?? $request->expert_reasoning;
 
-            // DB Notification to Admin
-            $admins = User::role('superadmin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
-            }
+            $order->refresh();
+            $order->update([
+                'thamn_price'     => $thamnPrice,
+                'thamn_min_price' => $minPrice,
+                'thamn_max_price' => $maxPrice,
+                'thamn_reasoning' => $aiReasoning,
+                'thamn_by'        => null, // تلقائي (ليس بواسطة أدمن يدوياً)
+                'thamn_at'        => now(),
+                'total_price'     => $thamnPrice,
+                'status'          => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
+            ]);
 
-            // FCM Notification to Customer (Saudi Phrasing)
+            // Notify Customer — التثمين اكتمل
+            $order->user->notify(new OrderEvaluated($order, 'thamn'));
+
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $this->notifyByFirebase(
-                    lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
-                    lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في المراجعة النهائية.', 'We are almost done, please be patient. Your order is in final review.', request()),
+                    lang('اكتمل تثمين منتجك 🎉', 'Your evaluation is ready! 🎉', request()),
+                    lang("تم تثمين منتجك رقم #{$order->id} بنجاح. تفضل اطلع على النتيجة الآن.", "Your product #{$order->id} has been evaluated. Check the result now!", request()),
                     $tokens,
-                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
                 );
             }
 
-            $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا الأدمن بالنتيجة!';
+            // Notify Customer via WhatsApp
+            try {
+                if ($order->user->phone) {
+                    $whatsapp = app(\App\Services\WhatsAppService::class);
+                    $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+                    $whatsapp->sendMessage($order->user->phone, $msg);
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Best-type Customer WhatsApp Failed: ' . $e->getMessage());
+            }
+
+            // Inform Admin (record only)
+            try {
+                $expertName = $user->first_name . ' ' . $user->last_name;
+                $categoryName = $order->category->name_ar ?? 'القسم';
+                Mail::to('thmmnapplic@gmail.com')->send(new \App\Mail\SystemNotificationMail(
+                    "تم اعتماد التثمين الهجين للطلب #{$order->id} تلقائياً",
+                    "يا مدير، قام الخبير {$expertName} من قسم {$categoryName} بتقييم الطلب رقم {$order->id}. تم احتساب السعر الهجين تلقائياً: {$thamnPrice} ريال وإبلاغ العميل.",
+                    route('orders.show', $order->id)
+                ));
+            } catch (\Throwable $e) {
+                \Log::error('Best-type Admin Info Email Failed: ' . $e->getMessage());
+            }
+
+            $successMsg = 'تم تقييم الأوردر بنجاح واحتساب السعر الهجين تلقائياً وبشرنا العميل!';
         } else {
             // Regular expert type flow: notify user directly
             $order->user->notify(new OrderEvaluated($order, 'expert'));
