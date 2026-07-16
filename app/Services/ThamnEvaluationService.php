@@ -155,63 +155,28 @@ PROMPT;
             } catch (\Throwable $e) {
                 Log::error('Failed to generate virtual image via DALL-E', ['error' => $e->getMessage()]);
             }
-        }
 
-        // Notify Admin (Email & WhatsApp)
-        try {
-            $whatsapp = app(\App\Services\WhatsAppService::class);
-            
-            $categoryName = $order->category->name_ar ?? 'القسم';
-            $productName = "الطلب رقم {$order->id}";
-            $msg = "يا مدير، تم الانتهاء من التقييم عبر الذكاء الاصطناعي لمنتج {$productName} من قسم {$categoryName} والتثمين نوعه تثمين ذكي. ادخل قيموا ف اقرب وقت.";
-            
-            // Admin WhatsApp - specific numbers
-            $adminPhones = ['+201021443985', '+966503955098'];
-            foreach ($adminPhones as $phone) {
-                $whatsapp->sendMessage($phone, $msg);
-            }
-
-            // Admin Email
-            $adminEmail = 'thmmnapplic@gmail.com';
-            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                "تقييم ذكاء اصطناعي جاهز لطلب رقم #{$order->id}",
-                $msg,
-                route('orders.show', $order->id)
-            ));
-        } catch (\Throwable $e) {
-            Log::error('AI Valuation Admin Notification Failed: ' . $e->getMessage());
-        }
-
-        // DB Notification to Admin
-        $admins = \App\Models\User::role('superadmin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new \App\Notifications\ExpertEvaluatedOrderAdminNotification($order, $order->user));
-        }
 
         $tokens = $order->user->getFcmTokens();
 
         if ($order->evaluation_type === 'ai') {
-            // ── التثمين الذكي المنفرد: بشّر العميل مباشرة ──────────────────
+            // ── التثمين الذكي: بشّر العميل فقط — لا رسائل للأدمن ──────────
             if (!empty($tokens)) {
                 $this->notifyByFirebase(
                     lang('اكتمل تثمين منتجك 🎉', 'Your evaluation is ready! 🎉', request()),
-                    lang("تم تثمين منتجك رقم #{$order->id} بنجاح عبر الذكاء الاصطناعي. تفضل اطلع على النتيجة الآن.", "Your product #{$order->id} has been evaluated. Check the result now!", request()),
+                    lang("تم تثمين منتجك رقم #{$order->id} بنجاح. تفضل اطلع على النتيجة الآن.", "Your product #{$order->id} has been evaluated. Check the result now!", request()),
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_ai']]
                 );
             }
 
-            // Email to Admin (AI done - for records only)
+            // Email to Customer
             try {
-                $categoryName = $order->category->name_ar ?? 'القسم';
-                $adminEmail = 'thmmnapplic@gmail.com';
-                Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                    "تقييم ذكاء اصطناعي اكتمل للطلب رقم #{$order->id}",
-                    "يا مدير، تم اكتمال التقييم الذكي للطلب رقم {$order->id} من قسم {$categoryName} وتم إبلاغ العميل بالنتيجة.",
-                    route('orders.show', $order->id)
-                ));
+                if ($order->user?->email) {
+                    Mail::to($order->user->email)->send(new ValuationResultMail($order, 'ai'));
+                }
             } catch (\Throwable $e) {
-                Log::error('AI Valuation Admin Email Failed: ' . $e->getMessage());
+                Log::error('AI Valuation Customer Email Failed: ' . $e->getMessage());
             }
 
         } else {
