@@ -27,14 +27,14 @@ class OrderAssignedToExpert extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'title' => 'تم تعيين طلب جديد لك',
-            'message' => "تم إرسال طلب تقييم جديد لك: طلب رقم #{$this->order->id}",
+            'title' => 'هلا بك خبير 👋 طلب تثمين احترافي جديد',
+            'message' => "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
             'user_id' => $this->order->user_id,
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم إرسال طلب تقييم جديد لك: طلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم #{$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.";
     }
 }

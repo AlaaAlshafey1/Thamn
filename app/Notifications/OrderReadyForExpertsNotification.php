@@ -28,14 +28,14 @@ class OrderReadyForExpertsNotification extends Notification
         return [
             'order_id' => $this->order->id,
             'user_id' => $this->order->user_id,
-            'title' => 'طلب تقييم جديد',
-            'message' => "طلب تقييم جديد متاح الآن (رقم {$this->order->id}) لمن يرغب في البدء.",
+            'title' => 'هلا بك خبير 👋 طلب تثمين احترافي جديد',
+            'message' => "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
             'type' => 'new_expert_order'
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "طلب تقييم جديد متاح الآن (رقم {$this->order->id}) لمن يرغب في البدء.";
+        return "تطبيق ثمن 🔔\n" . "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.";
     }
 }

@@ -67,9 +67,10 @@ class ThamnEvaluationService
             : "";
 
         $prompt = <<<PROMPT
-أنت مثمّن معتمد ومتخصص في السوق السعودي للسلع المستعملة.
+أنت مثمّن معتمد ومتخصص في السوق السعودي للسلع المستعملة، وهدفك إعطاء السعر الأدق والأعدل.
 تاريخ التقييم: {$today}
-المرجع السوقي: منصة حراج، تطبيق موجز، وتطبيق نجم. استخدم هذه المنصات كمرجع أساسي لجلب بيانات السوق وتقييم السيارة بدقة بناءً على المدخلات.
+المرجع السوقي الأساسي: منصة حراج، تطبيق موجز، وتطبيق نجم.
+تنبيه مهم عن حراج: أسعار حراج تمثّل عروض البيع الفردية وعادةً تكون أقل بـ 5-10% من القيمة السوقية الحقيقية بسبب التفاوض. لذا استخدمها كحد أدنى للمقارنة، لا كسعر مرجعي وحيد.
 {$reEvaluationNote}
 
 ━━━ بيانات السلعة ━━━
@@ -93,8 +94,13 @@ class ThamnEvaluationService
 6. استخرج أبرز 6 خصائص للسلعة كـ features بناء على البيانات.
 7. يجب أن تكون جميع الردود والقيم المستخرجة (بما فيها reasoning و features) باللغة العربية الفصحى حصراً.
 8. إذا لم توجد صور للسلعة، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
-9. تجنب المبالغة في التسعير تماماً — السعر العادل الواقعي أهم من السعر المرتفع.
-10. إذا كان بالمنتج عيوب أو حوادث، اخصم من recommended_price بشكل واضح ومناسب لحجم العيب، ثم احسب min/max بالصيغة أعلاه.
+9. منهجية التسعير الصحيحة:
+   - قارن بمتوسط الـ 50% الوسطى من الإعلانات المشابهة (تجاهل الأعلى 25% والأدنى 25%).
+   - لا تأخذ أرخص سعر ولا أغلى سعر — خذ المتوسط العادل.
+   - السعر العادل هو ما يرضى به بائع معقول ومشتري معقول في السوق السعودي اليوم.
+   - غياب الصور لا يعني انخفاض السعر — يعني فقط انخفاض الـ confidence.
+10. إذا كان بالمنتج عيوب أو حوادث موثّقة، اخصم من recommended_price بشكل واضح ومناسب لحجم العيب، ثم احسب min/max بالصيغة أعلاه.
+11. للسيارات تحديداً: ارجع لأسعار نفس الموديل والسنة والشكل (فيس ليفت / قبل فيس ليفت) في السوق السعودي الحالي، وخذ متوسط الأسعار لا أدناها.
 
 ━━━ هيكل الرد (JSON فقط — لا نص خارجه) ━━━
 {
@@ -103,7 +109,7 @@ class ThamnEvaluationService
   "recommended_price": <رقم صحيح بالريال السعودي>,
   "currency": "SAR",
   "confidence": <رقم عشري من 0.0 إلى 1.0>,
-  "reasoning": "<تحليل احترافي مباشر: سبب التسعير، تأثير الحالة، مقارنة السوق، وأثر الصور إن وجدت — بلا عبارات احتمالية>",
+  "reasoning": "<تحليل احترافي مباشر: سبب التسعير، المراجع السوقية المستخدمة، تأثير الحالة، مقارنة السوق، وأثر الصور إن وجدت — بلا عبارات احتمالية>",
   "features": ["خاصية 1", "خاصية 2", "خاصية 3", "خاصية 4", "خاصية 5", "خاصية 6"],
   "image_prompt": "<وصف بالإنجليزية للصورة إن لم تكن هناك صور، أو null>"
 }
@@ -155,7 +161,7 @@ PROMPT;
             } catch (\Throwable $e) {
                 Log::error('Failed to generate virtual image via DALL-E', ['error' => $e->getMessage()]);
             }
-
+        } // end if (!$hasImages)
 
         $tokens = $order->user->getFcmTokens();
 
@@ -180,32 +186,7 @@ PROMPT;
             }
 
         } else {
-            // ── التثمين الاحترافي/الهجين: بلّغ الأدمن واطلب من العميل الانتظار ──
-            try {
-                $whatsapp = app(\App\Services\WhatsAppService::class);
-                $categoryName = $order->category->name_ar ?? 'القسم';
-                $msg = "يا مدير، تم الانتهاء من التقييم الأولي عبر الذكاء الاصطناعي للطلب رقم {$order->id} من قسم {$categoryName}. الطلب ينتظر تقييم الخبير ثم اعتمادك.";
-
-                $adminPhones = ['+201021443985', '+966503955098'];
-                foreach ($adminPhones as $phone) {
-                    $whatsapp->sendMessage($phone, $msg);
-                }
-
-                $adminEmail = 'thmmnapplic@gmail.com';
-                Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                    "مرحلة AI اكتملت للطلب رقم #{$order->id} — ينتظر الخبير",
-                    $msg,
-                    route('orders.show', $order->id)
-                ));
-            } catch (\Throwable $e) {
-                Log::error('AI Valuation Admin Notification Failed: ' . $e->getMessage());
-            }
-
-            // DB Notification to Admin
-            $admins = \App\Models\User::role('superadmin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\ExpertEvaluatedOrderAdminNotification($order, $order->user));
-            }
+            // ── التثمين الاحترافي/الهجين: اطلب من العميل الانتظار فقط ──
 
             // FCM: اطلب من العميل الانتظار
             if (!empty($tokens)) {
@@ -296,14 +277,14 @@ PROMPT;
 
         $whatsapp = app(\App\Services\WhatsAppService::class);
 
-        // 1. Notify ALL Experts via Email and WhatsApp
+        // Notify ALL Experts via Email, WhatsApp, and DB Notification
         $experts = \App\Models\User::role('expert')->get();
         foreach ($experts as $expert) {
             // Send WhatsApp
             if ($expert->phone) {
                 $whatsapp->sendMessage(
                     $expert->phone,
-                    "يا خبيرنا، فيه طلب تثمين احترافي جديد رقم {$order->id} متاح الآن بالمنصة. نرجو منك الدخول وتقييم الطلب في أسرع وقت للأدمن."
+                    "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت."
                 );
             }
             // Send Email
@@ -311,36 +292,12 @@ PROMPT;
                 try {
                     Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                         "طلب تثمين احترافي جديد بانتظارك رقم #{$order->id}",
-                        "يا خبيرنا العزيز، تم تقديم طلب تثمين احترافي جديد رقم {$order->id}. نرجو منك الدخول إلى لوحة التحكم وتقييم الطلب في أسرع وقت للأدمن.",
+                        "هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
                         route('orders.show', $order->id)
                     ));
                 } catch (\Throwable $e) {
                     Log::error("Failed to send expert email for best order: " . $e->getMessage());
                 }
-            }
-        }
-
-        // 2. Notify Admin via Email and WhatsApp
-        // Admin Email
-        $adminEmail = 'thmmnapplic@gmail.com';
-        try {
-            Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                "طلب تثمين احترافي جديد رقم #{$order->id}",
-                "بشرى سارة! تم دفع طلب التثمين الاحترافي الجديد رقم {$order->id}.\nتم إرسال تنبيه لكافة الخبراء للتقييم بأسرع وقت للأدمن.",
-                route('orders.show', $order->id)
-            ));
-        } catch (\Throwable $e) {
-            Log::error("Failed to send admin email for best order: " . $e->getMessage());
-        }
-
-        // Admin WhatsApp
-        $admins = \App\Models\User::role('superadmin')->get();
-        foreach ($admins as $admin) {
-            if ($admin->phone) {
-                $whatsapp->sendMessage(
-                    $admin->phone,
-                    "يا مدير، فيه طلب تثمين احترافي جديد رقم {$order->id} تم دفعه وتوجيهه للخبراء. شيك عليه بالمنصة."
-                );
             }
         }
     }

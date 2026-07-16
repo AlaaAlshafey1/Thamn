@@ -410,8 +410,8 @@ class PaymentController extends Controller
             $expertToken = $expert->fcm_token ?? $expert->fcm_token_android ?? $expert->fcm_token_ios;
             if ($expertToken) {
                 $this->notifyByFirebase(
-                    lang('طلب تقييم جديد متاح', 'New Evaluation Request Available', request()),
-                    lang('يوجد طلب تقييم جديد رقم ' . $order->id . ' متاح الآن في السوق.', 'A new evaluation request #' . $order->id . ' is now available.', request()),
+                    lang('طلب تثمين احترافي جديد 🔔', 'New Professional Valuation Request 🔔', request()),
+                    lang('هلا بك خبير 👋 وصل طلب تثمين احترافي جديد رقم ' . $order->id . ' وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.', 'Hello expert 👋 A new professional valuation request #' . $order->id . ' is now available. Please login and evaluate as soon as possible.', request()),
                     [$expertToken],
                     ['data' => ['user_id' => $expert->id, 'order_id' => $order->id, 'type' => 'new_expert_order']]
                 );
