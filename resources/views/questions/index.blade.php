@@ -3,479 +3,672 @@
 
 @section('css')
 <style>
-body {
-    background-color: #f8f9fa;
-}
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+body { background-color: #f0f2f5; font-family: 'Tajawal', sans-serif; }
+
+/* ── Page Header ── */
 .page-header {
-    margin-bottom: 30px;
-    padding: 20px 0;
-    border-bottom: 2px dashed #e2e8f0;
+    margin-bottom: 28px;
+    padding: 24px 0 20px;
+    border-bottom: 1px solid #e8eaf0;
 }
+.page-title { font-size: 1.6rem; font-weight: 800; color: #1a1d23; margin: 0 0 4px; }
+.page-subtitle { color: #8b92a5; font-size: 0.92rem; margin: 0; }
+
 .btn-add {
-    background-color: #31363F;
+    background: linear-gradient(135deg, #31363F 0%, #1a1d23 100%);
     color: #F8B400;
     border: none;
-    padding: 10px 24px;
-    border-radius: 12px;
+    padding: 12px 28px;
+    border-radius: 14px;
     font-weight: 700;
-    transition: all 0.3s;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(49,54,63,0.25);
 }
-.btn-add:hover {
-    background-color: #1a1d21;
-    color: #F8B400;
-    transform: translateY(-2px);
-}
+.btn-add:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(49,54,63,0.35); color: #F8B400; }
 
-/* Category Card */
-.category-card {
-    background-color: transparent;
-    margin-bottom: 30px;
+/* ── Filter Card ── */
+.filter-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid #f0f2f5;
 }
+.filter-card .form-control,
+.filter-card .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #e8eaf0;
+    padding: 10px 14px;
+    font-size: 0.92rem;
+    transition: all 0.2s;
+    background: #f8f9fc;
+}
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
+    border-color: #F8B400;
+    box-shadow: 0 0 0 3px rgba(248,180,0,0.12);
+    background: #fff;
+}
+.filter-label { font-size: 0.8rem; font-weight: 700; color: #8b92a5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+/* ── Category Card ── */
+.category-card { margin-bottom: 20px; }
+
 .category-header {
-    background-color: #2b2e33;
-    border-radius: 24px;
-    padding: 20px 30px 10px 30px;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    background: linear-gradient(135deg, #23262d 0%, #2d3139 100%);
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
     transition: all 0.3s;
-    user-select: none;
-}
-.category-header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #9ca3af;
-    font-size: 0.95rem;
-    font-weight: 600;
     cursor: pointer;
 }
+.category-header:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
 
-.category-title-container {
+.category-header-inner {
+    padding: 18px 24px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
 }
-
-.category-title {
-    color: #F8B400;
-    font-size: 1.35rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.circle-indicator {
-    width: 22px;
-    height: 22px;
-    background-color: #F8B400;
+.cat-left { display: flex; align-items: center; gap: 14px; }
+.cat-dot {
+    width: 10px; height: 10px;
+    background: #F8B400;
     border-radius: 50%;
-    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(248,180,0,0.2);
+    flex-shrink: 0;
 }
-
-
+.category-title { color: #F8B400; font-size: 1.15rem; font-weight: 800; margin: 0; letter-spacing: -0.2px; }
+.cat-count {
+    background: rgba(248,180,0,0.15);
+    color: #F8B400;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+.cat-chevron { color: rgba(255,255,255,0.5); font-size: 1.3rem; transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.category-card.collapsed .cat-chevron { transform: rotate(180deg); }
 
 /* Steps Tabs */
-.category-steps {
+.steps-bar {
     display: flex;
     overflow-x: auto;
-    gap: 20px;
-    margin-top: 25px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    scrollbar-width: none; /* Firefox */
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 0 24px;
+    scrollbar-width: none;
 }
-.category-steps::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
-}
+.steps-bar::-webkit-scrollbar { display: none; }
 .step-tab {
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.35);
     font-weight: 600;
-    font-size: 0.95rem;
-    padding: 0 10px 15px 10px;
+    font-size: 0.88rem;
+    padding: 12px 16px;
     cursor: pointer;
     white-space: nowrap;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s;
+    border-bottom: 2.5px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.1px;
 }
-.step-tab.active {
-    color: #F8B400;
-    border-bottom-color: #F8B400;
-}
-.step-tab:hover:not(.active) {
-    color: #d1d5db;
-}
+.step-tab.active { color: #F8B400; border-bottom-color: #F8B400; }
+.step-tab:hover:not(.active) { color: rgba(255,255,255,0.7); }
 
-.category-toggle-container {
-    text-align: center;
-    padding-top: 5px;
-    cursor: pointer;
-}
-
-.category-toggle {
-    color: #fff;
-    font-size: 1.8rem;
-    transition: transform 0.3s ease;
-}
-
-.category-card.collapsed .category-toggle {
-    transform: rotate(180deg);
-}
-
-/* Questions Body */
-.category-body {
-    padding: 20px 0;
-}
+/* ── Questions Body ── */
+.category-body { padding: 14px 0 4px; }
 
 .sortable-list {
     list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.question-item {
-    background-color: #FFF8F3;
-    border-radius: 16px;
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: all 0.2s;
-    cursor: grab;
-    border: 1px solid transparent;
-}
-.question-item:hover {
-    background-color: #fff;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.04);
-    border-color: #e2e8f0;
-}
-.question-item:active {
-    cursor: grabbing;
-}
-
-.question-item.sortable-ghost {
-    opacity: 0.5;
-    background-color: #f1f5f9;
-    border: 2px dashed #F8B400;
-}
-.question-item.sortable-drag {
-    background-color: #fff !important;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
-}
-
-.question-number {
-    width: 38px;
-    height: 38px;
-    background-color: #000;
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 800;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.question-text-content {
-    flex-grow: 1;
-}
-
-.question-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 6px 0;
-    display: flex;
-    align-items: center;
+    padding: 0; margin: 0;
+    display: flex; flex-direction: column;
     gap: 8px;
 }
 
-.question-subtitle {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin: 0;
+.question-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s ease;
+    border: 1.5px solid #f0f2f5;
+    position: relative;
+}
+.question-item:hover {
+    border-color: #e0e3ea;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    transform: translateX(-2px);
+}
+.question-item.sortable-ghost { opacity: 0.4; background: #f8f9fc; border: 2px dashed #F8B400; }
+.question-item.sortable-drag { box-shadow: 0 12px 35px rgba(0,0,0,0.12) !important; transform: scale(1.01); }
+
+/* Drag Handle */
+.drag-handle {
+    color: #d1d5db;
+    cursor: grab;
+    font-size: 1.1rem;
+    padding: 4px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+.drag-handle:hover { color: #9ca3af; }
+.question-item:active .drag-handle { cursor: grabbing; }
+
+/* Question Number */
+.question-number {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #1a1d23, #31363F);
+    color: #F8B400;
+    border-radius: 10px;
+    display: flex; justify-content: center; align-items: center;
+    font-weight: 800; font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
+/* Question Text */
+.question-text-content { flex-grow: 1; min-width: 0; }
+.question-title {
+    font-size: 1rem; font-weight: 700; color: #1a1d23;
+    margin: 0 0 3px;
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.question-subtitle { font-size: 0.82rem; color: #9ca3af; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Actions */
 .question-actions-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center;
+    gap: 6px; flex-shrink: 0;
 }
 
-.action-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background-color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #6b7280;
-    font-size: 1.2rem;
-    border: 1px solid #e5e7eb;
-    transition: all 0.2s;
-    text-decoration: none;
+.move-btns-group { display: flex; flex-direction: column; gap: 3px; }
+.move-btn {
+    width: 24px; height: 24px;
+    border-radius: 6px; border: 1.5px solid #e8eaf0;
+    background: #f8f9fc;
+    color: #b0b7c3; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; padding: 0;
 }
-.action-icon:hover {
-    background-color: #f3f4f6;
-    color: #111827;
+.move-btn:hover { background: #23262d; color: #F8B400; border-color: #23262d; }
+
+.toggle-wrap { padding: 0 4px; }
+.form-check-input { cursor: pointer; }
+.form-check-input:checked { background-color: #F8B400; border-color: #F8B400; }
+.form-check-input:focus { box-shadow: 0 0 0 3px rgba(248,180,0,0.2); }
+
+.action-btn {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: #f8f9fc;
+    border: 1.5px solid #e8eaf0;
+    color: #8b92a5;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none; flex-shrink: 0;
 }
+.action-btn:hover { transform: scale(1.08); }
+.action-btn.btn-edit:hover   { color: #F8B400; border-color: #F8B400; background: #fffbeb; }
+.action-btn.btn-view:hover   { color: #3b82f6; border-color: #3b82f6; background: #eff6ff; }
+.action-btn.btn-copy:hover   { color: #10b981; border-color: #10b981; background: #ecfdf5; }
+.action-btn.btn-delete:hover { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
 
-.action-edit:hover { color: #F8B400; border-color: #F8B400; background-color: #fffbeb; }
-.action-view:hover { color: #3b82f6; border-color: #3b82f6; background-color: #eff6ff; }
-.action-delete:hover { color: #ef4444; border-color: #ef4444; background-color: #fef2f2; }
+/* ── Duplicate Modal ── */
+.dup-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,12,18,0.55);
+    backdrop-filter: blur(6px);
+    z-index: 1050;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+}
+.dup-modal-backdrop.show { opacity: 1; pointer-events: all; }
 
-/* Custom Toast */
-.custom-toast {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    background: #31363F;
-    color: #fff;
-    padding: 16px 24px;
+.dup-modal {
+    background: #fff;
+    border-radius: 24px;
+    width: 480px; max-width: 95vw;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    transform: translateY(30px) scale(0.96);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+    direction: rtl;
+}
+.dup-modal-backdrop.show .dup-modal { transform: translateY(0) scale(1); }
+
+.dup-modal-header {
+    background: linear-gradient(135deg, #23262d 0%, #31363F 100%);
+    padding: 22px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.dup-modal-title { color: #F8B400; font-weight: 800; font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
+.dup-modal-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: none;
+    color: rgba(255,255,255,0.6); font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+}
+.dup-modal-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+.dup-modal-body { padding: 28px; }
+
+.dup-question-preview {
+    background: #f8f9fc;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    z-index: 9999;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
     border-right: 4px solid #F8B400;
 }
-.custom-toast.show {
-    transform: translateY(0);
-    opacity: 1;
+.dup-question-preview p { margin: 0; color: #1a1d23; font-weight: 700; font-size: 0.95rem; }
+.dup-question-preview small { color: #8b92a5; font-size: 0.8rem; }
+
+.dup-field-label {
+    font-size: 0.82rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px; display: block;
 }
-.custom-toast.error {
-    border-right-color: #ef4444;
+
+.flow-options { display: flex; gap: 10px; margin-bottom: 20px; }
+.flow-option {
+    flex: 1;
+    border: 2px solid #e8eaf0;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
 }
+.flow-option input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.flow-option.selected { border-color: #F8B400; background: #fffbeb; }
+.flow-option .flow-icon { font-size: 1.4rem; margin-bottom: 4px; display: block; }
+.flow-option .flow-name { font-size: 0.85rem; font-weight: 700; color: #374151; }
+.flow-option.selected .flow-name { color: #92620a; }
+
+.dup-select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e8eaf0;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    background: #f8f9fc;
+    color: #1a1d23;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b92a5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    padding-left: 36px;
+}
+.dup-select:focus { border-color: #F8B400; box-shadow: 0 0 0 3px rgba(248,180,0,0.12); background-color: #fff; }
+
+.dup-modal-footer {
+    padding: 0 28px 28px;
+    display: flex; gap: 10px; justify-content: flex-end;
+}
+.btn-dup-cancel {
+    padding: 11px 22px;
+    border-radius: 12px; border: 1.5px solid #e8eaf0;
+    background: #fff; color: #6b7280; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; font-size: 0.92rem;
+}
+.btn-dup-cancel:hover { background: #f3f4f6; border-color: #d1d5db; }
+.btn-dup-confirm {
+    padding: 11px 28px;
+    border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #F8B400, #e6a500);
+    color: #1a1d23; font-weight: 800;
+    cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 0.92rem; display: flex; align-items: center; gap: 7px;
+    box-shadow: 0 4px 14px rgba(248,180,0,0.3);
+}
+.btn-dup-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(248,180,0,0.4); }
+
+/* ── Empty State ── */
+.empty-state {
+    text-align: center; padding: 32px 20px;
+    background: #fff; border-radius: 14px;
+    border: 1.5px dashed #e0e3ea;
+}
+.empty-state i { font-size: 2.5rem; color: #d1d5db; display: block; margin-bottom: 10px; }
+.empty-state p { color: #9ca3af; font-size: 0.9rem; margin: 0; }
+
+/* ── Toast ── */
+.custom-toast {
+    position: fixed; bottom: 28px; left: 28px;
+    background: #1a1d23; color: #fff;
+    padding: 14px 20px; border-radius: 14px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+    transform: translateY(80px) scale(0.9); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 9999; font-weight: 600; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px;
+    border-right: 3px solid #F8B400; max-width: 320px;
+}
+.custom-toast.show { transform: translateY(0) scale(1); opacity: 1; }
+.custom-toast.error { border-right-color: #ef4444; }
 </style>
 @endsection
 
 @section('content')
-<div class="container-fluid" style="direction: rtl;">
+<div class="container-fluid" style="direction: rtl; max-width: 1100px;">
+
+    {{-- Page Header --}}
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h3 class="fw-bold text-dark mb-2">إدارة الأسئلة والمراحل</h3>
-            <p class="text-muted mb-0">اضغط على الفئة لعرض المراحل، ثم اختر المرحلة لترتيب أسئلتها بالسحب والإفلات.</p>
+            <h3 class="page-title">إدارة الأسئلة والمراحل</h3>
+            <p class="page-subtitle">اسحب وأفلت الأسئلة لإعادة ترتيبها، أو استخدم أزرار ↑↓</p>
         </div>
         <a href="{{ route('questions.create', ['flow' => request('flow')]) }}" class="btn-add">
-            <i class="bx bx-plus fs-5 me-2"></i> إضافة سؤال جديد
+            <i class="bx bx-plus fs-5"></i> سؤال جديد
         </a>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success shadow-sm border-0 rounded-3 mb-4" role="alert">
-            <i class="bx bx-check-circle me-2 fs-5 align-middle"></i> {{ session('success') }}
+        <div class="alert alert-success d-flex align-items-center gap-2 rounded-3 border-0 shadow-sm mb-4" role="alert" style="background:#ecfdf5; color:#065f46; border-right:4px solid #10b981 !important;">
+            <i class="bx bx-check-circle fs-5"></i>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    <div class="questions-container">
-        <!-- Filters Section -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: #fff;">
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label text-muted small fw-bold">بحث باسم السؤال</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i class="bx bx-search text-muted"></i></span>
-                            <input type="text" id="filterName" class="form-control border-0 bg-light" placeholder="اكتب اسم السؤال للبحث...">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label text-muted small fw-bold">تصفية بالفئة</label>
-                        <select id="filterCategory" class="form-select border-0 bg-light">
-                            <option value="">جميع الفئات</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label text-muted small fw-bold">تصفية بالمرحلة</label>
-                        <select id="filterStage" class="form-select border-0 bg-light">
-                            <option value="">جميع المراحل</option>
-                            @foreach($steps as $st)
-                                <option value="{{ $st->id }}">{{ $st->name_ar }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+    {{-- Filters --}}
+    <div class="filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="filter-label">بحث باسم السؤال</label>
+                <div class="input-group">
+                    <span class="input-group-text" style="background:#f8f9fc; border:1.5px solid #e8eaf0; border-left:none; border-radius:10px 0 0 10px;">
+                        <i class="bx bx-search" style="color:#8b92a5;"></i>
+                    </span>
+                    <input type="text" id="filterName" class="form-control" placeholder="ابحث عن سؤال..." style="border-right:none; border-radius:0 10px 10px 0;">
                 </div>
             </div>
+            <div class="col-md-4">
+                <label class="filter-label">الفئة</label>
+                <select id="filterCategory" class="form-select">
+                    <option value="">جميع الفئات</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="filter-label">المرحلة</label>
+                <select id="filterStage" class="form-select">
+                    <option value="">جميع المراحل</option>
+                    @foreach($steps as $st)
+                        <option value="{{ $st->id }}">{{ $st->name_ar }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
+    </div>
 
+    {{-- Categories --}}
+    @foreach ($categories as $index => $category)
         @php
-            $totalCategories = count($categories);
+            $categoryStepIds = $category->questions->pluck('stageing')->unique()->toArray();
+            $categorySteps = $steps->filter(fn($s) => in_array($s->id, $categoryStepIds))->values();
+            $totalQ = $category->questions->count();
         @endphp
 
-        @foreach ($categories as $index => $category)
-            @php
-                $percentage = $totalCategories > 0 ? round((($index + 1) / $totalCategories) * 100) : 0;
-                $categoryStepIds = $category->questions->pluck('stageing')->unique()->toArray();
-                $categorySteps = $steps->filter(function($step) use ($categoryStepIds) {
-                    return in_array($step->id, $categoryStepIds);
-                })->values();
-            @endphp
-            <div class="category-card {{ $index == 0 ? '' : 'collapsed' }}" id="category-card-{{ $category->id }}">
-                <div class="category-header">
-                    <div class="category-header-top" onclick="toggleCategory('category-card-{{ $category->id }}', 'category-collapse-{{ $category->id }}')">
-
-                        <div class="category-title-container">
-                            <h4 class="category-title">{{ $category->name_ar }}</h4>
-                            <span class="circle-indicator"></span>
-                        </div>
+        <div class="category-card {{ $index == 0 ? '' : 'collapsed' }}" id="category-card-{{ $category->id }}">
+            <div class="category-header">
+                <div class="category-header-inner" onclick="toggleCategory('category-card-{{ $category->id }}', 'category-collapse-{{ $category->id }}')">
+                    <div class="cat-left">
+                        <span class="cat-dot"></span>
+                        <h4 class="category-title">{{ $category->name_ar }}</h4>
+                        <span class="cat-count">{{ $totalQ }} سؤال</span>
                     </div>
-                    
-                    <div id="category-collapse-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
-                        <!-- Horizontal Steps Tabs -->
-                        @if($categorySteps->count() > 0)
-                            <div class="category-steps">
-                                @foreach($categorySteps as $stepIndex => $step)
-                                    <div class="step-tab {{ $stepIndex == 0 ? 'active' : '' }}" onclick="switchStep({{ $category->id }}, {{ $step->id }}, this)">
-                                        {{ $step->name_ar }}
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="category-toggle-container" onclick="toggleCategory('category-card-{{ $category->id }}', 'category-collapse-{{ $category->id }}')">
-                        <i class="bx bx-chevron-up category-toggle"></i>
-                    </div>
+                    <i class="bx bx-chevron-up cat-chevron"></i>
                 </div>
-                
-                <div class="category-body" id="category-body-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
+
+                <div id="category-collapse-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
                     @if($categorySteps->count() > 0)
-                        @foreach($categorySteps as $stepIndex => $step)
-                            @php 
-                                $stepQuestions = $category->questions->where('stageing', $step->id); 
-                            @endphp
-                            <div class="step-content step-content-{{ $category->id }}" id="step-content-{{ $category->id }}-{{ $step->id }}" data-step-id="{{ $step->id }}" style="display: {{ $stepIndex == 0 ? 'block' : 'none' }};">
-                                @if($stepQuestions->count() > 0)
-                                    <ul class="sortable-list" data-category-id="{{ $category->id }}" data-step-id="{{ $step->id }}">
-                                        @foreach ($stepQuestions as $key => $question)
-                                        <li class="question-item" data-id="{{ $question->id }}">
-                                            
-                                            <div class="question-number">{{ $loop->iteration }}</div>
-                                            
-                                            <div class="question-text-content">
-                                                <h5 class="question-title">
-                                                    {{ $question->question_ar }} ؟
-                                                    <i class="bx bx-help-circle text-warning fs-5"></i>
-                                                </h5>
-                                                @if($question->question_en)
-                                                    <p class="question-subtitle">{{ $question->question_en }}</p>
-                                                @endif
-                                            </div>
-                                            
-                                            <div class="question-actions-group">
-                                                <div class="form-check form-switch me-3" style="display: flex; align-items: center;" title="تفعيل/تعطيل">
-                                                    <input class="form-check-input toggle-active-btn m-0" type="checkbox" role="switch" data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }} style="cursor: pointer; width: 2.5em; height: 1.25em;">
-                                                </div>
-                                                <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="action-icon action-edit" title="تعديل">
-                                                    <i class="bx bx-edit-alt"></i>
-                                                </a>
-                                                <a href="{{ route('questions.show', [$question->id, 'flow' => request('flow')]) }}" class="action-icon action-view" title="عرض">
-                                                    <i class="bx bx-show-alt"></i>
-                                                </a>
-                                                <form action="{{ route('questions.destroy', [$question->id, 'flow' => request('flow')]) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="action-icon action-delete border-0" title="حذف">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            
-                                        </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <div class="text-center py-4 bg-white rounded-4 border border-dashed">
-                                        <i class="bx bx-list-minus fs-1 text-muted opacity-50 mb-2"></i>
-                                        <h6 class="text-muted">لا توجد أسئلة مضافة في هذه المرحلة بعد</h6>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="text-center py-4 bg-white rounded-4 border border-dashed mx-4">
-                            <i class="bx bx-list-minus fs-1 text-muted opacity-50 mb-2"></i>
-                            <h6 class="text-muted">لا توجد أسئلة في هذه الفئة بعد. قم بإضافة أسئلة لتظهر هنا.</h6>
+                        <div class="steps-bar">
+                            @foreach($categorySteps as $stepIndex => $step)
+                                <div class="step-tab {{ $stepIndex == 0 ? 'active' : '' }}"
+                                     onclick="switchStep({{ $category->id }}, {{ $step->id }}, this)">
+                                    {{ $step->name_ar }}
+                                </div>
+                            @endforeach
                         </div>
                     @endif
                 </div>
             </div>
-        @endforeach
 
-        {{-- Uncategorized Items --}}
-        @if(isset($uncategorizedQuestions) && $uncategorizedQuestions->count() > 0)
-            <div class="category-card collapsed mt-5" id="category-card-uncategorized">
-                <div class="category-header" style="background-color: #4b5563;">
-                    <div class="category-header-top" onclick="toggleCategory('category-card-uncategorized', 'category-collapse-uncategorized')">
-
-                        <div class="category-title-container">
-                            <h4 class="category-title text-white">أسئلة غير مصنفة</h4>
-                            <span class="circle-indicator bg-secondary"></span>
-                        </div>
-                    </div>
-                    
-                    <div id="category-collapse-uncategorized" style="display: none;">
-                        <!-- No steps for uncategorized -->
-                    </div>
-
-                    <div class="category-toggle-container" onclick="toggleCategory('category-card-uncategorized', 'category-collapse-uncategorized')">
-                        <i class="bx bx-chevron-up category-toggle text-white"></i>
-                    </div>
-                </div>
-                
-                <div class="category-body" id="category-body-uncategorized" style="display: none;">
-                    <ul class="sortable-list" data-category-id="0">
-                        @foreach ($uncategorizedQuestions as $key => $question)
-                        <li class="question-item" data-id="{{ $question->id }}">
-                            
-                            <div class="question-number bg-secondary">{{ $key + 1 }}</div>
-                            
-                            <div class="question-text-content">
-                                <h5 class="question-title">
-                                    {{ $question->question_ar }} ؟
-                                    <i class="bx bx-help-circle text-muted fs-5"></i>
-                                </h5>
-                                @if($question->question_en)
-                                    <p class="question-subtitle">{{ $question->question_en }}</p>
-                                @endif
-                            </div>
-                            
-                            <div class="question-actions-group">
-                                <div class="form-check form-switch me-3" style="display: flex; align-items: center;" title="تفعيل/تعطيل">
-                                    <input class="form-check-input toggle-active-btn m-0" type="checkbox" role="switch" data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }} style="cursor: pointer; width: 2.5em; height: 1.25em;">
+            <div class="category-body" id="category-body-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
+                @if($categorySteps->count() > 0)
+                    @foreach($categorySteps as $stepIndex => $step)
+                        @php $stepQuestions = $category->questions->where('stageing', $step->id); @endphp
+                        <div class="step-content step-content-{{ $category->id }}"
+                             id="step-content-{{ $category->id }}-{{ $step->id }}"
+                             data-step-id="{{ $step->id }}"
+                             style="display: {{ $stepIndex == 0 ? 'block' : 'none' }};">
+                            @if($stepQuestions->count() > 0)
+                                <ul class="sortable-list" data-category-id="{{ $category->id }}" data-step-id="{{ $step->id }}">
+                                    @foreach ($stepQuestions as $question)
+                                    <li class="question-item" data-id="{{ $question->id }}">
+                                        <i class="bx bx-grid-vertical drag-handle"></i>
+                                        <div class="question-number">{{ $loop->iteration }}</div>
+                                        <div class="question-text-content">
+                                            <div class="question-title">
+                                                {{ $question->question_ar }} ؟
+                                                <i class="bx bx-help-circle text-warning" style="font-size:0.95rem; opacity:0.7;"></i>
+                                            </div>
+                                            @if($question->question_en)
+                                                <div class="question-subtitle">{{ $question->question_en }}</div>
+                                            @endif
+                                        </div>
+                                        <div class="question-actions-group">
+                                            <div class="move-btns-group">
+                                                <button class="move-btn move-up-btn" title="أعلى"><i class="bx bx-chevron-up"></i></button>
+                                                <button class="move-btn move-down-btn" title="أسفل"><i class="bx bx-chevron-down"></i></button>
+                                            </div>
+                                            <div class="toggle-wrap">
+                                                <div class="form-check form-switch m-0" title="تفعيل/تعطيل">
+                                                    <input class="form-check-input toggle-active-btn" type="checkbox" role="switch"
+                                                           data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }}
+                                                           style="width:2.2em; height:1.1em; cursor:pointer; margin:0;">
+                                                </div>
+                                            </div>
+                                            <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}"
+                                               class="action-btn btn-edit" title="تعديل">
+                                                <i class="bx bx-edit-alt"></i>
+                                            </a>
+                                            <a href="{{ route('questions.show', [$question->id, 'flow' => request('flow')]) }}"
+                                               class="action-btn btn-view" title="عرض">
+                                                <i class="bx bx-show-alt"></i>
+                                            </a>
+                                            <button class="action-btn btn-copy open-dup-modal" title="نسخ السؤال"
+                                                    data-id="{{ $question->id }}"
+                                                    data-name="{{ $question->question_ar }}"
+                                                    data-url="{{ route('questions.duplicate', $question->id) }}"
+                                                    data-flow="{{ $question->flow }}"
+                                                    data-category="{{ $question->category_id }}"
+                                                    data-step="{{ $question->stageing }}">
+                                                <i class="bx bx-copy-alt"></i>
+                                            </button>
+                                            <form action="{{ route('questions.destroy', [$question->id, 'flow' => request('flow')]) }}"
+                                                  method="POST" class="d-inline"
+                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا السؤال؟')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="action-btn btn-delete" title="حذف">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <div class="empty-state">
+                                    <i class="bx bx-list-plus"></i>
+                                    <p>لا توجد أسئلة في هذه المرحلة بعد</p>
                                 </div>
-                                <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="action-icon action-edit" title="تعديل">
-                                    <i class="bx bx-edit-alt"></i>
-                                </a>
-                                <form action="{{ route('questions.destroy', [$question->id, 'flow' => request('flow')]) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-icon action-delete border-0" title="حذف">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                            
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                @else
+                    <div class="empty-state">
+                        <i class="bx bx-question-mark"></i>
+                        <p>لا توجد أسئلة في هذه الفئة بعد</p>
+                    </div>
+                @endif
             </div>
-        @endif
+        </div>
+    @endforeach
 
+    {{-- Uncategorized --}}
+    @if(isset($uncategorizedQuestions) && $uncategorizedQuestions->count() > 0)
+        <div class="category-card collapsed mt-4" id="category-card-uncategorized">
+            <div class="category-header" style="background: linear-gradient(135deg,#374151,#4b5563);">
+                <div class="category-header-inner" onclick="toggleCategory('category-card-uncategorized','category-collapse-uncategorized')">
+                    <div class="cat-left">
+                        <span class="cat-dot" style="background:#9ca3af; box-shadow:0 0 0 3px rgba(156,163,175,0.2);"></span>
+                        <h4 class="category-title" style="color:#e5e7eb;">أسئلة غير مصنفة</h4>
+                        <span class="cat-count" style="background:rgba(255,255,255,0.1); color:#d1d5db;">{{ $uncategorizedQuestions->count() }}</span>
+                    </div>
+                    <i class="bx bx-chevron-up cat-chevron"></i>
+                </div>
+                <div id="category-collapse-uncategorized" style="display:none;"></div>
+            </div>
+            <div class="category-body" id="category-body-uncategorized" style="display:none;">
+                <ul class="sortable-list" data-category-id="0">
+                    @foreach ($uncategorizedQuestions as $key => $question)
+                    <li class="question-item" data-id="{{ $question->id }}">
+                        <i class="bx bx-grid-vertical drag-handle"></i>
+                        <div class="question-number" style="background:linear-gradient(135deg,#4b5563,#374151);">{{ $key + 1 }}</div>
+                        <div class="question-text-content">
+                            <div class="question-title">{{ $question->question_ar }} ؟</div>
+                            @if($question->question_en)
+                                <div class="question-subtitle">{{ $question->question_en }}</div>
+                            @endif
+                        </div>
+                        <div class="question-actions-group">
+                            <div class="move-btns-group">
+                                <button class="move-btn move-up-btn" title="أعلى"><i class="bx bx-chevron-up"></i></button>
+                                <button class="move-btn move-down-btn" title="أسفل"><i class="bx bx-chevron-down"></i></button>
+                            </div>
+                            <div class="toggle-wrap">
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input toggle-active-btn" type="checkbox" role="switch"
+                                           data-id="{{ $question->id }}" {{ $question->is_active ? 'checked' : '' }}
+                                           style="width:2.2em; height:1.1em; cursor:pointer; margin:0;">
+                                </div>
+                            </div>
+                            <a href="{{ route('questions.edit', [$question->id, 'flow' => request('flow')]) }}" class="action-btn btn-edit" title="تعديل">
+                                <i class="bx bx-edit-alt"></i>
+                            </a>
+                            <button class="action-btn btn-copy open-dup-modal" title="نسخ السؤال"
+                                    data-id="{{ $question->id }}"
+                                    data-name="{{ $question->question_ar }}"
+                                    data-url="{{ route('questions.duplicate', $question->id) }}"
+                                    data-flow="{{ $question->flow }}"
+                                    data-category="{{ $question->category_id }}"
+                                    data-step="{{ $question->stageing }}">
+                                <i class="bx bx-copy-alt"></i>
+                            </button>
+                            <form action="{{ route('questions.destroy', [$question->id, 'flow' => request('flow')]) }}"
+                                  method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="action-btn btn-delete" title="حذف">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+</div>
+
+{{-- ═══════════════ Duplicate Modal ═══════════════ --}}
+<div class="dup-modal-backdrop" id="dupModalBackdrop">
+    <div class="dup-modal">
+        <div class="dup-modal-header">
+            <h5 class="dup-modal-title">
+                <i class="bx bx-copy-alt" style="font-size:1.3rem;"></i>
+                نسخ السؤال
+            </h5>
+            <button class="dup-modal-close" id="closeDupModal">
+                <i class="bx bx-x"></i>
+            </button>
+        </div>
+        <div class="dup-modal-body">
+            {{-- Question preview --}}
+            <div class="dup-question-preview">
+                <p id="dupQuestionName"></p>
+                <small>سيتم إنشاء نسخة من هذا السؤال مع جميع خياراته</small>
+            </div>
+
+            {{-- Flow Selection --}}
+            <label class="dup-field-label">إرسال النسخة إلى</label>
+            <div class="flow-options mb-4">
+                <label class="flow-option selected" id="flow-valuation">
+                    <input type="radio" name="dup_flow" value="valuation" checked>
+                    <span class="flow-icon">🎯</span>
+                    <span class="flow-name">تثمين</span>
+                </label>
+                <label class="flow-option" id="flow-market">
+                    <input type="radio" name="dup_flow" value="market">
+                    <span class="flow-icon">🛒</span>
+                    <span class="flow-name">السوق</span>
+                </label>
+                <label class="flow-option" id="flow-both">
+                    <input type="radio" name="dup_flow" value="both">
+                    <span class="flow-icon">✨</span>
+                    <span class="flow-name">كلاهما</span>
+                </label>
+            </div>
+
+            {{-- Category --}}
+            <label class="dup-field-label">الفئة</label>
+            <select class="dup-select mb-4" id="dupCategory">
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
+                @endforeach
+            </select>
+
+            {{-- Step/Stage --}}
+            <label class="dup-field-label">المرحلة</label>
+            <select class="dup-select" id="dupStep">
+                <option value="">— بدون مرحلة —</option>
+                @foreach($steps as $st)
+                    <option value="{{ $st->id }}">{{ $st->name_ar }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="dup-modal-footer">
+            <button class="btn-dup-cancel" id="cancelDupModal">إلغاء</button>
+            <form id="dupForm" method="POST" style="display:inline;">
+                @csrf
+                <input type="hidden" name="flow" id="dupFlowInput">
+                <input type="hidden" name="category_id" id="dupCategoryInput">
+                <input type="hidden" name="stageing" id="dupStepInput">
+                <input type="hidden" name="current_flow" value="{{ request('flow') }}">
+                <button type="submit" class="btn-dup-confirm">
+                    <i class="bx bx-copy-alt"></i> نسخ الآن
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 @endsection
@@ -483,185 +676,168 @@ body {
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
+// ── Toggle Category ──
 function toggleCategory(cardId, collapseId) {
-    let card = $('#' + cardId);
-    let collapse = $('#' + collapseId);
-    
-    // We also need to toggle the body depending on the cardId
-    let bodyId = cardId.replace('category-card-', 'category-body-');
-    let body = $('#' + bodyId);
-
+    let card = $('#' + cardId), collapse = $('#' + collapseId);
+    let body = $('#' + cardId.replace('category-card-', 'category-body-'));
     if (card.hasClass('collapsed')) {
         card.removeClass('collapsed');
-        collapse.slideDown(300);
-        body.slideDown(300);
+        collapse.slideDown(280);
+        body.slideDown(280);
     } else {
         card.addClass('collapsed');
-        collapse.slideUp(300);
-        body.slideUp(300);
+        collapse.slideUp(280);
+        body.slideUp(280);
     }
 }
 
-function switchStep(categoryId, stepId, tabElement) {
-    // Remove active class from all tabs in this category
-    $(tabElement).siblings().removeClass('active');
-    // Add active class to clicked tab
-    $(tabElement).addClass('active');
-    
-    // Hide all step contents in this category
+// ── Switch Step Tab ──
+function switchStep(categoryId, stepId, tab) {
+    $(tab).siblings().removeClass('active');
+    $(tab).addClass('active');
     $('.step-content-' + categoryId).hide();
-    
-    // Show the selected step content
-    $('#step-content-' + categoryId + '-' + stepId).fadeIn(200);
+    $('#step-content-' + categoryId + '-' + stepId).fadeIn(180);
 }
 
-$(document).ready(function() {
-    // Search & Filter Logic
+$(document).ready(function () {
+
+    // ── Filters ──
     function applyFilters() {
         let name = $('#filterName').val().toLowerCase();
         let catId = $('#filterCategory').val();
         let stageId = $('#filterStage').val();
 
-        $('.category-card').each(function() {
-            let cardIdAttr = $(this).attr('id');
-            if (!cardIdAttr) return; // Skip uncategorized for now
-            let currentCat = cardIdAttr.replace('category-card-', '');
-            
+        $('.category-card').each(function () {
+            let cardId = $(this).attr('id');
+            if (!cardId) return;
+            let currentCat = cardId.replace('category-card-', '');
             let matchCat = (catId === '' || currentCat == catId);
-            let hasVisibleQuestions = false;
+            let hasVisible = false;
 
-            $(this).find('.step-content').each(function() {
+            $(this).find('.step-content').each(function () {
                 let currentStage = $(this).data('step-id');
                 let matchStage = (stageId === '' || currentStage == stageId);
-                
-                let stepHasVisible = false;
+                let stepHas = false;
 
-                $(this).find('.question-item').each(function() {
+                $(this).find('.question-item').each(function () {
                     let qName = $(this).find('.question-title').text().toLowerCase();
-                    let matchName = (name === '' || qName.includes(name));
-                    
-                    if (matchCat && matchStage && matchName) {
-                        $(this).show();
-                        stepHasVisible = true;
-                        hasVisibleQuestions = true;
-                    } else {
-                        $(this).hide();
-                    }
+                    let match = matchCat && matchStage && (name === '' || qName.includes(name));
+                    $(this)[match ? 'show' : 'hide']();
+                    if (match) { stepHas = true; hasVisible = true; }
                 });
 
-                // If filtering by name or stage, we might want to expand the matching steps
                 if (name !== '' || stageId !== '') {
-                    if (stepHasVisible) {
-                        $(this).show();
-                        // Also activate corresponding tab visually
-                        $(this).closest('.category-card').find('.step-tab').each(function(){
-                            if($(this).text().trim() === $('#filterStage option:selected').text().trim() || stageId === ''){
-                                // Just a visual enhancement, but leaving display block is enough
-                            }
-                        });
-                    } else {
-                        $(this).hide();
-                    }
-                } else {
-                    // Reset to normal tabs logic when no search
-                    if($(this).index() !== 0 && !$(this).closest('.category-card').find('.step-tab').eq($(this).index()).hasClass('active')) {
-                        $(this).hide();
-                    }
+                    $(this)[stepHas ? 'show' : 'hide']();
                 }
             });
 
-            if (hasVisibleQuestions || (matchCat && name === '' && stageId === '')) {
-                $(this).show();
-                if ((name !== '' || stageId !== '') && $(this).hasClass('collapsed')) {
-                    // Auto-expand card if it matches search
-                    toggleCategory(cardIdAttr, 'category-collapse-' + currentCat);
-                }
-            } else {
-                $(this).hide();
+            let show = hasVisible || (matchCat && name === '' && stageId === '');
+            $(this)[show ? 'show' : 'hide']();
+            if (show && (name !== '' || stageId !== '') && $(this).hasClass('collapsed')) {
+                toggleCategory(cardId, 'category-collapse-' + currentCat);
             }
         });
     }
+    $('#filterName, #filterCategory, #filterStage').on('input change', applyFilters);
 
-    $('#filterName, #filterCategory, #filterStage').on('input change', function() {
-        applyFilters();
+    // ── Move Up/Down ──
+    $(document).on('click', '.move-up-btn', function () {
+        let $item = $(this).closest('.question-item');
+        let $prev = $item.prev('.question-item');
+        if ($prev.length) { $item.insertBefore($prev); saveOrder($item.closest('.sortable-list')); }
+    });
+    $(document).on('click', '.move-down-btn', function () {
+        let $item = $(this).closest('.question-item');
+        let $next = $item.next('.question-item');
+        if ($next.length) { $item.insertAfter($next); saveOrder($item.closest('.sortable-list')); }
     });
 
-    $('.sortable-list').each(function() {
-        new Sortable(this, {
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            dragClass: 'sortable-drag',
-            onEnd: function (evt) {
-                let list = evt.to;
-                let items = $(list).find('.question-item');
-                let orderData = [];
-                
-                items.each(function(index) {
-                    let id = $(this).data('id');
-                    let position = index + 1;
-                    
-                    // Update visual number instantly
-                    $(this).find('.question-number').text(position);
-                    
-                    orderData.push({ id: id, position: position });
-                });
+    function saveOrder(list) {
+        let orderData = [];
+        $(list).find('.question-item').each(function (i) {
+            $(this).find('.question-number').text(i + 1);
+            orderData.push({ id: $(this).data('id'), position: i + 1 });
+        });
+        $.ajax({
+            url: '{{ route("questions.reorder") }}',
+            method: 'POST',
+            data: { _token: '{{ csrf_token() }}', order: orderData },
+            success: r => r.success && showToast('<i class="bx bx-check-circle"></i> تم حفظ الترتيب', 'success'),
+            error: () => showToast('<i class="bx bx-x-circle"></i> خطأ أثناء الحفظ', 'error')
+        });
+    }
 
-                // AJAX Request
-                $.ajax({
-                    url: '{{ route("questions.reorder") }}',
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        order: orderData
-                    },
-                    success: function(response) {
-                        if(response.success) {
-                            showToast('<i class="bx bx-check-circle fs-4 text-success"></i> ' + response.message, 'success');
-                        }
-                    },
-                    error: function() {
-                        showToast('<i class="bx bx-x-circle fs-4 text-danger"></i> حدث خطأ أثناء حفظ الترتيب', 'error');
-                    }
-                });
-            }
+    // ── Sortable Drag ──
+    $('.sortable-list').each(function () {
+        new Sortable(this, {
+            animation: 150, handle: '.drag-handle',
+            ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
+            onEnd: function (evt) { saveOrder(evt.to); }
         });
     });
 
-    $('.toggle-active-btn').on('change', function() {
-        let id = $(this).data('id');
-        let isActive = $(this).is(':checked') ? 1 : 0;
-
+    // ── Toggle Active ──
+    $('.toggle-active-btn').on('change', function () {
         $.ajax({
             url: '{{ route("questions.toggleActive") }}',
             method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: id,
-                is_active: isActive
-            },
-            success: function(response) {
-                if(response.success) {
-                    showToast('<i class="bx bx-check-circle fs-4 text-success"></i> ' + response.message, 'success');
-                }
-            },
-            error: function() {
-                showToast('<i class="bx bx-x-circle fs-4 text-danger"></i> حدث خطأ أثناء تحديث الحالة', 'error');
-            }
+            data: { _token: '{{ csrf_token() }}', id: $(this).data('id'), is_active: $(this).is(':checked') ? 1 : 0 },
+            success: r => r.success && showToast('<i class="bx bx-check-circle"></i> ' + r.message, 'success'),
+            error: () => showToast('<i class="bx bx-x-circle"></i> خطأ في التحديث', 'error')
         });
+    });
+
+    // ── Duplicate Modal ──
+    $(document).on('click', '.open-dup-modal', function () {
+        let btn = $(this);
+        $('#dupQuestionName').text(btn.data('name') + ' ؟');
+        $('#dupForm').attr('action', btn.data('url'));
+
+        // Pre-select flow
+        let flow = btn.data('flow') || 'valuation';
+        $('input[name="dup_flow"]').each(function () {
+            $(this).prop('checked', $(this).val() === flow);
+        });
+        $('.flow-option').removeClass('selected');
+        $('#flow-' + flow).addClass('selected');
+
+        // Pre-select category & step
+        $('#dupCategory').val(btn.data('category') || '');
+        $('#dupStep').val(btn.data('step') || '');
+
+        $('#dupModalBackdrop').addClass('show');
+    });
+
+    // Flow option click
+    $('.flow-option').on('click', function () {
+        $('.flow-option').removeClass('selected');
+        $(this).addClass('selected');
+        $(this).find('input[type="radio"]').prop('checked', true);
+    });
+
+    // Close modal
+    $('#closeDupModal, #cancelDupModal').on('click', function () {
+        $('#dupModalBackdrop').removeClass('show');
+    });
+    $('#dupModalBackdrop').on('click', function (e) {
+        if ($(e.target).is('#dupModalBackdrop')) $(this).removeClass('show');
+    });
+
+    // On form submit — fill hidden inputs
+    $('#dupForm').on('submit', function () {
+        $('#dupFlowInput').val($('input[name="dup_flow"]:checked').val());
+        $('#dupCategoryInput').val($('#dupCategory').val());
+        $('#dupStepInput').val($('#dupStep').val());
     });
 });
 
-function showToast(message, type) {
-    let toast = $('<div class="custom-toast ' + (type === 'error' ? 'error' : '') + '">' + message + '</div>');
-    $('body').append(toast);
-    
-    toast[0].offsetHeight; // Trigger reflow
-    
-    setTimeout(() => { toast.addClass('show'); }, 50);
-    setTimeout(() => { 
-        toast.removeClass('show'); 
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
+// ── Toast ──
+function showToast(msg, type) {
+    let t = $('<div class="custom-toast ' + (type === 'error' ? 'error' : '') + '">' + msg + '</div>');
+    $('body').append(t);
+    t[0].offsetHeight;
+    setTimeout(() => t.addClass('show'), 30);
+    setTimeout(() => { t.removeClass('show'); setTimeout(() => t.remove(), 400); }, 3000);
 }
 </script>
 @endsection

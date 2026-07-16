@@ -314,4 +314,40 @@ class QuestionController extends Controller
         $question->delete();
         return redirect()->route('questions.index')->with('success', 'تم حذف السؤال بنجاح');
     }
+
+    public function duplicate(Request $request, Question $question)
+    {
+        // نسخ السؤال مع إمكانية تغيير الوجهة من الـ modal
+        $newQuestion = $question->replicate();
+        $newQuestion->question_ar = $question->question_ar . ' (نسخة)';
+        $newQuestion->order = $question->order + 1;
+
+        // طبّق الخيارات من الـ modal إذا أُرسلت
+        if ($request->filled('flow'))        $newQuestion->flow        = $request->flow;
+        if ($request->filled('category_id')) $newQuestion->category_id = $request->category_id;
+        if ($request->filled('stageing'))    $newQuestion->stageing    = $request->stageing;
+
+        $newQuestion->save();
+
+        // نسخ الخيارات الرئيسية مع الـ sub-options
+        $question->load('options');
+        foreach ($question->options->whereNull('parent_option_id') as $option) {
+            $newOption = $option->replicate();
+            $newOption->question_id = $newQuestion->id;
+            $newOption->save();
+
+            foreach ($question->options->where('parent_option_id', $option->id) as $subOption) {
+                $newSub = $subOption->replicate();
+                $newSub->question_id = $newQuestion->id;
+                $newSub->parent_option_id = $newOption->id;
+                $newSub->save();
+            }
+        }
+
+        $targetFlow = $request->current_flow ?? $request->flow ?? request('flow');
+
+        return redirect()
+            ->route('questions.index', ['flow' => $targetFlow])
+            ->with('success', 'تم نسخ السؤال "' . $question->question_ar . '" بنجاح ✓');
+    }
 }

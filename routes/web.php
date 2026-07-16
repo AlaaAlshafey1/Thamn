@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('questions', QuestionController::class);
     Route::post('questions/reorder', [QuestionController::class, 'reorder'])->name('questions.reorder');
     Route::post('questions/toggle-active', [QuestionController::class, 'toggleActive'])->name('questions.toggleActive');
+    Route::post('questions/{question}/duplicate', [QuestionController::class, 'duplicate'])->name('questions.duplicate');
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);
