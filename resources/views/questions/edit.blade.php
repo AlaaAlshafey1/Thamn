@@ -180,14 +180,22 @@ input.form-control, select.form-select, textarea.form-control {
 <h6 class="form-section-title mt-4">🧩 الخيارات</h6>
 <div id="optionsList">
 @foreach($question->options->whereNull('parent_option_id') as $index=>$option)
-<div class="option-row mb-2 p-2 border rounded">
+<div class="option-row mb-2 p-2 border rounded" data-index="{{ $index }}">
+    <input type="hidden" name="options_id[]" value="{{ $option->id }}">
     <input name="options_ar[]" class="form-control mb-1" value="{{ $option->option_ar }}" placeholder="خيار عربي">
     <input name="options_en[]" class="form-control mb-1" value="{{ $option->option_en }}" placeholder="خيار EN">
     <input name="options_description_ar[]" class="form-control mb-1" value="{{ $option->description_ar }}" placeholder="وصف عربي">
     <input name="options_description_en[]" class="form-control mb-1" value="{{ $option->description_en }}" placeholder="وصف EN">
 
     <input name="options_order[]" class="form-control mb-1" value="{{ $option->order }}" placeholder="Order">
-    <input type="file" name="options_image[]" class="form-control mb-1">
+    <div class="d-flex gap-2 align-items-center mb-1">
+        <input type="file" name="options_image[]" class="form-control">
+        @if($option->image)
+            <img src="{{ asset('storage/' . $option->image) }}" width="40" height="40" style="border-radius:6px; object-fit:cover;">
+        @else
+            <span class="text-muted" style="font-size:12px;">بدون صورة</span>
+        @endif
+    </div>
     <input name="options_min[]" class="form-control mb-1" value="{{ $option->min }}" placeholder="Min">
     <input name="options_max[]" class="form-control mb-1" value="{{ $option->max }}" placeholder="Max">
     <input name="options_price[]" class="form-control mb-1" value="{{ $option->price }}" placeholder="Price">
@@ -197,16 +205,23 @@ input.form-control, select.form-select, textarea.form-control {
     <div class="sub-options-list ms-3 mt-2">
         @foreach($option->subOptions as $sub)
         <div class="sub-option d-flex gap-2">
+            <input type="hidden" name="sub_options_id[{{ $index }}][]" value="{{ $sub->id }}">
             <input name="sub_options_ar[{{ $index }}][]" class="form-control" value="{{ $sub->option_ar }}" placeholder="سؤال فرعي عربي">
             <input name="sub_options_en[{{ $index }}][]" class="form-control" value="{{ $sub->option_en }}" placeholder="سؤال فرعي EN">
             <input name="sub_options_order[{{ $index }}][]" class="form-control" value="{{ $sub->order }}" placeholder="Order">
-            <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">حذف</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()" title="حذف السؤال الفرعي">حذف</button>
         </div>
         @endforeach
     </div>
 
-    <button type="button" class="btn btn-sm btn-info mt-1" onclick="addSubOption(this)">إضافة سؤال فرعي</button>
-    <button type="button" class="btn btn-sm btn-danger mt-1" onclick="this.parentElement.remove()">حذف الخيار الرئيسي</button>
+    <div class="d-flex justify-content-between mt-3 border-top pt-2">
+        <button type="button" class="btn btn-sm btn-info" onclick="addSubOption(this)">
+            <i class="bx bx-plus"></i> إضافة سؤال فرعي
+        </button>
+        <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="this.parentElement.parentElement.remove()" title="مسح الخيار بالكامل">
+            <i class="bx bx-trash"></i> حذف الخيار
+        </button>
+    </div>
 </div>
 @endforeach
 

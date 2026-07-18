@@ -421,8 +421,9 @@ body { background-color: #f0f2f5; font-family: 'Tajawal', sans-serif; }
     {{-- Categories --}}
     @foreach ($categories as $index => $category)
         @php
-            $categoryStepIds = $category->questions->pluck('stageing')->unique()->toArray();
+            $categoryStepIds = $category->questions->pluck('stageing')->filter()->unique()->toArray();
             $categorySteps = $steps->filter(fn($s) => in_array($s->id, $categoryStepIds))->values();
+            $hasUnstaged = $category->questions->whereNull('stageing')->count() > 0;
             $totalQ = $category->questions->count();
         @endphp
 
@@ -438,7 +439,7 @@ body { background-color: #f0f2f5; font-family: 'Tajawal', sans-serif; }
                 </div>
 
                 <div id="category-collapse-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
-                    @if($categorySteps->count() > 0)
+                    @if($categorySteps->count() > 0 || $hasUnstaged)
                         <div class="steps-bar">
                             @foreach($categorySteps as $stepIndex => $step)
                                 <div class="step-tab {{ $stepIndex == 0 ? 'active' : '' }}"
@@ -446,22 +447,43 @@ body { background-color: #f0f2f5; font-family: 'Tajawal', sans-serif; }
                                     {{ $step->name_ar }}
                                 </div>
                             @endforeach
+                            @if($hasUnstaged)
+                                <div class="step-tab {{ $categorySteps->count() == 0 ? 'active' : '' }}"
+                                     onclick="switchStep({{ $category->id }}, 'unstaged', this)">
+                                    عام (بدون مرحلة)
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>
             </div>
 
             <div class="category-body" id="category-body-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
-                @if($categorySteps->count() > 0)
-                    @foreach($categorySteps as $stepIndex => $step)
-                        @php $stepQuestions = $category->questions->where('stageing', $step->id); @endphp
+                @if($categorySteps->count() > 0 || $hasUnstaged)
+                    @php
+                        $displayBlocks = [];
+                        foreach($categorySteps as $step) {
+                            $displayBlocks[] = [
+                                'id' => $step->id,
+                                'questions' => $category->questions->where('stageing', $step->id)
+                            ];
+                        }
+                        if($hasUnstaged) {
+                            $displayBlocks[] = [
+                                'id' => 'unstaged',
+                                'questions' => $category->questions->whereNull('stageing')
+                            ];
+                        }
+                    @endphp
+
+                    @foreach($displayBlocks as $bIndex => $block)
                         <div class="step-content step-content-{{ $category->id }}"
-                             id="step-content-{{ $category->id }}-{{ $step->id }}"
-                             data-step-id="{{ $step->id }}"
-                             style="display: {{ $stepIndex == 0 ? 'block' : 'none' }};">
-                            @if($stepQuestions->count() > 0)
-                                <ul class="sortable-list" data-category-id="{{ $category->id }}" data-step-id="{{ $step->id }}">
-                                    @foreach ($stepQuestions as $question)
+                             id="step-content-{{ $category->id }}-{{ $block['id'] }}"
+                             data-step-id="{{ $block['id'] }}"
+                             style="display: {{ $bIndex == 0 ? 'block' : 'none' }};">
+                            @if($block['questions']->count() > 0)
+                                <ul class="sortable-list" data-category-id="{{ $category->id }}" data-step-id="{{ $block['id'] == 'unstaged' ? '' : $block['id'] }}">
+                                    @foreach ($block['questions'] as $question)
                                     <li class="question-item" data-id="{{ $question->id }}">
                                         <i class="bx bx-grid-vertical drag-handle"></i>
                                         <div class="question-number">{{ $loop->iteration }}</div>

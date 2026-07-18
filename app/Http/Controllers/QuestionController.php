@@ -221,59 +221,102 @@ class QuestionController extends Controller
 
         $question->update($data);
 
-        QuestionOption::where('question_id', $question->id)->delete();
-
-
-
-
-
-            foreach ($request->options_ar ?? [] as $index => $option_ar) {
-
-                $imagePath = null;
-                if (isset($request->options_image[$index])) {
-                    $imagePath = $request->options_image[$index]->store('options', 'public');
+        // Get the IDs of options and sub-options that are kept
+        $keptOptionIds = $request->options_id ?? [];
+        $keptSubOptionIds = [];
+        if ($request->sub_options_id) {
+            foreach ($request->sub_options_id as $subIds) {
+                if (is_array($subIds)) {
+                    $keptSubOptionIds = array_merge($keptSubOptionIds, $subIds);
                 }
+            }
+        }
+        $keptSubOptionIds = array_filter($keptSubOptionIds);
 
-                // -------- الخيار الرئيسي --------
-                $option = QuestionOption::create([
-                    'question_id'   => $question->id,
-                    'parent_option_id'=> null,
-                    'option_ar'     => $option_ar,
-                    'option_en'     => $request->options_en[$index] ?? null,
-                    'description_ar'=> $request->options_description_ar[$index] ?? null,
-                    'description_en'=> $request->options_description_en[$index] ?? null,
-                    'image'         => $imagePath,
-                    'order'         => $request->options_order[$index] ?? $index,
-                    'min'           => $request->options_min[$index] ?? null,
-                    'max'           => $request->options_max[$index] ?? null,
-                    'price'         => $request->options_price[$index] ?? null,
-                    'badge'         => $request->options_badge[$index] ?? null,
-                    'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
-                    'is_active'     => true,
-                ]);
+        // Delete options that are not in the kept lists
+        QuestionOption::where('question_id', $question->id)
+            ->whereNull('parent_option_id')
+            ->whereNotIn('id', $keptOptionIds)
+            ->delete();
 
-                // -------- sub options --------
-                if (!empty($request->sub_options_ar[$index])) {
-                    foreach ($request->sub_options_ar[$index] as $subIndex => $sub_ar) {
-                        QuestionOption::create([
-                            'question_id'      => $question->id,
-                            'parent_option_id' => $option->id,
-                            'option_ar'        => $sub_ar,
-                            'option_en'        => $request->sub_options_en[$index][$subIndex] ?? null,
-                            'description_ar'   => $request->sub_options_description_ar[$index][$subIndex] ?? null,
-                            'description_en'   => $request->sub_options_description_en[$index][$subIndex] ?? null,
-                            'order'            => $subIndex,
-                            'min'              => $request->sub_options_min[$index][$subIndex] ?? null,
-                            'max'              => $request->sub_options_max[$index][$subIndex] ?? null,
-                            'price'            => $request->options_price[$index] ?? null,
-                            'badge'            => $request->options_badge[$index] ?? null,
-                            'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+        QuestionOption::where('question_id', $question->id)
+            ->whereNotNull('parent_option_id')
+            ->whereNotIn('id', $keptSubOptionIds)
+            ->delete();
 
-                            'is_active'        => true,
-                        ]);
+        foreach ($request->options_ar ?? [] as $index => $option_ar) {
+            $optionId = $request->options_id[$index] ?? null;
+            $imagePath = null;
+            
+            if (isset($request->options_image[$index])) {
+                $imagePath = $request->options_image[$index]->store('options', 'public');
+            }
+
+            $optionData = [
+                'question_id'   => $question->id,
+                'parent_option_id'=> null,
+                'option_ar'     => $option_ar,
+                'option_en'     => $request->options_en[$index] ?? null,
+                'description_ar'=> $request->options_description_ar[$index] ?? null,
+                'description_en'=> $request->options_description_en[$index] ?? null,
+                'order'         => $request->options_order[$index] ?? $index,
+                'min'           => $request->options_min[$index] ?? null,
+                'max'           => $request->options_max[$index] ?? null,
+                'price'         => $request->options_price[$index] ?? null,
+                'badge'         => $request->options_badge[$index] ?? null,
+                'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+                'is_active'     => true,
+            ];
+
+            if ($imagePath) {
+                $optionData['image'] = $imagePath;
+            }
+
+            if ($optionId) {
+                $option = QuestionOption::find($optionId);
+                if ($option) {
+                    $option->update($optionData);
+                } else {
+                    $option = QuestionOption::create($optionData);
+                }
+            } else {
+                $option = QuestionOption::create($optionData);
+            }
+
+            // -------- sub options --------
+            if (!empty($request->sub_options_ar[$index])) {
+                foreach ($request->sub_options_ar[$index] as $subIndex => $sub_ar) {
+                    $subOptionId = $request->sub_options_id[$index][$subIndex] ?? null;
+                    
+                    $subData = [
+                        'question_id'      => $question->id,
+                        'parent_option_id' => $option->id,
+                        'option_ar'        => $sub_ar,
+                        'option_en'        => $request->sub_options_en[$index][$subIndex] ?? null,
+                        'description_ar'   => $request->sub_options_description_ar[$index][$subIndex] ?? null,
+                        'description_en'   => $request->sub_options_description_en[$index][$subIndex] ?? null,
+                        'order'            => $subIndex,
+                        'min'              => $request->sub_options_min[$index][$subIndex] ?? null,
+                        'max'              => $request->sub_options_max[$index][$subIndex] ?? null,
+                        'price'            => $request->options_price[$index] ?? null,
+                        'badge'            => $request->options_badge[$index] ?? null,
+                        'sub_options_title' => $request->options_subOptionsTitle[$index] ?? null,
+                        'is_active'        => true,
+                    ];
+
+                    if ($subOptionId) {
+                        $subOption = QuestionOption::find($subOptionId);
+                        if ($subOption) {
+                            $subOption->update($subData);
+                        } else {
+                            QuestionOption::create($subData);
+                        }
+                    } else {
+                        QuestionOption::create($subData);
                     }
                 }
             }
+        }
 
 
         return redirect()->route('questions.index')
