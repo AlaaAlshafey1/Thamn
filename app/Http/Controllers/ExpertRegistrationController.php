@@ -88,14 +88,18 @@ class ExpertRegistrationController extends Controller
             // Assign expert role (Spatie)
             $user->assignRole('expert');
 
-            // Send welcome email with password
+            // Notify Expert via WhatsApp (Welcome message)
             try {
-                Mail::to($user->email)->send(new ExpertRegistrationMail($user, $plainPassword));
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                if ($user->phone) {
+                    $whatsapp->sendMessage(
+                        $user->phone, 
+                        "مرحباً بك {$user->first_name} 👋\nشكراً لتسجيلك كخبير في منصة ثمن. لقد تم استلام طلبك بنجاح، وسيقوم فريقنا بمراجعة بياناتك والرد عليك في أقرب وقت.\n\nنتمنى لك يوماً سعيداً!"
+                    );
+                }
 
                 // Notify All SuperAdmins via WhatsApp & Email
-                $whatsapp = app(\App\Services\WhatsAppService::class);
                 $admins = User::role('superadmin')->get();
-
                 $msg = \App\Services\WhatsAppService::getTemplate('new_expert_reg', ['name' => $user->first_name . ' ' . $user->last_name]);
 
                 $adminEmail = 'thmmnapplic@gmail.com';
@@ -106,7 +110,6 @@ class ExpertRegistrationController extends Controller
                 ));
 
                 foreach ($admins as $admin) {
-                    // 1. WhatsApp
                     if ($admin->phone) {
                         $whatsapp->sendMessage($admin->phone, $msg);
                     }

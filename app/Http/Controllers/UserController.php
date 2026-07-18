@@ -261,15 +261,23 @@ public function updateExpert(UserRequest $request, User $user)
         $user->update(['is_active' => !$wasActive]);
 
         if (!$wasActive && $user->is_active) {
-            // تم التفعيل → أرسل WhatsApp للخبير
+            // تم التفعيل → أرسل WhatsApp للخبير + إيميل
             try {
                 if ($user->phone) {
                     $whatsapp = app(\App\Services\WhatsAppService::class);
                     $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
                     $whatsapp->sendMessage($user->phone, $msg);
                 }
+
+                if ($user->email) {
+                    \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\SystemNotificationMail(
+                        'مبروك! تم تفعيل حسابك كخبير في ثمن 🎉',
+                        "مرحباً {$user->first_name}،\n\nيسعدنا إخبارك بأنه تم تفعيل حسابك كخبير في منصة ثمن بنجاح.\n\nيمكنك الآن الدخول إلى لوحة التحكم الخاصة بك للبدء في استقبال طلبات التثمين.\n\nطريقة الدخول:\nلا تحتاج إلى كلمة مرور! فقط أدخل رقم جوالك في صفحة الدخول، وسيصلك رمز التحقق (OTP) عبر الواتساب لتسجيل الدخول مباشرة.",
+                        route('expert.login')
+                    ));
+                }
             } catch (\Exception $e) {
-                \Log::error('Expert Activation WhatsApp Failed: ' . $e->getMessage());
+                \Log::error('Expert Activation Notification Failed: ' . $e->getMessage());
             }
             return redirect()->route('experts.show', $user->id)
                 ->with('success', '✅ تم تفعيل الخبير بنجاح، سيتمكن من استلام الطلبات الآن');

@@ -38,6 +38,11 @@ Route::post('/contact-us', [App\Http\Controllers\PublicPageController::class, 's
 Route::get('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'showForm'])->name('experts.register');
 Route::post('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'register'])->name('experts.register.submit');
 
+// Expert Login (OTP)
+Route::get('/expert/login', [App\Http\Controllers\Auth\ExpertLoginController::class, 'showForm'])->name('expert.login')->middleware('guest');
+Route::post('/expert/login/send-otp', [App\Http\Controllers\Auth\ExpertLoginController::class, 'sendOtp'])->name('expert.login.send-otp')->middleware('guest');
+Route::post('/expert/login/verify-otp', [App\Http\Controllers\Auth\ExpertLoginController::class, 'verifyOtp'])->name('expert.login.verify-otp')->middleware('guest');
+
 // ======= إقرار السرية للمحكمين المستقلين =======
 Route::prefix('declaration')->group(function () {
     Route::get('/{token}', [ArbitratorDeclarationController::class, 'show'])->name('declaration.show');

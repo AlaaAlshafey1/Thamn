@@ -125,9 +125,11 @@
 
                                         <!-- Forgot Password -->
                                         @if (Route::has('password.request'))
-                                            <div class="mt-3 text-center">
-                                                <a href="{{ route('password.request') }}">هل نسيت كلمة المرور؟</a>
-                                            </div>
+                                                    <div class="main-signin-footer mt-5">
+                                                        <p><a href="{{ route('password.request') }}">نسيت كلمة المرور؟</a></p>
+                                                        <p>هل أنت خبير في ثمن؟ <a href="{{ route('expert.login') }}">دخول الخبراء (برقم الجوال)</a></p>
+                                                        <!-- <p>Don't have an account? <a href="{{ url('/' . $page='signup') }}">Create an Account</a></p> -->
+                                                    </div>
                                         @endif
                                     </form>
 
