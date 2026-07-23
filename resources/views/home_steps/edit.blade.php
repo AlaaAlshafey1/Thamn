@@ -98,17 +98,27 @@
                 @foreach($homeStep->items as $index => $item)
                     <div class="item-row mb-3 p-3 border rounded">
                         <div class="row">
-                            <div class="col-md-5">
-                                <label class="form-label label-text">العنوان (Label) *</label>
-                                <input type="text" name="items[{{ $index }}][label]" class="form-control item-label"
-                                    value="{{ $item['label'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label label-text">العنوان (عربي) *</label>
+                                <input type="text" name="items[{{ $index }}][label_ar]" class="form-control item-label"
+                                    value="{{ $item['label_ar'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
                             </div>
-                            <div class="col-md-5">
-                                <label class="form-label value-text">الوصف (Value) *</label>
-                                <input type="text" name="items[{{ $index }}][value]" class="form-control item-value"
-                                    value="{{ $item['value'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label label-text-en">العنوان (إنجليزي) *</label>
+                                <input type="text" name="items[{{ $index }}][label_en]" class="form-control item-label-en"
+                                    value="{{ $item['label_en'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
                             </div>
-                            <div class="col-md-3 image-field"
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label value-text">الوصف (عربي) *</label>
+                                <input type="text" name="items[{{ $index }}][value_ar]" class="form-control item-value"
+                                    value="{{ $item['value_ar'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label value-text-en">الوصف (إنجليزي) *</label>
+                                <input type="text" name="items[{{ $index }}][value_en]" class="form-control item-value-en"
+                                    value="{{ $item['value_en'] ?? '' }}" {{ $homeStep->type == 'banner' ? '' : 'required' }}>
+                            </div>
+                            <div class="col-md-10 image-field mt-2"
                                 style="display: {{ in_array($homeStep->type, ['image', 'banner']) ? 'block' : 'none' }};">
                                 <label class="form-label">الصورة (Image)</label>
                                 <input type="file" name="items[{{ $index }}][image]" class="form-control image-input" accept="image/*" {{ $homeStep->type == 'banner' ? 'multiple' : '' }}>
@@ -119,7 +129,7 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="col-md-3 d-flex align-items-end">
+                            <div class="col-md-2 d-flex align-items-end mt-2">
                                 <button type="button" class="btn btn-danger btn-sm remove-item" {{ count($homeStep->items) == 1 ? 'disabled' : '' }}>حذف</button>
                             </div>
                         </div>
@@ -146,10 +156,10 @@
             const type = document.querySelector('select[name="type"]').value;
             const imageFields = document.querySelectorAll('.image-field');
             const bannerUpload = document.getElementById('banner-multiple-upload');
-            const itemLabels = document.querySelectorAll('.item-label');
-            const itemValues = document.querySelectorAll('.item-value');
-            const labelTexts = document.querySelectorAll('.label-text');
-            const valueTexts = document.querySelectorAll('.value-text');
+            const itemLabels = document.querySelectorAll('.item-label, .item-label-en');
+            const itemValues = document.querySelectorAll('.item-value, .item-value-en');
+            const labelTexts = document.querySelectorAll('.label-text, .label-text-en');
+            const valueTexts = document.querySelectorAll('.value-text, .value-text-en');
 
             if (type === 'image' || type === 'banner') {
                 imageFields.forEach(field => field.style.display = 'block');
@@ -158,17 +168,19 @@
             }
 
             if (type === 'banner') {
-                bannerUpload.style.display = 'block';
+                if(bannerUpload) bannerUpload.style.display = 'block';
                 itemLabels.forEach(el => el.required = false);
                 itemValues.forEach(el => el.required = false);
                 labelTexts.forEach(el => el.innerText = 'العنوان (اختياري)');
                 valueTexts.forEach(el => el.innerText = 'الوصف (اختياري)');
             } else {
-                bannerUpload.style.display = 'none';
+                if(bannerUpload) bannerUpload.style.display = 'none';
                 itemLabels.forEach(el => el.required = true);
                 itemValues.forEach(el => el.required = true);
-                labelTexts.forEach(el => el.innerText = 'العنوان (Label) *');
-                valueTexts.forEach(el => el.innerText = 'الوصف (Value) *');
+                document.querySelectorAll('.label-text').forEach(el => el.innerText = 'العنوان (عربي) *');
+                document.querySelectorAll('.label-text-en').forEach(el => el.innerText = 'العنوان (إنجليزي) *');
+                document.querySelectorAll('.value-text').forEach(el => el.innerText = 'الوصف (عربي) *');
+                document.querySelectorAll('.value-text-en').forEach(el => el.innerText = 'الوصف (إنجليزي) *');
             }
         }
 
@@ -183,25 +195,35 @@
             const type = document.querySelector('select[name="type"]').value;
             const imageFieldDisplay = (type === 'image' || type === 'banner') ? 'block' : 'none';
             const isRequired = type !== 'banner' ? 'required' : '';
-            const labelText = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (Label) *';
-            const valueText = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (Value) *';
+            const labelTextAr = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (عربي) *';
+            const labelTextEn = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (إنجليزي) *';
+            const valueTextAr = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (عربي) *';
+            const valueTextEn = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (إنجليزي) *';
 
             const newItem = `
                         <div class="item-row mb-3 p-3 border rounded">
                             <div class="row">
-                                <div class="col-md-5">
-                                    <label class="form-label label-text">${labelText}</label>
-                                    <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" ${isRequired}>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label label-text">${labelTextAr}</label>
+                                    <input type="text" name="items[${itemIndex}][label_ar]" class="form-control item-label" ${isRequired}>
                                 </div>
-                                <div class="col-md-5">
-                                    <label class="form-label value-text">${valueText}</label>
-                                    <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" ${isRequired}>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label label-text-en">${labelTextEn}</label>
+                                    <input type="text" name="items[${itemIndex}][label_en]" class="form-control item-label-en" ${isRequired}>
                                 </div>
-                                <div class="col-md-3 image-field" style="display: ${imageFieldDisplay};">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label value-text">${valueTextAr}</label>
+                                    <input type="text" name="items[${itemIndex}][value_ar]" class="form-control item-value" ${isRequired}>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label value-text-en">${valueTextEn}</label>
+                                    <input type="text" name="items[${itemIndex}][value_en]" class="form-control item-value-en" ${isRequired}>
+                                </div>
+                                <div class="col-md-10 image-field mt-2" style="display: ${imageFieldDisplay};">
                                     <label class="form-label">الصورة (Image)</label>
                                     <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" ${type === 'banner' ? 'multiple' : ''}>
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end mt-2">
                                     <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
                                 </div>
                             </div>
@@ -224,8 +246,10 @@
             const files = e.target.files;
             if (files.length > 1) {
                 const container = document.getElementById('items-container');
-                const label = e.target.closest('.item-row').querySelector('.item-label').value;
-                const value = e.target.closest('.item-row').querySelector('.item-value').value;
+                const labelAr = e.target.closest('.item-row').querySelector('.item-label').value;
+                const labelEn = e.target.closest('.item-row').querySelector('.item-label-en').value;
+                const valueAr = e.target.closest('.item-row').querySelector('.item-value').value;
+                const valueEn = e.target.closest('.item-row').querySelector('.item-value-en').value;
 
                 // Create a DataTransfer for the current input (keep only the first file)
                 const dtFirst = new DataTransfer();
@@ -237,19 +261,27 @@
                     const newItemHTML = `
                         <div class="item-row mb-3 p-3 border rounded">
                             <div class="row">
-                                <div class="col-md-5">
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label label-text">العنوان (اختياري)</label>
-                                    <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" value="${label}">
+                                    <input type="text" name="items[${itemIndex}][label_ar]" class="form-control item-label" value="${labelAr}">
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label label-text-en">العنوان (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][label_en]" class="form-control item-label-en" value="${labelEn}">
+                                </div>
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label value-text">الوصف (اختياري)</label>
-                                    <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" value="${value}">
+                                    <input type="text" name="items[${itemIndex}][value_ar]" class="form-control item-value" value="${valueAr}">
                                 </div>
-                                <div class="col-md-3 image-field" style="display: block;">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label value-text-en">الوصف (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][value_en]" class="form-control item-value-en" value="${valueEn}">
+                                </div>
+                                <div class="col-md-10 image-field mt-2" style="display: block;">
                                     <label class="form-label">الصورة (Image)</label>
                                     <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" multiple>
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end mt-2">
                                     <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
                                 </div>
                             </div>

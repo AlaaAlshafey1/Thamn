@@ -90,19 +90,27 @@
             <div id="items-container">
                 <div class="item-row mb-3 p-3 border rounded">
                     <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label label-text">العنوان (Label) *</label>
-                            <input type="text" name="items[0][label]" class="form-control item-label" required>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label label-text">العنوان (عربي) *</label>
+                            <input type="text" name="items[0][label_ar]" class="form-control item-label" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label value-text">الوصف (Value) *</label>
-                            <input type="text" name="items[0][value]" class="form-control item-value">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label label-text-en">العنوان (إنجليزي) *</label>
+                            <input type="text" name="items[0][label_en]" class="form-control item-label-en" required>
                         </div>
-                        <div class="col-md-3 image-field" style="display: none;">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label value-text">الوصف (عربي) *</label>
+                            <input type="text" name="items[0][value_ar]" class="form-control item-value">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label value-text-en">الوصف (إنجليزي) *</label>
+                            <input type="text" name="items[0][value_en]" class="form-control item-value-en">
+                        </div>
+                        <div class="col-md-10 image-field mt-2" style="display: none;">
                             <label class="form-label">الصورة (Image)</label>
                             <input type="file" name="items[0][image]" class="form-control image-input" accept="image/*">
                         </div>
-                        <div class="col-md-1 d-flex align-items-end">
+                        <div class="col-md-2 d-flex align-items-end mt-2">
                             <button type="button" class="btn btn-danger btn-sm remove-item" disabled>حذف</button>
                         </div>
                     </div>
@@ -127,10 +135,10 @@
         function toggleImageFields() {
             const type = document.querySelector('select[name="type"]').value;
             const imageFields = document.querySelectorAll('.image-field');
-            const itemLabels = document.querySelectorAll('.item-label');
-            const itemValues = document.querySelectorAll('.item-value');
-            const labelTexts = document.querySelectorAll('.label-text');
-            const valueTexts = document.querySelectorAll('.value-text');
+            const itemLabels = document.querySelectorAll('.item-label, .item-label-en');
+            const itemValues = document.querySelectorAll('.item-value, .item-value-en');
+            const labelTexts = document.querySelectorAll('.label-text, .label-text-en');
+            const valueTexts = document.querySelectorAll('.value-text, .value-text-en');
             const imageInputs = document.querySelectorAll('.image-input');
 
             if (type === 'image' || type === 'banner' ) {
@@ -146,8 +154,10 @@
                 imageInputs.forEach(el => el.multiple = true);
             } else {
                 itemLabels.forEach(el => el.required = true);
-                labelTexts.forEach(el => el.innerText = 'العنوان (Label) *');
-                valueTexts.forEach(el => el.innerText = 'الوصف (Value) *');
+                document.querySelectorAll('.label-text').forEach(el => el.innerText = 'العنوان (عربي) *');
+                document.querySelectorAll('.label-text-en').forEach(el => el.innerText = 'العنوان (إنجليزي) *');
+                document.querySelectorAll('.value-text').forEach(el => el.innerText = 'الوصف (عربي) *');
+                document.querySelectorAll('.value-text-en').forEach(el => el.innerText = 'الوصف (إنجليزي) *');
                 imageInputs.forEach(el => el.multiple = false);
             }
         }
@@ -163,26 +173,36 @@
             const type = document.querySelector('select[name="type"]').value;
             const imageFieldDisplay = (type === 'image' || type === 'banner') ? 'block' : 'none';
             const isRequired = type !== 'banner' ? 'required' : '';
-            const labelText = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (Label) *';
-            const valueText = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (Value) *';
+            const labelTextAr = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (عربي) *';
+            const labelTextEn = type === 'banner' ? 'العنوان (اختياري)' : 'العنوان (إنجليزي) *';
+            const valueTextAr = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (عربي) *';
+            const valueTextEn = type === 'banner' ? 'الوصف (اختياري)' : 'الوصف (إنجليزي) *';
             const isMultiple = type === 'banner' ? 'multiple' : '';
 
             const newItem = `
                     <div class="item-row mb-3 p-3 border rounded">
                         <div class="row">
-                            <div class="col-md-5">
-                                <label class="form-label label-text">${labelText}</label>
-                                <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" ${isRequired}>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label label-text">${labelTextAr}</label>
+                                <input type="text" name="items[${itemIndex}][label_ar]" class="form-control item-label" ${isRequired}>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label value-text">${valueText}</label>
-                                <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" >
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label label-text-en">${labelTextEn}</label>
+                                <input type="text" name="items[${itemIndex}][label_en]" class="form-control item-label-en" ${isRequired}>
                             </div>
-                            <div class="col-md-3 image-field" style="display: ${imageFieldDisplay};">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label value-text">${valueTextAr}</label>
+                                <input type="text" name="items[${itemIndex}][value_ar]" class="form-control item-value" >
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label value-text-en">${valueTextEn}</label>
+                                <input type="text" name="items[${itemIndex}][value_en]" class="form-control item-value-en" >
+                            </div>
+                            <div class="col-md-10 image-field mt-2" style="display: ${imageFieldDisplay};">
                                 <label class="form-label">الصورة (Image)</label>
                                 <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" ${isMultiple}>
                             </div>
-                            <div class="col-md-1 d-flex align-items-end">
+                            <div class="col-md-2 d-flex align-items-end mt-2">
                                 <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
                             </div>
                         </div>
@@ -205,8 +225,10 @@
             const files = e.target.files;
             if (files.length > 1) {
                 const container = document.getElementById('items-container');
-                const label = e.target.closest('.item-row').querySelector('.item-label').value;
-                const value = e.target.closest('.item-row').querySelector('.item-value').value;
+                const labelAr = e.target.closest('.item-row').querySelector('.item-label').value;
+                const labelEn = e.target.closest('.item-row').querySelector('.item-label-en').value;
+                const valueAr = e.target.closest('.item-row').querySelector('.item-value').value;
+                const valueEn = e.target.closest('.item-row').querySelector('.item-value-en').value;
 
                 // Keep only the first file in the current input
                 const dtFirst = new DataTransfer();
@@ -218,19 +240,27 @@
                     const newItemHTML = `
                         <div class="item-row mb-3 p-3 border rounded">
                             <div class="row">
-                                <div class="col-md-5">
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label label-text">العنوان (اختياري)</label>
-                                    <input type="text" name="items[${itemIndex}][label]" class="form-control item-label" value="${label}">
+                                    <input type="text" name="items[${itemIndex}][label_ar]" class="form-control item-label" value="${labelAr}">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label label-text-en">العنوان (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][label_en]" class="form-control item-label-en" value="${labelEn}">
+                                </div>
+                                <div class="col-md-6 mb-2">
                                     <label class="form-label value-text">الوصف (اختياري)</label>
-                                    <input type="text" name="items[${itemIndex}][value]" class="form-control item-value" value="${value}">
+                                    <input type="text" name="items[${itemIndex}][value_ar]" class="form-control item-value" value="${valueAr}">
                                 </div>
-                                <div class="col-md-3 image-field" style="display: block;">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label value-text-en">الوصف (اختياري)</label>
+                                    <input type="text" name="items[${itemIndex}][value_en]" class="form-control item-value-en" value="${valueEn}">
+                                </div>
+                                <div class="col-md-10 image-field mt-2" style="display: block;">
                                     <label class="form-label">الصورة (Image)</label>
                                     <input type="file" name="items[${itemIndex}][image]" class="form-control image-input" accept="image/*" multiple>
                                 </div>
-                                <div class="col-md-1 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end mt-2">
                                     <button type="button" class="btn btn-danger btn-sm remove-item">حذف</button>
                                 </div>
                             </div>

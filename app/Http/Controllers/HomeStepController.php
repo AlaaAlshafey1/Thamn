@@ -38,8 +38,10 @@ class HomeStepController extends Controller
             'desc_en' => 'nullable|string',
             'type' => 'required|in:steps,check,image,banner',
             'items' => 'nullable|array',
-            'items.*.label' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
-            'items.*.value' => 'nullable|string',
+            'items.*.label_ar' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.label_en' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.value_ar' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.value_en' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
@@ -58,8 +60,10 @@ class HomeStepController extends Controller
                 }
 
                 $items[] = [
-                    'label' => $item['label'] ?? '',
-                    'value' => $item['value'] ?? '',
+                    'label_ar' => $item['label_ar'] ?? '',
+                    'label_en' => $item['label_en'] ?? '',
+                    'value_ar' => $item['value_ar'] ?? '',
+                    'value_en' => $item['value_en'] ?? '',
                     'image' => $imagePath,
                 ];
             }
@@ -104,8 +108,10 @@ class HomeStepController extends Controller
             'desc_en' => 'nullable|string',
             'type' => 'required|in:steps,check,image,banner',
             'items' => 'nullable|array',
-            'items.*.label' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
-            'items.*.value' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.label_ar' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.label_en' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.value_ar' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
+            'items.*.value_en' => $request->type === 'banner' ? 'nullable|string' : 'required|string',
             'items.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'banner_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
@@ -127,8 +133,10 @@ class HomeStepController extends Controller
                 }
 
                 $items[] = [
-                    'label' => $item['label'] ?? '',
-                    'value' => $item['value'] ?? '',
+                    'label_ar' => $item['label_ar'] ?? '',
+                    'label_en' => $item['label_en'] ?? '',
+                    'value_ar' => $item['value_ar'] ?? '',
+                    'value_en' => $item['value_en'] ?? '',
                     'image' => $imagePath,
                 ];
             }
