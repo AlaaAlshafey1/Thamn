@@ -3,16 +3,87 @@
 namespace App\Http\Controllers;
 
 use App\Models\About;
+use App\Models\Banner;
 use App\Models\Contact;
 use App\Models\ContactMessage;
+use App\Models\Faq;
+use App\Models\HomeStep;
+use App\Models\Intro;
+use App\Models\Order;
 use App\Models\TermCondition;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PublicPageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('public.home');
+        $lang = app()->getLocale();
+        if (!in_array($lang, ['ar', 'en'])) {
+            $lang = 'ar';
+        }
+
+        // 1. Promotional Banners for Popup Modal
+        $banners = Banner::where('is_active', true)->orderBy('sort_order')->get();
+
+        // 2. Hero Section (from Welcome Intro if available)
+        $welcomeIntro = Intro::where('page', 'welcome')->where('is_active', true)->first();
+
+        // 3. Features & How It Works Sections (from HomeSteps)
+        $featureSteps = HomeStep::where('type', 'check')->where('is_active', true)->orderBy('sort_order')->first();
+        $workSteps = HomeStep::where('type', 'steps')->where('is_active', true)->orderBy('sort_order')->first();
+
+        // 4. FAQs
+        $faqs = Faq::all();
+
+        // 5. Contact Info & Social Media
+        $contactInfo = Contact::first();
+        $socialMedia = [];
+        if ($contactInfo && $contactInfo->social_media) {
+            $socials = is_string($contactInfo->social_media)
+                ? json_decode($contactInfo->social_media, true)
+                : $contactInfo->social_media;
+
+            if (is_array($socials) && count($socials) > 0) {
+                $socialMedia = collect($socials)->filter(function ($item) {
+                    return !empty($item['url']) || !empty($item['name']);
+                })->map(function ($item) {
+                    $name = $item['name'] ?? '';
+                    $icon = $item['icon'] ?? '';
+                    if (empty($icon) && !empty($name)) {
+                        $icon = $this->getDefaultIcon($name);
+                    }
+                    if (empty($icon)) {
+                        $icon = 'fas fa-link';
+                    }
+                    return [
+                        'name' => $name,
+                        'icon' => $icon,
+                        'url' => $item['url'] ?? '#'
+                    ];
+                });
+            }
+        }
+        if (empty($socialMedia)) {
+            $socialMedia = $this->getDefaultSocialMedia();
+        }
+
+        // 6. Statistics
+        $expertsCount = max(User::role('expert')->count(), 45);
+        $ordersCount = max(Order::count(), 15);
+
+        return view('public.home', compact(
+            'banners',
+            'welcomeIntro',
+            'featureSteps',
+            'workSteps',
+            'faqs',
+            'contactInfo',
+            'socialMedia',
+            'expertsCount',
+            'ordersCount',
+            'lang'
+        ));
     }
 
     public function privacy(Request $request)

@@ -666,10 +666,227 @@
                 height: 350px;
             }
         }
+
+        /* PROMOTIONAL BANNER POPUP MODAL CSS */
+        .banner-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .banner-popup-overlay.show {
+            opacity: 1;
+        }
+
+        .banner-popup-content {
+            position: relative;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(193, 149, 62, 0.2);
+            max-width: 750px;
+            width: 100%;
+            overflow: hidden;
+            border: 2px solid rgba(193, 149, 62, 0.3);
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .banner-popup-overlay.show .banner-popup-content {
+            transform: scale(1);
+        }
+
+        .banner-popup-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .banner-popup-close:hover {
+            background: var(--gold);
+            color: #ffffff;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 5px 15px rgba(193, 149, 62, 0.4);
+        }
+
+        .banner-slide {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .banner-slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .banner-media {
+            width: 100%;
+            max-height: 75vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d0d0d;
+            overflow: hidden;
+        }
+
+        .banner-img {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        .banner-video {
+            width: 100%;
+            max-height: 70vh;
+            display: block;
+        }
+
+        .banner-caption {
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, #1A1A1A 0%, #2a2a2a 100%);
+            color: #ffffff;
+            text-align: center;
+            border-top: 2px solid var(--gold);
+        }
+
+        .banner-caption h3 {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            margin: 0;
+        }
+
+        .banner-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.5rem;
+            background: #111;
+        }
+
+        .banner-prev, .banner-next {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .banner-prev:hover, .banner-next:hover {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+        .banner-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .banner-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .banner-dot.active {
+            background: var(--gold);
+            transform: scale(1.3);
+        }
     </style>
 </head>
 
 <body>
+    @if($banners && $banners->isNotEmpty())
+        <!-- PROMOTIONAL BANNER POPUP MODAL -->
+        <div id="banner-popup-overlay" class="banner-popup-overlay" style="display: none;">
+            <div class="banner-popup-content" data-aos="zoom-in" data-aos-duration="600">
+                <button class="banner-popup-close" id="banner-popup-close-btn" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="banner-slider">
+                    @foreach($banners as $index => $banner)
+                        <div class="banner-slide {{ $index === 0 ? 'active' : '' }}" data-index="{{ $index }}">
+                            @if($banner->file_type === 'video')
+                                <div class="banner-media">
+                                    <video controls autoplay muted loop playsinline class="banner-video">
+                                        <source src="{{ $banner->file }}" type="video/mp4">
+                                        متصفحك لا يدعم تشغيل الفيديو.
+                                    </video>
+                                </div>
+                            @else
+                                <div class="banner-media">
+                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'بانر إعلاني' }}" class="banner-img">
+                                </div>
+                            @endif
+
+                            @if($banner->getTitle($lang))
+                                <div class="banner-caption">
+                                    <h3>{{ $banner->getTitle($lang) }}</h3>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                @if($banners->count() > 1)
+                    <div class="banner-navigation">
+                        <button class="banner-prev" id="banner-prev-btn"><i class="fas fa-chevron-right"></i></button>
+                        <div class="banner-dots">
+                            @foreach($banners as $index => $banner)
+                                <span class="banner-dot {{ $index === 0 ? 'active' : '' }}" data-index="{{ $index }}"></span>
+                            @endforeach
+                        </div>
+                        <button class="banner-next" id="banner-next-btn"><i class="fas fa-chevron-left"></i></button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 
     <nav id="navbar">
         <a href="{{ route('home') }}" class="logo">
@@ -695,14 +912,26 @@
                     <i class="fas fa-certificate"></i>
                     نظام تقييم رقمي معتمد عالمياً
                 </div>
-                <h1>قيمة مقتنياتك <em>تستحق</em> المعرفة الحقيقية</h1>
+                <h1>
+                    @if($welcomeIntro && $welcomeIntro->getTitle($lang))
+                        {{ $welcomeIntro->getTitle($lang) }}
+                    @else
+                        قيمة مقتنياتك <em style="font-style: normal; color: var(--gold);">تستحق</em> المعرفة الحقيقية
+                    @endif
+                </h1>
                 <p class="hero-sub">
-                    تطبيق ثمن تمنحك الثقة في معرفة قيمة أصولك الفاخرة عبر دمج عبقرية الذكاء الاصطناعي مع خبرة نخبة
-                    المثمنين المعتمدين.
+                    @if($welcomeIntro && $welcomeIntro->getDescription($lang))
+                        {{ $welcomeIntro->getDescription($lang) }}
+                    @elseif($welcomeIntro && $welcomeIntro->getSubTitle($lang))
+                        {{ $welcomeIntro->getSubTitle($lang) }}
+                    @else
+                        تطبيق ثمن تمنحك الثقة في معرفة قيمة أصولك الفاخرة عبر دمج عبقرية الذكاء الاصطناعي مع خبرة نخبة
+                        المثمنين المعتمدين.
+                    @endif
                 </p>
                 <div class="btn-group">
-                    <a href="#" class="btn-primary">ابدأ التقييم الآن</a>
-                    <a href="#" class="btn-secondary">
+                    <a href="#how-it-works" class="btn-primary">ابدأ التقييم الآن</a>
+                    <a href="#how-it-works" class="btn-secondary">
                         <i class="fas fa-play-circle"></i>
                         شاهد كيف يعمل
                     </a>
@@ -713,11 +942,11 @@
                         <p>دقة التقييم %</p>
                     </div>
                     <div class="stat-item">
-                        <h3 data-count="45">0</h3>
+                        <h3 data-count="{{ $expertsCount ?? 45 }}">0</h3>
                         <p>خبير عالمي</p>
                     </div>
                     <div class="stat-item">
-                        <h3 data-count="15">0</h3>
+                        <h3 data-count="{{ $ordersCount ?? 15 }}">0</h3>
                         <p>ألف عملية تثمين</p>
                     </div>
                 </div>
@@ -725,7 +954,11 @@
             <div class="hero-visual" data-aos="zoom-in" data-aos-delay="200">
                 <div class="scanner-box">
                     <div class="scanner-line"></div>
-                    <img src="{{ asset('assets/img/Logo.png') }}" alt="Scanning Asset">
+                    @if($welcomeIntro && $welcomeIntro->image)
+                        <img src="{{ $welcomeIntro->image }}" alt="Scanning Asset" style="width: 80%; height: 80%; object-fit: contain; filter: none; opacity: 0.9;">
+                    @else
+                        <img src="{{ asset('assets/img/Logo.png') }}" alt="Scanning Asset">
+                    @endif
                 </div>
             </div>
         </div>
@@ -734,70 +967,120 @@
     <!-- FEATURES -->
     <section id="features">
         <div class="section-header" data-aos="fade-up">
-            <span class="section-label">لماذا ثمن؟</span>
-            <h2 class="section-title">لماذا منصة <em>ثمن؟</em></h2>
+            <span class="section-label">{{ $featureSteps && $featureSteps->getSubTitle($lang) ? $featureSteps->getSubTitle($lang) : 'لماذا ثمن؟' }}</span>
+            <h2 class="section-title">
+                @if($featureSteps && $featureSteps->getTitle($lang))
+                    {{ $featureSteps->getTitle($lang) }}
+                @else
+                    لماذا منصة <em>ثمن؟</em>
+                @endif
+            </h2>
         </div>
         <div class="features-grid">
-            <div class="feature-card" data-aos="fade-up">
-                <div class="feat-icon"><i class="fas fa-microchip"></i></div>
-                <h3>ذكاء اصطناعي فوري</h3>
-                <p>محركنا الذكي يحلل ملايين البيانات السوقية والمزادات العالمية في أجزاء من الثانية.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="feat-icon"><i class="fas fa-user-tie"></i></div>
-                <h3>خبراء معتمدون</h3>
-                <p>مراجعة دقيقة من متخصصين دوليين لضمان تغطية كافة التفاصيل التي قد تغيب عن الآلة.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="feat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                <h3>تقارير رسمية</h3>
-                <p>احصل على مستندات تقييم معترف بها لدى شركات التأمين والبنوك والجهات القانونية.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up">
-                <div class="feat-icon"><i class="fas fa-gem"></i></div>
-                <h3>تعدد التخصصات</h3>
-                <p>من الساعات والمجوهرات إلى السيارات الكلاسيكية والتحف الفنية النادرة.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
-                <h3>أمان وخصوصية</h3>
-                <p>تشفير عالي المستوى لبياناتك وصور مقتنياتك مع ضمان سرية تامة لكل معاملة.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="feat-icon"><i class="fas fa-chart-line"></i></div>
-                <h3>مراقبة السوق</h3>
-                <p>لوحة تحكم ذكية تتيح لك مراقبة تغير قيمة مقتنياتك مع تقلبات الأسواق العالمية.</p>
-            </div>
+            @if($featureSteps && !empty($featureSteps->getLocalizedItems($lang)))
+                @php
+                    $defaultIcons = [
+                        'fas fa-microchip', 'fas fa-user-tie', 'fas fa-file-invoice-dollar',
+                        'fas fa-gem', 'fas fa-shield-alt', 'fas fa-chart-line',
+                        'fas fa-star', 'fas fa-check-circle', 'fas fa-award'
+                    ];
+                @endphp
+                @foreach($featureSteps->getLocalizedItems($lang) as $index => $item)
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
+                        <div class="feat-icon">
+                            @if(!empty($item['image']))
+                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}" style="width: 38px; height: 38px; object-fit: contain;">
+                            @else
+                                <i class="{{ $defaultIcons[$index % count($defaultIcons)] }}"></i>
+                            @endif
+                        </div>
+                        <h3>{{ $item['label'] ?? '' }}</h3>
+                        <p>{{ $item['value'] ?? '' }}</p>
+                    </div>
+                @endforeach
+            @else
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feat-icon"><i class="fas fa-microchip"></i></div>
+                    <h3>ذكاء اصطناعي فوري</h3>
+                    <p>محركنا الذكي يحلل ملايين البيانات السوقية والمزادات العالمية في أجزاء من الثانية.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feat-icon"><i class="fas fa-user-tie"></i></div>
+                    <h3>خبراء معتمدون</h3>
+                    <p>مراجعة دقيقة من متخصصين دوليين لضمان تغطية كافة التفاصيل التي قد تغيب عن الآلة.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3>تقارير رسمية</h3>
+                    <p>احصل على مستندات تقييم معترف بها لدى شركات التأمين والبنوك والجهات القانونية.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feat-icon"><i class="fas fa-gem"></i></div>
+                    <h3>تعدد التخصصات</h3>
+                    <p>من الساعات والمجوهرات إلى السيارات الكلاسيكية والتحف الفنية النادرة.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>أمان وخصوصية</h3>
+                    <p>تشفير عالي المستوى لبياناتك وصور مقتنياتك مع ضمان سرية تامة لكل معاملة.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feat-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>مراقبة السوق</h3>
+                    <p>لوحة تحكم ذكية تتيح لك مراقبة تغير قيمة مقتنياتك مع تقلبات الأسواق العالمية.</p>
+                </div>
+            @endif
         </div>
     </section>
 
     <!-- HOW IT WORKS -->
     <section id="how-it-works">
         <div class="section-header" data-aos="fade-up">
-            <span class="section-label">آلية العمل</span>
-            <h2 class="section-title">خطوات بسيطة نحو <em>الحقيقة</em></h2>
+            <span class="section-label">{{ $workSteps && $workSteps->getSubTitle($lang) ? $workSteps->getSubTitle($lang) : 'آلية العمل' }}</span>
+            <h2 class="section-title">
+                @if($workSteps && $workSteps->getTitle($lang))
+                    {{ $workSteps->getTitle($lang) }}
+                @else
+                    خطوات بسيطة نحو <em>الحقيقة</em>
+                @endif
+            </h2>
         </div>
         <div class="steps-grid">
-            <div class="step-card" data-aos="fade-right">
-                <div class="step-num">01</div>
-                <h4>رفع البيانات</h4>
-                <p>التقط صوراً لمقتنياتك وارفعها مع أي وثائق متوفرة.</p>
-            </div>
-            <div class="step-card" data-aos="fade-right" data-aos-delay="100">
-                <div class="step-num">02</div>
-                <h4>الفحص الرقمي</h4>
-                <p>يقوم النظام بمطابقة القطعة مع قواعد بياناتنا العالمية.</p>
-            </div>
-            <div class="step-card" data-aos="fade-right" data-aos-delay="200">
-                <div class="step-num">03</div>
-                <h4>تدقيق الخبير</h4>
-                <p>يتم تحويل الطلب للمتخصص المناسب لإعطاء رأيه الفني.</p>
-            </div>
-            <div class="step-card" data-aos="fade-right" data-aos-delay="300">
-                <div class="step-num">04</div>
-                <h4>النتيجة النهائية</h4>
-                <p>استلم تقريرك الشامل والموقع إلكترونياً خلال ساعات.</p>
-            </div>
+            @if($workSteps && !empty($workSteps->getLocalizedItems($lang)))
+                @foreach($workSteps->getLocalizedItems($lang) as $index => $item)
+                    <div class="step-card" data-aos="fade-right" data-aos-delay="{{ ($index % 4) * 100 }}">
+                        <div class="step-num">{{ sprintf('%02d', $index + 1) }}</div>
+                        @if(!empty($item['image']))
+                            <div style="margin-bottom: 1rem;">
+                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}" style="height: 60px; object-fit: contain;">
+                            </div>
+                        @endif
+                        <h4>{{ $item['label'] ?? '' }}</h4>
+                        <p>{{ $item['value'] ?? '' }}</p>
+                    </div>
+                @endforeach
+            @else
+                <div class="step-card" data-aos="fade-right">
+                    <div class="step-num">01</div>
+                    <h4>رفع البيانات</h4>
+                    <p>التقط صوراً لمقتنياتك وارفعها مع أي وثائق متوفرة.</p>
+                </div>
+                <div class="step-card" data-aos="fade-right" data-aos-delay="100">
+                    <div class="step-num">02</div>
+                    <h4>الفحص الرقمي</h4>
+                    <p>يقوم النظام بمطابقة القطعة مع قواعد بياناتنا العالمية.</p>
+                </div>
+                <div class="step-card" data-aos="fade-right" data-aos-delay="200">
+                    <div class="step-num">03</div>
+                    <h4>تدقيق الخبير</h4>
+                    <p>يتم تحويل الطلب للمتخصص المناسب لإعطاء رأيه الفني.</p>
+                </div>
+                <div class="step-card" data-aos="fade-right" data-aos-delay="300">
+                    <div class="step-num">04</div>
+                    <h4>النتيجة النهائية</h4>
+                    <p>استلم تقريرك الشامل والموقع إلكترونياً خلال ساعات.</p>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -807,21 +1090,30 @@
             <h2 class="section-title">أسئلة <em>شائعة</em></h2>
         </div>
         <div class="faq-container">
-            <div class="faq-item" data-aos="fade-up">
-                <button class="faq-header">هل التقييم مقبول لدى الجهات الرسمية؟ <i class="fas fa-plus"></i></button>
-                <div class="faq-body">نعم، التقارير الصادرة عن فئة "الهجين" والخبراء تعتمد على معايير التقييم الدولية
-                    وتعتبر مرجعاً قوياً لشركات التأمين والمحاكم.</div>
-            </div>
-            <div class="faq-item" data-aos="fade-up">
-                <button class="faq-header">ما هي تكلفة عملية التثمين؟ <i class="fas fa-plus"></i></button>
-                <div class="faq-body">تختلف التكلفة حسب نوع الخدمة (AI فقط، هجين، أو خبير متخصص) وحسب نوع المقتنيات،
-                    ويمكنك رؤية الأسعار بوضوح داخل التطبيق.</div>
-            </div>
-            <div class="faq-item" data-aos="fade-up">
-                <button class="faq-header">كيف يتم حماية صوري وبياناتي؟ <i class="fas fa-plus"></i></button>
-                <div class="faq-body">نستخدم بروتوكولات تشفير بنكية لحماية كافة الصور والبيانات المرفوعة، ولا يتم
-                    مشاركتها مع أي طرف ثالث خارج عملية التقييم.</div>
-            </div>
+            @if($faqs && $faqs->isNotEmpty())
+                @foreach($faqs as $faq)
+                    <div class="faq-item" data-aos="fade-up">
+                        <button class="faq-header">{{ $faq->getQuestionByLang($lang) }} <i class="fas fa-plus"></i></button>
+                        <div class="faq-body">{{ $faq->getAnswerByLang($lang) }}</div>
+                    </div>
+                @endforeach
+            @else
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-header">هل التقييم مقبول لدى الجهات الرسمية؟ <i class="fas fa-plus"></i></button>
+                    <div class="faq-body">نعم، التقارير الصادرة عن فئة "الهجين" والخبراء تعتمد على معايير التقييم الدولية
+                        وتعتبر مرجعاً قوياً لشركات التأمين والمحاكم.</div>
+                </div>
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-header">ما هي تكلفة عملية التثمين؟ <i class="fas fa-plus"></i></button>
+                    <div class="faq-body">تختلف التكلفة حسب نوع الخدمة (AI فقط، هجين، أو خبير متخصص) وحسب نوع المقتنيات،
+                        ويمكنك رؤية الأسعار بوضوح داخل التطبيق.</div>
+                </div>
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-header">كيف يتم حماية صوري وبياناتي؟ <i class="fas fa-plus"></i></button>
+                    <div class="faq-body">نستخدم بروتوكولات تشفير بنكية لحماية كافة الصور والبيانات المرفوعة، ولا يتم
+                        مشاركتها مع أي طرف ثالث خارج عملية التقييم.</div>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -848,23 +1140,35 @@
             <div class="footer-links">
                 <h4>روابط هامة</h4>
                 <ul>
-                    <li><a href="#">عن المنصة</a></li>
-                    <li><a href="#">سياسة الخصوصية</a></li>
-                    <li><a href="#">الشروط والأحكام</a></li>
-                    <li><a href="#">تواصل معنا</a></li>
+                    <li><a href="{{ route('public.about') }}">عن المنصة</a></li>
+                    <li><a href="{{ route('public.privacy') }}">سياسة الخصوصية</a></li>
+                    <li><a href="{{ route('public.terms') }}">الشروط والأحكام</a></li>
+                    <li><a href="{{ route('public.contact') }}">تواصل معنا</a></li>
                 </ul>
             </div>
             <div class="footer-links">
                 <h4>تواصل معنا</h4>
+                @if($contactInfo && $contactInfo->email)
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem;"><i class="fas fa-envelope" style="color: var(--gold); margin-left: 0.5rem;"></i> {{ $contactInfo->email }}</p>
+                @endif
+                @if($contactInfo && $contactInfo->phone)
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;"><i class="fas fa-phone-alt" style="color: var(--gold); margin-left: 0.5rem;"></i> <span style="direction: ltr; display: inline-block;">{{ $contactInfo->phone }}</span></p>
+                @endif
                 <ul>
-                    <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>
-                    <li><a href="#"><i class="fab fa-instagram"></i> انستجرام</a></li>
-                    <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li>
+                    @if(!empty($socialMedia))
+                        @foreach($socialMedia as $social)
+                            <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><i class="{{ $social['icon'] }}"></i> {{ $social['name'] }}</a></li>
+                        @endforeach
+                    @else
+                        <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> انستجرام</a></li>
+                        <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li>
+                    @endif
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2025 تطبيق ثمن. جميع الحقوق محفوظة.
+            &copy; {{ date('Y') }} تطبيق ثمن. جميع الحقوق محفوظة.
         </div>
     </footer>
 
@@ -913,6 +1217,78 @@
                 icon.classList.toggle('fa-plus');
                 icon.classList.toggle('fa-minus');
             });
+        });
+
+        /* Promotional Banner Popup Script */
+        window.addEventListener('DOMContentLoaded', () => {
+            const popupOverlay = document.getElementById('banner-popup-overlay');
+            if (popupOverlay) {
+                setTimeout(() => {
+                    popupOverlay.style.display = 'flex';
+                    void popupOverlay.offsetWidth;
+                    popupOverlay.classList.add('show');
+                }, 600);
+
+                const closeBtn = document.getElementById('banner-popup-close-btn');
+                const closePopup = () => {
+                    popupOverlay.classList.remove('show');
+                    setTimeout(() => {
+                        popupOverlay.style.display = 'none';
+                        const videos = popupOverlay.querySelectorAll('video');
+                        videos.forEach(v => v.pause());
+                    }, 400);
+                };
+
+                if (closeBtn) closeBtn.addEventListener('click', closePopup);
+
+                popupOverlay.addEventListener('click', (e) => {
+                    if (e.target === popupOverlay) {
+                        closePopup();
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && popupOverlay.style.display !== 'none') {
+                        closePopup();
+                    }
+                });
+
+                const slides = popupOverlay.querySelectorAll('.banner-slide');
+                const dots = popupOverlay.querySelectorAll('.banner-dot');
+                const prevBtn = document.getElementById('banner-prev-btn');
+                const nextBtn = document.getElementById('banner-next-btn');
+
+                if (slides.length > 1) {
+                    let currentIndex = 0;
+                    const showSlide = (index) => {
+                        if (index < 0) index = slides.length - 1;
+                        if (index >= slides.length) index = 0;
+                        slides.forEach((slide, i) => {
+                            slide.classList.toggle('active', i === index);
+                        });
+                        dots.forEach((dot, i) => {
+                            dot.classList.toggle('active', i === index);
+                        });
+                        currentIndex = index;
+                    };
+
+                    if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentIndex + 1));
+                    if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentIndex - 1));
+
+                    dots.forEach((dot, idx) => {
+                        dot.addEventListener('click', () => showSlide(idx));
+                    });
+
+                    let slideInterval = setInterval(() => {
+                        const activeVideo = slides[currentIndex].querySelector('video');
+                        if (!activeVideo || activeVideo.paused) {
+                            showSlide(currentIndex + 1);
+                        }
+                    }, 6000);
+
+                    popupOverlay.addEventListener('mouseenter', () => clearInterval(slideInterval));
+                }
+            }
         });
     </script>
 </body>

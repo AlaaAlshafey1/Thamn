@@ -25,6 +25,7 @@
             </div>
 
             <div class="row">
+                
                 <div class="col-md-6 mb-3">
                     <label class="form-label">العنوان الفرعي (عربي)</label>
                     <input type="text" name="sub_title_ar" class="form-control @error('sub_title_ar') is-invalid @enderror"
