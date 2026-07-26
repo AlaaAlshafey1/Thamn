@@ -16,12 +16,19 @@ use Illuminate\Http\Request;
 
 class PublicPageController extends Controller
 {
-    public function index(Request $request)
+    protected function setupLocale(Request $request): string
     {
-        $lang = app()->getLocale();
+        $lang = $request->get('lang', session('locale', 'ar'));
         if (!in_array($lang, ['ar', 'en'])) {
             $lang = 'ar';
         }
+        app()->setLocale($lang);
+        return $lang;
+    }
+
+    public function index(Request $request)
+    {
+        $lang = $this->setupLocale($request);
 
         // 1. Promotional Banners for Popup Modal
         $banners = Banner::where('is_active', true)->orderBy('sort_order')->get();
@@ -88,29 +95,33 @@ class PublicPageController extends Controller
 
     public function privacy(Request $request)
     {
+        $lang = $this->setupLocale($request);
         $page = About::where('type', 'privacy')->first();
-        $title = lang('سياسة الخصوصية', 'Privacy Policy', $request);
+        $title = $lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy';
         return view('public.page', compact('page', 'title'));
     }
 
     public function terms(Request $request)
     {
+        $lang = $this->setupLocale($request);
         $page = About::where('type', 'terms')->first();
-        $title = lang('الشروط والأحكام', 'Terms & Conditions', $request);
+        $title = $lang === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions';
         return view('public.page', compact('page', 'title'));
     }
 
     public function about(Request $request)
     {
+        $lang = $this->setupLocale($request);
         $page = About::where('type', 'about')->first();
-        $title = lang('عن ثمن', 'About Us', $request);
+        $title = $lang === 'ar' ? 'عن ثمن' : 'About Us';
         return view('public.page', compact('page', 'title'));
     }
 
     public function contact(Request $request)
     {
+        $lang = $this->setupLocale($request);
         $contactInfo = Contact::first();
-        $title = lang('اتصل بنا', 'Contact Us', $request);
+        $title = $lang === 'ar' ? 'اتصل بنا' : 'Contact Us';
 
         // Process social media like the API method
         $socialMedia = [];
