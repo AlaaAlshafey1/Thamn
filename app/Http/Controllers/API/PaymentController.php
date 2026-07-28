@@ -371,13 +371,38 @@ class PaymentController extends Controller
         // Tap بيرجع tap_id
         $tapId = $request->query('tap_id');
         $tap_pay = TapPayment::where('charge_id', $tapId)->first();
-        if ($tap_pay->status == 'INITIATED') {
+
+        if (!$tap_pay) {
+            return redirect()->to(
+                url("/payment/callback/package_error?success=false&tap_id={$tapId}")
+            );
+        }
+
+        // نتحقق من حالة الدفع الفعلية من Tap API بدل ما نعتمد على الـ status القديم
+        $statusResponse = $this->tapPaymentService->getPaymentStatus($tapId);
+        $actualStatus = strtoupper($statusResponse['status'] ?? 'FAILED');
+
+        if ($actualStatus === 'CAPTURED') {
+            // الدفع نجح فعلاً - نحدث حالة الدفع والأوردر
+            $tap_pay->status = 'orderReceived';
+            $tap_pay->response_data = json_encode($statusResponse);
+            $tap_pay->save();
+
             $order->status = "orderReceived";
             $order->save();
+
             return redirect()->to(
                 url("/payment/callback/package_sucess?success=true&tap_id={$tapId}")
             );
         }
+
+        // الدفع فشل أو لم يكتمل
+        $tap_pay->status = 'failed';
+        $tap_pay->response_data = json_encode($statusResponse);
+        $tap_pay->save();
+
+        $order->status = 'failed';
+        $order->save();
 
         return redirect()->to(
             url("/payment/callback/package_error?success=false&tap_id={$tapId}")
