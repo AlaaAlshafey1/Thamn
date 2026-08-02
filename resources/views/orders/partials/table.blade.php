@@ -81,10 +81,10 @@
                         <span class="badge {{ $statusClass }} py-2 px-3">{{ $order->status }}</span>
                     </td>
                     <td>
-                        @if($order->status !== 'pending' && $order->status !== 'failed')
+                        @if(!in_array($order->status, ['pending', 'failed', 'waitingPayment', 'notPaid']))
                             <span class="text-success small fw-bold"><i class="fa fa-check-circle ml-1"></i> مدفوع</span>
                         @else
-                            <span class="text-danger small fw-bold"><i class="fa fa-times-circle ml-1"></i> لم يتم</span>
+                            <span class="text-danger small fw-bold"><i class="fa fa-times-circle ml-1"></i> غير مدفوع</span>
                         @endif
                     </td>
                     <td class="small">{{ $order->created_at->format('Y-m-d') }}</td>

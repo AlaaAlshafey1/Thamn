@@ -308,7 +308,7 @@
                         <div class="col-md-4">
                             <div class="info-label">حالة الدفع</div>
                             <div class="info-value">
-                                @if($order->status !== 'pending' && $order->status !== 'failed')
+                                @if(!in_array($order->status, ['pending', 'failed', 'waitingPayment', 'notPaid']))
                                     <span class="status-badge bg-success-transparent text-success">مدفوع</span>
                                 @else
                                     <span class="status-badge bg-danger-transparent text-danger">غير مدفوع</span>

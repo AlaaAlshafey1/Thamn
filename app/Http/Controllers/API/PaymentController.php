@@ -111,13 +111,17 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Missing payment ID'], 400);
         }
 
-        // ── جلب سجل الدفع من DB ────────────────────────────
-        $tapPayment = TapPayment::where('charge_id', $paymentId)->first();
-
-        if (!$tapPayment) {
-            Log::error('[Moyasar Webhook] Payment record not found', ['payment_id' => $paymentId]);
-            return response()->json(['error' => 'Payment record not found'], 404);
+        // ── جلب سجل الدفع أو إنشاؤه من الـ Metadata ────────────────────────────
+        $orderId = $payment['metadata']['order_id'] ?? null;
+        if (!$orderId) {
+            Log::error('[Moyasar Webhook] Missing order_id in metadata', ['payment' => $payment]);
+            return response()->json(['error' => 'Missing order_id'], 400);
         }
+
+        $tapPayment = TapPayment::firstOrCreate(
+            ['charge_id' => $paymentId],
+            ['order_id' => $orderId, 'status' => 'pending']
+        );
 
         // ── تجنب المعالجة المكررة ──────────────────────────
         if ($tapPayment->status === 'orderReceived') {
@@ -254,13 +258,21 @@ class PaymentController extends Controller
         $paymentId = $request->query('id') ?? $request->query('tap_id');
         
         if ($paymentId) {
-            $tapPayment = TapPayment::where('charge_id', $paymentId)->first();
-            if ($tapPayment) {
-                $order = Order::find($tapPayment->order_id);
+            // جلب تفاصيل الدفع من Moyasar لاستخراج order_id من الـ metadata
+            $statusResponse = $this->moyasarPaymentService->getPaymentStatus($paymentId);
+            $orderId = $statusResponse['metadata']['order_id'] ?? null;
+
+            if ($orderId) {
+                // إنشاء سجل الدفع في قاعدة البيانات إن لم يكن موجوداً لتتبع المعاملة
+                $tapPayment = TapPayment::firstOrCreate(
+                    ['charge_id' => $paymentId],
+                    ['order_id' => $orderId, 'status' => 'pending']
+                );
+
+                $order = Order::find($orderId);
                 $isPaid = false;
 
                 if ($order && $order->status !== 'orderReceived') {
-                    $statusResponse = $this->moyasarPaymentService->getPaymentStatus($paymentId);
                     if (strtolower($statusResponse['status'] ?? '') === 'paid') {
                         $tapPayment->update(['status' => 'orderReceived', 'response_data' => json_encode($statusResponse)]);
                         $order->update(['status' => 'orderReceived']);
@@ -277,14 +289,14 @@ class PaymentController extends Controller
                     return response()->json([
                         'status' => true,
                         'message' => 'تم الدفع بنجاح',
-                        'order_id' => $tapPayment->order_id,
+                        'order_id' => $orderId,
                         'payment_id' => $paymentId
                     ]);
                 } else {
                     return response()->json([
                         'status' => false,
                         'message' => 'عملية الدفع فشلت أو تم رفضها.',
-                        'order_id' => $tapPayment->order_id,
+                        'order_id' => $orderId,
                         'payment_id' => $paymentId
                     ]);
                 }
