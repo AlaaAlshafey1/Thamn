@@ -54,20 +54,14 @@
         /* Header / Logo */
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .header img {
-            max-height: 50px;
+            max-height: 120px;
+            width: auto;
             object-fit: contain;
-            margin-bottom: 15px;
-        }
-
-        .header h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .header p {
@@ -183,8 +177,6 @@
         <!-- Header -->
         <div class="header">
             <img src="{{ asset('assets/img/Logo2.png') }}" alt="ثمن">
-            <h2>إتمام الدفع</h2>
-            <p>بوابة الدفع الإلكتروني الآمنة</p>
         </div>
 
         <!-- Order Summary -->
