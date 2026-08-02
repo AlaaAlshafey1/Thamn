@@ -122,6 +122,29 @@
             direction: ltr;
         }
 
+        /* عزل أزرار طرق الدفع كل واحد في سطر لوحده */
+        .mysr-form-cb-wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            margin-bottom: 16px !important;
+        }
+
+        .mysr-form-cb-wrapper label {
+            width: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 14px !important;
+            border-radius: 12px !important;
+            border: 2px solid var(--border) !important;
+            cursor: pointer !important;
+            transition: border-color 0.2s ease !important;
+        }
+
+        .mysr-form-cb-wrapper label:hover {
+            border-color: #475569 !important;
+        }
+
         /* Trust Badges */
         .trust-section {
             margin-top: 25px;
