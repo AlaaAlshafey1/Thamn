@@ -74,8 +74,14 @@ class PaymentController extends Controller
             ['orderId' => $order->id]
         );
 
+        // نقوم بمحاكاة هيكل استجابة Tap (JSON) حتى لا يتعطل الموبايل أثناء قراءة الرابط
         return response()->json([
-            'status'      => true,
+            'id'          => 'chg_moyasar_' . $order->id,
+            'status'      => 'INITIATED',
+            'transaction' => [
+                'url' => $checkoutUrl
+            ],
+            // إبقاء الحقول الإضافية للتوافق
             'payment_url' => $checkoutUrl,
             'order_id'    => $order->id,
             'amount'      => $amount,
