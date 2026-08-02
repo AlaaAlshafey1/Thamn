@@ -46,6 +46,14 @@ Route::prefix('auth')->group(function () {
 Route::get('categories', [HomeController::class, 'categories']);
 Route::get('valuation-orders/{order}/pdf', [OrderController::class, 'generatePdf'])->name('valuation-order.pdf')->middleware('signed');
 
+// ─── Moyasar Webhook (لا يحتاج Auth — يُستدعى من سيرفرات Moyasar) ───
+Route::post('/payment/webhook/moyasar', [PaymentController::class, 'moyasarWebhook'])
+    ->name('payment.webhook.moyasar');
+
+// ─── Moyasar Redirect Callback (المستخدم يُوجَّه هنا بعد الدفع) ───
+Route::get('/payment/order/{orderId}', [PaymentController::class, 'redirect'])
+    ->name('payment.redirect.api');
+
 Route::get('terms', [HomeController::class, 'terms']);
 Route::get('/test-fcm', function () {
 
@@ -145,17 +153,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('payment')->group(function () {
-
+        // إنشاء عملية دفع جديدة عبر Moyasar
         Route::post('/order/{order_id}', [PaymentController::class, 'payOrder'])
             ->name('payment.order');
-
-        // Tap server → server
     });
+
     Route::get('/test-ai/{orderId}', [PaymentController::class, 'testAiEvaluation']);
-
-
-    Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
-    Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
 
 
     Route::prefix('orders')->group(function () {

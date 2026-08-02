@@ -55,11 +55,32 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Moyasar: صفحة وسيطة يوجَّه إليها المستخدم بعد الدفع (من الويب)
 Route::get(
     '/payment/order/{orderId}',
     [PaymentController::class, 'redirect']
 )->name('payment.redirect');
 
+// Moyasar: مسار وسيط للتعامل مع نتيجة الدفع وتوجيهها للمسارات القديمة الخاصة بـ Tap
+Route::get('/moyasar/callback', function (\Illuminate\Http\Request $request) {
+    $status = $request->query('status'); // paid, failed, etc.
+    $id = $request->query('id'); // pay_xxx
+
+    if ($status === 'paid') {
+        return redirect()->to(url('/payment/callback/package_sucess?id=' . $id . '&status=' . $status));
+    } else {
+        return redirect()->to(url('/payment/callback/package_error?id=' . $id . '&status=' . $status));
+    }
+})->name('moyasar.callback');
+
+// Moyasar: صفحة الدفع المستضافة عندنا (مؤمنة برابط مشفر)
+Route::get('/moyasar/checkout/{orderId}', function ($orderId) {
+    $order = \App\Models\Order::with('user')->findOrFail($orderId);
+    $callbackUrl = url("/moyasar/callback");
+    return view('payment.moyasar_checkout', compact('order', 'callbackUrl'));
+})->name('moyasar.checkout')->middleware('signed');
+
+// Routes قديمة محفوظة للتوافق (يمكن حذفها لاحقاً)
 Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
 Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
 

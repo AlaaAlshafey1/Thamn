@@ -20,7 +20,7 @@ class OrderSeeder extends Seeder
             'user_id' => $user->id,
             'category_id' => 1, // سيارات
             'total_price' => 0, // سيتم حسابه
-            'status' => 'pending',
+            'status' => 'waitingPayment',
         ]);
 
         $totalPrice = 0;
@@ -87,53 +87,9 @@ class OrderSeeder extends Seeder
 
         $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. جاري توليد الصورة وإجراء تقييم الذكاء الاصطناعي...");
 
-        // === محاكاة ما يحدث بعد الدفع (توليد الصورة ديناميكياً) ===
-        // التوليد اليدوي للصورة يتم فقط للخبراء، أما AI فيولدها بنفسه أثناء التقييم
-        $evaluationType = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value;
-        if ($evaluationType !== 'ai') {
-            try {
-                $qaLines = [];
-                foreach ($order->details as $detail) {
-                    $qText = $detail->question->question_en ?? $detail->question->question_ar;
-                    $aText = $detail->option->option_en ?? $detail->option->option_ar ?? $detail->value;
-                    if ($qText && $aText) {
-                        $qaLines[] = "{$qText}: {$aText}";
-                    }
-                }
-                $qaText = implode(", ", $qaLines);
-                $category = $order->category->name_en ?? 'Car';
+        // === تم إيقاف توليد الصورة وتقييم الـ AI هنا ===
+        // سيتم تنفيذهم تلقائياً بعد نجاح الدفع من خلال الـ Controller
 
-                $prompt = "A highly realistic, professional studio photograph of a {$category} with the following specifications: {$qaText}. Pure white background, centered, well lit, high quality.";
-                
-                $imageUrl = app(\App\Services\OpenAIService::class)->generateImage($prompt);
-                if ($imageUrl) {
-                    $imageContents = file_get_contents($imageUrl);
-                    $filename = 'ai_generated_auto_' . \Illuminate\Support\Str::random(10) . '.png';
-                    $path = 'orders/images/' . $filename;
-                    
-                    \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageContents);
-
-                    \App\Models\OrderFiles::create([
-                        'order_id' => $order->id,
-                        'file_path' => $path,
-                        'file_name' => $filename,
-                        'type' => 'image',
-                    ]);
-                    
-                    $order->load('files');
-                    $this->command->info("تم توليد الصورة وإرفاقها بالطلب بنجاح.");
-                }
-            } catch (\Exception $e) {
-                $this->command->error("فشل في توليد الصورة: " . $e->getMessage());
-            }
-        }
-
-        // === محاكاة توجيه التقييم إلى AI ===
-        try {
-            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
-            $this->command->info("تم التقييم بواسطة AI بنجاح!");
-        } catch (\Exception $e) {
-            $this->command->error("فشل في تقييم AI: " . $e->getMessage());
-        }
+        $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. في انتظار الدفع (waitingPayment)...");
     }
 }

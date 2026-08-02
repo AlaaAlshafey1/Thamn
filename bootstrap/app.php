@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             \App\Http\Middleware\SetLocaleMiddleware::class,
         ]);
+
+        // استثناء مسار Webhook من CSRF
+        // (Moyasar يرسل POST مباشرةً من سيرفراتها، ليس من المتصفح)
+        $middleware->validateCsrfTokens(except: [
+            'api/payment/webhook/moyasar',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

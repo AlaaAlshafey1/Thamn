@@ -4,14 +4,15 @@
         background: linear-gradient(135deg, #28a745, #20c997);
         color: white;
         border: none;
-        box-shadow: 0 4px 6px rgba(40,167,69,0.2);
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
         transition: all 0.3s;
         border-radius: 20px;
         padding: 6px 16px;
     }
+
     .btn-receive:hover {
         background: linear-gradient(135deg, #218838, #1ba87e);
-        box-shadow: 0 6px 8px rgba(40,167,69,0.3);
+        box-shadow: 0 6px 8px rgba(40, 167, 69, 0.3);
         transform: translateY(-1px);
         color: white;
     }
@@ -87,7 +88,7 @@
                         @endif
                     </td>
                     <td class="small">{{ $order->created_at->format('Y-m-d') }}</td>
-                    
+
                     @if(!auth()->user()->hasRole('expert'))
                         <td>
                             @if($order->ai_price)
@@ -114,7 +115,8 @@
                     @else
                         <td>
                             @if(!$order->expert_id)
-                                <span class="badge bg-warning-transparent text-warning px-2 py-1"><i class="bx bx-time-five ml-1"></i> بانتظار الاستلام</span>
+                                <span class="badge bg-warning-transparent text-warning px-2 py-1"><i
+                                        class="bx bx-time-five ml-1"></i> بانتظار الاستلام</span>
                             @elseif($order->expert_price)
                                 <span class="fw-bold text-warning">{{ number_format($order->expert_price, 0) }}</span>
                                 <small class="text-muted">SAR</small>
@@ -128,22 +130,25 @@
                         <div class="btn-list d-flex justify-content-center gap-1">
                             @if(auth()->user()->hasRole('expert'))
                                 @if(!$order->expert_id)
-                                    <button type="button" class="btn btn-receive fw-bold expert-receive-btn" data-order-id="{{ $order->id }}">
+                                    <button type="button" class="btn btn-receive fw-bold expert-receive-btn"
+                                        data-order-id="{{ $order->id }}">
                                         <i class="bx bx-check-double fs-18 ml-1 align-middle"></i> استلام الطلب
                                     </button>
                                 @elseif($order->expert_id == auth()->id())
-                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل وتقييم">
+                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info-light btn-icon"
+                                        title="عرض التفاصيل وتقييم">
                                         <i class="bx bx-show fs-18"></i>
                                     </a>
                                 @endif
                             @else
-                                <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل">
+                                <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info-light btn-icon"
+                                    title="عرض التفاصيل">
                                     <i class="bx bx-show fs-18"></i>
                                 </a>
                                 @can('orders_edit')
-                                <a href="#" class="btn btn-sm btn-primary-light btn-icon" title="تعديل">
-                                    <i class="bx bx-edit fs-18"></i>
-                                </a>
+                                    <a href="#" class="btn btn-sm btn-primary-light btn-icon" title="تعديل">
+                                        <i class="bx bx-edit fs-18"></i>
+                                    </a>
                                 @endcan
                             @endif
                         </div>
