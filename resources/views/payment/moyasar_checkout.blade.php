@@ -218,6 +218,21 @@
 <!-- Moyasar Payment Form JS -->
 <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 <script>
+    // نحدد طرق الدفع ديناميكياً. نفعل Apple Pay فقط إذا كان الموقع يعمل بـ HTTPS (مثل بيئة الإنتاج)
+    // لتجنب توقف الفورم بالكامل في بيئة التطوير المحلية (Localhost HTTP)
+    var paymentMethods = ['creditcard', 'stcpay'];
+    var applePayConfig = undefined;
+
+    if (window.location.protocol === 'https:') {
+        paymentMethods.push('applepay');
+        applePayConfig = {
+            country: 'SA',
+            currency: 'SAR',
+            label: 'Thamn | ثمن',
+            validate_merchant_url: 'https://api.moyasar.com/v1/applepay/initiate'
+        };
+    }
+
     Moyasar.init({
         element: '.moyasar-form',
         amount: {{ (int) round($order->total_price * 100) }},
@@ -225,8 +240,8 @@
         description: 'طلب تثمين رقم #{{ $order->id }}',
         publishable_api_key: '{{ config("services.moyasar.publishable_key") }}',
         callback_url: '{{ $callbackUrl }}',
-        // تم تعطيل Apple Pay مؤقتاً في الـ localhost
-        methods: ['creditcard', 'stcpay'],
+        methods: paymentMethods,
+        apple_pay: applePayConfig,
         metadata: {
             order_id: {{ $order->id }},
             user_id: {{ $order->user_id ?? 0 }},
