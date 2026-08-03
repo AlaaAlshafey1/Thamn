@@ -64,6 +64,12 @@
             margin-bottom: 8px;
         }
 
+        .header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
         /* Order Summary Box */
         .order-summary {
             background: var(--bg);
@@ -111,63 +117,64 @@
             letter-spacing: 0.5px;
         }
 
-        /*
-         * =====================================================
-         * Moyasar Form - الفورم يكون LTR دائماً
-         * =====================================================
-         * Moyasar يبني الفورم بـ LTR بطبيعته ولازم يفضل كذا.
-         * المشكلة الأساسية: الصفحة RTL + الفورم LTR كانت بتخلي
-         * الـ click coordinates تتحسب غلط على iOS/Safari.
-         */
+        /* Moyasar Form Overrides */
+        /* لا نعكس الاتجاه للفورم لأن ذلك يسبب تداخل الأزرار */
         .moyasar-form {
             direction: ltr;
+            unicode-bidi: isolate;
         }
 
-        /*
-         * =====================================================
-         * FIX الحقيقي: Moyasar بيعرض أزرار طرق الدفع كـ
-         * .mysr-form-methodButton وكل واحد في div.mysr-form-method
-         * Apple Pay بيتعرض كـ button.mysr-form-applePayButton
-         * اللي بـ -webkit-appearance: -apple-pay-button
-         *
-         * المشكلة: الـ .mysr-form-methodButtons بيعرض الأزرار
-         * في layout افتراضي فيه احتمال يتداخلوا.
-         * الحل: نخلي كل div.mysr-form-method يكون clear تماماً
-         * ومفيش أي overlap بين الـ methods.
-         * =====================================================
-         */
-
-        /* كل method في سطر مستقل وواضح */
-        .mysr-form-moyasarForm .mysr-form-method {
-            position: relative !important;
-            overflow: visible !important;
-        }
-
-        /* الأزرار تتراص عمودياً بشكل صريح */
-        .mysr-form-moyasarForm .mysr-form-methodButtons {
+        /* عزل أزرار طرق الدفع - كل واحد في سطر مستقل */
+        .mysr-form-cb-wrapper {
             display: flex !important;
             flex-direction: column !important;
-            gap: 8px !important;
+            flex-wrap: nowrap !important;
+            gap: 10px !important;
+            margin-bottom: 16px !important;
         }
 
-        /* كل زرار method له مساحة واضحة */
-        .mysr-form-moyasarForm .mysr-form-methodButton {
-            display: block !important;
+        .mysr-form-cb-wrapper label {
             width: 100% !important;
-            margin-bottom: 0 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            padding: 14px !important;
+            border-radius: 12px !important;
+            border: 2px solid var(--border) !important;
+            cursor: pointer !important;
+            transition: border-color 0.2s ease !important;
+            /* كل label له stacking context مستقل تماماً */
+            isolation: isolate !important;
+            contain: layout !important;
+        }
+
+        .mysr-form-cb-wrapper label:hover {
+            border-color: #475569 !important;
         }
 
         /*
-         * Apple Pay button الخاص بـ Moyasar
-         * يستخدم -webkit-appearance: -apple-pay-button
-         * وليس web component - لازم له مساحة كافية
+         * apple-pay-button هو web component خاص من Apple
+         * يجب أن يكون له حاوية واضحة ولا يتداخل مع عناصر أخرى
          */
-        .mysr-form-moyasarForm .mysr-form-applePayButton {
+        apple-pay-button {
             display: block !important;
             width: 100% !important;
-            min-height: 50px !important;
-            margin: 0 !important;
-            cursor: pointer !important;
+            min-height: 48px !important;
+            margin-top: 10px !important;
+            /* عزل تام عن العناصر الأخرى */
+            position: relative !important;
+            z-index: 10 !important;
+            isolation: isolate !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        /* حاوية Apple Pay في Moyasar */
+        .mysr-applepay-button-wrapper,
+        [class*="applepay"],
+        [class*="apple-pay"] {
+            position: relative !important;
+            z-index: 10 !important;
+            isolation: isolate !important;
         }
 
         /* Trust Badges */
@@ -195,6 +202,19 @@
         .secure-badge svg {
             width: 14px;
             height: 14px;
+        }
+
+        .payment-methods {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .payment-methods svg {
+            height: 24px;
+            width: auto;
+            opacity: 0.6;
         }
 
         /* Animations */
@@ -227,7 +247,7 @@
         </div>
 
         <!-- Moyasar Payment Form -->
-        <div id="moyasar-payment-form"></div>
+        <div class="moyasar-form"></div>
 
         <!-- Trust Indicators -->
         <div class="trust-section">
@@ -246,14 +266,13 @@
 <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 <script>
     // ============================================================
-    // إعداد Moyasar
-    // Apple Pay يشتغل فقط على HTTPS + Safari على iOS/macOS
+    // إعداد طرق الدفع
+    // Apple Pay يظهر فقط على HTTPS (الإنتاج) - لا يعمل على HTTP
     // ============================================================
     var paymentMethods = ['creditcard', 'stcpay'];
     var applePayConfig = undefined;
 
     if (window.location.protocol === 'https:') {
-        // Apple Pay أول الـ list حتى يظهر في الأعلى
         paymentMethods = ['applepay', 'creditcard', 'stcpay'];
         applePayConfig = {
             country: 'SA',
@@ -264,7 +283,7 @@
     }
 
     Moyasar.init({
-        element: '#moyasar-payment-form',
+        element: '.moyasar-form',
         amount: {{ (int) round($order->total_price * 100) }},
         currency: 'SAR',
         description: 'طلب تثمين رقم #{{ $order->id }}',
@@ -279,101 +298,58 @@
     });
 
     // ============================================================
-    // FIX: منع تبديل طريقة الدفع عرضاً عند الضغط على Apple Pay
+    // FIX: منع تداخل Apple Pay مع STC Pay
     //
-    // الوضع الحقيقي (من Moyasar CSS المصدر):
-    // - Apple Pay = button.mysr-form-applePayButton بـ
-    //   -webkit-appearance: -apple-pay-button  (مش web component!)
-    // - يتعرض داخل div.mysr-form-method الخاص بيه
+    // المشكلة: Moyasar يعرض apple-pay-button كـ web component
+    // بيكون فوق radio buttons الأخرى. لما المستخدم يضغط على
+    // Apple Pay، الـ click event بيعدي من خلاله ويضغط على
+    // STC radio تحته، فبيغير الـ selection تلقائياً.
     //
-    // المشكلة المحتملة:
-    // 1. إن الـ radio labels بتاعة طرق الدفع ممكن تتداخل مع
-    //    زرار Apple Pay في الـ layout
-    // 2. أو إن event من Apple Pay بيتسرب لـ STC label
-    //
-    // الحل: نراقب كل تغيير في الـ radio buttons ولو اتغير
-    // من applepay لأي طريقة تانية بدون أن يكون click صريح
-    // على الـ label بتاعتها، نرجعه لـ applepay.
+    // الحل: نراقب DOM بـ MutationObserver وبعد ما Moyasar يعمل
+    // render، نضيف event listener على apple-pay-button يمنع
+    // الـ event من الوصول للعناصر اللي وراه.
     // ============================================================
-    (function fixApplePaySelection() {
+    (function fixApplePayClickThrough() {
         if (window.location.protocol !== 'https:') return;
 
-        var formEl = document.getElementById('moyasar-payment-form');
+        var formEl = document.querySelector('.moyasar-form');
         if (!formEl) return;
 
-        var isApplePayLocked = false;
-        var lockTimeout = null;
+        var observer = new MutationObserver(function() {
+            var applePayBtn = formEl.querySelector('apple-pay-button');
+            if (!applePayBtn || applePayBtn._fixedClickThrough) return;
 
-        // راقب الـ DOM لما Moyasar يعمل render للفورم
-        var observer = new MutationObserver(function(mutations, obs) {
-            // دور على Apple Pay button
-            var applePayBtn = formEl.querySelector('.mysr-form-applePayButton');
-            if (!applePayBtn) return;
+            applePayBtn._fixedClickThrough = true;
 
-            if (applePayBtn._alreadyFixed) return;
-            applePayBtn._alreadyFixed = true;
+            // منع الـ click من الوصول للعناصر الأخرى (stopPropagation)
+            // لكن نسمح بـ Apple Pay نفسه يكمل عمله (لا نعمل preventDefault)
+            applePayBtn.addEventListener('click', function(e) {
+                e.stopImmediatePropagation();
+            }, true); // capture phase - يمسك الـ event قبل أي listener تاني
 
-            console.log('[Moyasar Fix] Apple Pay button found:', applePayBtn);
+            // تأكد إن الـ radio button بتاع Apple Pay محدد
+            var applePayRadio = formEl.querySelector('input[value="applepay"]');
+            if (applePayRadio && !applePayRadio.checked) {
+                applePayRadio.checked = true;
+                applePayRadio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
-            // لما تضغط على Apple Pay button:
-            // 1. سجل إن Apple Pay محدد
-            // 2. امسك أي event تاني خلال 500ms
-            applePayBtn.addEventListener('pointerdown', function(e) {
-                console.log('[Moyasar Fix] Apple Pay pointerdown');
-                isApplePayLocked = true;
-                clearTimeout(lockTimeout);
-                lockTimeout = setTimeout(function() {
-                    isApplePayLocked = false;
-                }, 1000);
-            }, true);
-
-            applePayBtn.addEventListener('touchstart', function(e) {
-                console.log('[Moyasar Fix] Apple Pay touchstart');
-                isApplePayLocked = true;
-                clearTimeout(lockTimeout);
-                lockTimeout = setTimeout(function() {
-                    isApplePayLocked = false;
-                }, 1000);
-            }, true);
-
-            // راقب تغيير الـ radio buttons
-            formEl.addEventListener('change', function(e) {
-                if (e.target && e.target.type === 'radio' && e.target.value !== 'applepay') {
-                    if (isApplePayLocked) {
-                        console.log('[Moyasar Fix] Prevented switch from applepay to', e.target.value);
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-
-                        // رجّع Apple Pay كـ selected
-                        var applePayRadio = formEl.querySelector('input[value="applepay"]');
-                        if (applePayRadio) {
-                            setTimeout(function() {
-                                applePayRadio.click();
-                            }, 50);
+            // منع أي radio button تاني يتحدد لما apple-pay-button موجود ومرئي
+            var applePayWrapper = applePayBtn.closest('[class*="applepay"], [class*="apple"]');
+            if (applePayWrapper) {
+                var otherRadios = formEl.querySelectorAll('input[type="radio"]:not([value="applepay"])');
+                otherRadios.forEach(function(radio) {
+                    radio.addEventListener('click', function(e) {
+                        // إذا apple-pay-button مرئي والـ click جاي من داخله، امنعه
+                        var applePayVisible = applePayBtn.offsetParent !== null;
+                        var clickedInsideApplePay = applePayBtn.contains(e.target);
+                        if (applePayVisible && clickedInsideApplePay) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
                         }
-                        return false;
-                    }
-                } else if (e.target && e.target.value === 'applepay') {
-                    // Apple Pay اتحدد بشكل صريح - مش locked
-                    isApplePayLocked = false;
-                }
-            }, true);
-
-            // راقب أي click على labels غير Apple Pay
-            var allLabels = formEl.querySelectorAll('label');
-            allLabels.forEach(function(label) {
-                label.addEventListener('click', function(e) {
-                    var radio = label.querySelector('input[type="radio"]');
-                    if (radio && radio.value !== 'applepay' && isApplePayLocked) {
-                        console.log('[Moyasar Fix] Blocked label click for', radio.value);
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        return false;
-                    }
-                    // لو المستخدم بيختار STC أو creditcard بشكل صريح، مش locked
-                    isApplePayLocked = false;
-                }, true);
-            });
+                    }, true);
+                });
+            }
         });
 
         observer.observe(formEl, {
