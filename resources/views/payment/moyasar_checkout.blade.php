@@ -124,15 +124,13 @@
             unicode-bidi: isolate;
         }
 
-        /* عزل أزرار طرق الدفع كل واحد في سطر لوحده بشكل صريح */
+        /* عزل أزرار طرق الدفع - كل واحد في سطر مستقل */
         .mysr-form-cb-wrapper {
             display: flex !important;
             flex-direction: column !important;
             flex-wrap: nowrap !important;
             gap: 10px !important;
             margin-bottom: 16px !important;
-            position: relative !important;
-            z-index: 1 !important;
         }
 
         .mysr-form-cb-wrapper label {
@@ -145,21 +143,38 @@
             border: 2px solid var(--border) !important;
             cursor: pointer !important;
             transition: border-color 0.2s ease !important;
-            position: relative !important;
-            z-index: 2 !important;
-            pointer-events: auto !important;
-            user-select: none !important;
+            /* كل label له stacking context مستقل تماماً */
+            isolation: isolate !important;
+            contain: layout !important;
         }
 
         .mysr-form-cb-wrapper label:hover {
             border-color: #475569 !important;
         }
 
-        /* منع تداخل العناصر بين بعضها */
-        .mysr-form-cb-wrapper input[type="radio"] {
-            pointer-events: auto !important;
+        /*
+         * apple-pay-button هو web component خاص من Apple
+         * يجب أن يكون له حاوية واضحة ولا يتداخل مع عناصر أخرى
+         */
+        apple-pay-button {
+            display: block !important;
+            width: 100% !important;
+            min-height: 48px !important;
+            margin-top: 10px !important;
+            /* عزل تام عن العناصر الأخرى */
             position: relative !important;
-            z-index: 3 !important;
+            z-index: 10 !important;
+            isolation: isolate !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        /* حاوية Apple Pay في Moyasar */
+        .mysr-applepay-button-wrapper,
+        [class*="applepay"],
+        [class*="apple-pay"] {
+            position: relative !important;
+            z-index: 10 !important;
+            isolation: isolate !important;
         }
 
         /* Trust Badges */
@@ -250,13 +265,14 @@
 <!-- Moyasar Payment Form JS -->
 <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 <script>
-    // نحدد طرق الدفع ديناميكياً.
-    // Apple Pay يُضاف أولاً في القائمة حتى يظهر في الأعلى ولا يتداخل مع STC Pay
+    // ============================================================
+    // إعداد طرق الدفع
+    // Apple Pay يظهر فقط على HTTPS (الإنتاج) - لا يعمل على HTTP
+    // ============================================================
     var paymentMethods = ['creditcard', 'stcpay'];
     var applePayConfig = undefined;
 
     if (window.location.protocol === 'https:') {
-        // نضيف applepay في أول القائمة وليس في آخرها لتجنب مشاكل الترتيب
         paymentMethods = ['applepay', 'creditcard', 'stcpay'];
         applePayConfig = {
             country: 'SA',
@@ -280,6 +296,67 @@
             user_id: {{ $order->user_id ?? 0 }},
         }
     });
+
+    // ============================================================
+    // FIX: منع تداخل Apple Pay مع STC Pay
+    //
+    // المشكلة: Moyasar يعرض apple-pay-button كـ web component
+    // بيكون فوق radio buttons الأخرى. لما المستخدم يضغط على
+    // Apple Pay، الـ click event بيعدي من خلاله ويضغط على
+    // STC radio تحته، فبيغير الـ selection تلقائياً.
+    //
+    // الحل: نراقب DOM بـ MutationObserver وبعد ما Moyasar يعمل
+    // render، نضيف event listener على apple-pay-button يمنع
+    // الـ event من الوصول للعناصر اللي وراه.
+    // ============================================================
+    (function fixApplePayClickThrough() {
+        if (window.location.protocol !== 'https:') return;
+
+        var formEl = document.querySelector('.moyasar-form');
+        if (!formEl) return;
+
+        var observer = new MutationObserver(function() {
+            var applePayBtn = formEl.querySelector('apple-pay-button');
+            if (!applePayBtn || applePayBtn._fixedClickThrough) return;
+
+            applePayBtn._fixedClickThrough = true;
+
+            // منع الـ click من الوصول للعناصر الأخرى (stopPropagation)
+            // لكن نسمح بـ Apple Pay نفسه يكمل عمله (لا نعمل preventDefault)
+            applePayBtn.addEventListener('click', function(e) {
+                e.stopImmediatePropagation();
+            }, true); // capture phase - يمسك الـ event قبل أي listener تاني
+
+            // تأكد إن الـ radio button بتاع Apple Pay محدد
+            var applePayRadio = formEl.querySelector('input[value="applepay"]');
+            if (applePayRadio && !applePayRadio.checked) {
+                applePayRadio.checked = true;
+                applePayRadio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            // منع أي radio button تاني يتحدد لما apple-pay-button موجود ومرئي
+            var applePayWrapper = applePayBtn.closest('[class*="applepay"], [class*="apple"]');
+            if (applePayWrapper) {
+                var otherRadios = formEl.querySelectorAll('input[type="radio"]:not([value="applepay"])');
+                otherRadios.forEach(function(radio) {
+                    radio.addEventListener('click', function(e) {
+                        // إذا apple-pay-button مرئي والـ click جاي من داخله، امنعه
+                        var applePayVisible = applePayBtn.offsetParent !== null;
+                        var clickedInsideApplePay = applePayBtn.contains(e.target);
+                        if (applePayVisible && clickedInsideApplePay) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                        }
+                    }, true);
+                });
+            }
+        });
+
+        observer.observe(formEl, {
+            childList: true,
+            subtree: true
+        });
+    })();
 </script>
 </body>
 </html>
