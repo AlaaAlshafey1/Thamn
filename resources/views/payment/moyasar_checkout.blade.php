@@ -118,31 +118,48 @@
         }
 
         /* Moyasar Form Overrides */
+        /* لا نعكس الاتجاه للفورم لأن ذلك يسبب تداخل الأزرار */
         .moyasar-form {
             direction: ltr;
+            unicode-bidi: isolate;
         }
 
-        /* عزل أزرار طرق الدفع كل واحد في سطر لوحده */
+        /* عزل أزرار طرق الدفع كل واحد في سطر لوحده بشكل صريح */
         .mysr-form-cb-wrapper {
             display: flex !important;
             flex-direction: column !important;
+            flex-wrap: nowrap !important;
             gap: 10px !important;
             margin-bottom: 16px !important;
+            position: relative !important;
+            z-index: 1 !important;
         }
 
         .mysr-form-cb-wrapper label {
             width: 100% !important;
             display: flex !important;
+            flex-direction: row !important;
             align-items: center !important;
             padding: 14px !important;
             border-radius: 12px !important;
             border: 2px solid var(--border) !important;
             cursor: pointer !important;
             transition: border-color 0.2s ease !important;
+            position: relative !important;
+            z-index: 2 !important;
+            pointer-events: auto !important;
+            user-select: none !important;
         }
 
         .mysr-form-cb-wrapper label:hover {
             border-color: #475569 !important;
+        }
+
+        /* منع تداخل العناصر بين بعضها */
+        .mysr-form-cb-wrapper input[type="radio"] {
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 3 !important;
         }
 
         /* Trust Badges */
@@ -233,13 +250,14 @@
 <!-- Moyasar Payment Form JS -->
 <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 <script>
-    // نحدد طرق الدفع ديناميكياً. نفعل Apple Pay فقط إذا كان الموقع يعمل بـ HTTPS (مثل بيئة الإنتاج)
-    // لتجنب توقف الفورم بالكامل في بيئة التطوير المحلية (Localhost HTTP)
+    // نحدد طرق الدفع ديناميكياً.
+    // Apple Pay يُضاف أولاً في القائمة حتى يظهر في الأعلى ولا يتداخل مع STC Pay
     var paymentMethods = ['creditcard', 'stcpay'];
     var applePayConfig = undefined;
 
     if (window.location.protocol === 'https:') {
-        paymentMethods.push('applepay');
+        // نضيف applepay في أول القائمة وليس في آخرها لتجنب مشاكل الترتيب
+        paymentMethods = ['applepay', 'creditcard', 'stcpay'];
         applePayConfig = {
             country: 'SA',
             currency: 'SAR',
