@@ -265,61 +265,7 @@
 <!-- Moyasar Payment Form JS -->
 <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 
-<!-- DEBUG OVERLAY: يظهر أخطاء Apple Pay على الشاشة مباشرة -->
-<div id="ap-debug" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;z-index:99999;word-break:break-all;max-height:40vh;overflow-y:auto;direction:ltr;"></div>
-
 <script>
-    // ============================================================
-    // DEBUG: اعتراض طلبات Moyasar لعرض الخطأ على الشاشة
-    // ============================================================
-    (function interceptFetch() {
-        var debugEl = document.getElementById('ap-debug');
-        function showDebug(msg) {
-            debugEl.style.display = 'block';
-            debugEl.innerHTML += '<div>' + new Date().toISOString().substr(11,8) + ' → ' + msg + '</div>';
-        }
-
-        var origFetch = window.fetch;
-        window.fetch = function(url, opts) {
-            if (url && String(url).indexOf('applepay') !== -1) {
-                showDebug('[Fetch→] ' + url);
-                return origFetch.apply(this, arguments).then(function(res) {
-                    var clone = res.clone();
-                    clone.text().then(function(body) {
-                        showDebug('[Status] ' + res.status + ' | ' + body.substr(0, 300));
-                    });
-                    return res;
-                }).catch(function(err) {
-                    showDebug('[FetchErr] ' + err);
-                    throw err;
-                });
-            }
-            return origFetch.apply(this, arguments);
-        };
-
-        var origXHR = window.XMLHttpRequest.prototype.open;
-        window.XMLHttpRequest.prototype.open = function(method, url) {
-            if (url && String(url).indexOf('applepay') !== -1) {
-                this.addEventListener('load', function() {
-                    showDebug('[XHR ' + this.status + '] ' + String(this.responseText).substr(0, 300));
-                });
-                this.addEventListener('error', function() {
-                    showDebug('[XHRErr] network error');
-                });
-            }
-            return origXHR.apply(this, arguments);
-        };
-
-        window.addEventListener('unhandledrejection', function(e) {
-            showDebug('[PromiseErr] ' + (e.reason || e));
-        });
-
-        window.onerror = function(msg, src, line) {
-            showDebug('[JSErr] ' + msg + ' (' + line + ')');
-        };
-    })();
-
-    // ============================================================
     // إعداد طرق الدفع
     // ============================================================
     var paymentMethods = ['creditcard', 'stcpay'];
