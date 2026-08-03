@@ -231,7 +231,7 @@
         
         <!-- Header -->
         <div class="header">
-            <img src="{{ asset('assets/img/Logo2.png') }}" alt="ثمن">
+            <img src="{{ asset('assets/img/Logo.png') }}" alt="ثمن">
         </div>
 
         <!-- Order Summary -->
