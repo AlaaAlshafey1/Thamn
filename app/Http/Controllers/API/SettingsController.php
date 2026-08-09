@@ -297,6 +297,9 @@ class SettingsController extends Controller
      * GET /settings/sale-terms
      */
     public function saleTerms(Request $request)
+    {
+        // TODO: Implement saleTerms method
+    }
 
     public function terms(Request $request)
     {
