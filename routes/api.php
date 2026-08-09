@@ -86,6 +86,7 @@ Route::prefix('settings')->group(function () {
     Route::get('terms', [SettingsController::class, 'terms']);
     Route::get('privacy', [SettingsController::class, 'privacy']);
     Route::get('pages/{type}', [SettingsController::class, 'getPage']);
+
 });
 
 

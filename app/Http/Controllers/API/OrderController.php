@@ -24,23 +24,25 @@ class OrderController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'status' => 'nullable|string',
-            'answers' => 'required|array',
+            'status'                => 'nullable|string',
+            'answers'               => 'required|array',
             'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.option_id' => 'nullable',
+            'answers.*.option_id'   => 'nullable',
             'answers.*.sub_option_id' => 'nullable',
-            'answers.*.value' => 'nullable|string',
-            'answers.*.price' => 'nullable|numeric',
-            'answers.*.status' => 'nullable|integer',
-            'answers.*.stageing' => 'nullable|integer',
+            'answers.*.value'       => 'nullable|string',
+            'answers.*.price'       => 'nullable|numeric',
+            'answers.*.status'      => 'nullable|integer',
+            'answers.*.stageing'    => 'nullable|integer',
+            'can_send_to_market'    => 'nullable|boolean',
         ]);
 
 
         $order = Order::create([
-            'user_id' => $user->id,
-            'category_id' => $request->category_id ?? 1,
-            'status' => $request->status ?? 0,
-            'payload' => json_encode($request->answers),
+            'user_id'             => $user->id,
+            'category_id'         => $request->category_id ?? 1,
+            'status'              => $request->status ?? 0,
+            'payload'             => json_encode($request->answers),
+            'can_send_to_market'  => $request->can_send_to_market ? true : false,
         ]);
 
         $totalPrice = 0;
@@ -168,19 +170,21 @@ class OrderController extends Controller
         return response()->json([
             'status' => true,
             'order' => [
-                'id' => $order->id,
-                'user_id' => $order->user_id,
-                'status' => $order->status,
-                'thamn_by' => $evaluationType,
-                'total_price' => $totalPrice,
+                'id'                  => $order->id,
+                'user_id'             => $order->user_id,
+                'status'              => $order->status,
+                'thamn_by'            => $evaluationType,
+                'total_price'         => $totalPrice,
+                'pricing_mode'        => $order->pricing_mode,
+                'sale_terms_accepted' => (bool) $order->sale_terms_accepted,
                 'files' => OrderFiles::where('order_id', $order->id)
                     ->where('type', 'file')
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id' => $file->id,
+                            'id'   => $file->id,
                             'name' => $file->file_name,
-                            'url' => full_url($file->file_path),
+                            'url'  => full_url($file->file_path),
                         ];
                     }),
 
@@ -189,9 +193,9 @@ class OrderController extends Controller
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id' => $file->id,
+                            'id'   => $file->id,
                             'name' => $file->file_name,
-                            'url' => full_url($file->file_path),
+                            'url'  => full_url($file->file_path),
                         ];
                     }),
                 'answers' => $responseAnswers,
@@ -641,36 +645,37 @@ class OrderController extends Controller
                 ->values();
 
             return [
-                'id' => $order->id,
-                'user_id' => $order->user_id,
-                'category_id' => $order->category_id,
-                'status' => $order->status,
-                'pricing_method' => $order->pricing_method,
-                'total_price' => $order->total_price,
-                'payload' => $order->payload,
-                'created_at' => $order->created_at,
-                'updated_at' => $order->updated_at,
-                'ai_min_price' => $order->ai_min_price,
-                'ai_max_price' => $order->ai_max_price,
-                'ai_price' => $order->ai_price,
-                'ai_confidence' => $order->ai_confidence,
-                'ai_reasoning' => $order->ai_reasoning,
-                'expert_id' => $order->expert_id,
-                'expert_evaluated' => $order->expert_evaluated,
-                'expert_price' => $order->expert_price,
-                'thamn_price' => $order->thamn_price,
-                'thamn_reasoning' => $order->thamn_reasoning,
-                'expert_reasoning' => $order->expert_reasoning,
-                'thamn_by' => $order->thamn_by,
-                'thamn_at' => $order->thamn_at,
-                'deleted_at' => $order->deleted_at,
-                'is_re_evaluated' => $order->re_evaluation_count > 0,
+                'id'                  => $order->id,
+                'user_id'             => $order->user_id,
+                'category_id'         => $order->category_id,
+                'status'              => $order->status,
+                'pricing_mode'        => $order->pricing_mode ?? 'valuation_only',
+                'sale_terms_accepted' => (bool) $order->sale_terms_accepted,
+                'total_price'         => $order->total_price,
+                'payload'             => $order->payload,
+                'created_at'          => $order->created_at,
+                'updated_at'          => $order->updated_at,
+                'ai_min_price'        => $order->ai_min_price,
+                'ai_max_price'        => $order->ai_max_price,
+                'ai_price'            => $order->ai_price,
+                'ai_confidence'       => $order->ai_confidence,
+                'ai_reasoning'        => $order->ai_reasoning,
+                'expert_id'           => $order->expert_id,
+                'expert_evaluated'    => $order->expert_evaluated,
+                'expert_price'        => $order->expert_price,
+                'thamn_price'         => $order->thamn_price,
+                'thamn_reasoning'     => $order->thamn_reasoning,
+                'expert_reasoning'    => $order->expert_reasoning,
+                'thamn_by'            => $order->thamn_by,
+                'thamn_at'            => $order->thamn_at,
+                'deleted_at'          => $order->deleted_at,
+                'is_re_evaluated'     => $order->re_evaluation_count > 0,
 
-                'title' => implode(' - ', $titleParts),
-                'category' => $order->category,
-                'isInMarket' => $order->status === 'sent_to_market',
-                'images' => $images,
-                'files' => $files,
+                'title'     => implode(' - ', $titleParts),
+                'category'  => $order->category,
+                'isInMarket'=> $order->status === 'sent_to_market',
+                'images'    => $images,
+                'files'     => $files,
             ];
         });
 

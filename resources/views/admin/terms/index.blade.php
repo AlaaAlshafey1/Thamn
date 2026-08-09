@@ -58,6 +58,7 @@
                     <tr>
                         <th>#</th>
                         <th>العنوان</th>
+                        <th>النوع</th>
                         <th>الترتيب</th>
                         <th>الحالة</th>
                         <th>التحكم</th>
@@ -68,6 +69,17 @@
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>{{ $term->title_ar }}</td>
+                            <td>
+                                @if(($term->type ?? 'general') === 'sale_terms')
+                                    <span class="badge" style="background:rgba(248,180,0,0.15);color:#92620a;border:1px solid rgba(248,180,0,0.4);font-size:0.82rem;">
+                                        <i class="bx bx-store-alt"></i> تثمين والبيع
+                                    </span>
+                                @else
+                                    <span class="badge" style="background:rgba(59,130,246,0.12);color:#1d4ed8;border:1px solid rgba(59,130,246,0.3);font-size:0.82rem;">
+                                        <i class="bx bx-file-blank"></i> شروط عامة
+                                    </span>
+                                @endif
+                            </td>
                             <td>{{ $term->sort_order }}</td>
                             <td>
                                 @if($term->is_active)

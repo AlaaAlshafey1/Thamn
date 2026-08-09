@@ -154,6 +154,16 @@
                                         <th class="text-right">تاريخ الطلب</th>
                                         <td class="text-right">{{ $order->created_at->format('Y-m-d H:i') }}</td>
                                     </tr>
+                                    <tr>
+                                        <th class="text-right">هل يمكن إرساله للسوق؟</th>
+                                        <td class="text-right">
+                                            @if($order->can_send_to_market)
+                                                <span class="badge badge-success"><i class="bx bx-check"></i> نعم (تثمين وبيع)</span>
+                                            @else
+                                                <span class="badge badge-secondary"><i class="bx bx-x"></i> لا (تثمين فقط)</span>
+                                            @endif
+                                        </td>
+                                    </tr>
                                     @foreach($order->details as $index => $detail)
                                         <tr>
                                             <th class="text-right">{{ $detail->question->question_ar ?? '-' }}</th>
@@ -318,6 +328,34 @@
                         <div class="col-md-4">
                             <div class="info-label">نوع التقييم</div>
                             <div class="info-value">{{ $order->evaluation_type ?? 'عادي' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-label">نوع التثمين</div>
+                            <div class="info-value">
+                                @if(($order->pricing_mode ?? 'valuation_only') === 'valuation_and_sale')
+                                    <span class="status-badge" style="background: rgba(248,180,0,0.15); color: #92620a; border: 1px solid rgba(248,180,0,0.4);">
+                                        <i class="bx bx-store-alt"></i> تثمين والبيع
+                                    </span>
+                                @else
+                                    <span class="status-badge" style="background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.3);">
+                                        <i class="bx bx-calculator"></i> تثمين فقط
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-label">الموافقة على شروط البيع</div>
+                            <div class="info-value">
+                                @if($order->sale_terms_accepted)
+                                    <span class="status-badge bg-success-transparent text-success">
+                                        <i class="bx bx-check-circle"></i> وافق على الشروط
+                                    </span>
+                                @else
+                                    <span class="status-badge bg-light text-muted">
+                                        <i class="bx bx-minus-circle"></i> لم يوافق
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

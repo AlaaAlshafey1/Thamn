@@ -293,9 +293,11 @@ class SettingsController extends Controller
     }
 
     /**
-     * Get terms and conditions
-     * GET /settings/terms
+     * Get sale-specific terms (for "التثمين والبيع" flow)
+     * GET /settings/sale-terms
      */
+    public function saleTerms(Request $request)
+
     public function terms(Request $request)
     {
         $lang = strtolower($request->header('Accept-Language', 'en'));
@@ -314,10 +316,19 @@ class SettingsController extends Controller
         }
 
         $data = $terms->map(function ($term) use ($lang) {
+            $isSaleTerm = $term->type === 'sale_terms';
             return [
                 'id' => $term->id,
+                'type' => $term->type ?? 'general',
                 'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
                 'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
+                // 'quran_verse' => $isSaleTerm ? "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nوَأَوْفُوا بِعَهْدِ اللَّهِ إِذَا عَاهَدتُّمْ وَلَا تَنقُضُوا الْأَيْمَانَ بَعْدَ تَوْكِيدِهَا وَقَدْ جَعَلْتُمُ اللَّهَ عَلَيْكُمْ كَفِيلًا ۚ إِنَّ اللَّهَ يَعْلَمُ مَا تَفْعَلُونَ\n\nصَدَقَ اللَّهُ الْعَظِيمُ" : null,
+                'checkbox_label' => $isSaleTerm 
+                    ? ($lang === 'ar' 
+                        ? ($term->checkbox_label_ar ?? "أتعهد وأقسم بالله العظيم أن ادفع عمولة التطبيق ( 1 % ) من قيمة السلعة في حال تم بيعها عن طريق التطبيق")
+                        : ($term->checkbox_label_en ?? "I swear by Almighty Allah to pay the application commission (1%) from the value of the item if it is sold through the application.")
+                    ) 
+                    : null,
                 'file' => $term->file ? asset($term->file) : null,
             ];
         });

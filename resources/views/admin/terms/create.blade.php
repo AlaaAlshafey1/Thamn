@@ -98,6 +98,38 @@
                             <option value="0">غير مفعّل</option>
                         </select>
                     </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">نوع الشروط</label>
+                        <select name="type" id="typeSelect" class="form-select">
+                            <option value="general">شروط عامة</option>
+                            <option value="sale_terms">شروط التثمين والبيع</option>
+                        </select>
+                        <small class="text-muted">اختر "شروط التثمين والبيع" لتظهر في شاشة الموافقة عند اختيار التثمين والبيع</small>
+                    </div>
+                </div>
+            </div>
+
+            {{-- قسم خاص بـ "التثمين والبيع" --}}
+            <div id="saleTermsSection" class="sale-terms-section d-none mb-4" style="background: rgba(248,180,0,0.03); border: 1px dashed rgba(248,180,0,0.5); padding: 20px; border-radius: 12px;">
+                <h6 class="form-section-title" style="color: #92620a;">
+                    🕌 نصوص شاشة "التثمين والبيع"
+                </h6>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            ✅ نص الإقرار (عربي) <span class="text-muted small">(يظهر بجانب الـ checkbox)</span>
+                        </label>
+                        <textarea name="checkbox_label_ar" class="form-control" rows="4" placeholder="مثال: أقر وأتعهد بأنني قرأت وفهمت وأوافق على جميع الشروط..."></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            ✅ نص الإقرار (إنجليزي) <span class="text-muted small">(اختياري)</span>
+                        </label>
+                        <textarea name="checkbox_label_en" class="form-control" rows="4" placeholder="Example: I hereby acknowledge that I have read and agree..."></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -111,4 +143,28 @@
             </div>
         </form>
     </div>
+@endsection
+
+@section('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('typeSelect');
+        const saleSection = document.getElementById('saleTermsSection');
+
+        function toggleSaleSection() {
+            if (typeSelect && saleSection) {
+                if (typeSelect.value === 'sale_terms') {
+                    saleSection.classList.remove('d-none');
+                } else {
+                    saleSection.classList.add('d-none');
+                }
+            }
+        }
+
+        if(typeSelect) {
+            typeSelect.addEventListener('change', toggleSaleSection);
+            toggleSaleSection();
+        }
+    });
+</script>
 @endsection

@@ -39,6 +39,10 @@ class Order extends Model
         'evaluated_at',
         're_evaluation_count',
         'ai_features',
+        'evaluation_tracking',
+        'is_ai_evaluated',
+        'ai_confidence_score',
+        'can_send_to_market',
     ];
 
     protected $casts = [

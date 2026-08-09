@@ -59,7 +59,7 @@ class HomeController extends Controller
             'data' => $stages,
             'meta' => [
                 'image_generation_fee' => env('IMAGE_GENERATION_FEE', 5),
-                'image_generation_message' => $locale == "ar" 
+                'image_generation_message' => $locale == "ar"
                     ? 'سيتم إضافة رسوم لتوليد صورة افتراضية بالذكاء الاصطناعي في حال عدم إرفاق صور.'
                     : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.'
             ]
@@ -135,14 +135,27 @@ class HomeController extends Controller
 
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
 
-        $terms = TermCondition::where('is_active', 1)
-            ->orderBy('sort_order')
+        $query = TermCondition::where('is_active', 1);
+
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $terms = $query->orderBy('sort_order')
             ->get()
             ->map(function ($term) use ($lang) {
+                $isSaleTerm = $term->type === 'sale_terms';
                 return [
                     'id' => $term->id,
+                    'type' => $term->type ?? 'general',
                     'title' => $lang === 'ar' ? $term->title_ar : $term->title_en,
                     'content' => $lang === 'ar' ? $term->content_ar : $term->content_en,
+                    'checkbox_label' => $isSaleTerm
+                        ? ($lang === 'ar'
+                            ? ($term->checkbox_label_ar ?? "أتعهد وأقسم بالله العظيم أن ادفع عمولة التطبيق ( 1 % ) من قيمة السلعة في حال تم بيعها عن طريق التطبيق")
+                            : ($term->checkbox_label_en ?? "I swear by Almighty Allah to pay the application commission (1%) from the value of the item if it is sold through the application.")
+                        )
+                        : null,
                     'file' => $term->file ? asset($term->file) : null,
                     'order' => $term->sort_order,
                 ];

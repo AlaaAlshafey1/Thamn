@@ -29,6 +29,9 @@ class TermConditionController extends Controller
             'sort_order' => 'nullable|integer',
             'is_active' => 'required|boolean',
             'file' => 'nullable|file|max:10240',
+            'type' => 'nullable|in:general,sale_terms',
+            'checkbox_label_ar' => 'nullable|string',
+            'checkbox_label_en' => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -62,6 +65,9 @@ class TermConditionController extends Controller
             'sort_order' => 'nullable|integer',
             'is_active' => 'required|boolean',
             'file' => 'nullable|file|max:10240',
+            'type' => 'nullable|in:general,sale_terms',
+            'checkbox_label_ar' => 'nullable|string',
+            'checkbox_label_en' => 'nullable|string',
         ]);
 
         $data = $request->all();

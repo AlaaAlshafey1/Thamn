@@ -14,6 +14,9 @@ class TermCondition extends Model
         'content_en',
         'sort_order',
         'is_active',
-        'file'
+        'file',
+        'type',
+        'checkbox_label_ar',
+        'checkbox_label_en',
     ];
 }
