@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 @section('title', 'تفاصيل الطلب #' . $order->id)
 
 @section('css')
@@ -91,7 +91,7 @@
             vertical-align: middle;
         }
         body, h1, h2, h3, h4, h5, h6, .btn, .alert {
-            font-family: 'Tajawal', sans-serif !important;
+            font-family: 'Cairo', sans-serif !important;
         }
     </style>
 @endsection

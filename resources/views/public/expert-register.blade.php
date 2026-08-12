@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -74,7 +74,7 @@
 
         .logo span {
             color: var(--primary);
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 1.8rem;
             font-weight: 800;
         }
@@ -109,7 +109,7 @@
         }
 
         .reg-info h1 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 3.5rem;
             color: var(--primary);
             margin-bottom: 2rem;
@@ -185,7 +185,7 @@
         }
 
         .form-header h2 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 2.2rem;
             color: var(--primary);
             font-weight: 800;
@@ -271,7 +271,7 @@
         }
 
         .footer-logo {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 2rem;
             color: var(--gold);
             margin-bottom: 1rem;

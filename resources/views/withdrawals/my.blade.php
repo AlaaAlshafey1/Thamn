@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 @section('title', 'المحفظة والسحوبات')
 
 @section('css')
@@ -42,7 +42,7 @@
         font-size: 3rem;
         font-weight: 800;
         margin-bottom: 25px;
-        font-family: 'Tajawal', sans-serif;
+        font-family: 'Cairo', sans-serif;
     }
     .wallet-currency {
         font-size: 1.2rem;

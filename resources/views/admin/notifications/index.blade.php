@@ -1,16 +1,16 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 @section('title', 'مركز البث')
 
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#1c2230; --ink-soft:#2b3346; --paper:#f3efe6; --card:#ffffff;
   --gold:#b8893f; --gold-deep:#8a6428; --gold-soft:#f1e6d2;
   --line:#e6e1d3; --muted:#8b8779; --text:#211e1a; --wa:#1ea854;
 }
-.notify-page{direction:rtl;text-align:right;font-family:'Tajawal',sans-serif;color:var(--text);}
+.notify-page{direction:rtl;text-align:right;font-family:'Cairo',sans-serif;color:var(--text);}
 .notify-page .wrap{max-width:1180px;margin:0 auto;}
 
 .console{
@@ -67,13 +67,13 @@
 .switch-opt input:checked + .switch.wa .toggle, .switch-opt:has(input[value="whatsapp"]):has(input:checked) .toggle{background:var(--wa);}
 .switch-opt input:checked + .switch .toggle::after{right:21px;}
 
-select.console-select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:13px 16px;font-family:'Tajawal',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
+select.console-select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:13px 16px;font-family:'Cairo',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
 select.console-select:focus{outline:none;border-color:var(--gold);}
 
 .custom-box{background:#fdfcfa;border:1px dashed #d8cfb6;border-radius:14px;padding:18px;margin-top:14px;}
 
 .field-wrap{position:relative;}
-.tinput, textarea.tinput{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:14px 46px 14px 16px;font-family:'Tajawal',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
+.tinput, textarea.tinput{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:14px 46px 14px 16px;font-family:'Cairo',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);}
 textarea.tinput{padding-top:16px;resize:vertical;}
 .tinput:focus, textarea.tinput:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,63,.12);}
 .emoji-btn{position:absolute;left:14px;top:16px;font-size:1.25rem;cursor:pointer;opacity:.7;z-index:5;}
@@ -84,7 +84,7 @@ textarea.tinput{padding-top:16px;resize:vertical;}
 .wa-attach h6{margin:0 0 12px;font-size:.85rem;font-weight:800;display:flex;align-items:center;gap:8px;color:var(--wa);}
 .file-input{border:1px dashed #d8cfb6;border-radius:10px;padding:10px 12px;font-size:.8rem;width:100%;background:#fff;}
 
-.submit-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:17px;font-size:1rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:.2s;font-family:'Tajawal',sans-serif;}
+.submit-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:17px;font-size:1rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:.2s;font-family:'Cairo',sans-serif;}
 .submit-btn i{color:var(--gold);font-size:1.3rem;}
 .submit-btn:hover{background:#0f1320;color:#fff;}
 

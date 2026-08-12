@@ -6,7 +6,7 @@
     <title>وثيقة الشروط والأحكام وإقرار السرية - {{ $declaration->full_name }}</title>
     <style>
         body {
-            font-family: 'tajawal', sans-serif;
+            font-family: 'Cairo', 'DejaVu Sans', sans-serif;
             font-size: 12px;
             direction: rtl;
             background: white;

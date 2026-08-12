@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <title>طلب سحب رصيد جديد</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
         body {
-            font-family: 'Tajawal', Tahoma, Arial, sans-serif;
+            font-family: 'Cairo', Tahoma, Arial, sans-serif;
             background-color: #f3f4f6;
             color: #1f2937;
             margin: 0;

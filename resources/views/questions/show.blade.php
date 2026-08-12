@@ -1,11 +1,11 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 @section('title', 'عرض السؤال — ' . $question->question_ar)
 
 @section('css')
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
 
-body { background: #f0f2f7; font-family: 'Tajawal', sans-serif; }
+body { background: #f0f2f7; font-family: 'Cairo', sans-serif; }
 
 /* ── Layout ── */
 .show-wrapper {

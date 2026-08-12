@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <title>وثيقة الشروط والأحكام - ثمن</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', Tahoma, Arial, sans-serif;
             background-color: #f8f5f0;
             margin: 0;
             padding: 0;

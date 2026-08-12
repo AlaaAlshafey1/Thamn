@@ -57,7 +57,7 @@
       margin: 0;
       padding: 0;
       background-color: #eef0f6;
-      font-family: Arial, sans-serif;
+      font-family: 'Cairo', Arial, sans-serif;
     }
 
     @media only screen and (max-width:640px) {

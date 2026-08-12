@@ -1,11 +1,11 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 @section('title', 'إدارة الأسئلة')
 
 @section('css')
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
 
-body { background-color: #f0f2f5; font-family: 'Tajawal', sans-serif; }
+body { background-color: #f0f2f5; font-family: 'Cairo', sans-serif; }
 
 /* ── Page Header ── */
 .page-header {

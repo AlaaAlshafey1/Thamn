@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -7,7 +7,7 @@
     <title>ثمن — التقييم الذكي للمقتنيات الفاخرة</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Outfit:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
@@ -43,7 +43,7 @@
         body {
             background: var(--bg);
             color: var(--text-main);
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
         }
@@ -95,7 +95,7 @@
 
         .logo span {
             color: var(--primary);
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 1.8rem;
             font-weight: 800;
         }
@@ -171,7 +171,7 @@
         }
 
         h1 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: clamp(2.5rem, 5vw, 4.8rem);
             line-height: 1.1;
             font-weight: 700;
@@ -348,7 +348,7 @@
         }
 
         .section-title {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 3.2rem;
             color: var(--primary);
             line-height: 1.2;
@@ -509,7 +509,7 @@
         }
 
         .app-section h2 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 3.5rem;
             margin-bottom: 1.5rem;
             font-weight: 800;
@@ -555,7 +555,7 @@
         }
 
         .footer-brand h2 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 2.2rem;
             color: var(--gold);
             margin-bottom: 1.5rem;
@@ -782,7 +782,7 @@
         }
 
         .banner-caption h3 {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             font-size: 1.4rem;
             font-weight: 700;
             color: var(--gold-light);
@@ -1133,7 +1133,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-brand">
-                <h2 style="font-family: 'Tajawal', sans-serif; font-weight: 800;">ثمن</h2>
+                <h2 style="font-family: 'Cairo', sans-serif; font-weight: 800;">ثمن</h2>
                 <p>المنصة الرائدة في تثمين المقتنيات الثمينة والأصول الفاخرة باستخدام أحدث تقنيات الذكاء الاصطناعي
                     وخبرات المثمنين المعتمدين.</p>
             </div>
