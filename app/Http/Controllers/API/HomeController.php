@@ -60,17 +60,18 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'data' => $stages,
-            'meta' => [
-                'image_generation_fee' => env('IMAGE_GENERATION_FEE', 5),
-                'image_generation_message' => $locale == "ar"
-                    ? 'سيتم إضافة رسوم لتوليد صورة افتراضية بالذكاء الاصطناعي في حال عدم إرفاق صور.'
-                    : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.',
                 'category_image' => $category && $category->image
                     ? asset('storage/' . $category->image)
                     : null,
                 'category_questions_image' => $category && $category->questions_image
                     ? asset('storage/' . $category->questions_image)
                     : null,
+
+            'meta' => [
+                'image_generation_fee' => env('IMAGE_GENERATION_FEE', 5),
+                'image_generation_message' => $locale == "ar"
+                    ? 'سيتم إضافة رسوم لتوليد صورة افتراضية بالذكاء الاصطناعي في حال عدم إرفاق صور.'
+                    : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.',
             ]
         ]);
     }
