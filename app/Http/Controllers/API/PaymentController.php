@@ -221,6 +221,8 @@ class PaymentController extends Controller
         $tapPayment = TapPayment::where('charge_id', $paymentId)->first();
 
         if ($actualStatus === 'paid') {
+            $freshlyProcessed = false;
+
             // ─── نحدث الـ DB لو الـ webhook لم يصل بعد ───
             if ($tapPayment && $tapPayment->status !== 'orderReceived') {
                 $tapPayment->update([
@@ -228,6 +230,24 @@ class PaymentController extends Controller
                     'response_data' => json_encode($statusResponse),
                 ]);
                 $order->update(['status' => 'orderReceived']);
+                $freshlyProcessed = true;
+            } elseif (!$tapPayment) {
+                // حالة نادرة: ما في سجل دفع أصلاً — ننشئه ونعالج الطلب
+                TapPayment::create([
+                    'charge_id'     => $paymentId,
+                    'order_id'      => $orderId,
+                    'status'        => 'orderReceived',
+                    'response_data' => json_encode($statusResponse),
+                ]);
+                $order->update(['status' => 'orderReceived']);
+                $freshlyProcessed = true;
+            }
+
+            // ─── لو معالجة جديدة → بعت الإشعارات ────────────────────
+            // (لو الـ webhook سبق وعالج الطلب $freshlyProcessed = false نتجنب التكرار)
+            if ($freshlyProcessed) {
+                $order->load(['details.question', 'details.option', 'category', 'files', 'user']);
+                $this->processSuccessfulOrder($order, $request);
             }
 
             // ─── نرجع للتطبيق بنجاح ───────────────────────

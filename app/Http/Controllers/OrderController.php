@@ -277,6 +277,29 @@ class OrderController extends Controller
             $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!';
         }
 
+        // ─── شكر الخبير على إنجاز التثمين ────────────────────────────
+        // WhatsApp
+        try {
+            if ($user->phone) {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $thankMsg = \App\Services\WhatsAppService::getTemplate('expert_order_done', ['id' => $order->id]);
+                $whatsapp->sendMessage($user->phone, $thankMsg);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Expert Thank-You WhatsApp Failed: ' . $e->getMessage());
+        }
+
+        // FCM push للخبير
+        $expertTokens = $user->getFcmTokens();
+        if (!empty($expertTokens)) {
+            $this->notifyByFirebase(
+                lang('أحسنت! 🎉 تم إرسال التثمين للعميل', 'Well done! 🎉 Valuation sent to client', request()),
+                lang("أتممت تثمين الطلب رقم #{$order->id} بنجاح. شكراً على دقتك واحترافيتك.", "You've successfully completed evaluation for order #{$order->id}. Thank you for your professionalism.", request()),
+                $expertTokens,
+                ['data' => ['user_id' => $user->id, 'order_id' => $order->id, 'type' => 'expert_evaluation_done']]
+            );
+        }
+
         return back()->with('success', $successMsg);
     }
 
