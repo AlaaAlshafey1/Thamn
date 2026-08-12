@@ -21,17 +21,23 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name_ar' => 'required|string|max:255',
-            'name_en' => 'nullable|string|max:255',
-            'description_ar' => 'nullable|string',
-            'description_en' => 'nullable|string',
-            'is_active' => 'nullable|boolean',
+            'name_ar'         => 'required|string|max:255',
+            'name_en'         => 'nullable|string|max:255',
+            'description_ar'  => 'nullable|string',
+            'description_en'  => 'nullable|string',
+            'is_active'       => 'nullable|boolean',
+            'image'           => 'nullable|image|max:5120',
+            'questions_image' => 'nullable|image|max:5120',
         ]);
 
-        $data = $request->all();
+        $data = $request->except(['image', 'questions_image']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
+        }
+
+        if ($request->hasFile('questions_image')) {
+            $data['questions_image'] = $request->file('questions_image')->store('categories', 'public');
         }
 
         // Set sort_order to be last
@@ -50,15 +56,20 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name_ar' => 'required|string|max:255',
-            'name_en' => 'nullable|string|max:255',
+            'name_ar'         => 'required|string|max:255',
+            'name_en'         => 'nullable|string|max:255',
+            'image'           => 'nullable|image|max:5120',
+            'questions_image' => 'nullable|image|max:5120',
         ]);
 
-
-        $data = $request->all();
+        $data = $request->except(['image', 'questions_image']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
+        }
+
+        if ($request->hasFile('questions_image')) {
+            $data['questions_image'] = $request->file('questions_image')->store('categories', 'public');
         }
 
         $category->update($data);

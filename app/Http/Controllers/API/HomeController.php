@@ -27,6 +27,8 @@ class HomeController extends Controller
     public function allQuestions($categoryId, Request $request)
     {
 
+        $category = Category::find($categoryId);
+
         $questions = Question::with(['category', 'options'])
             ->where('is_active', 1)
             ->whereIn('flow', ['valuation', 'both'])
@@ -54,6 +56,7 @@ class HomeController extends Controller
             unset($item['sort_order']);
             return $item;
         });
+
         return response()->json([
             'success' => true,
             'data' => $stages,
@@ -61,7 +64,13 @@ class HomeController extends Controller
                 'image_generation_fee' => env('IMAGE_GENERATION_FEE', 5),
                 'image_generation_message' => $locale == "ar"
                     ? 'سيتم إضافة رسوم لتوليد صورة افتراضية بالذكاء الاصطناعي في حال عدم إرفاق صور.'
-                    : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.'
+                    : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.',
+                'category_image' => $category && $category->image
+                    ? asset('storage/' . $category->image)
+                    : null,
+                'category_questions_image' => $category && $category->questions_image
+                    ? asset('storage/' . $category->questions_image)
+                    : null,
             ]
         ]);
     }

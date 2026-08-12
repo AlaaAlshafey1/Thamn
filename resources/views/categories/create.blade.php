@@ -82,8 +82,13 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">صورة الفئة</label>
+                        <label class="form-label">صورة الفئة <small class="text-muted">(تظهر في قائمة الفئات)</small></label>
                         <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">صورة صفحة الأسئلة <small class="text-muted">(تظهر أعلى صفحة الأسئلة في التطبيق)</small></label>
+                        <input type="file" name="questions_image" class="form-control" accept="image/*">
                     </div>
 
                     <div class="col-md-6">
