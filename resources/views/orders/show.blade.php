@@ -454,7 +454,11 @@
                             <div class="evaluation-result">
                                 <div class="h4 font-weight-bold text-primary mb-1">{{ number_format($order->ai_price, 2) }} SAR</div>
                                 <div class="small text-muted">نطاق السعر: {{ number_format($order->ai_min_price, 2) }} - {{ number_format($order->ai_max_price, 2) }}</div>
-                                <div class="badge bg-success-transparent text-success mt-2">ثقة: {{ $order->ai_confidence }}%</div>
+                                @php
+                                    $confPct = round(($order->ai_confidence ?? 0) * 100);
+                                    $confColor = $confPct >= 70 ? 'success' : ($confPct >= 50 ? 'warning' : 'danger');
+                                @endphp
+                                <div class="badge bg-{{ $confColor }}-transparent text-{{ $confColor }} mt-2">ثقة: {{ $confPct }}%</div>
                                 <hr class="my-2 border-top-0 border-light">
                                 <div class="small text-dark">{{ $order->ai_reasoning }}</div>
                                 
