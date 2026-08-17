@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RunAiEvaluationJob;
 use App\Models\Order;
 use App\Notifications\OrderEvaluated;
 use Illuminate\Http\Request;
@@ -438,31 +439,22 @@ class OrderController extends Controller
     }
 
 
-    public function aiEvaluate(Order $order, ThamnEvaluationService $evaluationService)
+    public function aiEvaluate(Order $order)
     {
         // التأكد إن المستخدم أدمن أو سوبر أدمن
         if (!auth()->user()->hasAnyRole(['admin', 'superadmin'])) {
             abort(403, 'غير مسموح لك بهذا الإجراء');
         }
 
-        try {
-            // زيادة عداد إعادة التقييم إذا كان هناك تقييم سابق
-            if ($order->ai_price) {
-                $order->increment('re_evaluation_count');
-                $order->refresh();
-            }
-
-            $evaluationService->runAiEvaluation($order);
-
-            // تسجيل وقت التقييم
-            if (!$order->evaluated_at) {
-                $order->update(['evaluated_at' => now()]);
-            }
-
-            return back()->with('success', 'تم تشغيل تقييم AI بنجاح ✅');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
+        // زيادة عداد إعادة التقييم إذا كان هناك تقييم سابق
+        if ($order->ai_price) {
+            $order->increment('re_evaluation_count');
         }
+
+        // تشغيل التقييم في الخلفية — لا ينتظر انتهاءه
+        RunAiEvaluationJob::dispatch($order);
+
+        return back()->with('success', '⏳ جاري تقييم الطلب بالذكاء الاصطناعي في الخلفية، ستظهر النتيجة خلال لحظات، يمكنك تحديث الصفحة بعد قليل.');
     }
 
     public function generateVirtualImage(Order $order)
