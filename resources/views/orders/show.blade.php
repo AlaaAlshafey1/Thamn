@@ -1,4 +1,4 @@
-﻿@extends('layouts.master')
+@extends('layouts.master')
 @section('title', 'تفاصيل الطلب #' . $order->id)
 
 @section('css')
@@ -476,11 +476,32 @@
                                 @hasanyrole('admin|superadmin')
                                     <form method="POST" action="{{ route('orders.ai.evaluate', $order->id) }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-play"></i> تشغيل تقييم AI الآن</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="fas fa-play"></i> تشغيل تقييم AI الآن
+                                        </button>
                                     </form>
                                 @endhasanyrole
                             </div>
                         @endif
+
+                        {{-- زرار إعادة تقييم AI دايماً ظاهر للأدمن --}}
+                        @hasanyrole('admin|superadmin')
+                            @if($order->ai_price)
+                                <div class="mt-3 text-center">
+                                    <form method="POST" action="{{ route('orders.ai.evaluate', $order->id) }}"
+                                          onsubmit="return confirm('سيتم إعادة تقييم الطلب بالذكاء الاصطناعي وستُحدَّث النتيجة. هل أنت متأكد؟')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-sync-alt"></i>
+                                            إعادة تقييم AI
+                                            @if($order->re_evaluation_count > 0)
+                                                <span class="badge bg-warning text-dark ms-1">{{ $order->re_evaluation_count }}x</span>
+                                            @endif
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                        @endhasanyrole
                     </div>
                     @endunless
 

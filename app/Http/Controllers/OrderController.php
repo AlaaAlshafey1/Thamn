@@ -440,9 +440,18 @@ class OrderController extends Controller
 
     public function aiEvaluate(Order $order, ThamnEvaluationService $evaluationService)
     {
-
+        // التأكد إن المستخدم أدمن أو سوبر أدمن
+        if (!auth()->user()->hasAnyRole(['admin', 'superadmin'])) {
+            abort(403, 'غير مسموح لك بهذا الإجراء');
+        }
 
         try {
+            // زيادة عداد إعادة التقييم إذا كان هناك تقييم سابق
+            if ($order->ai_price) {
+                $order->increment('re_evaluation_count');
+                $order->refresh();
+            }
+
             $evaluationService->runAiEvaluation($order);
 
             // تسجيل وقت التقييم
@@ -450,7 +459,7 @@ class OrderController extends Controller
                 $order->update(['evaluated_at' => now()]);
             }
 
-            return back()->with('success', 'تم تشغيل تقييم AI بنجاح');
+            return back()->with('success', 'تم تشغيل تقييم AI بنجاح ✅');
         } catch (\Throwable $e) {
             return back()->with('error', 'فشل تقييم AI: ' . $e->getMessage());
         }
