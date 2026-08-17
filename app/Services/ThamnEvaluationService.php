@@ -162,7 +162,7 @@ PROMPT;
             });
 
             if ($purchasePrice && $purchasePrice > 5000) {
-                $floorRate     = $hasWarranty ? 0.50 : 0.38; // 50% بضمان / 38% بدون
+                $floorRate     = $hasWarranty ? 0.55 : 0.40; // 55% بضمان / 40% بدون
                 $priceFloor    = round($purchasePrice * $floorRate);
                 $recommended   = $aiResult['recommended_price'];
 
