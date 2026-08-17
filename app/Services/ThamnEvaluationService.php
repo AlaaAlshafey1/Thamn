@@ -137,6 +137,46 @@ PROMPT;
 
         $aiResult = app(ClaudeService::class)->evaluateProduct($prompt, $imagePaths);
 
+        // ─── حارس السعر الأدنى (Safety Guard) ────────────────────────────────
+        // Claude قد يُخطئ في التسعير — هذا الكود يُصحح تلقائياً إذا كان السعر أقل من الحد المنطقي
+        if (!empty($aiResult['recommended_price'])) {
+            // استخرج سعر الشراء من البيانات (إن وُجد)
+            $purchasePrice = null;
+            foreach ($order->details as $detail) {
+                $qAr = mb_strtolower($detail->question->question_ar ?? '');
+                $qEn = mb_strtolower($detail->question->question_en ?? '');
+                $val = $detail->value ?? $detail->option->option_ar ?? $detail->option->option_en ?? null;
+                if ($val && is_numeric($val) && (
+                    str_contains($qAr, 'سعر') || str_contains($qAr, 'جديد') ||
+                    str_contains($qEn, 'price') || str_contains($qEn, 'cost')
+                )) {
+                    $purchasePrice = (float) $val;
+                    break;
+                }
+            }
+
+            // تحديد الحد الأدنى حسب وجود الضمان
+            $hasWarranty = $order->details->contains(function ($detail) {
+                $val = mb_strtolower($detail->option->option_ar ?? $detail->value ?? '');
+                return str_contains($val, 'ساري') || str_contains($val, 'ضمان');
+            });
+
+            if ($purchasePrice && $purchasePrice > 5000) {
+                $floorRate     = $hasWarranty ? 0.50 : 0.38; // 50% بضمان / 38% بدون
+                $priceFloor    = round($purchasePrice * $floorRate);
+                $recommended   = $aiResult['recommended_price'];
+
+                if ($recommended < $priceFloor) {
+                    Log::warning("AI Safety Guard: price {$recommended} below floor {$priceFloor} (purchase: {$purchasePrice}, warranty: " . ($hasWarranty ? 'yes' : 'no') . "). Correcting.");
+                    $corrected                          = $priceFloor;
+                    $aiResult['recommended_price']      = $corrected;
+                    $aiResult['min_price']              = round($corrected * 0.93);
+                    $aiResult['max_price']              = round($corrected * 1.07);
+                    $aiResult['reasoning']              = "[تصحيح تلقائي: السعر المحسوب أدنى من الحد المنطقي لسيارة " . ($hasWarranty ? 'بضمان سارٍ' : 'بحالة جيدة') . "] " . ($aiResult['reasoning'] ?? '');
+                }
+            }
+        }
+
         $order->update([
             // التثمين الذكي المنفرد → تم التثمين مباشرة
             // التثمين الاحترافي/الهجين → يفضل في beingEstimated لحد ما الخبير يقيم ثم الأدمن يوافق
