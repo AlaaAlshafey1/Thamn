@@ -809,11 +809,17 @@ class OrderController extends Controller
                 ];
             }
         }
-        $reasoning =
-            $order->thamn_reasoning
+        $reasoningText = $order->thamn_reasoning
             ?? $order->expert_reasoning
             ?? $order->ai_reasoning
             ?? '';
+
+        // If the text doesn't already contain explicit HTML tags, format it using Markdown to HTML
+        if (!preg_match('/<[a-z][\s\S]*>/i', $reasoningText)) {
+            $reasoning = (string) \Illuminate\Support\Str::markdown($reasoningText);
+        } else {
+            $reasoning = $reasoningText;
+        }
 
         /* ===================== RESPONSE ===================== */
         return response()->json([
