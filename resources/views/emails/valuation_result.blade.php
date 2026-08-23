@@ -303,7 +303,13 @@
             @if($reasoning)
                 <div class="reasoning-box">
                     <div class="reasoning-title">📋 ملاحظات التقييم:</div>
-                    <p class="reasoning-text">{{ $reasoning }}</p>
+                    <div class="reasoning-text" style="font-family: 'Cairo', sans-serif;">
+                        @if(!preg_match('/<[a-z][\s\S]*>/i', $reasoning))
+                            {!! \Illuminate\Support\Str::markdown($reasoning) !!}
+                        @else
+                            {!! $reasoning !!}
+                        @endif
+                    </div>
                 </div>
             @endif
 

@@ -90,6 +90,33 @@
             text-align: center;
             vertical-align: middle;
         }
+        .reasoning-html-content {
+            background: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            border-right: 5px solid #c1953e;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-top: 10px;
+        }
+        .reasoning-html-content ul {
+            padding-right: 25px;
+            margin-bottom: 10px;
+        }
+        .reasoning-html-content li {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .reasoning-html-content b, .reasoning-html-content strong {
+            color: #1a1a1a;
+        }
+        .reasoning-html-content p {
+            margin-bottom: 10px;
+        }
+        .reasoning-html-content p:last-child {
+            margin-bottom: 0;
+        }
         body, h1, h2, h3, h4, h5, h6, .btn, .alert {
             font-family: 'Cairo', sans-serif !important;
         }
@@ -460,7 +487,13 @@
                                 @endphp
                                 <div class="badge bg-{{ $confColor }}-transparent text-{{ $confColor }} mt-2">ثقة: {{ $confPct }}%</div>
                                 <hr class="my-2 border-top-0 border-light">
-                                <div class="small text-dark">{{ $order->ai_reasoning }}</div>
+                                <div class="reasoning-html-content text-dark">
+                                    @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
+                                        {!! \Illuminate\Support\Str::markdown((string)$order->ai_reasoning) !!}
+                                    @else
+                                        {!! $order->ai_reasoning !!}
+                                    @endif
+                                </div>
                                 
                                 @if(is_array($order->ai_features) && count($order->ai_features) > 0)
                                     <hr class="my-2 border-top-0 border-light">
@@ -520,7 +553,13 @@
                                 <div class="h4 font-weight-bold text-warning mb-1">{{ number_format($order->expert_price, 2) }} SAR</div>
                                 <div class="small text-muted">نطاق السعر: {{ number_format($order->expert_min_price, 2) }} - {{ number_format($order->expert_max_price, 2) }}</div>
                                 <hr class="my-2 border-top-0 border-light">
-                                <div class="small text-dark">{{ $order->expert_reasoning }}</div>
+                                <div class="reasoning-html-content text-dark">
+                                    @if(!preg_match('/<[a-z][\s\S]*>/i', $order->expert_reasoning))
+                                        {!! \Illuminate\Support\Str::markdown((string)$order->expert_reasoning) !!}
+                                    @else
+                                        {!! $order->expert_reasoning !!}
+                                    @endif
+                                </div>
                             </div>
                         @else
                             <div class="text-center py-3 bg-light rounded">
@@ -588,7 +627,13 @@
                                 <div class="h3 font-weight-bold text-primary mb-1">{{ number_format($order->thamn_price, 2) }} SAR</div>
                                 <div class="small text-muted mb-2">السعر النهائي المعتمد للمستخدم</div>
                                 @if($order->thamn_reasoning)
-                                    <div class="small text-dark p-2 bg-white rounded border">{{ $order->thamn_reasoning }}</div>
+                                    <div class="reasoning-html-content text-dark">
+                                        @if(!preg_match('/<[a-z][\s\S]*>/i', $order->thamn_reasoning))
+                                            {!! \Illuminate\Support\Str::markdown((string)$order->thamn_reasoning) !!}
+                                        @else
+                                            {!! $order->thamn_reasoning !!}
+                                        @endif
+                                    </div>
                                 @endif
                                 <div class="mt-2 small text-muted">بواسطة: {{ $order->thamnUser->first_name ?? '-' }}</div>
                             </div>

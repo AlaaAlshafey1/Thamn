@@ -195,6 +195,10 @@ Route::middleware('auth')->group(function () {
     // AI Dashboard Route
     Route::post('/ai/ask', [\App\Http\Controllers\Admin\DashboardController::class, 'askAI'])->name('admin.ai.ask');
 
+    // General Settings
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('admin.settings.store');
+
 });
 
 Route::get('lang/{locale}', function ($locale) {

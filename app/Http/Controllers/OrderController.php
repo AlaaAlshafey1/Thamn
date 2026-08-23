@@ -175,7 +175,21 @@ class OrderController extends Controller
             'status' => $order->evaluation_type === 'expert' ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
-        $user->balance += 10;
+        $commissionType = \App\Models\Setting::where('key', 'expert_commission_type')->value('value') ?? 'fixed';
+        $commissionValue = \App\Models\Setting::where('key', 'expert_commission_value')->value('value') ?? 10;
+
+        $expertEarnings = 10; // Default fallback
+        if ($commissionType === 'percentage') {
+            // Calculate percentage based on the order's total payment for this service.
+            // Since it's usually fixed (e.g. 15 SAR), we can use total_price or the standard known rate.
+            // But we will use the actual order payment (total_price) if it's set, else fallback.
+            $orderPayment = $order->total_price > 0 ? $order->total_price : 15;
+            $expertEarnings = ($orderPayment * $commissionValue) / 100;
+        } else {
+            $expertEarnings = $commissionValue;
+        }
+
+        $user->balance += $expertEarnings;
         $user->save();
         if ($order->evaluation_type === 'best') {
             // ─── حساب السعر النهائي الهجين تلقائياً ────────────────────────
