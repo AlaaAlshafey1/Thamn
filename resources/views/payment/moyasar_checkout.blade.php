@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إتمام الدفع - ثمن</title>
 
-    <!-- Google Fonts: Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+            font-weight: 900;
+        }
+    </style>
     <!-- Moyasar Payment Form CSS -->
     <link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.14.0/moyasar.css">
 
@@ -25,7 +55,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Avenir Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
@@ -219,143 +249,190 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FIX: STC Pay phone input direction =====
+         * حقل رقم الجوال في STC Pay يجب أن يظهر الأرقام من اليسار
+         * بدون عكس الأرقام أو المحتوى
+         */
+        .mysr-form input[type="tel"],
+        .mysr-form input[type="text"],
+        .mysr-form input[name*="phone"],
+        .mysr-form input[name*="mobile"],
+        .mysr-form input[placeholder*="05"],
+        .mysr-form input[placeholder*="5"] {
+            direction: ltr !important;
+            text-align: left !important;
+            unicode-bidi: plaintext !important;
+            font-family: 'Avenir Arabic', monospace !important;
+            letter-spacing: 1px;
+        }
+
+        /* OTP / verification code inputs - أرقام فقط من اليسار */
+        .mysr-form input[type="number"],
+        .mysr-form input[inputmode="numeric"],
+        .mysr-form [class*="otp"] input,
+        .mysr-form [class*="code"] input,
+        .mysr-form [class*="verify"] input {
+            direction: ltr !important;
+            text-align: center !important;
+            font-size: 22px !important;
+            letter-spacing: 4px !important;
+            font-family: 'Avenir Arabic', monospace !important;
+        }
+
+        /* label للـ stc pay - محاذاة صحيحة */
+        .mysr-form label[for*="stc"],
+        .mysr-form [class*="stcpay"] label {
+            direction: ltr !important;
+            text-align: left !important;
         }
     </style>
 </head>
+
 <body>
 
-<div class="checkout-wrapper">
-    <div class="payment-card">
-        
-        <!-- Header -->
-        <div class="header">
-            <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن">
-        </div>
+    <div class="checkout-wrapper">
+        <div class="payment-card">
 
-        <!-- Order Summary -->
-        <div class="order-summary">
-            <div class="label">إجمالي المبلغ</div>
-            <div class="amount">
-                {{ number_format($order->total_price, 2) }}
-                <span>ر.س</span>
+            <!-- Header -->
+            <div class="header">
+                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن">
             </div>
-            <div class="order-badge">
-                طلب رقم #{{ $order->id }}
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="label">إجمالي المبلغ</div>
+                <div class="amount">
+                    {{ number_format($order->total_price, 2) }}
+                    <span>ر.س</span>
+                </div>
+                <div class="order-badge">
+                    طلب رقم #{{ $order->id }}
+                </div>
             </div>
-        </div>
 
-        <!-- Moyasar Payment Form -->
-        <div class="moyasar-form"></div>
+            <!-- Moyasar Payment Form -->
+            <div class="moyasar-form"></div>
 
-        <!-- Trust Indicators -->
-        <div class="trust-section">
-            <div class="secure-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-                <span>مدفوعات آمنة وموثقة</span>
+            <!-- Trust Indicators -->
+            <div class="trust-section">
+                <div class="secure-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                    <span>مدفوعات آمنة وموثقة</span>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
-</div>
 
-<!-- Moyasar Payment Form JS -->
-<script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
+    <!-- Moyasar Payment Form JS -->
+    <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 
-<script>
-    // إعداد طرق الدفع
-    // ============================================================
-    var paymentMethods = ['creditcard', 'stcpay'];
-    var applePayConfig = undefined;
+    <script>
+        // إعداد طرق الدفع
+        // ============================================================
+        var paymentMethods = ['creditcard', 'stcpay'];
+        var applePayConfig = undefined;
 
-    if (window.location.protocol === 'https:') {
-        paymentMethods = ['applepay', 'creditcard', 'stcpay'];
-        applePayConfig = {
-            country: 'SA',
-            currency: 'SAR',
-            label: 'Thamn',
-            validate_merchant_url: 'https://api.moyasar.com/v1/applepay/initiate'
-        };
-    }
-
-    Moyasar.init({
-        element: '.moyasar-form',
-        amount: {{ (int) round($order->total_price * 100) }},
-        currency: 'SAR',
-        description: 'طلب تثمين رقم #{{ $order->id }}',
-        publishable_api_key: '{{ config("services.moyasar.publishable_key") }}',
-        callback_url: '{{ $callbackUrl }}',
-        methods: paymentMethods,
-        apple_pay: applePayConfig,
-        metadata: {
-            order_id: {{ $order->id }},
-            user_id: {{ $order->user_id ?? 0 }},
+        if (window.location.protocol === 'https:') {
+            paymentMethods = ['applepay', 'creditcard', 'stcpay'];
+            applePayConfig = {
+                country: 'SA',
+                currency: 'SAR',
+                label: 'Thamn',
+                validate_merchant_url: 'https://api.moyasar.com/v1/applepay/initiate'
+            };
         }
-    });
 
-    // ============================================================
-    // FIX: منع تداخل Apple Pay مع STC Pay
-    //
-    // المشكلة: Moyasar يعرض apple-pay-button كـ web component
-    // بيكون فوق radio buttons الأخرى. لما المستخدم يضغط على
-    // Apple Pay، الـ click event بيعدي من خلاله ويضغط على
-    // STC radio تحته، فبيغير الـ selection تلقائياً.
-    //
-    // الحل: نراقب DOM بـ MutationObserver وبعد ما Moyasar يعمل
-    // render، نضيف event listener على apple-pay-button يمنع
-    // الـ event من الوصول للعناصر اللي وراه.
-    // ============================================================
-    (function fixApplePayClickThrough() {
-        if (window.location.protocol !== 'https:') return;
-
-        var formEl = document.querySelector('.moyasar-form');
-        if (!formEl) return;
-
-        var observer = new MutationObserver(function() {
-            var applePayBtn = formEl.querySelector('apple-pay-button');
-            if (!applePayBtn || applePayBtn._fixedClickThrough) return;
-
-            applePayBtn._fixedClickThrough = true;
-
-            // منع الـ click من الوصول للعناصر الأخرى (stopPropagation)
-            // لكن نسمح بـ Apple Pay نفسه يكمل عمله (لا نعمل preventDefault)
-            applePayBtn.addEventListener('click', function(e) {
-                e.stopImmediatePropagation();
-            }, true); // capture phase - يمسك الـ event قبل أي listener تاني
-
-            // تأكد إن الـ radio button بتاع Apple Pay محدد
-            var applePayRadio = formEl.querySelector('input[value="applepay"]');
-            if (applePayRadio && !applePayRadio.checked) {
-                applePayRadio.checked = true;
-                applePayRadio.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-
-            // منع أي radio button تاني يتحدد لما apple-pay-button موجود ومرئي
-            var applePayWrapper = applePayBtn.closest('[class*="applepay"], [class*="apple"]');
-            if (applePayWrapper) {
-                var otherRadios = formEl.querySelectorAll('input[type="radio"]:not([value="applepay"])');
-                otherRadios.forEach(function(radio) {
-                    radio.addEventListener('click', function(e) {
-                        // إذا apple-pay-button مرئي والـ click جاي من داخله، امنعه
-                        var applePayVisible = applePayBtn.offsetParent !== null;
-                        var clickedInsideApplePay = applePayBtn.contains(e.target);
-                        if (applePayVisible && clickedInsideApplePay) {
-                            e.preventDefault();
-                            e.stopImmediatePropagation();
-                        }
-                    }, true);
-                });
+        Moyasar.init({
+            element: '.moyasar-form',
+            amount: {{ (int) round($order->total_price * 100) }},
+            currency: 'SAR',
+            description: 'طلب تثمين رقم #{{ $order->id }}',
+            publishable_api_key: '{{ config("services.moyasar.publishable_key") }}',
+            callback_url: '{{ $callbackUrl }}',
+            methods: paymentMethods,
+            apple_pay: applePayConfig,
+            metadata: {
+                order_id: {{ $order->id }},
+                user_id: {{ $order->user_id ?? 0 }},
             }
         });
 
-        observer.observe(formEl, {
-            childList: true,
-            subtree: true
-        });
-    })();
-</script>
+        // ============================================================
+        // FIX: منع تداخل Apple Pay مع STC Pay
+        //
+        // المشكلة: Moyasar يعرض apple-pay-button كـ web component
+        // بيكون فوق radio buttons الأخرى. لما المستخدم يضغط على
+        // Apple Pay، الـ click event بيعدي من خلاله ويضغط على
+        // STC radio تحته، فبيغير الـ selection تلقائياً.
+        //
+        // الحل: نراقب DOM بـ MutationObserver وبعد ما Moyasar يعمل
+        // render، نضيف event listener على apple-pay-button يمنع
+        // الـ event من الوصول للعناصر اللي وراه.
+        // ============================================================
+        (function fixApplePayClickThrough() {
+            if (window.location.protocol !== 'https:') return;
+
+            var formEl = document.querySelector('.moyasar-form');
+            if (!formEl) return;
+
+            var observer = new MutationObserver(function () {
+                var applePayBtn = formEl.querySelector('apple-pay-button');
+                if (!applePayBtn || applePayBtn._fixedClickThrough) return;
+
+                applePayBtn._fixedClickThrough = true;
+
+                // منع الـ click من الوصول للعناصر الأخرى (stopPropagation)
+                // لكن نسمح بـ Apple Pay نفسه يكمل عمله (لا نعمل preventDefault)
+                applePayBtn.addEventListener('click', function (e) {
+                    e.stopImmediatePropagation();
+                }, true); // capture phase - يمسك الـ event قبل أي listener تاني
+
+                // تأكد إن الـ radio button بتاع Apple Pay محدد
+                var applePayRadio = formEl.querySelector('input[value="applepay"]');
+                if (applePayRadio && !applePayRadio.checked) {
+                    applePayRadio.checked = true;
+                    applePayRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // منع أي radio button تاني يتحدد لما apple-pay-button موجود ومرئي
+                var applePayWrapper = applePayBtn.closest('[class*="applepay"], [class*="apple"]');
+                if (applePayWrapper) {
+                    var otherRadios = formEl.querySelectorAll('input[type="radio"]:not([value="applepay"])');
+                    otherRadios.forEach(function (radio) {
+                        radio.addEventListener('click', function (e) {
+                            // إذا apple-pay-button مرئي والـ click جاي من داخله، امنعه
+                            var applePayVisible = applePayBtn.offsetParent !== null;
+                            var clickedInsideApplePay = applePayBtn.contains(e.target);
+                            if (applePayVisible && clickedInsideApplePay) {
+                                e.preventDefault();
+                                e.stopImmediatePropagation();
+                            }
+                        }, true);
+                    });
+                }
+            });
+
+            observer.observe(formEl, {
+                childList: true,
+                subtree: true
+            });
+        })();
+    </script>
 </body>
+
 </html>
