@@ -497,14 +497,37 @@
                                 
                                 @if(is_array($order->ai_features) && count($order->ai_features) > 0)
                                     <hr class="my-2 border-top-0 border-light">
-                                    <h6 class="font-weight-bold text-primary mb-2"><i class="bx bx-list-check"></i> الخصائص المستخرجة:</h6>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @foreach($order->ai_features as $feature)
-                                            <span class="badge bg-light text-dark border p-2 mb-1 mr-1" style="font-size: 0.9rem;">
-                                                <i class="bx bx-check-circle text-success align-middle"></i> {{ $feature }}
-                                            </span>
-                                        @endforeach
-                                    </div>
+                                    <h6 class="font-weight-bold text-primary mb-3">
+                                        <i class="bx bx-grid-alt"></i> التحليل التفصيلي للسلعة:
+                                    </h6>
+                                    @php
+                                        $isCards = isset($order->ai_features[0]['icon']);
+                                    @endphp
+                                    @if($isCards)
+                                        <div class="row g-2">
+                                            @foreach($order->ai_features as $card)
+                                                <div class="col-6">
+                                                    <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:12px 10px;text-align:center;height:100%;">
+                                                        <div style="font-size:1.8rem;margin-bottom:6px;">{{ $card['icon'] ?? '📌' }}</div>
+                                                        <div style="font-size:0.72rem;color:#888;font-weight:600;margin-bottom:4px;">{{ $card['title'] ?? '' }}</div>
+                                                        <div style="font-size:0.95rem;font-weight:800;color:#1a1a1a;margin-bottom:4px;">{{ $card['value'] ?? '-' }}</div>
+                                                        @if(!empty($card['description']))
+                                                            <div style="font-size:0.7rem;color:#aaa;line-height:1.3;">{{ $card['description'] }}</div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        {{-- عرض قديم كـ tags للطلبات القديمة --}}
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach($order->ai_features as $feature)
+                                                <span class="badge bg-light text-dark border p-2 mb-1 mr-1" style="font-size: 0.9rem;">
+                                                    <i class="bx bx-check-circle text-success align-middle"></i> {{ $feature }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
                         @else

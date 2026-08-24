@@ -41,13 +41,13 @@ class ThamnEvaluationService
 
         // ─── معالجة الصور ──────────────────────────────────────────────────────
         $imageFiles = $order->files->where('type', 'image');
-        $hasImages  = $imageFiles->isNotEmpty();
+        $hasImages = $imageFiles->isNotEmpty();
         $imageCount = $imageFiles->count();
 
         // ─── جلب السياق المتخصص للفئة باستخدام Strategy Pattern (OCP) ──────────
         $categoryAr = $order->category->name_ar ?? $order->category->name_en ?? 'غير محدد';
         $categoryEn = $order->category->name_en ?? $order->category->name_ar ?? 'unknown';
-        
+
         $resolver = new \App\Services\Evaluation\CategoryContextResolver();
         $ctx = $resolver->resolve($categoryEn, $categoryAr);
 
@@ -67,8 +67,8 @@ class ThamnEvaluationService
         // ─── بناء الـ Prompt ────────────────────────────────────────────────────
         $today = now()->locale('ar')->translatedFormat('d F Y');
 
-        $reEvaluationNote = $order->re_evaluation_count > 0 
-            ? "تنبيه هام جداً: العميل قدم احتجاجاً على التقييم السابق لأنه يرى أن القيمة التي وضعتها غير عادلة أو غير صحيحة. يرجى إعادة النظر بدقة ومراجعة كافة التفاصيل والصور من جديد وتعديل السعر ليكون أكثر إنصافاً ودقة حسب السوق الحالي. واذكر للعميل صراحة في بداية الـ reasoning أنك قمت بإعادة التقييم والمراجعة." 
+        $reEvaluationNote = $order->re_evaluation_count > 0
+            ? "ملاحظة للنظام: هذا طلب إعادة تقييم. راجع كافة المعطيات من جديد وأعط السعر الأدق — لا تذكر ذلك في الـ reasoning."
             : "";
 
         $prompt = <<<PROMPT
@@ -103,11 +103,18 @@ class ThamnEvaluationService
    - قيمة confidence أقل من 0.40 ممنوعة تماماً مهما كانت الظروف.
    - قيمة confidence = 0.01 أو أقل من 0.10 خطأ جسيم لا يُقبل.
 5. إذا كانت البيانات غير كافية لتقييم دقيق، خفّض confidence فقط — لا تغيّر منطق الفجوة.
-6. استخرج أبرز 6 خصائص للسلعة كـ features بناء على البيانات.
-7. يجب أن تكون جميع الردود والقيم المستخرجة (بما فيها reasoning و features) باللغة العربية الفصحى حصراً.
-8. هام جداً لتطبيق الموبايل: يجب صياغة قيمة `reasoning` ككود HTML مرتب وأنيق باستخدام الوسوم الأساسية المدعومة (مثل <b>، <ul>، <li>، <br>، و <font color="#HEX">). قسّم التحليل إلى فقرات ونقاط واضحة ليكون سهل القراءة والعرض مباشرة.
-9. إذا لم توجد صور للسلعة، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
-10. منهجية التسعير الصحيحة (أساسية وإلزامية جداً):
+6. يجب أن تكون جميع الردود والقيم المستخرجة (بما فيها reasoning و infographic_cards) باللغة العربية الفصحى حصراً.
+7. هام جداً — أسلوب كتابة `reasoning` (اقرأ بعناية):
+   - اكتب تقرير قصير ومباشر يتكلم عن السلعة كما لو كنت تصفها لشخص يريد معرفة قيمتها اليوم.
+   - ابدأ مباشرة بوصف حالة السلعة العامة والخصائص الأساسية التي تؤثر على سعرها.
+   - اذكر السعر المناسب ومصدره من السوق باختصار (مثل: "بناءً على أسعار حراج الحالية...").
+   - لا تكتب قوائم خصومات أو زيادات بالأرقام (مثل: -200 ريال، +500 ريال). ممنوع تماماً.
+   - لا تذكر "تناقضات" أو "بيانات غير واقعية" أو "تحذيرات" أو "ملاحظات تجريبية".
+   - لا تعطِ العميل توجيهات أو نصائح — فقط الوصف والسعر.
+   - الطول المثالي: فقرتان أو ثلاث جمل قصيرة كحد أقصى.
+   - استخدم HTML بسيط: <b> للتمييز، <br> للفواصل إذا لزم. لا تستخدم ul/li في reasoning.
+8. إذا لم توجد صور للسلعة، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
+9. منهجية التسعير الصحيحة (أساسية وإلزامية جداً):
    - يجب عليك تقييم السلعة بناءً على المطابقة التامة للمواصفات المذكورة في الطلب (الماركة، الموديل، سنة الصنع، سعة التخزين، الحالة العامة، إلخ). لا تفترض مواصفات أقل أو أعلى.
    - قم بمحاكاة البحث الفعلي في منصات البيع والشراء السعودية الشهيرة (مثل: حراج، نون، أمازون السعودية، جرير، وغيرها) لاستخراج السعر العادل للسلعة المستعملة بنفس حالتها اليوم.
    - لا تعتمد على السعر الذي يذكره صاحب السلعة (إن وجد) فقد يكون مبالغاً فيه أو كاذباً، اعتمد فقط على المعطيات الفعلية للسلعة وأسعار السوق.
@@ -115,7 +122,15 @@ class ThamnEvaluationService
    - قارن بمتوسط الـ 50% الوسطى من الإعلانات المشابهة للسلعة (تجاهل الأعلى 25% والأدنى 25%).
    - السعر العادل هو السعر الفعلي الذي يدفعه المشتري المعقول في السوق حالياً لهذه السلعة المحددة.
    - غياب الصور لا يعني انخفاض السعر — يعني فقط انخفاض الـ confidence.
-11. إذا كان بالمنتج عيوب أو حوادث موثّقة، اخصم من recommended_price بشكل واضح ومناسب لحجم العيب، ثم احسب min/max بالصيغة أعلاه.
+10. إذا كان بالمنتج عيوب أو حوادث موثّقة، اخصم من recommended_price بشكل واضح ومناسب لحجم العيب، ثم احسب min/max بالصيغة أعلاه.
+11. هام جداً — بطاقات الـ Infographic:
+   - استخرج أبرز 6-8 بطاقات معلوماتية مرئية عن السلعة في مصفوفة `infographic_cards`.
+   - كل بطاقة تحتوي على: icon (إيموجي مناسب)، title (اسم المعلومة بالعربية)، value (القيمة بالعربية)، description (وصف مختصر مفيد جداً بالعربية لا يتجاوز 10 كلمات).
+   - اختر البطاقات حسب نوع السلعة:
+     * السيارات: العمر/السنة، الكيلومترات، الحوادث، الضمان، عدد الملاك، الحالة العامة، التاريخ الدولي، سجلات الصيانة.
+     * الجوالات: الموديل، مساحة التخزين، حالة البطارية، الشاشة، الحالة العامة، وجود الكرتونة، لون الجهاز.
+     * الإلكترونيات العامة: الماركة، السنة، الحالة، المواصفات الرئيسية، الملحقات، حالة الجهاز الخارجية.
+     * الأثاث/العقارات/الساعات: أهم المواصفات المنطقية لتلك الفئة.
 
 ━━━ هيكل الرد (JSON فقط — لا نص خارجه) ━━━
 {
@@ -125,7 +140,10 @@ class ThamnEvaluationService
   "currency": "SAR",
   "confidence": <رقم عشري من 0.0 إلى 1.0>,
   "reasoning": "<كود HTML منسق وأنيق يحتوي على: سبب التسعير، المراجع السوقية المستخدمة، تأثير الحالة، ومقارنة السوق>",
-  "features": ["خاصية 1", "خاصية 2", "خاصية 3", "خاصية 4", "خاصية 5", "خاصية 6"],
+  "infographic_cards": [
+    {"icon": "🚗", "title": "سنة الصنع", "value": "2020", "description": "سيارة عمرها 5 سنوات"},
+    {"icon": "📍", "title": "الكيلومترات", "value": "85,000 كم", "description": "استهلاك طبيعي للعمر"}
+  ],
   "image_prompt": "<وصف بالإنجليزية للصورة إن لم تكن هناك صور، أو null>"
 }
 PROMPT;
@@ -148,10 +166,12 @@ PROMPT;
                 $qAr = mb_strtolower($detail->question->question_ar ?? '');
                 $qEn = mb_strtolower($detail->question->question_en ?? '');
                 $val = $detail->value ?? $detail->option->option_ar ?? $detail->option->option_en ?? null;
-                if ($val && is_numeric($val) && (
-                    str_contains($qAr, 'سعر') || str_contains($qAr, 'جديد') ||
-                    str_contains($qEn, 'price') || str_contains($qEn, 'cost')
-                )) {
+                if (
+                    $val && is_numeric($val) && (
+                        str_contains($qAr, 'سعر') || str_contains($qAr, 'جديد') ||
+                        str_contains($qEn, 'price') || str_contains($qEn, 'cost')
+                    )
+                ) {
                     $purchasePrice = (float) $val;
                     break;
                 }
@@ -164,20 +184,25 @@ PROMPT;
             });
 
             if ($purchasePrice && $purchasePrice > 5000) {
-                $floorRate     = $hasWarranty ? 0.55 : 0.40; // 55% بضمان / 40% بدون
-                $priceFloor    = round($purchasePrice * $floorRate);
-                $recommended   = $aiResult['recommended_price'];
+                $floorRate = $hasWarranty ? 0.55 : 0.40; // 55% بضمان / 40% بدون
+                $priceFloor = round($purchasePrice * $floorRate);
+                $recommended = $aiResult['recommended_price'];
 
                 if ($recommended < $priceFloor) {
                     Log::warning("AI Safety Guard: price {$recommended} below floor {$priceFloor} (purchase: {$purchasePrice}, warranty: " . ($hasWarranty ? 'yes' : 'no') . "). Correcting.");
-                    $corrected                          = $priceFloor;
-                    $aiResult['recommended_price']      = $corrected;
-                    $aiResult['min_price']              = round($corrected * 0.93);
-                    $aiResult['max_price']              = round($corrected * 1.07);
-                    $aiResult['reasoning']              = "[تصحيح تلقائي: السعر المحسوب أدنى من الحد المنطقي لسيارة " . ($hasWarranty ? 'بضمان سارٍ' : 'بحالة جيدة') . "] " . ($aiResult['reasoning'] ?? '');
+                    $corrected = $priceFloor;
+                    $aiResult['recommended_price'] = $corrected;
+                    $aiResult['min_price'] = round($corrected * 0.93);
+                    $aiResult['max_price'] = round($corrected * 1.07);
+                    $aiResult['reasoning'] = $aiResult['reasoning'] ?? '';
                 }
             }
         }
+
+        // ─── بناء HTML الـ Infographic ودمجه مع الـ Reasoning ──────────────────
+        $cards = $aiResult['infographic_cards'] ?? [];
+        $reasoningText = $aiResult['reasoning'] ?? '';
+        $fullReasoningHtml = $this->buildInfographicHtml($cards, $reasoningText);
 
         $order->update([
             // التثمين الذكي المنفرد → تم التثمين مباشرة
@@ -187,11 +212,11 @@ PROMPT;
                 : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
-            'ai_price'     => $aiResult['recommended_price'] ?? null,
-            'total_price'  => $aiResult['recommended_price'] ?? null, // sync total_price with AI result
-            'ai_confidence'=> $aiResult['confidence'] ?? null,
-            'ai_reasoning' => $aiResult['reasoning'] ?? null,
-            'ai_features'  => $aiResult['features'] ?? null,
+            'ai_price' => $aiResult['recommended_price'] ?? null,
+            'total_price' => $aiResult['recommended_price'] ?? null,
+            'ai_confidence' => $aiResult['confidence'] ?? null,
+            'ai_reasoning' => $fullReasoningHtml,
+            'ai_features' => !empty($cards) ? $cards : null, // للداشبورد
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
 
@@ -203,7 +228,7 @@ PROMPT;
                     $imageContents = file_get_contents($imageUrl);
                     $filename = 'ai_generated_' . Str::random(10) . '.png';
                     $path = 'orders/images/' . $filename;
-                    
+
                     Storage::disk('public')->put($path, $imageContents);
 
                     OrderFiles::create([
@@ -255,6 +280,71 @@ PROMPT;
         }
 
         return $aiResult;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+     |  buildInfographicHtml
+     |  يحوّل مصفوفة البطاقات + نص الـ reasoning إلى HTML واحد متكامل
+     |  يعرضه الموبايل مباشرة دون أي معالجة إضافية
+     ══════════════════════════════════════════════════════════════════════ */
+    private function buildInfographicHtml(array $cards, string $reasoningText): string
+    {
+        if (empty($cards) && empty($reasoningText)) {
+            return '';
+        }
+
+        $html = '<div style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;">';
+
+        // ── قسم الـ Cards ───────────────────────────────────────────────────
+        if (!empty($cards)) {
+            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">';
+
+            $pairs = array_chunk($cards, 2);
+            foreach ($pairs as $pair) {
+                $html .= '<tr>';
+                foreach ($pair as $card) {
+                    $icon = htmlspecialchars($card['icon'] ?? '●', ENT_QUOTES);
+                    $title = htmlspecialchars($card['title'] ?? '', ENT_QUOTES);
+                    $value = htmlspecialchars($card['value'] ?? '—', ENT_QUOTES);
+                    $desc = htmlspecialchars($card['description'] ?? '', ENT_QUOTES);
+
+                    $html .= '
+<td width="50%" style="padding:4px;vertical-align:top;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"
+    style="background:#faf7f0;border:1.5px solid #e8d9b8;border-radius:14px;">
+    <tr><td style="padding:14px 10px;text-align:center;">
+      <div style="font-size:30px;line-height:1;margin-bottom:7px;">' . $icon . '</div>
+      <div style="font-size:10px;font-weight:700;color:#a08050;letter-spacing:0.3px;margin-bottom:5px;text-transform:uppercase;">' . $title . '</div>
+      <div style="font-size:15px;font-weight:900;color:#1a1a1a;margin-bottom:' . ($desc ? '4px' : '0') . ';">' . $value . '</div>
+      ' . ($desc ? '<div style="font-size:9px;color:#b0a080;line-height:1.4;">' . $desc . '</div>' : '') . '
+    </td></tr>
+  </table>
+</td>';
+                }
+                // خلية فاضية لو عدد البطاقات فردي
+                if (count($pair) === 1) {
+                    $html .= '<td width="50%" style="padding:4px;"></td>';
+                }
+                $html .= '</tr><tr><td colspan="2" style="height:0;"></td></tr>';
+            }
+
+            $html .= '</table>';
+        }
+
+        // ── قسم الـ Reasoning النصي ─────────────────────────────────────────
+        if (!empty($reasoningText)) {
+            $html .= '<div style="background:#fff8ee;border-right:4px solid #c1953e;border-radius:0 10px 10px 0;padding:13px 14px;font-size:13px;line-height:1.85;color:#3d3020;">';
+            // إذا لم يحتوِ على HTML → نحوّله مباشرة
+            if (!preg_match('/<[a-z][\s\S]*>/i', $reasoningText)) {
+                $html .= nl2br(htmlspecialchars($reasoningText, ENT_QUOTES));
+            } else {
+                $html .= $reasoningText;
+            }
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+        return $html;
     }
 
     /**

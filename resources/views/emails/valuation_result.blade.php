@@ -254,6 +254,59 @@
                                 </table>
                             @endif
 
+                            {{-- Infographic Cards Grid --}}
+                            @php
+                                $infCards = is_array($order->ai_features) && isset($order->ai_features[0]['icon'])
+                                    ? $order->ai_features
+                                    : [];
+                                $infPairs = array_chunk($infCards, 2);
+                            @endphp
+
+                            @if(count($infCards) > 0)
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:18px;">
+                                    <tr>
+                                        <td style="padding-bottom:10px;">
+                                            <p
+                                                style="margin:0 0 12px;font-size:14px;font-weight:700;color:#c1953e;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                🔎 تحليل تفصيلي للسلعة:
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    @foreach($infPairs as $pair)
+                                        <tr>
+                                            @foreach($pair as $card)
+                                                <td width="50%" style="padding:4px 4px 4px 4px;vertical-align:top;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" width="100%"
+                                                        style="background:#fdfaf4;border:1px solid #ead9b0;border-radius:12px;">
+                                                        <tr>
+                                                            <td style="padding:14px 12px;text-align:center;">
+                                                                <div style="font-size:26px;line-height:1;margin-bottom:6px;">
+                                                                    {{ $card['icon'] ?? '📌' }}</div>
+                                                                <div
+                                                                    style="font-size:10px;color:#a08050;font-weight:700;margin-bottom:4px;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                    {{ $card['title'] ?? '' }}</div>
+                                                                <div
+                                                                    style="font-size:14px;font-weight:900;color:#1a1a1a;margin-bottom:4px;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                    {{ $card['value'] ?? '—' }}</div>
+                                                                @if(!empty($card['description']))
+                                                                    <div
+                                                                        style="font-size:10px;color:#999;line-height:1.4;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                        {{ $card['description'] }}</div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            @endforeach
+                                            {{-- Fill empty cell if odd number --}}
+                                            @if(count($pair) === 1)
+                                                <td width="50%" style="padding:4px;"></td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </table>
+                            @endif
+
                             {{-- Divider --}}
                             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:22px 0;">
                                 <tr>

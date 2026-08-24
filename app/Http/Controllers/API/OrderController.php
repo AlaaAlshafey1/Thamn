@@ -24,25 +24,25 @@ class OrderController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'status'                => 'nullable|string',
-            'answers'               => 'required|array',
+            'status' => 'nullable|string',
+            'answers' => 'required|array',
             'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.option_id'   => 'nullable',
+            'answers.*.option_id' => 'nullable',
             'answers.*.sub_option_id' => 'nullable',
-            'answers.*.value'       => 'nullable|string',
-            'answers.*.price'       => 'nullable|numeric',
-            'answers.*.status'      => 'nullable|integer',
-            'answers.*.stageing'    => 'nullable|integer',
-            'can_send_to_market'    => 'nullable|boolean',
+            'answers.*.value' => 'nullable|string',
+            'answers.*.price' => 'nullable|numeric',
+            'answers.*.status' => 'nullable|integer',
+            'answers.*.stageing' => 'nullable|integer',
+            'can_send_to_market' => 'nullable|boolean',
         ]);
 
 
         $order = Order::create([
-            'user_id'             => $user->id,
-            'category_id'         => $request->category_id ?? 1,
-            'status'              => $request->status ?? 0,
-            'payload'             => json_encode($request->answers),
-            'can_send_to_market'  => $request->can_send_to_market ? true : false,
+            'user_id' => $user->id,
+            'category_id' => $request->category_id ?? 1,
+            'status' => $request->status ?? 0,
+            'payload' => json_encode($request->answers),
+            'can_send_to_market' => $request->can_send_to_market ? true : false,
         ]);
 
         $totalPrice = 0;
@@ -70,14 +70,14 @@ class OrderController extends Controller
             // لو مفيش option_id → الإجابة عبارة عن value نصية (سؤال حر)
             if (empty(array_filter($optionIds))) {
                 $details[] = OrderDetails::create([
-                    'order_id'     => $order->id,
-                    'question_id'  => $answer['question_id'],
-                    'option_id'    => null,
-                    'sub_option_id'=> (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
-                    'value'        => $answer['value'] ?? null,
-                    'price'        => $answer['price'] ?? null,
-                    'status'       => $answer['status'] ?? 1,
-                    'stageing'     => $answer['stageing'] ?? null,
+                    'order_id' => $order->id,
+                    'question_id' => $answer['question_id'],
+                    'option_id' => null,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
+                    'value' => $answer['value'] ?? null,
+                    'price' => $answer['price'] ?? null,
+                    'status' => $answer['status'] ?? 1,
+                    'stageing' => $answer['stageing'] ?? null,
                 ]);
                 continue;
             }
@@ -87,14 +87,14 @@ class OrderController extends Controller
                     continue;
 
                 $details[] = OrderDetails::create([
-                    'order_id'     => $order->id,
-                    'question_id'  => $answer['question_id'],
-                    'option_id'    => $optionId,
-                    'sub_option_id'=> (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
-                    'value'        => $answer['value'] ?? null,
-                    'price'        => $answer['price'] ?? null,
-                    'status'       => $answer['status'] ?? 1,
-                    'stageing'     => $answer['stageing'] ?? null,
+                    'order_id' => $order->id,
+                    'question_id' => $answer['question_id'],
+                    'option_id' => $optionId,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
+                    'value' => $answer['value'] ?? null,
+                    'price' => $answer['price'] ?? null,
+                    'status' => $answer['status'] ?? 1,
+                    'stageing' => $answer['stageing'] ?? null,
                 ]);
             }
         }
@@ -170,21 +170,21 @@ class OrderController extends Controller
         return response()->json([
             'status' => true,
             'order' => [
-                'id'                  => $order->id,
-                'user_id'             => $order->user_id,
-                'status'              => $order->status,
-                'thamn_by'            => $evaluationType,
-                'total_price'         => $totalPrice,
-                'pricing_mode'        => $order->pricing_mode,
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'status' => $order->status,
+                'thamn_by' => $evaluationType,
+                'total_price' => $totalPrice,
+                'pricing_mode' => $order->pricing_mode,
                 'sale_terms_accepted' => (bool) $order->sale_terms_accepted,
                 'files' => OrderFiles::where('order_id', $order->id)
                     ->where('type', 'file')
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id'   => $file->id,
+                            'id' => $file->id,
                             'name' => $file->file_name,
-                            'url'  => full_url($file->file_path),
+                            'url' => full_url($file->file_path),
                         ];
                     }),
 
@@ -193,9 +193,9 @@ class OrderController extends Controller
                     ->get()
                     ->map(function ($file) {
                         return [
-                            'id'   => $file->id,
+                            'id' => $file->id,
                             'name' => $file->file_name,
-                            'url'  => full_url($file->file_path),
+                            'url' => full_url($file->file_path),
                         ];
                     }),
                 'answers' => $responseAnswers,
@@ -645,37 +645,37 @@ class OrderController extends Controller
                 ->values();
 
             return [
-                'id'                  => $order->id,
-                'user_id'             => $order->user_id,
-                'category_id'         => $order->category_id,
-                'status'              => $order->status,
-                'pricing_mode'        => $order->pricing_mode ?? 'valuation_only',
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'category_id' => $order->category_id,
+                'status' => $order->status,
+                'pricing_mode' => $order->pricing_mode ?? 'valuation_only',
                 'sale_terms_accepted' => (bool) $order->sale_terms_accepted,
-                'total_price'         => $order->total_price,
-                'payload'             => $order->payload,
-                'created_at'          => $order->created_at,
-                'updated_at'          => $order->updated_at,
-                'ai_min_price'        => $order->ai_min_price,
-                'ai_max_price'        => $order->ai_max_price,
-                'ai_price'            => $order->ai_price,
-                'ai_confidence'       => $order->ai_confidence,
-                'ai_reasoning'        => $order->ai_reasoning,
-                'expert_id'           => $order->expert_id,
-                'expert_evaluated'    => $order->expert_evaluated,
-                'expert_price'        => $order->expert_price,
-                'thamn_price'         => $order->thamn_price,
-                'thamn_reasoning'     => $order->thamn_reasoning,
-                'expert_reasoning'    => $order->expert_reasoning,
-                'thamn_by'            => $order->thamn_by,
-                'thamn_at'            => $order->thamn_at,
-                'deleted_at'          => $order->deleted_at,
-                'is_re_evaluated'     => $order->re_evaluation_count > 0,
+                'total_price' => $order->total_price,
+                'payload' => $order->payload,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
+                'ai_min_price' => $order->ai_min_price,
+                'ai_max_price' => $order->ai_max_price,
+                'ai_price' => $order->ai_price,
+                'ai_confidence' => $order->ai_confidence,
+                'ai_reasoning' => $order->ai_reasoning,
+                'expert_id' => $order->expert_id,
+                'expert_evaluated' => $order->expert_evaluated,
+                'expert_price' => $order->expert_price,
+                'thamn_price' => $order->thamn_price,
+                'thamn_reasoning' => $order->thamn_reasoning,
+                'expert_reasoning' => $order->expert_reasoning,
+                'thamn_by' => $order->thamn_by,
+                'thamn_at' => $order->thamn_at,
+                'deleted_at' => $order->deleted_at,
+                'is_re_evaluated' => $order->re_evaluation_count > 0,
 
-                'title'     => implode(' - ', $titleParts),
-                'category'  => $order->category,
-                'isInMarket'=> $order->status === 'sent_to_market',
-                'images'    => $images,
-                'files'     => $files,
+                'title' => implode(' - ', $titleParts),
+                'category' => $order->category,
+                'isInMarket' => $order->status === 'sent_to_market',
+                'images' => $images,
+                'files' => $files,
             ];
         });
 
@@ -763,27 +763,27 @@ class OrderController extends Controller
         /* ===================== PRICES ===================== */
         // Priority: thamn (best) → expert → AI
         if ($order->thamn_price) {
-            $priceAvg     = (float) $order->thamn_price;
-            $priceHighest = $order->thamn_max_price  ? (float) $order->thamn_max_price  : null;
-            $priceLowest  = $order->thamn_min_price  ? (float) $order->thamn_min_price  : null;
+            $priceAvg = (float) $order->thamn_price;
+            $priceHighest = $order->thamn_max_price ? (float) $order->thamn_max_price : null;
+            $priceLowest = $order->thamn_min_price ? (float) $order->thamn_min_price : null;
         } elseif ($order->expert_price) {
-            $priceAvg     = (float) $order->expert_price;
+            $priceAvg = (float) $order->expert_price;
             $priceHighest = $order->expert_max_price ? (float) $order->expert_max_price : null;
-            $priceLowest  = $order->expert_min_price ? (float) $order->expert_min_price : null;
+            $priceLowest = $order->expert_min_price ? (float) $order->expert_min_price : null;
         } elseif ($order->ai_price) {
-            $priceAvg     = (float) $order->ai_price;
-            $priceHighest = $order->ai_max_price     ? (float) $order->ai_max_price     : null;
-            $priceLowest  = $order->ai_min_price     ? (float) $order->ai_min_price     : null;
+            $priceAvg = (float) $order->ai_price;
+            $priceHighest = $order->ai_max_price ? (float) $order->ai_max_price : null;
+            $priceLowest = $order->ai_min_price ? (float) $order->ai_min_price : null;
         } else {
-            $priceAvg     = 0;
+            $priceAvg = 0;
             $priceHighest = null;
-            $priceLowest  = null;
+            $priceLowest = null;
         }
 
         $prices = [
             'highest' => $priceHighest,
             'average' => $priceAvg,
-            'lowest'  => $priceLowest,
+            'lowest' => $priceLowest,
         ];
 
         /* ===================== DETAILS ===================== */
@@ -831,7 +831,6 @@ class OrderController extends Controller
             'files' => $files,
             'reasoning' => $reasoning,
             'prices' => $prices,
-            'features' => $order->ai_features ?? [],
             'details' => $details,
             'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
@@ -880,7 +879,8 @@ class OrderController extends Controller
         /* ===================== DETAILS ===================== */
         $details = [];
         foreach ($order->details as $detail) {
-            if (!$detail->question) continue;
+            if (!$detail->question)
+                continue;
 
             $title = $detail->question->question_ar
                 ?? $detail->question->question_en;
@@ -896,7 +896,7 @@ class OrderController extends Controller
                 ];
             }
         }
-        
+
         $reasoning = $order->thamn_reasoning
             ?? $order->expert_reasoning
             ?? $order->ai_reasoning
@@ -908,7 +908,12 @@ class OrderController extends Controller
 
 
         $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.order-valuation-result', compact(
-            'order', 'category', 'prices', 'details', 'reasoning', 'image'
+            'order',
+            'category',
+            'prices',
+            'details',
+            'reasoning',
+            'image'
         ));
 
         return $pdf->stream('valuation-order-' . $order->id . '.pdf');
