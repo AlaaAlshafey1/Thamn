@@ -5,9 +5,38 @@
     <meta charset="UTF-8">
     <title>طلب سحب رصيد جديد</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+            font-weight: 900;
+        }
+
         body {
-            font-family: 'Cairo', Tahoma, Arial, sans-serif;
+            font-family: 'Avenir Arabic', Tahoma, Arial, sans-serif;
             background-color: #f3f4f6;
             color: #1f2937;
             margin: 0;
@@ -146,12 +175,14 @@
                 <tr>
                     <th>الآيبان (IBAN)</th>
                     <td dir="ltr" style="text-align: right; font-size: 13px;">
-                        {{ $withdrawal->user->iban ?? 'غير متوفر' }}</td>
+                        {{ $withdrawal->user->iban ?? 'غير متوفر' }}
+                    </td>
                 </tr>
                 <tr>
                     <th>تاريخ الطلب</th>
                     <td dir="ltr" style="text-align: right; font-size: 14px;">
-                        {{ $withdrawal->created_at->format('Y-m-d h:i A') }}</td>
+                        {{ $withdrawal->created_at->format('Y-m-d h:i A') }}
+                    </td>
                 </tr>
             </tbody>
         </table>

@@ -26,9 +26,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
   <title>{{ $isRtl ? 'التحقق من تسجيلك في ثمن' : 'Verify Your Registration – Thamn' }}</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <style type="text/css">
+    @font-face {
+      font-family: 'Avenir Arabic';
+      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+      font-weight: 300;
+    }
+
+    @font-face {
+      font-family: 'Avenir Arabic';
+      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+      font-weight: 400;
+    }
+
+    @font-face {
+      font-family: 'Avenir Arabic';
+      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+      font-weight: 500;
+    }
+
+    @font-face {
+      font-family: 'Avenir Arabic';
+      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+      font-weight: 700;
+    }
+
+    @font-face {
+      font-family: 'Avenir Arabic';
+      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+      font-weight: 900;
+    }
+  </style>
   <style type="text/css">
     body,
     table,
@@ -57,7 +85,7 @@
       margin: 0;
       padding: 0;
       background-color: #eef0f6;
-      font-family: 'Cairo', Arial, sans-serif;
+      font-family: 'Avenir Arabic', Arial, sans-serif;
     }
 
     @media only screen and (max-width:640px) {
@@ -171,8 +199,8 @@
                   @php $digits = str_split($otp); @endphp
                   @foreach($digits as $d)
                     <td class="otp-td" style="width:54px;height:62px;background:#ffffff;border:2px solid #7c3aed;
-                               border-radius:12px;font-size:28px;font-weight:800;color:#4c1d95;
-                               text-align:center;vertical-align:middle;padding:0 6px;">{{ $d }}</td>
+                                 border-radius:12px;font-size:28px;font-weight:800;color:#4c1d95;
+                                 text-align:center;vertical-align:middle;padding:0 6px;">{{ $d }}</td>
                     @if(!$loop->last)
                     <td class="otp-gap" width="10">&nbsp;</td>@endif
                   @endforeach

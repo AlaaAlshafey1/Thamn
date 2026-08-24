@@ -4,9 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+            font-weight: 900;
+        }
+
         body {
-            font-family: 'Cairo', Tahoma, Arial, sans-serif;
+            font-family: 'Avenir Arabic', Tahoma, Arial, sans-serif;
             line-height: 1.6;
             color: #333;
         }
@@ -44,7 +73,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/img/Logo2.png') }}" alt="شعار ثمن" style="max-height: 80px; margin-bottom: 10px;">
+            <img src="{{ asset('assets/img/Logo2.png') }}" alt="شعار ثمن"
+                style="max-height: 80px; margin-bottom: 10px;">
             <h2>{{ $title }}</h2>
         </div>
         <div class="content">

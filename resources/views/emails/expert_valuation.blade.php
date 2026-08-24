@@ -4,9 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+            font-weight: 900;
+        }
+
         body {
-            font-family: 'Cairo', Tahoma, Arial, sans-serif;
+            font-family: 'Avenir Arabic', Tahoma, Arial, sans-serif;
             line-height: 1.6;
             color: #333;
         }
@@ -64,22 +93,26 @@
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر الأدنى:</strong></td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_min_price, 2) }} ريال</td>
+                        {{ number_format($order->expert_min_price, 2) }} ريال
+                    </td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر الأعلى:</strong></td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_max_price, 2) }} ريال</td>
+                        {{ number_format($order->expert_max_price, 2) }} ريال
+                    </td>
                 </tr>
                 <tr>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر المقترح:</strong></td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_price, 2) }} ريال</td>
+                        {{ number_format($order->expert_price, 2) }} ريال
+                    </td>
                 </tr>
             </table>
 
             <p style="margin-top: 20px;"><strong>توضيح الخبير:</strong><br>
-                {{ $order->expert_reasoning }}</p>
+                {{ $order->expert_reasoning }}
+            </p>
 
             <a href="{{ url('/orders/' . $order->id) }}" class="button">عرض تفاصيل الطلب في لوحة التحكم</a>
         </div>

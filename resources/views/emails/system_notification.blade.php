@@ -4,8 +4,38 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Avenir Arabic';
+            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+            font-weight: 900;
+        }
+
         body {
-            font-family: 'Cairo', Arial, sans-serif;
+            font-family: 'Avenir Arabic', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
             background-color: #f9f9f9;
