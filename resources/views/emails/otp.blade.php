@@ -199,8 +199,8 @@
                   @php $digits = str_split($otp); @endphp
                   @foreach($digits as $d)
                     <td class="otp-td" style="width:54px;height:62px;background:#ffffff;border:2px solid #7c3aed;
-                                 border-radius:12px;font-size:28px;font-weight:800;color:#4c1d95;
-                                 text-align:center;vertical-align:middle;padding:0 6px;">{{ $d }}</td>
+                                   border-radius:12px;font-size:28px;font-weight:800;color:#4c1d95;
+                                   text-align:center;vertical-align:middle;padding:0 6px;">{{ $d }}</td>
                     @if(!$loop->last)
                     <td class="otp-gap" width="10">&nbsp;</td>@endif
                   @endforeach
@@ -218,6 +218,91 @@
                     ⚠️&nbsp;{{ $isRtl
   ? 'لا تشارك هذا الرمز مع أي شخص. فريق ثمن لن يطلبه منك أبداً.'
   : "Never share this code. Thamn team will never ask for it." }}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- APP STORE BUTTONS -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;">
+                <tr>
+                  <td style="padding:0 0 10px;font-size:13px;font-weight:700;color:#4c1d95;text-align:center;">📱
+                    {{ $isRtl ? 'حمّل التطبيق الآن' : 'Download the App now' }}</td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <!-- App Store -->
+                        <td style="padding:0 6px;">
+                          <a href="https://apps.apple.com/eg/app/thmmn-%D8%AB%D9%85%D9%86/id6758052199"
+                            style="display:inline-block;text-decoration:none;">
+                            <table cellpadding="0" cellspacing="0" border="0"
+                              style="background:#000;border-radius:10px;">
+                              <tr>
+                                <td style="padding:9px 14px;">
+                                  <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                      <td style="padding-left:8px;vertical-align:middle;">
+                                        <svg width="18" height="22" viewBox="0 0 814 1000"
+                                          xmlns="http://www.w3.org/2000/svg">
+                                          <path fill="#fff"
+                                            d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.8 135.4-317.7 268.5-317.7 99.8 0 184 65.6 245.7 65.6 57.4 0 147.6-69.7 261.3-69.7 4.9 0 2.6-.3 12.6.3zm-166.4-207.1c51.4-61.4 88.1-147.7 88.1-234 0-12.2-.6-24.5-2.6-35.4-84.4 3.2-183.1 56.6-242.6 126.1-41.1 46.4-81.1 132.7-81.1 220.1 0 13.6 2.6 27.2 3.9 31.5 5.2.6 13.6 1.9 21.9 1.9 76 0 166.3-50.8 212.4-110.2z" />
+                                        </svg>
+                                      </td>
+                                      <td style="padding-right:8px;vertical-align:middle;">
+                                        <p
+                                          style="margin:0;font-size:8px;color:rgba(255,255,255,.8);font-family:Arial,sans-serif;line-height:1.2;white-space:nowrap;">
+                                          Download on the</p>
+                                        <p
+                                          style="margin:0;font-size:14px;color:#fff;font-weight:bold;font-family:Arial,sans-serif;line-height:1.2;white-space:nowrap;">
+                                          App Store</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </a>
+                        </td>
+                        <!-- Google Play -->
+                        <td style="padding:0 6px;">
+                          <a href="https://play.google.com/store/apps/details?id=com.thamin.thamin&hl=ar"
+                            style="display:inline-block;text-decoration:none;">
+                            <table cellpadding="0" cellspacing="0" border="0"
+                              style="background:#000;border-radius:10px;">
+                              <tr>
+                                <td style="padding:9px 14px;">
+                                  <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                      <td style="padding-left:8px;vertical-align:middle;">
+                                        <svg width="18" height="20" viewBox="0 0 512 512"
+                                          xmlns="http://www.w3.org/2000/svg">
+                                          <path fill="#4CAF50" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z" />
+                                          <path fill="#FF5722"
+                                            d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l2.7 1.5 247.2-247v-5.8L47 0z" />
+                                          <path fill="#FFC107"
+                                            d="M330.1 281.1l-82.1-82.2V194l82.1 82.2 48.1-27.3 50 28.4-48.1 27.4-50-23.6z" />
+                                          <path fill="#4CAF50" d="M330.1 234.3l50 28.5L104.6 499l225.5-264.7z" />
+                                          <path fill="#FF5722" d="M379.6 261.3l-49.5-27.4-225.5 265 275-237.6z" />
+                                        </svg>
+                                      </td>
+                                      <td style="padding-right:8px;vertical-align:middle;">
+                                        <p
+                                          style="margin:0;font-size:8px;color:rgba(255,255,255,.8);font-family:Arial,sans-serif;line-height:1.2;white-space:nowrap;">
+                                          GET IT ON</p>
+                                        <p
+                                          style="margin:0;font-size:14px;color:#fff;font-weight:bold;font-family:Arial,sans-serif;line-height:1.2;white-space:nowrap;">
+                                          Google Play</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
