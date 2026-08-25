@@ -35,6 +35,7 @@ Route::get('/contact-us', [App\Http\Controllers\PublicPageController::class, 'co
 Route::post('/contact-us', [App\Http\Controllers\PublicPageController::class, 'submitContact'])->name('public.contact.submit');
 
 // Expert Registration
+Route::get('/experts/agreement/preview', [App\Http\Controllers\ExpertRegistrationController::class, 'previewAgreement'])->name('experts.agreement.preview');
 Route::get('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'showForm'])->name('experts.register');
 Route::post('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'register'])->name('experts.register.submit');
 

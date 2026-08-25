@@ -3,428 +3,308 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>وثيقة الشروط والأحكام وإقرار السرية - {{ $declaration->full_name }}</title>
+    <title>اتفاقية تعاون خبير ثمن - {{ $declaration->full_name }}</title>
     <style>
         body {
             font-family: 'Cairo', 'DejaVu Sans', sans-serif;
-            font-size: 12px;
-            direction: rtl;
-            background: white;
-            color: #1a1a1a;
-            line-height: 1.6;
+            font-size: 14px;
+            color: #222;
+            line-height: 1.8;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
 
-        /* ====== HEADER ====== */
-        .doc-header {
-            background-color: #f5ede0;
-            padding: 15px 25px;
-            border-bottom: 3px solid #c9933a;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #C1953E;
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            color: #C1953E;
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+
+        .header p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .intro {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .header-table td {
-            vertical-align: middle;
-        }
-
-        .header-logo {
-            width: 120px;
-            text-align: right;
-        }
-
-        .header-logo img {
-            height: 60px;
-            width: auto;
-        }
-
-        .header-text {
-            text-align: right;
-            padding-right: 15px;
-        }
-
-        .main-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1a1a1a;
-            margin-bottom: 5px;
-        }
-
-        .main-title .gold {
-            color: #c9933a;
-        }
-
-        .sub-desc {
-            font-size: 11px;
-            color: #666;
-            line-height: 1.5;
-        }
-
-        /* ====== FIELDS BOX ====== */
-        .fields-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #c8bfaf;
-            margin-bottom: 15px;
-            table-layout: fixed;
-        }
-
-        .fields-table td {
-            width: 33.33%;
-            padding: 8px 10px;
-            border: 1px solid #c8bfaf;
-            background: #fdf9f4;
-            vertical-align: middle;
-        }
-
-        .field-label {
-            font-size: 11px;
-            font-weight: bold;
-            color: #5a4420;
-        }
-
-        .field-value {
-            font-size: 11px;
-            color: #1a1a1a;
-            border-bottom: 1px dotted #a08060;
-            padding-right: 5px;
-            display: inline-block;
-        }
-
-        /* ====== DECL BOX ====== */
-        .decl-box {
-            border: 1.5px solid #c9933a;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            background: #fffdf8;
-            font-size: 11.5px;
-            font-weight: bold;
-            line-height: 1.7;
+        .parties p {
+            margin: 5px 0;
+            line-height: 1.6;
             text-align: justify;
         }
 
-        /* ====== TWO-COL ARTICLES ====== */
-        .article-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #c8bfaf;
+        .party-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-top: 15px;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #C1953E;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 5px;
+            margin-top: 25px;
             margin-bottom: 10px;
         }
 
-        .article-table td {
-            border: 1px solid #c8bfaf;
+        p,
+        ul,
+        li {
+            text-align: justify;
+            margin-bottom: 8px;
         }
 
-        .art-content {
-            padding: 10px 12px;
-            font-size: 11px;
-            line-height: 1.6;
-            color: #2a2a2a;
-            vertical-align: top;
+        ul {
+            padding-right: 20px;
         }
 
-        .art-label {
-            width: 130px;
-            vertical-align: top;
-            background: #fdf9f4;
-            padding: 10px;
-            font-size: 10.5px;
-            font-weight: bold;
-            color: #5a4420;
-            line-height: 1.5;
-            text-align: right;
+        .signatures {
+            margin-top: 40px;
+            width: 100%;
+            border-top: 2px solid #C1953E;
+            padding-top: 20px;
         }
 
-        .art-num {
+        .party-box {
+            width: 48%;
             display: inline-block;
-            background: #c9933a;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 2px;
-            margin-bottom: 5px;
-        }
-
-        .art-content p {
-            margin-bottom: 5px;
-            margin-top: 0;
-        }
-
-        .art-content .item {
-            margin-bottom: 4px;
-        }
-
-        .art-content b {
-            color: #1a1a1a;
-        }
-
-        /* How box */
-        .how-box {
-            background: #fdf9f4;
-            border: 1px solid #e0d0b0;
-            padding: 8px 10px;
-            margin-top: 5px;
-        }
-
-        /* ====== SIGNATURE SECTION ====== */
-        .sig-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #c8bfaf;
-            margin-top: 15px;
-            table-layout: fixed;
-        }
-
-        .sig-table td {
-            width: 50%;
             vertical-align: top;
-            padding: 12px 15px;
-            border: 1px solid #c8bfaf;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            border: 1px solid #eee;
         }
 
-        .sig-label {
-            font-size: 11.5px;
+        .note-box {
+            background-color: #fff8e1;
+            border: 1px solid #ffcc80;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 5px;
             font-weight: bold;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-        }
-
-        .sig-img {
-            max-height: 60px;
-            max-width: 180px;
-            display: block;
-            margin: 0 auto 10px auto;
-        }
-
-        .sig-name {
-            font-size: 10.5px;
-            color: #666;
+            color: #e65100;
+            font-size: 13px;
             text-align: center;
         }
 
-        /* ====== FOOTER ====== */
-        .doc-footer {
-            margin-top: 15px;
+        .footer-stamp {
+            text-align: center;
+            font-size: 11px;
+            color: #777;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
             padding-top: 10px;
-            border-top: 2px solid #c9933a;
-            text-align: center;
-            font-size: 10px;
-            color: #888;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- ====== HEADER ====== -->
-    <div class="doc-header">
-        <table class="header-table">
-            <tr>
-                <td class="header-text">
-                    <div class="main-title">
-                        وثيقة <span class="gold">الشروط والأحكام</span> وإقرار السرية للمحكمين المستقلين
-                    </div>
-                    <div class="sub-desc">
-                        تحدد هذه الوثيقة الإطار القانوني والمهني للتعاون بين التطبيق والمحكم المستقل في مجال تثمين السلع
-                        المستعملة. يرجى قراءة بنود السرية، المسؤولية المهنية، وآلية العمل بعناية قبل الموافقة والانضمام.
-                    </div>
-                </td>
-                <td class="header-logo" style="text-align: left; padding-left: 10px;">
-                    <img src="{{ public_path('assets/img/Logo.png') }}" alt="ثمن">
-                </td>
-            </tr>
-        </table>
+    <div class="header">
+        <h1>اتفاقية تعاون خبير «ثمن» لتقديم خدمات التثمين</h1>
+        <p>تطبيق ثمن للتثمين المهني</p>
     </div>
 
-    <!-- ====== BODY ====== -->
-    <div style="padding: 0 25px;">
+    <div class="intro">
+        الحمد لله، والصلاة والسلام على رسول الله ، وبعد :
+    </div>
 
-        <!-- Fields -->
-        <table class="fields-table">
-            <tr>
-                <td>
-                    <span class="field-label">اقر أنا/</span>
-                    <span class="field-value">{{ $declaration->full_name }}</span>
-                </td>
-                <td>
-                    <span class="field-label">الجنسية /</span>
-                    <span class="field-value">{{ $declaration->nationality ?? '.........' }}</span>
-                </td>
-                <td>
-                    <span class="field-label">المدينة /</span>
-                    <span class="field-value">{{ $declaration->city ?? '.........' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">رقم الهوية /</span>
-                    <span class="field-value">{{ $declaration->national_id }}</span>
-                </td>
-                <td>
-                    <span class="field-label">الجوال/</span>
-                    <span class="field-value">{{ $declaration->phone }}</span>
-                </td>
-                <td>
-                    <span class="field-label">البريد الإلكتروني /</span>
-                    <span class="field-value">{{ $declaration->email }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <span class="field-label">مجال الخبرة /</span>
-                    <span class="field-value">{{ $declaration->expertise ?? '.........' }}</span>
-                </td>
-            </tr>
-        </table>
+    <div class="parties">
+        <p>يقر كل من :</p>
+        <div class="party-title">الطرف الأول:</div>
+        <p>مؤسسة فرص رقمية مالكة ومشغلة منصة <strong>«ثمن»</strong>، سجل تجاري رقم: 7050322052 عنوانها: الجبيل الصناعية
+            ويمثلها في توقيع هذه الاتفاقية: المشرف العام ويشار إليها لاحقًا بـ «المنصة» أو «الطرف الأول» .</p>
 
-        <!-- Declaration Box -->
-        <div class="decl-box">
-            الموقع أدناه بالاطلاع على محتوى الوثيقة والإقرار فيها بما ورد فيها بالبنود الواردة في سياق التعاون مع
-            التطبيق في مجال ( التثمين للسلع المستعملة ) وأن يكون مؤهلاً للتحكيم التسعيري للمنتج المستعمل إما بتزكية
-            رسمية أو أكاديمية أو فخرية وعليه إرفاق مايثبت ويعزز ذلك.
+        <div class="party-title">الطرف الثاني:</div>
+        <p>الخبير: <strong>{{ $declaration->full_name }}</strong> ، رقم الهوية (إن وجد):
+            {{ $declaration->national_id !== 'من التسجيل' ? $declaration->national_id : '___________' }} ، رقم الجوال:
+            {{ $declaration->phone }} ، البريد الإلكتروني: {{ $declaration->email }}</p>
+        <p>ويشار إليه لاحقًا بـ «الخبير» أو «الطرف الثاني ».</p>
+
+        <p style="margin-top: 15px; font-weight: bold;">ويشار إلى الطرفين مجتمعين بـ «الطرفين» .</p>
+    </div>
+
+    <h3>المادة الأولى : التمهيد والتعريفات</h3>
+    <p>يُعد التمهيد أعلاه جزءًا لا يتجزأ من هذه الاتفاقية . ويقصد بالمصطلحات الآتية، أينما وردت في الاتفاقية :</p>
+    <ul>
+        <li><strong>المنصة:</strong> منصة «ثمن» الرقمية وما يرتبط بها من تطبيقات ومواقع وأنظمة وخدمات.</li>
+        <li><strong>الخدمة:</strong> خدمة تثمين المنتجات والسلع المستعملة التي تقدم من خلال المنصة وفق المنهجية
+            والإجراءات المعتمدة لدى الطرف الأول.</li>
+        <li><strong>بطاقة التثمين:</strong> المخرج الرقمي الذي يصدر من خلال منصة «ثمن» بعد استكمال متطلبات الخدمة وسداد
+            رسومها واعتمادها وفق الإجراءات المحددة.</li>
+        <li><strong>الخبير:</strong> الشخص المتعاون مع المنصة الذي يتم اعتماده من الطرف الأول لتقديم الخدمات المهنية أو
+            الفنية المسندة إليه عبر المنصة.</li>
+        <li><strong>رسوم البطاقة:</strong> المقابل المالي الذي يدفعه العميل مقابل خدمة بطاقة التثمين وفق السعر المعتمد
+            في المنصة.</li>
+    </ul>
+
+    <h3>المادة الثانية: موضوع الاتفاقية</h3>
+    <p>يوافق الطرف الثاني على التعاون مع الطرف الأول بصفته خبيرًا متعاونًا مستقلًا لتقديم خدمات التثمين التي يتم إسنادها
+        إليه من خلال منصة «ثمن»، وفق نطاق اختصاصه ومستوى اعتماده وإجراءات العمل المعتمدة.</p>
+    <p>ولا تمنح هذه الاتفاقية الطرف الثاني أي حق في ملكية المنصة أو علامتها التجارية أو تطبيقاتها أو أنظمتها أو قواعد
+        بياناتها أو منهجياتها، ما لم يرد اتفاق مكتوب مستقل ينص على خلاف ذلك.</p>
+    <p>ولا تنشئ هذه الاتفاقية علاقة عمل أو توظيف أو وكالة أو شراكة في ملكية الطرف الأول، ويظل الخبير مستقلًا في صفته
+        المهنية، مع التزامه الكامل بشروط هذه الاتفاقية والإجراءات المعتمدة للمنصة.</p>
+
+    <h3>المادة الثالثة: آلية تقديم الخدمة</h3>
+    <ul>
+        <li>تُحال طلبات التثمين إلى الخبير من خلال منصة «ثمن» أو الوسائل المعتمدة من الطرف الأول.</li>
+        <li>يلتزم الخبير بتنفيذ الخدمة ضمن المدة المحددة في النظام أو في الطلب.</li>
+        <li>يلتزم الخبير باستخدام المعلومات والمستندات المتاحة له من خلال المنصة وعدم طلب بيانات إضافية إلا بالقدر
+            اللازم لتنفيذ الخدمة.</li>
+        <li>يلتزم الخبير بتقديم معلومات مهنية صحيحة ودقيقة قدر الإمكان وفق البيانات المتاحة والمنهجية المعتمدة.</li>
+        <li>لا يجوز للخبير إصدار أو تسليم أي مخرج خارج المنصة باعتباره بطاقة تثمين صادرة عن «ثمن» إلا بموافقة كتابية من
+            الطرف الأول.</li>
+        <li>يلتزم الخبير بعدم تعديل أو حذف أو تعطيل أي بيانات أو سجلات تخص طلبات التثمين إلا من خلال الصلاحيات التي
+            تمنحها له المنصة.</li>
+    </ul>
+
+    <h3>المادة الرابعة: أتعاب الخبير</h3>
+    <ul>
+        <li>يستحق الخبير مقابل خدماته نسبة ثابتة محددة مسبقًا من رسوم بطاقة التثمين عن كل بطاقة تثمين يتم تنفيذها
+            واعتمادها وفق شروط المنصة.</li>
+        <li>تبلغ نسبة الخبير: __ % من رسوم البطاقة المستحقة وفق جدول العمولات المعتمد.</li>
+        <li>لا ترتبط أتعاب الخبير بأي شكل من الأشكال بقيمة المنتج أو السلعة محل التثمين.</li>
+        <li>لا تتغير أتعاب الخبير إذا ارتفعت أو انخفضت القيمة التقديرية للمنتج.</li>
+        <li>لا يجوز للخبير طلب أو تحصيل أي مبلغ إضافي من العميل مقابل الخدمة التي تمت إحالتها إليه عبر المنصة إلا
+            بموافقة مسبقة ومكتوبة من الطرف الأول.</li>
+        <li>يتم احتساب المستحقات وفق السجلات الإلكترونية للمنصة، وتتم التسوية والصرف وفق دورة الدفع المحددة في النظام أو
+            في الملحق المالي.</li>
+        <li>تخضع المستحقات لأي استقطاعات أو متطلبات نظامية واجبة التطبيق، إن وجدت.</li>
+        <li>في حال إلغاء البطاقة أو استرداد رسومها أو عدم اكتمال الخدمة وفق شروط المنصة، فلا يستحق الخبير العمولة
+            المتعلقة بها، أو تتم تسويتها وفق الحالة والإجراء المعتمدين.</li>
+    </ul>
+
+    <h3>المادة الخامسة: الاستقلالية والحياد وتعارض المصالح</h3>
+    <p>يلتزم الخبير بالمهنية والموضوعية والحياد في أداء مهامه. ويحظر عليه التأثير عمدًا على نتيجة التثمين لمصلحة العميل
+        أو البائع أو المشتري أو أي طرف آخر.</p>
+    <p>كما يلتزم بالإفصاح للمنصة فورًا عن أي علاقة أو مصلحة مباشرة أو غير مباشرة يمكن أن تؤثر في حياده أو تنشئ تعارضًا
+        في المصالح. وفي حال وجود تعارض مصالح، يحق للطرف الأول إسناد الطلب إلى خبير آخر دون أن يترتب للخبير الأول أي حق
+        في الاعتراض أو المطالبة بمقابل عن الخدمة التي لم ينفذها.</p>
+    <p>ولا تعتبر العمولة الثابتة للخبير من رسوم البطاقة مرتبطة بقيمة المنتج أو نتيجة التثمين، ولا يجوز تعديلها بناءً على
+        نتيجة التثمين.</p>
+    <p>وفي حال كان الخبير مقيّمًا معتمدًا أو خاضعًا لنظام أو لائحة مهنية خاصة، فإنه يلتزم بجميع المتطلبات المهنية
+        والتنظيمية الواجبة عليه. وتطبق عليه القواعد النظامية الخاصة بمهنته متى كانت واجبة التطبيق.</p>
+
+    <h3>المادة السادسة: التزامات الخبير</h3>
+    <p>يلتزم الخبير بما يلي:</p>
+    <ul>
+        <li>المحافظة على سرية جميع معلومات العملاء والطلبات.</li>
+        <li>عدم تقديم معلومات أو مستندات غير صحيحة للمنصة.</li>
+        <li>عدم استخدام حسابه في المنصة من قبل أي شخص آخر.</li>
+        <li>المحافظة على بيانات الدخول ووسائل التحقق الخاصة به.</li>
+        <li>عدم التواصل مع العميل خارج القنوات المعتمدة لأغراض تجارية أو لتحقيق منفعة شخصية من الطلب.</li>
+        <li>عدم تحصيل مبالغ من العملاء خارج النظام.</li>
+        <li>عدم استغلال معلومات العملاء للوصول إليهم أو تقديم خدمات منافسة خارج المنصة.</li>
+        <li>الالتزام بالمنهجية والإجراءات الفنية المعتمدة من «ثمن».</li>
+        <li>إبلاغ المنصة عن أي خطأ جوهري أو محاولة تلاعب أو معلومات مضللة في الطلب.</li>
+        <li>المحافظة على أي ترخيص أو اعتماد مهني مطلوب منه نظامًا لممارسة النشاط الذي يقدمه.</li>
+        <li>الالتزام بالأنظمة واللوائح السعودية ذات العلاقة بنشاطه.</li>
+    </ul>
+
+    <h3>المادة السابعة: حماية بيانات العملاء</h3>
+    <p>يتعامل الخبير مع بيانات العملاء باعتبارها معلومات سرية ومحمية، ولا يستخدمها إلا للغرض المحدد وهو تنفيذ الخدمة
+        المسندة إليه. ولا يجوز له نسخ البيانات أو تصويرها أو تحميلها أو الاحتفاظ بها أو مشاركتها أو إرسالها إلى أي طرف
+        آخر إلا بالقدر المسموح به من المنصة أو بموجب أساس نظامي.</p>
+    <p>كما يلتزم بإبلاغ الطرف الأول فور علمه بأي فقد أو تسرب أو وصول غير مصرح به إلى بيانات العملاء. ويقر الطرفان بأن
+        معالجة البيانات الشخصية تتم وفق الأنظمة واللوائح ذات العلاقة في المملكة العربية السعودية، بما في ذلك نظام حماية
+        البيانات الشخصية، وما يصدر عن الجهة المختصة من لوائح وضوابط.</p>
+
+    <h3>المادة الثامنة: السرية</h3>
+    <p>يلتزم الخبير بالمحافظة التامة على سرية المعلومات التي يطلع عليها بسبب هذه الاتفاقية، وتشمل على سبيل المثال:
+        منهجية «ثمن»، آليات احتساب التثمين، قواعد البيانات، الخوارزميات والأنظمة، بيانات العملاء، الأسعار والعمولات،
+        الخطط التجارية والتسويقية، و الملعومات الفنية. ويستمر الالتزام بالسرية حتى بعد انتهاء هذه الاتفاقية.</p>
+
+    <h3>المادة التاسعة: الملكية الفكرية</h3>
+    <p>يقر الخبير بأن جميع حقوق الملكية الفكرية المتعلقة بمنصة «ثمن» مملوكة للطرف الأول المالك، ولا تمنح هذه الاتفاقية
+        الخبير أي حق في استغلال أي من تلك العناصر.</p>
+
+    <h3>المادة العاشرة: عدم استغلال عملاء المنصة</h3>
+    <p>لا يجوز للخبير استخدام بيانات عميل حصل عليها من خلال «ثمن» للتعامل معه خارج المنصة بقصد تجاوز المنصة أو حرمانها
+        من إيراداتها.</p>
+
+    <h3>المادة الحادية عشرة: جودة الخدمة</h3>
+    <p>يحق للطرف الأول مراجعة جودة الخدمات المقدمة من الخبير، ويحق للطرف الأول، عند وجود ملاحظات مهنية تعليق حساب الخبير
+        أو إسناد الطلبات لخبراء آخرين.</p>
+
+    <h3>المادة الثانية عشرة: التزامات الطرف الأول</h3>
+    <p>توفير النظام لاستقبال الطلبات، وتزويد الخبير بالمعلومات المتاحة، واحتساب مستحقات الخبير وصرفها وفق الدورة المالية
+        المعتمدة.</p>
+
+    <h3>المادة الثالثة عشرة: مدة الاتفاقية</h3>
+    <p>تبدأ هذه الاتفاقية من تاريخ قبولها إلكترونيًا أو توقيعها، وتكون مدتها سنة واحدة، وتتجدد تلقائيًا لمدة مماثلة.</p>
+
+    <h3>المادة الرابعة عشرة: تعليق أو إنهاء التعاون</h3>
+    <p>يجوز إنهاء الاتفاقية بإشعار كتابي، ويجوز الإنهاء الفوري عند إفشاء معلومات، أو استغلال بيانات العملاء أو محاولة
+        تجاوز المنصة.</p>
+
+    <h3>المادة الخامسة عشرة: المستحقات عند انتهاء الاتفاقية</h3>
+    <p>تتم تسوية جميع المستحقات عن الخدمات المنجزة والمعتمدة حتى تاريخ انتهاء العلاقة.</p>
+
+    <h3>المادة السادسة عشرة إلى الواحدة والعشرين (أحكام عامة وقوة قاهرة والاختصاص)</h3>
+    <p>تخضع هذه الاتفاقية للأنظمة المعمول بها في المملكة العربية السعودية، وتمثل الاتفاقية كامل الاتفاق بين الطرفين، ولا
+        يعتبر التأخير نتيجة قوة قاهرة إخلالاً.</p>
+
+
+    <h3>المادة الثانية والعشرون: الإقرار والقبول</h3>
+    <p>يقر الخبير بأنه قرأ هذه الاتفاقية وفهم مضمونها، واطلع على نسبة أتعابه التي لا تتغير بتغير نتيجة التثمين، ويلتزم
+        بالسرية والأنظمة. وبناءً عليه، فقد وافق الطرفان على هذه الاتفاقية بكامل إرادتهما.</p>
+
+    <div class="signatures">
+        <div class="party-box" style="margin-left: 2%;">
+            <div style="font-weight: bold; margin-bottom: 15px; color:#C1953E;">الطرف الأول – منصة «ثمن»</div>
+            <p><strong>يمثله:</strong> المشرف العام - سعد ظافر سعد الأحمري</p>
+            <p><strong>التوقيع/الموافقة الإلكترونية:</strong> <i>مُعتمد إلكترونياً من الإدارة</i></p>
+            <p><strong>التاريخ:</strong>
+                {{ $declaration->signed_at ? $declaration->signed_at->format('d/m/Y') : now()->format('d/m/Y') }} م</p>
         </div>
 
-        <!-- Article 1 -->
-        <table class="article-table">
-            <tr>
-                <td class="art-label">
-                    <span class="art-num">1</span><br>
-                    اتفاقية السرية وعدم الإفصاح (NDA) للمحكمين الذين يعملون عن بعد
-                </td>
-                <td class="art-content">
-                    <p><b>بند "السرية وحماية البيانات" للمحكمين المستقلين :</b></p>
-                    <div class="item"><b>(1) السرية وحماية خصوصية البيانات ( Confidentiality & Data Protection )</b><br>
-                        • تعريف المعلومات السرية : تشمل المعلومات السرية كل ما يطلع عليه المحكم أثناء عمله، بما في ذلك
-                        (بيانات المستخدمين الشخصية، صور المنتجات، فواتير الشراء، تقارير الفحص الفني، آليات التسعير
-                        الخاصة بالتطبيق، أو أي معلومات برمجية أو تقنية داخل المنصة ).</div>
-                    <div class="item">(2) حظر الاستخدام الشخصي: يلتزم المحكم بعدم استخدام أي معلومة حصل عليها بطريقة
-                        مباشرة لمنفعته الشخصية أو لمنفعة أطراف ثالثة. كما يُحظر عليه التواصل مع أصحاب المنتجات مباشرة
-                        خارج إطار التطبيق لأي سبب كان.</div>
-                    <div class="item">(3) حظر النسخ والتخزين: يُمنع المحكم منعاً باتاً من أخذ لقطات شاشة (Screenshots)
-                        لبيانات المستخدمين أو تحميل وحفظ صور المنتجات والتقارير في أجهزته الشخصية إلا للضرورة القصوى
-                        التي يقتضيها التحكيم، ويلتزم بحذفها فور انتهاء العملية.</div>
-                    <div class="item">(4) أمن الضرورة: المحكم مسؤول مسؤولية كاملة عن سرية بيانات دخوله، وأنه لن يشاركها
-                        مع أي جهة.</div>
-                    <div class="item">(5) مدة الالتزام: يظل هذا البند سارياً طوال مدة تعاقده مع التطبيق، وبعده (3 سنوات)
-                        بعد إنهاء العلاقة التعاقدية لأي سبب كان.</div>
-                    <div class="item">(6) التعويض عن الإفصاح: في حال ثبت تسريب، المحكم ملزم بدفع تعويض يُقدر بـ ( 10,000
-                        ريال )، بالإضافة إلى حق التطبيق في المطالبة بالتعويض عن الأضرار الفعلية.</div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Article 2 -->
-        <table class="article-table">
-            <tr>
-                <td class="art-label">
-                    <span class="art-num">2</span><br>
-                    بنود الشروط العامة
-                </td>
-                <td class="art-content">
-                    <p>تأسيس علاقة مهنية مع محكمين بنظام العمل الحر ( Freelance ) يتطلب بنوداً تجمع بين الدقة التقنية
-                        والالتزام القانوني. إليك هيكل مقترح للبنود الأساسية:</p>
-                    <div class="item"><b>(1) معايير التقييم والنزاهة (Technical Integrity):</b><br>
-                        • الالتزام بالدليل الإرشادي: يجب أن يعتمد المحكم دائماً الدليل الإرشادي الصادر عن إدارة
-                        التطبيق.<br>
-                        • دقة البيانات: المحكم مسؤول عن مراجعة الصور والمستندات المرفوعة.<br>
-                        • الحيادية: يُمنع التلاعب بالتثمين لرفع أو خفض قيمة المنتج.</div>
-                    <div class="item"><b>(2) نطاق العمل والمسؤولية (Scope of Work):</b><br>
-                        • زمن الاستجابة (SLA): اكتمال الطلب خلال 30 دقيقة من وصول الطلب.<br>
-                        • التوثيق: يصدر قرار المحكم توثيقياً في حال ثبت وجود خطأ جسيم.</div>
-                    <div class="item"><b>(3) السرية وخصوصية البيانات (Confidentiality):</b><br>
-                        • حماية البيانات: يحظر على المحكم الاحتفاظ بصور المنتجات أو بيانات المستخدمين.<br>
-                        • الملكية الفكرية: جميع التقارير والنتائج هي ملك حصري للتطبيق.</div>
-                    <div class="item"><b>(4) آلية المحاسبة المالية (Payment Terms):</b><br>
-                        • نظام العمولة: تحديد أجر معلوم مقابل كل عملية تحكيم ناجحة ومكتملة.<br>
-                        • الخصومات: يحق للتطبيق خصم قيمة العمولة أو إلغائها في حال ثبوت أخطاء.</div>
-                    <div class="item"><b>(5) بند "العمل الحر" والقانون (Legal Status):</b><br>
-                        • استقلالية المحكم: تعاقد مستقل وليس علاقة توظيف.<br>
-                        • عدم المنافسة: منع المحكم من العمل مع تطبيقات منافسة.</div>
-                    <div class="item"><b>(6) إنهاء التعاقد (Termination):</b> يحق للتطبيق إيقاف حساب المحكم فوراً في
-                        حالات التجاوزات.</div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Article 3 -->
-        <table class="article-table">
-            <tr>
-                <td class="art-label">
-                    <span class="art-num">3</span><br>
-                    آلية العمل والمستحقات
-                </td>
-                <td class="art-content">
-                    يقوم المحكم بالدخول على رابط الانضمام والإقرار بالوثيقة وبعد ذلك يتم تمكينه من استقبال عروض التثمين
-                    ومراجعتها ثم تقييم العرض وفق الآلية التثمينية للمنتج بتقدير ثلاث قيم ( الحد الأدنى / السعر العادل /
-                    الحد الأعلى ). وسيحصل إزاء كل بطاقة تثمين بهامش عمولة تقدر بـ ( SR 10 ) عن كل بطاقة منجزة بنجاح بعد
-                    مرور ( 24 - 48 ساعة ) من عملية التثمين وذلك بتحويلها إلى حسابه المدون في صفحته وفق آلية التطبيق.
-                </td>
-            </tr>
-        </table>
-
-        <!-- Article 4 -->
-        <table class="article-table">
-            <tr>
-                <td class="art-label">
-                    <span class="art-num">4</span><br>
-                    المسؤولية المهنية والتعويض
-                </td>
-                <td class="art-content">
-                    <div class="item">(1) دقة التقييم : يُقر "المحكم" بأن التقارير والنتائج الصادرة عنه مبنية على أسس
-                        مهنية وموضوعية.</div>
-                    <div class="item">(2) حدود المسؤولية : لا يتحمل المحكم المسؤولية عن العيوب "الخفية" التي لا يمكن
-                        كشفها.</div>
-                    <div class="item">(3) الخطأ المهني الجسيم : في حال ثبت وجود "خطأ مهني جسيم" أدى إلى تثمين المنتج
-                        بسعر أعلى أو أقل من قيمته الحقيقية بنسبة تتجاوز (10%) ، يحق للتطبيق تحميل المحكم قيمة الضرر.
-                    </div>
-                    <div class="item">(4) آلية التظلم : يحق للمحكم الاعتراض على قرارات الخصم خلال ( 3 أيام عمل ).</div>
-
-                    <div class="how-box">
-                        <b>كيف يطبق هذا البند تقنياً داخل التطبيق ؟</b><br>
-                        • نظام التقييم التراكمي ( Accuracy Score ) : إذا بلغ التقييم أقل من 90% يتم إيقافه.<br>
-                        • تجميد الاستحقاقات خلال فترة الاختبار.
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Signature Section -->
-        <table class="sig-table">
-            <tr>
-                <td>
-                    <div class="sig-label">توقيع المحكم المستقل :</div>
-                    <div style="text-align: center; height: 70px;">
-                        @if($declaration->signature)
-                            <img src="{{ $declaration->signature }}" class="sig-img" alt="توقيع">
-                        @endif
-                    </div>
-                    <div class="sig-name">{{ $declaration->full_name }}</div>
-                    <div class="sig-name" style="margin-top:5px; font-size:10px;">
-                        {{ $declaration->signed_at->format('Y-m-d H:i') }}</div>
-                </td>
-                <td>
-                    <div class="sig-label">ختم ومهر المنصة :</div>
-                    <div style="text-align: center; height: 70px;">
-                        <!-- Platform Stamp Area -->
-                    </div>
-                    <div class="sig-name" style="color:#c9933a; font-weight:bold;">تطبيق ثمن للتثمين المهني</div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Footer -->
-        <div class="doc-footer">
-            هذه الوثيقة صادرة رسمياً من تطبيق ثمن للتثمين المهني &copy; {{ date('Y') }} — جميع الحقوق محفوظة
-            <br>
-            رقم الوثيقة: {{ strtoupper(substr($declaration->token, 0, 16)) }}
+        <div class="party-box">
+            <div style="font-weight: bold; margin-bottom: 15px; color:#C1953E;">الطرف الثاني – الخبير</div>
+            <p><strong>الاسم:</strong> {{ $declaration->full_name }}</p>
+            @if($declaration->national_id !== 'من التسجيل')
+                <p><strong>رقم الهوية:</strong> {{ $declaration->national_id }}</p>
+            @endif
+            <p>
+                <strong>التوقيع/الموافقة الإلكترونية:</strong>
+                @if($declaration->signature && strlen($declaration->signature) > 100)
+                    <br><img src="{{ $declaration->signature }}" style="max-height: 50px; margin-top:5px;" alt="Signature">
+                @else
+                    <br><span style="color: green; font-weight:bold;">✅ مقر بالموافقة أثناء التسجيل</span>
+                @endif
+            </p>
+            <p><strong>التاريخ:</strong>
+                {{ $declaration->signed_at ? $declaration->signed_at->format('d/m/Y - h:i A') : now()->format('d/m/Y - h:i A') }}
+            </p>
         </div>
+    </div>
 
+    <div class="note-box">
+        ملاحظة: لا تتأثر نسبة الخبير بقيمة المنتج محل التثمين، سواء ارتفعت أو انخفضت، وإنما تحسب وفق رسوم بطاقة التثمين
+        المعتمدة.
+    </div>
+
+    <div class="footer-stamp">
+        وثيقة إلكترونية مصدقة بتاريخ {{ now()->format('d - m - Y | h:i A') }} - تطبيق ثمن للتثمين
+        @if($declaration->token)
+            <br>رمز التوثيق: {{ strtoupper(substr($declaration->token, 0, 16)) }}
+        @endif
     </div>
 
 </body>

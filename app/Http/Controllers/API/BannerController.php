@@ -32,6 +32,7 @@ class BannerController extends Controller
         return response()->json([
             'status' => true,
             'message' => lang('تم إرجاع البانرات بنجاح', 'Banners fetched successfully', $request),
+            'show_banner_section' => $banners->isNotEmpty(),
             'data' => $banners,
         ]);
     }

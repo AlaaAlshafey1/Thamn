@@ -440,8 +440,9 @@
                         <input type="checkbox" id="terms_check" required
                             style="width: 20px; height: 20px; cursor: pointer;">
                         <label for="terms_check" style="margin-bottom: 0; font-weight: 500; cursor: pointer;">
-                            أوافق على <a href="{{ $terms ? asset($terms->file) : '#' }}" target="_blank"
-                                style="color: var(--gold); text-decoration: none; font-weight: 700;">الشروط والأحكام</a>
+                            أوافق على <a href="{{ route('experts.agreement.preview') }}" target="_blank"
+                                style="color: var(--gold); text-decoration: none; font-weight: 700;">الاتفاقية القانونية
+                                للتعاون مع الخبير</a>
                             الخاصة بالمنصة
                         </label>
                     </div>
@@ -493,9 +494,11 @@
                     });
                     form.reset();
                 } else {
-                    let errorMsg = 'حدث خطأ ما، يرجى المحاولة لاحقاً';
+                    let errorMsg = result.message || 'حدث خطأ ما، يرجى المحاولة لاحقاً';
                     if (result.errors) {
                         errorMsg = Object.values(result.errors).flat().join('<br>');
+                    } else if (result.error) {
+                        errorMsg += '<br><br><small style="color:red;" dir="ltr">' + result.error + '</small>';
                     }
                     Swal.fire({
                         title: 'تنبيه',

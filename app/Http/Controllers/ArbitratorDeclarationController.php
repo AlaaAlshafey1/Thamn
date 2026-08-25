@@ -116,12 +116,35 @@ class ArbitratorDeclarationController extends Controller
             $viewUrl = route('experts.show', $declaration->user_id);
 
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                '📋 خبير وقّع على وثيقة الإقرار',
-                "قام الخبير **{$expertName}** بالتوقيع على وثيقة الشروط والأحكام وإقرار السرية بتاريخ " . now()->format('d/m/Y H:i') . ".\n\nيمكنك الآن مراجعة الوثيقة وتفعيل الخبير من لوحة التحكم.",
+                '📋 خبير وقّع على الاتفاقية القانونية للتعاون',
+                "قام الخبير **{$expertName}** بالتوقيع على الاتفاقية القانونية للتعاون بتاريخ " . now()->format('d/m/Y H:i') . ".\n\nتم حفظ نسخة في النظام وإرسال نسخة للخبير.\nيمكنك الآن مراجعة الوثيقة وتفعيل الخبير من لوحة التحكم.",
                 $viewUrl
             ));
         } catch (\Exception $e) {
             \Log::error('Admin Declaration Notification Failed: ' . $e->getMessage());
+        }
+
+        // ========= إرسال نسخة الاتفاقية الموقّعة للخبير (مطلوب حكومياً) =========
+        try {
+            $downloadUrl = route('declaration.download', ['token' => $token]);
+
+            // إرسال الإيميل مع مرفق PDF
+            Mail::to($declaration->email)->send(
+                new \App\Mail\DeclarationSignedMail($declaration, $downloadUrl)
+            );
+
+            // إرسال رسالة واتساب للخبير
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            if ($declaration->phone) {
+                $whatsapp->sendMessage(
+                    $declaration->phone,
+                    "✅ مرحباً {$expertName}،\nتم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمن بنجاح.\n\n📄 تم إرسال نسخة PDF إلى بريدك الإلكتروني ({$declaration->email}).\nيمكنك أيضاً تحميلها من الرابط:\n{$downloadUrl}\n\nشكراً لتعاونك! 🤝"
+                );
+            }
+
+            \Log::info("Declaration signed PDF sent to expert: {$declaration->email}");
+        } catch (\Exception $e) {
+            \Log::error('Expert Declaration Copy Failed: ' . $e->getMessage());
         }
 
         return redirect()->route('declaration.success', ['token' => $token]);
@@ -158,7 +181,7 @@ class ArbitratorDeclarationController extends Controller
 
         return Storage::disk('public')->download(
             $declaration->pdf_path,
-            'إقرار_السرية_' . $declaration->full_name . '.pdf'
+            'الاتفاقية_القانونية_' . $declaration->full_name . '.pdf'
         );
     }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تم التوقيع بنجاح - تطبيق ثمن</title>
+    <title>تم التوقيع بنجاح - الاتفاقية القانونية - تطبيق ثمن</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -170,7 +170,8 @@
         <div class="divider"></div>
         <p class="subtitle">
             شكراً {{ $declaration->full_name }}،<br>
-            تم حفظ إقرارك على وثيقة الشروط والأحكام وإقرار السرية بنجاح.
+            تم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمن بنجاح.<br>
+            📧 تم إرسال نسخة PDF موقّعة إلى بريدك الإلكتروني.
         </p>
 
         <div class="info-grid">

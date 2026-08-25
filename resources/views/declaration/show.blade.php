@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>وثيقة الشروط والأحكام وإقرار السرية - تطبيق ثمن</title>
+    <title>الاتفاقية القانونية للتعاون مع الخبير - تطبيق ثمن</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
@@ -605,10 +605,10 @@
 
             <div class="doc-title-block">
                 <div class="doc-main-title">
-                    وثيقة <span class="gold">الشروط والأحكام</span> وإقرار السرية للمحكمين المستقلين
+                    الاتفاقية <span class="gold">القانونية</span> للتعاون مع الخبير
                 </div>
                 <div class="doc-subtitle">
-                    تحدد هذه الوثيقة الإطار القانوني والمهني للتعاون بين التطبيق والمحكم المستقل في مجال تثمين السلع
+                    تحدد هذه الاتفاقية الإطار القانوني والمهني للتعاون بين التطبيق والخبير المستقل في مجال تثمين السلع
                     المستعملة. يرجى قراءة بنود السرية، المسؤولية المهنية، وآلية العمل بعناية قبل الموافقة والانضمام.
                 </div>
             </div>
@@ -630,7 +630,7 @@
                 {{-- ===== SIGNED VIEW ===== --}}
                 <div class="signed-block">
                     <span class="icon">✅</span>
-                    <h2>تم التوقيع على الوثيقة</h2>
+                    <h2>تم التوقيع على الاتفاقية</h2>
                     <p>
                         مرحباً بك {{ $user->first_name }}،<br>
                         لقد أقررت بهذه الوثيقة بتاريخ <strong>{{ $declaration->signed_at->format('d/m/Y - H:i') }}</strong>
