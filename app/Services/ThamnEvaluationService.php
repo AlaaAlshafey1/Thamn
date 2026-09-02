@@ -293,14 +293,14 @@ PROMPT;
             return '';
         }
 
-        $html = '<div style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;">';
+        $html = '<div style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;background:#f5f0e8;border-radius:16px;padding:14px;">';
 
         // ── قسم الـ Cards ───────────────────────────────────────────────────
         if (!empty($cards)) {
-            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">';
+            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">';
 
             $pairs = array_chunk($cards, 2);
-            foreach ($pairs as $pair) {
+            foreach ($pairs as $pairIndex => $pair) {
                 $html .= '<tr>';
                 foreach ($pair as $card) {
                     $icon = htmlspecialchars($card['icon'] ?? '●', ENT_QUOTES);
@@ -311,12 +311,12 @@ PROMPT;
                     $html .= '
 <td width="50%" style="padding:4px;vertical-align:top;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%"
-    style="background:#faf7f0;border:1.5px solid #e8d9b8;border-radius:14px;">
-    <tr><td style="padding:14px 10px;text-align:center;">
-      <div style="font-size:30px;line-height:1;margin-bottom:7px;">' . $icon . '</div>
-      <div style="font-size:10px;font-weight:700;color:#a08050;letter-spacing:0.3px;margin-bottom:5px;text-transform:uppercase;">' . $title . '</div>
-      <div style="font-size:15px;font-weight:900;color:#1a1a1a;margin-bottom:' . ($desc ? '4px' : '0') . ';">' . $value . '</div>
-      ' . ($desc ? '<div style="font-size:9px;color:#b0a080;line-height:1.4;">' . $desc . '</div>' : '') . '
+    style="background:#ffffff;border:1px solid #e2d5b8;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <tr><td style="padding:12px 8px;text-align:center;">
+      <div style="font-size:26px;line-height:1;margin-bottom:6px;">' . $icon . '</div>
+      <div style="font-size:9px;font-weight:700;color:#9a7840;letter-spacing:0.4px;margin-bottom:4px;text-transform:uppercase;">' . $title . '</div>
+      <div style="font-size:14px;font-weight:900;color:#1a1a1a;margin-bottom:' . ($desc ? '3px' : '0') . ';">' . $value . '</div>
+      ' . ($desc ? '<div style="font-size:9px;color:#a89060;line-height:1.4;">' . $desc . '</div>' : '') . '
     </td></tr>
   </table>
 </td>';
@@ -325,7 +325,9 @@ PROMPT;
                 if (count($pair) === 1) {
                     $html .= '<td width="50%" style="padding:4px;"></td>';
                 }
-                $html .= '</tr><tr><td colspan="2" style="height:0;"></td></tr>';
+                $html .= '</tr>';
+                // مسافة صغيرة بين الصفوف
+                $html .= '<tr><td colspan="2" style="height:2px;"></td></tr>';
             }
 
             $html .= '</table>';
@@ -333,7 +335,7 @@ PROMPT;
 
         // ── قسم الـ Reasoning النصي ─────────────────────────────────────────
         if (!empty($reasoningText)) {
-            $html .= '<div style="background:#fff8ee;border-right:4px solid #c1953e;border-radius:0 10px 10px 0;padding:13px 14px;font-size:13px;line-height:1.85;color:#3d3020;">';
+            $html .= '<div style="background:#ffffff;border-radius:12px;padding:13px 14px;font-size:13px;line-height:1.85;color:#3d3020;">';
             // إذا لم يحتوِ على HTML → نحوّله مباشرة
             if (!preg_match('/<[a-z][\s\S]*>/i', $reasoningText)) {
                 $html .= nl2br(htmlspecialchars($reasoningText, ENT_QUOTES));
