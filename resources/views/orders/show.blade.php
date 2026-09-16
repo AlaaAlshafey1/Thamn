@@ -318,44 +318,81 @@
                             </h5>
                         </div>
                         <div class="card-body">
+                            @if($order->evaluation_type === 'ai' && $order->ai_price)
+                                {{-- ملخص قيم الـ AI للخبير قبل الاعتماد --}}
+                                <div class="alert alert-info border-0 mb-4" style="direction:rtl; background:#e8f4fd;">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">السعر المقترح (AI)</div>
+                                            <div class="h5 text-primary font-weight-bold mb-0">{{ number_format($order->ai_price, 0) }}
+                                                <small>SAR</small></div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">الحد الأدنى</div>
+                                            <div class="h5 text-success font-weight-bold mb-0">
+                                                {{ number_format($order->ai_min_price, 0) }} <small>SAR</small></div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">الحد الأعلى</div>
+                                            <div class="h5 text-warning font-weight-bold mb-0">
+                                                {{ number_format($order->ai_max_price, 0) }} <small>SAR</small></div>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="mb-0 small text-muted">يمكنك اعتماد هذه القيم كما هي أو تعديلها حسب خبرتك. تم تعبئة البيانات تلقائياً ببيانات الذكاء الاصطناعي لتسهيل الاعتماد.</p>
+                                </div>
+                            @endif
+
                             <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
                                 @csrf
                                 <div class="mb-4 text-right" style="direction: rtl;">
                                     <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span
                                             class="text-danger">*</span></label>
+                                    @php
+                                        $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
+                                    @endphp
                                     <input type="number" name="expert_price"
                                         class="form-control form-control-lg border-success text-success font-weight-bold"
                                         style="font-size: 1.5rem; text-align: center; background: #f4fdf6;" step="0.01" min="0"
-                                        value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
+                                        value="{{ $formPrice }}" required>
                                 </div>
 
                                 <div class="row mb-4 text-right" style="direction: rtl;">
                                     <div class="col-6">
                                         <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
+                                        @php
+                                            $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: ''));
+                                        @endphp
                                         <input type="number" name="expert_min_price" class="form-control bg-light" step="0.01"
                                             min="0"
-                                            value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
+                                            value="{{ $formMin }}">
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
+                                        @php
+                                            $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: ''));
+                                        @endphp
                                         <input type="number" name="expert_max_price" class="form-control bg-light" step="0.01"
                                             min="0"
-                                            value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
+                                            value="{{ $formMax }}">
                                     </div>
                                 </div>
 
                                 <div class="mb-4 text-right" style="direction: rtl;">
                                     <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span
                                             class="text-danger">*</span></label>
-                                    <textarea name="expert_reasoning" class="form-control bg-light" rows="5"
+                                    @php
+                                        $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? '');
+                                    @endphp
+                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control bg-light" rows="5"
                                         placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)"
-                                        required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+                                        required>{!! $existingReasoning !!}</textarea>
                                 </div>
 
                                 <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm"
                                     style="font-size: 1.1rem; padding: 12px;">
-                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد
-                                    التقييم وإرساله
+                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> 
+                                    {{ $order->evaluation_type === 'ai' ? 'اعتماد التقييم وإرساله' : 'اعتماد التقييم وإرساله' }}
                                 </button>
                             </form>
                         </div>
@@ -668,101 +705,7 @@
                     </div>
                 </div>
 
-                {{-- فورم الخبير (فقط إذا كان المستخدم خبيراً) --}}
-                @if(auth()->user()->hasRole('expert'))
-                    <div class="card order-card" style="border: 2px solid #28a745;">
-                        <div class="card-header bg-success-transparent border-bottom-0 pb-0">
-                            <h5 class="text-success font-weight-bold mb-0">
-                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i>
-                                {{ $order->evaluation_type === 'ai' ? 'مراجعة واعتماد تقييم الذكاء الاصطناعي' : 'ضع تقييمك كخبير' }}
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            @if($order->evaluation_type === 'ai' && $order->ai_price)
-                                {{-- ملخص قيم الـ AI للخبير قبل الاعتماد --}}
-                                <div class="alert alert-info border-0 mb-4" style="direction:rtl; background:#e8f4fd;">
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <div class="small text-muted mb-1">السعر المقترح (AI)</div>
-                                            <div class="h5 text-primary font-weight-bold mb-0">{{ number_format($order->ai_price, 0) }}
-                                                <small>SAR</small></div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="small text-muted mb-1">الحد الأدنى</div>
-                                            <div class="h5 text-success font-weight-bold mb-0">
-                                                {{ number_format($order->ai_min_price, 0) }} <small>SAR</small></div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="small text-muted mb-1">الحد الأعلى</div>
-                                            <div class="h5 text-warning font-weight-bold mb-0">
-                                                {{ number_format($order->ai_max_price, 0) }} <small>SAR</small></div>
-                                        </div>
-                                    </div>
-                                    <hr class="my-2">
-                                    <p class="mb-0 small text-muted">يمكنك اعتماد هذه القيم كما هي أو تعديلها حسب خبرتك. <strong>انسخ
-                                            التقرير</strong> من قسم تقييم الذكاء الاصطناعي أعلاه وضعه في الحقل أدناه أو اكتب تقريرك
-                                        الخاص.</p>
-                                </div>
-                            @endif
 
-                            <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
-                                @csrf
-
-                                {{-- السعر --}}
-                                <div class="mb-4">
-                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span
-                                            class="text-danger">*</span></label>
-                                    @php
-                                        $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
-                                    @endphp
-                                    <input type="number" name="expert_price" id="expert_price_input"
-                                        class="form-control form-control-lg border-success text-success font-weight-bold"
-                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;" step="0.01" min="0"
-                                        value="{{ $formPrice }}" required>
-                                </div>
-
-                                {{-- الحد الأدنى / الأعلى --}}
-                                <div class="row mb-4">
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
-                                        @php
-                                            $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: 0));
-                                        @endphp
-                                        <input type="number" name="expert_min_price" class="form-control bg-light" step="0.01"
-                                            min="0" value="{{ $formMin }}">
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
-                                        @php
-                                            $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: 0));
-                                        @endphp
-                                        <input type="number" name="expert_max_price" class="form-control bg-light" step="0.01"
-                                            min="0" value="{{ $formMax }}">
-                                    </div>
-                                </div>
-
-                                {{-- سبب التقييم (Summernote) --}}
-                                <div class="mb-4">
-                                    <label class="form-label font-weight-bold text-dark">
-                                        تقرير التقييم والملاحظات <span class="text-danger">*</span>
-                                    </label>
-                                    @php
-                                        $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? '');
-                                    @endphp
-                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control bg-light"
-                                        rows="10" placeholder="اكتب تقريرك الاحترافي هنا..."
-                                        required>{!! $existingReasoning !!}</textarea>
-                                </div>
-
-                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm"
-                                    style="font-size: 1.1rem; padding: 12px;">
-                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i>
-                                    {{ $order->evaluation_type === 'ai' ? 'اعتماد التقييم النهائي وإرساله للعميل' : 'اعتماد التقييم وإرساله' }}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @endif
 
                 {{-- اعتماد تقييم ثمن (للأدمن فقط) --}}
                 @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
@@ -807,52 +750,35 @@
         @endif
     </div>
 
-    <!-- Summernote Initialization -->
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <!-- CKEditor Initialization -->
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <script>
         $(document).ready(function () {
-            var editor = $('#expert_reasoning_editor');
-            if (!editor.length) return;
+            var editorEl = document.getElementById('expert_reasoning_editor');
+            if (!editorEl) return;
+            
+            var existingContent = editorEl.value.trim();
 
-                // الخطوة 1: هل عند الخبير reasoning سابق محفوظ؟
-                var existingContent = editor.val().trim();
-
-                // الخطوة 2: لو لم يكتب الخبير شيئاً بعد، نسبق المحرر بتقرير الـ AI
-                @if(auth()->user()->hasRole('expert') && empty($order->expert_reasoning) && !empty($order->ai_reasoning))
-                    try {
-                        // JSON_HEX_TAG يحوّل < و > لـ \u003C و \u003E لمنع كسر الـ script
-                        var aiRaw = {!! json_encode((string) $order->ai_reasoning, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) !!};
-                        var tmp = document.createElement('div');
-                        tmp.innerHTML = aiRaw;
-                        // نزيل جداول الإحصائيات (بطاقات الأرقام) ونُبقي على النص التحليلي
-                        tmp.querySelectorAll('table').forEach(function(t) { t.remove(); });
-                        var cleaned = tmp.innerHTML.trim();
-                        if (cleaned && cleaned.length > 30) {
-                            existingContent = cleaned;
-                        }
-                    } catch(e) { console.warn('AI reasoning parse error:', e); }
-                @endif
-
-                // الخطوة 3: تهيئة محرر Summernote
-                editor.summernote({
-                    height: 280,
-                    toolbar: [
-                        ['font', ['bold', 'italic', 'underline', 'clear']],
-                        ['para', ['ul', 'ol']],
-                        ['view', ['fullscreen', 'codeview']]
-                    ],
-                    callbacks: {
-                        onChange: function(contents) {
-                            editor.val(contents);
-                        }
+            @if(auth()->user()->hasRole('expert') && empty($order->expert_reasoning) && !empty($order->ai_reasoning))
+                try {
+                    var aiRaw = {!! json_encode((string) $order->ai_reasoning, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) !!};
+                    var tmp = document.createElement('div');
+                    tmp.innerHTML = aiRaw;
+                    tmp.querySelectorAll('table').forEach(function(t) { t.remove(); });
+                    var cleaned = tmp.innerHTML.trim();
+                    if (cleaned && cleaned.length > 30) {
+                        existingContent = cleaned;
+                        editorEl.value = cleaned;
                     }
-                });
+                } catch(e) { console.warn('AI reasoning parse error:', e); }
+            @endif
 
-                // الخطوة 4: تعيين المحتوى بعد التهيئة
-                if (existingContent.length > 0) {
-                    editor.summernote('code', existingContent);
-                }
+            CKEDITOR.replace('expert_reasoning_editor', {
+                language: 'ar',
+                height: 280,
+                removePlugins: 'elementspath',
+                resize_enabled: false
             });
-        </script>
+        });
+    </script>
 @endsection

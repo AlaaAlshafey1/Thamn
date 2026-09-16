@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - {{ config('app.name') }}</title>
+    <title>@yield('title') - ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
+    <meta name="description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo.png') }}">
+    <meta property="og:title" content="@yield('title') - ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:image" content="{{ URL::asset('assets/img/Logo.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">

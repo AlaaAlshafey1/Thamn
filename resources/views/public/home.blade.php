@@ -1,10 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثمن — التقييم الذكي للمقتنيات الفاخرة</title>
+    <title>ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
+    <meta name="description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo.png') }}">
+    <meta property="og:title" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:image" content="{{ asset('assets/img/Logo.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Outfit:wght@400;600;800&display=swap"
@@ -177,6 +183,9 @@
             font-weight: 700;
             margin-bottom: 2rem;
             color: var(--primary);
+            text-align: justify;
+            text-align-last: justify;
+            width: max-content;
         }
 
         h1 em {
@@ -477,6 +486,7 @@
             cursor: pointer;
             font-size: 1.2rem;
             font-weight: 700;
+            font-family: 'Cairo', sans-serif;
             color: var(--primary);
             text-align: right;
         }
@@ -860,7 +870,7 @@
                                 </div>
                             @else
                                 <div class="banner-media">
-                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'بانر إعلاني' }}" class="banner-img">
+                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'ثمن سلعتك المستعملة' }}" class="banner-img">
                                 </div>
                             @endif
 
@@ -1134,8 +1144,7 @@
         <div class="footer-content">
             <div class="footer-brand">
                 <h2 style="font-family: 'Cairo', sans-serif; font-weight: 800;">ثمن</h2>
-                <p>المنصة الرائدة في تثمين المقتنيات الثمينة والأصول الفاخرة باستخدام أحدث تقنيات الذكاء الاصطناعي
-                    وخبرات المثمنين المعتمدين.</p>
+                <p>منصة تطبيق سعودي في مجال التثمين الاسترشادي للسلع المستعملة باستخدام معايير فنية وتقنية.</p>
             </div>
             <div class="footer-links">
                 <h4>روابط هامة</h4>

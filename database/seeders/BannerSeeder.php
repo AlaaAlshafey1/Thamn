@@ -15,9 +15,9 @@ class BannerSeeder extends Seeder
         Banner::firstOrCreate(
             ['id' => 1],
             [
-                'title_ar' => 'بانر إعلاني',
+                'title_ar' => 'ثمن سلعتك المستعملة',
                 'title_en' => 'Promotional Banner',
-                'file' => 'https://placehold.co/1200x400/2563eb/ffffff?text=Banner',
+                'file' => 'https://placehold.co/1200x400/2563eb/ffffff?text=ثمن+سلعتك+المستعملة',
                 'file_type' => 'image',
                 'is_active' => true,
                 'sort_order' => 0,
