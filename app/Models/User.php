@@ -45,7 +45,32 @@ class User extends Authenticatable
         'sms_enabled',
         'category_id',
         'preferred_language', // 'ar' or 'en', set by mobile app on login/register
+        'membership_number',  // رقم العضوية - يُولَّد تلقائياً عند التسجيل
     ];
+
+    /**
+     * توليد رقم عضوية فريد مكوّن من 4-8 أرقام عشوائية.
+     * يتم توليده تلقائياً عند إنشاء المستخدم إذا لم يكن موجوداً.
+     */
+    public static function generateMembershipNumber(): string
+    {
+        do {
+            $number = (string) rand(1000, 999999);
+        } while (self::where('membership_number', $number)->exists());
+
+        return $number;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->membership_number)) {
+                $user->membership_number = self::generateMembershipNumber();
+            }
+        });
+    }
 
     public function category()
     {
@@ -74,7 +99,7 @@ class User extends Authenticatable
             $this->fcm_token_ios
         ]);
 
-        return array_values(array_filter($tokens, function($t) {
+        return array_values(array_filter($tokens, function ($t) {
             return !in_array(strtolower($t), [
                 'fcm_android_token_123',
                 'fcm_ios_token_123',

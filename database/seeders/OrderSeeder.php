@@ -9,6 +9,7 @@ use App\Models\OrderDetails;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use Illuminate\Support\Str;
+use App\Jobs\RunAiEvaluationJob;
 
 class OrderSeeder extends Seeder
 {
@@ -50,21 +51,21 @@ class OrderSeeder extends Seeder
             } else {
                 // سؤال بدون options → يستخدم value نصية حسب النوع
                 $value = match ($question->type ?? 'text') {
-                    'number'   => rand(1, 100),
-                    'price'    => rand(5000, 80000),
-                    'year'     => rand(2010, 2024),
+                    'number' => rand(1, 100),
+                    'price' => rand(5000, 80000),
+                    'year' => rand(2010, 2024),
                     'location' => 'الرياض',
                     'textarea' => 'وصف تجريبي للسلعة',
-                    default    => 'قيمة تجريبية',
+                    default => 'قيمة تجريبية',
                 };
             }
 
             OrderDetails::create([
-                'order_id'   => $order->id,
-                'question_id'=> $question->id,
-                'option_id'  => $selectedOptionId,
-                'value'      => $value,
-                'price'      => $price,
+                'order_id' => $order->id,
+                'question_id' => $question->id,
+                'option_id' => $selectedOptionId,
+                'value' => $value,
+                'price' => $price,
             ]);
         }
 
@@ -85,11 +86,11 @@ class OrderSeeder extends Seeder
             'status' => 'orderReceived' // تم الدفع
         ]);
 
-        $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. جاري توليد الصورة وإجراء تقييم الذكاء الاصطناعي...");
+        $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. جاري إرسال تقييم الذكاء الاصطناعي للـ Queue...");
 
-        // === تم إيقاف توليد الصورة وتقييم الـ AI هنا ===
-        // سيتم تنفيذهم تلقائياً بعد نجاح الدفع من خلال الـ Controller
+        // === تشغيل تقييم الـ AI في الـ Queue ===
+        RunAiEvaluationJob::dispatch($order);
 
-        $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. في انتظار الدفع (waitingPayment)...");
+        $this->command->info("✅ تم إرسال طلب التثمين #{$order->id} للـ Queue. شغّل: php artisan queue:work --once");
     }
 }

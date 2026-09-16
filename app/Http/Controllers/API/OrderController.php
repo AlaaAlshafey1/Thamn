@@ -696,6 +696,7 @@ class OrderController extends Controller
             'details.option',
             'category',
             'files',
+            'expert', // لجلب رقم عضوية الخبير المعتمِد
         ])
             ->where('id', $orderId)
             ->firstOrFail();
@@ -836,6 +837,8 @@ class OrderController extends Controller
             'created_at' => $order->created_at,
             'is_re_evaluated' => $order->re_evaluation_count > 0,
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
+            // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
+            'expert_membership_number' => $order->expert?->membership_number ?? null,
         ]);
     }
 

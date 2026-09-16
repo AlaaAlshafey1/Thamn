@@ -27,37 +27,37 @@ class OrderController extends Controller
                 $q->where('expert_id', Auth::id())
                     ->orWhereNull('expert_id');
             })
-            ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
-            ->where(function($q) {
-                $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
-            })
-            ->when(auth()->user()->category_id, function ($q) {
-                return $q->where(function ($sub) {
-                    $sub->where('category_id', auth()->user()->category_id)
-                        ->orWhereNull('category_id');
-                });
-            })
-            ->whereHas('details', function ($q) {
-                $q->whereHas('question', function ($q2) {
-                    $q2->where('type', 'rateTypeSelection');
-                })->where(function ($q3) {
-                    $q3->whereHas('option', function ($q4) {
-                        $q4->whereIn('badge', ['expert', 'best']);
-                    })->orWhereIn('value', ['expert', 'best']);
-                });
-            })
-            ->with('user')
-            ->latest()
-            ->get();
+                ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
+                ->where(function ($q) {
+                    $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+                })
+                ->when(auth()->user()->category_id, function ($q) {
+                    return $q->where(function ($sub) {
+                        $sub->where('category_id', auth()->user()->category_id)
+                            ->orWhereNull('category_id');
+                    });
+                })
+                ->whereHas('details', function ($q) {
+                    $q->whereHas('question', function ($q2) {
+                        $q2->where('type', 'rateTypeSelection');
+                    })->where(function ($q3) {
+                        $q3->whereHas('option', function ($q4) {
+                            $q4->whereIn('badge', ['expert', 'best', 'ai']);
+                        })->orWhereIn('value', ['expert', 'best', 'ai']);
+                    });
+                })
+                ->with('user')
+                ->latest()
+                ->get();
 
             // الطلبات السابقة: اللي هو خلصها
             $completedOrders = Order::where('expert_id', Auth::id())
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
-                      ->orWhere(function($sub) {
-                          $sub->whereIn('status', ['beingEstimated', 'beingReEstimated'])
-                              ->where('expert_evaluated', 1);
-                      });
+                        ->orWhere(function ($sub) {
+                            $sub->whereIn('status', ['beingEstimated', 'beingReEstimated'])
+                                ->where('expert_evaluated', 1);
+                        });
                 })
                 ->with('user')
                 ->latest()
@@ -84,20 +84,15 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if (auth()->user()->hasRole('expert')) {
-            $isAiOnly = $order->details()->whereHas('question', function($q) {
-                $q->where('type', 'rateTypeSelection');
-            })->where(function($q) {
-                $q->whereHas('option', function($q2) {
-                    $q2->where('badge', 'ai');
-                })->orWhere('value', 'ai');
-            })->exists();
+            // نحدد من يُسمح له بالدخول:
+            $isAssignedExpert = $order->expert_id === auth()->id();
+            $isOpenAiOrder = $order->expert_id === null
+                && in_array($order->status, ['beingEstimated', 'orderReceived'])
+                && $order->evaluation_type === 'ai';
 
-            if ($isAiOnly) {
-                return redirect()->route('orders.index')->with('error', 'هذا الطلب مخصص للتقييم بواسطة الذكاء الاصطناعي فقط ولا يمكنك الدخول إليه.');
-            }
-
-            if ($order->expert_id !== auth()->id()) {
-                return redirect()->route('orders.index')->with('error', 'يجب عليك استلام الطلب أولاً من لوحة التحكم قبل التمكن من عرضه أو تقييمه.');
+            if (!$isAssignedExpert && !$isOpenAiOrder) {
+                return redirect()->route('orders.index')
+                    ->with('error', 'يجب عليك استلام الطلب أولاً من لوحة التحكم قبل التمكن من عرضه أو تقييمه.');
             }
         }
 
@@ -172,7 +167,7 @@ class OrderController extends Controller
             'expert_reasoning' => $request->expert_reasoning,
             'expert_evaluated' => true,
             'total_price' => $request->expert_price,
-            'status' => $order->evaluation_type === 'expert' ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
+            'status' => in_array($order->evaluation_type, ['expert', 'ai']) ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
         $commissionType = \App\Models\Setting::where('key', 'expert_commission_type')->value('value') ?? 'fixed';
@@ -193,25 +188,25 @@ class OrderController extends Controller
         $user->save();
         if ($order->evaluation_type === 'best') {
             // ─── حساب السعر النهائي الهجين تلقائياً ────────────────────────
-            $aiPrice     = $order->ai_price;
+            $aiPrice = $order->ai_price;
             $expertPrice = $request->expert_price;
-            $thamnPrice  = $aiPrice ? round(($aiPrice + $expertPrice) / 2, 2) : $expertPrice;
-            $minPrice    = round($thamnPrice * 0.93);
-            $maxPrice    = round($thamnPrice * 1.07);
+            $thamnPrice = $aiPrice ? round(($aiPrice + $expertPrice) / 2, 2) : $expertPrice;
+            $minPrice = round($thamnPrice * 0.93);
+            $maxPrice = round($thamnPrice * 1.07);
 
             // الـ reasoning يكون من الـ AI (وصف احترافي أدق)
             $aiReasoning = $order->ai_reasoning ?? $request->expert_reasoning;
 
             $order->refresh();
             $order->update([
-                'thamn_price'     => $thamnPrice,
+                'thamn_price' => $thamnPrice,
                 'thamn_min_price' => $minPrice,
                 'thamn_max_price' => $maxPrice,
                 'thamn_reasoning' => $aiReasoning,
-                'thamn_by'        => null, // تلقائي (ليس بواسطة أدمن يدوياً)
-                'thamn_at'        => now(),
-                'total_price'     => $thamnPrice,
-                'status'          => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
+                'thamn_by' => null, // تلقائي (ليس بواسطة أدمن يدوياً)
+                'thamn_at' => now(),
+                'total_price' => $thamnPrice,
+                'status' => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
             ]);
 
             // Notify Customer — التثمين اكتمل
@@ -253,8 +248,9 @@ class OrderController extends Controller
 
             $successMsg = 'تم تقييم الأوردر بنجاح واحتساب السعر الهجين تلقائياً وبشرنا العميل!';
         } else {
-            // Regular expert type flow: notify user directly
-            $order->user->notify(new OrderEvaluated($order, 'expert'));
+            // Regular expert type or ai type (evaluated by expert) flow: notify user directly
+            $evalTypeStr = $order->evaluation_type === 'ai' ? 'ai' : 'expert';
+            $order->user->notify(new OrderEvaluated($order, $evalTypeStr));
 
             // إرسال إشعار للأدمن (Database)
             $admins = User::role('superadmin')->get();
@@ -262,18 +258,21 @@ class OrderController extends Controller
                 $admin->notify(new ExpertEvaluatedOrderAdminNotification($order, $user));
             }
 
-            // Notify Customer via WhatsApp & Email
+            // Notify Customer via WhatsApp & Email with Invoice/Report
             try {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+
+                // إضافة الفاتورة / شهادة التثمين
+                $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
+                $msg .= "\n\nلتحميل الفاتورة يرجى زيارة الرابط التالي:\n" . $invoiceLink;
+
                 $whatsapp->sendMessage($order->user->phone, $msg);
-                
-                // Email to Customer
-                Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
-                    'بشرنااااك! تقييم طلبك صار جاهز',
-                    "بشرى سارة! تقييم طلبك رقم {$order->id} صار جاهز الحين.\nتفضل شيك عليه بالمنصة وعطنا رايك.",
-                    route('orders.show', $order->id)
-                ));
+
+                // الإيميل للمستخدم مع النتيجة والفاتورة المعنية
+                if ($order->user->email) {
+                    Mail::to($order->user->email)->send(new ValuationResultMail($order, $evalTypeStr));
+                }
             } catch (\Throwable $e) {
                 \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
             }
@@ -282,8 +281,8 @@ class OrderController extends Controller
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $this->notifyByFirebase(
-                    lang('تم تقييم منتجك بنجاح 🧡', 'Your evaluation is ready! 🧡', request()),
-                    lang("تم تقييم منتجك رقم #{$order->id} بنجاح من قبل خبيرنا. تفضل اطلع عليه الآن.", "Your product #{$order->id} has been successfully evaluated by our expert. Check it now!", request()),
+                    lang('تم تقييم منتجك بنجاح ✅', 'Your evaluation is ready! ✅', request()),
+                    lang("تم تقييم منتجك رقم #{$order->id} بنجاح وتم إرسال التقرير/الفاتورة. تفضل اطلع عليه الآن.", "Your product #{$order->id} has been successfully evaluated and invoice sent. Check it now!", request()),
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_expert']]
                 );
@@ -386,7 +385,7 @@ class OrderController extends Controller
         // Notify Other Experts & Customer & Current Expert
         try {
             $whatsapp = app(\App\Services\WhatsAppService::class);
-            
+
             // 1. Notify Customer
             $customerMsg = \App\Services\WhatsAppService::getTemplate('order_evaluating_customer', ['id' => $order->id]);
             $whatsapp->sendMessage($order->user->phone, $customerMsg);
@@ -400,7 +399,7 @@ class OrderController extends Controller
                 ->where('category_id', $order->category_id)
                 ->where('id', '!=', auth()->id())
                 ->get();
-            
+
             $othersMsg = \App\Services\WhatsAppService::getTemplate('order_accepted_other', ['id' => $order->id]);
             foreach ($others as $other) {
                 if ($other->phone) {
@@ -453,6 +452,8 @@ class OrderController extends Controller
     }
 
 
+
+
     public function aiEvaluate(Order $order)
     {
         // التأكد إن المستخدم أدمن أو سوبر أدمن
@@ -494,7 +495,7 @@ class OrderController extends Controller
                 $imageContents = file_get_contents($imageUrl);
                 $filename = 'ai_generated_manual_' . \Illuminate\Support\Str::random(10) . '.png';
                 $path = 'orders/images/' . $filename;
-                
+
                 \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageContents);
 
                 \App\Models\OrderFiles::create([
@@ -506,7 +507,7 @@ class OrderController extends Controller
 
                 return back()->with('success', 'تم توليد الصورة الافتراضية بنجاح وإرفاقها بالطلب.');
             }
-            
+
             return back()->with('error', 'تعذر توليد الصورة، حاول مرة أخرى.');
         } catch (\Throwable $e) {
             return back()->with('error', 'حدث خطأ أثناء توليد الصورة: ' . $e->getMessage());

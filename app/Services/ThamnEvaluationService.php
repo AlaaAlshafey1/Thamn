@@ -205,11 +205,9 @@ PROMPT;
         $fullReasoningHtml = $this->buildInfographicHtml($cards, $reasoningText);
 
         $order->update([
-            // التثمين الذكي المنفرد → تم التثمين مباشرة
-            // التثمين الاحترافي/الهجين → يفضل في beingEstimated لحد ما الخبير يقيم ثم الأدمن يوافق
-            'status' => $order->evaluation_type === 'ai'
-                ? ($order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated')
-                : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
+            // التعديل الجديد: جميع التقييمات بما فيها الـ ai تذهب للخبير للمصادقة والتثمين النهائي
+            'status' => $order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated',
+            'expert_evaluated' => 0, // لضمان ظهوره في لوحة تحكم الخبير
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
             'ai_price' => $aiResult['recommended_price'] ?? null,
@@ -243,39 +241,41 @@ PROMPT;
             }
         } // end if (!$hasImages)
 
+        // ── إشعار العميل بالانتظار (الجميع الآن ينتظر تصديق الخبير/الأدمن) ──
         $tokens = $order->user->getFcmTokens();
+        if (!empty($tokens)) {
+            $this->notifyByFirebase(
+                lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
+                lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في تصديق الخبراء والمراجعة النهائية.', 'We are almost done, please be patient. Your order is pending expert approval.', request()),
+                $tokens,
+                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
+            );
+        }
 
-        if ($order->evaluation_type === 'ai') {
-            // ── التثمين الذكي: بشّر العميل فقط — لا رسائل للأدمن ──────────
-            if (!empty($tokens)) {
-                $this->notifyByFirebase(
-                    lang('اكتمل تثمين منتجك 🎉', 'Your evaluation is ready! 🎉', request()),
-                    lang("تم تثمين منتجك رقم #{$order->id} بنجاح. تفضل اطلع على النتيجة الآن.", "Your product #{$order->id} has been evaluated. Check the result now!", request()),
-                    $tokens,
-                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_ai']]
-                );
-            }
+        // ── إرسال الطلب لجميع الخبراء لطلب المصادقة (إذا كان الطلب ai ولم يحدد له خبير بعد) ──
+        if ($order->evaluation_type === 'ai' && !$order->expert_id) {
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $experts = \App\Models\User::role('expert')->get();
+            $orderLink = route('orders.show', $order->id);
 
-            // Email to Customer
-            try {
-                if ($order->user?->email) {
-                    Mail::to($order->user->email)->send(new ValuationResultMail($order, 'ai'));
+            foreach ($experts as $expert) {
+                if ($expert->phone) {
+                    $whatsapp->sendMessage(
+                        $expert->phone,
+                        "هلا بك خبير ( التثمين ) 👋 هناك طلب تثمين بواسطة الذكاء الاصطناعي (AI) رقم {$order->id} يحتاج منك التصديق والموافقة على الطلب الآن.\n\nرابط الطلب:\n{$orderLink}"
+                    );
                 }
-            } catch (\Throwable $e) {
-                Log::error('AI Valuation Customer Email Failed: ' . $e->getMessage());
-            }
-
-        } else {
-            // ── التثمين الاحترافي/الهجين: اطلب من العميل الانتظار فقط ──
-
-            // FCM: اطلب من العميل الانتظار
-            if (!empty($tokens)) {
-                $this->notifyByFirebase(
-                    lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
-                    lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في المراجعة النهائية.', 'We are almost done, please be patient. Your order is in final review.', request()),
-                    $tokens,
-                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
-                );
+                if ($expert->email) {
+                    try {
+                        Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
+                            "مطلوب المصادقة على طلب تثمين AI رقم #{$order->id}",
+                            "هلا بك خبير ( التثمين ) 👋 هناك طلب تثمين بواسطة الذكاء الاصطناعي (AI) رقم {$order->id} يحتاج منك التصديق والموافقة على الطلب الآن.",
+                            route('orders.show', $order->id)
+                        ));
+                    } catch (\Throwable $e) {
+                        Log::error("Failed to send expert email for AI order approval: " . $e->getMessage());
+                    }
+                }
             }
         }
 

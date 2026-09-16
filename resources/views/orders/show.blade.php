@@ -6,16 +6,18 @@
         .order-card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
             background: #fff;
         }
+
         .order-card .card-header {
             background-color: #fff;
             border-bottom: 1px solid #f0f0f0;
             padding: 18px 25px;
             border-radius: 15px 15px 0 0;
         }
+
         .order-card .card-header h5 {
             margin: 0;
             font-weight: 700;
@@ -24,15 +26,18 @@
             align-items: center;
             gap: 10px;
         }
+
         .info-label {
             color: #888;
             font-size: 0.85rem;
             margin-bottom: 3px;
         }
+
         .info-value {
             font-weight: 600;
             color: #333;
         }
+
         .product-img-container {
             width: 100%;
             aspect-ratio: 1;
@@ -41,32 +46,38 @@
             border: 1px solid #eee;
             transition: transform 0.3s ease;
         }
+
         .product-img-container:hover {
             transform: scale(1.02);
         }
+
         .product-img-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .status-badge {
             padding: 6px 15px;
             border-radius: 50px;
             font-size: 0.85rem;
             font-weight: 600;
         }
+
         .evaluation-result {
             background: #fcf9f2;
             border-radius: 12px;
             padding: 20px;
             border: 1px solid #e9dfc6;
         }
+
         .expert-form-container {
             background: #f8fbf9;
             border-radius: 12px;
             padding: 25px;
             border: 1px solid #e0ede5;
         }
+
         .btn-gold {
             background-color: #c1953e;
             border-color: #c1953e;
@@ -75,21 +86,25 @@
             padding: 10px 25px;
             border-radius: 10px;
         }
+
         .btn-gold:hover {
             background-color: #a67f31;
             border-color: #a67f31;
             color: white;
         }
+
         .table-custom th {
             background-color: #f8f9fa;
             font-weight: 700;
             color: #555;
             text-align: center;
         }
+
         .table-custom td {
             text-align: center;
             vertical-align: middle;
         }
+
         .reasoning-html-content {
             background: #fff;
             padding: 18px;
@@ -97,27 +112,42 @@
             border-right: 5px solid #c1953e;
             line-height: 1.8;
             font-size: 0.95rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             margin-top: 10px;
         }
+
         .reasoning-html-content ul {
             padding-right: 25px;
             margin-bottom: 10px;
         }
+
         .reasoning-html-content li {
             margin-bottom: 8px;
             color: #333;
         }
-        .reasoning-html-content b, .reasoning-html-content strong {
+
+        .reasoning-html-content b,
+        .reasoning-html-content strong {
             color: #1a1a1a;
         }
+
         .reasoning-html-content p {
             margin-bottom: 10px;
         }
+
         .reasoning-html-content p:last-child {
             margin-bottom: 0;
         }
-        body, h1, h2, h3, h4, h5, h6, .btn, .alert {
+
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .btn,
+        .alert {
             font-family: 'Cairo', sans-serif !important;
         }
     </style>
@@ -141,8 +171,9 @@
 
 @section('content')
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 10px; font-size: 1.1rem;">
-            <i class="bx bx-check-circle fs-20 align-middle ml-2"></i> 
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert"
+            style="border-radius: 10px; font-size: 1.1rem;">
+            <i class="bx bx-check-circle fs-20 align-middle ml-2"></i>
             <strong class="ml-1">نجاح!</strong> {{ session('success') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -151,8 +182,9 @@
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 10px; font-size: 1.1rem;">
-            <i class="bx bx-error-circle fs-20 align-middle ml-2"></i> 
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert"
+            style="border-radius: 10px; font-size: 1.1rem;">
+            <i class="bx bx-error-circle fs-20 align-middle ml-2"></i>
             <strong class="ml-1">خطأ!</strong> {{ session('error') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -185,7 +217,8 @@
                                         <th class="text-right">هل يمكن إرساله للسوق؟</th>
                                         <td class="text-right">
                                             @if($order->can_send_to_market)
-                                                <span class="badge badge-success"><i class="bx bx-check"></i> نعم (تثمين وبيع)</span>
+                                                <span class="badge badge-success"><i class="bx bx-check"></i> نعم (تثمين
+                                                    وبيع)</span>
                                             @else
                                                 <span class="badge badge-secondary"><i class="bx bx-x"></i> لا (تثمين فقط)</span>
                                             @endif
@@ -194,7 +227,9 @@
                                     @foreach($order->details as $index => $detail)
                                         <tr>
                                             <th class="text-right">{{ $detail->question->question_ar ?? '-' }}</th>
-                                            <td class="text-right font-weight-bold text-dark">{{ $detail->option->option_ar ?? $detail->value ?? '-' }}</td>
+                                            <td class="text-right font-weight-bold text-dark">
+                                                {{ $detail->option->option_ar ?? $detail->value ?? '-' }}
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -212,13 +247,15 @@
                         <div class="row g-3">
                             @forelse($order->files->where('type', 'image') as $image)
                                 <div class="col-md-4 col-6">
-                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank" class="product-img-container d-block">
+                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank"
+                                        class="product-img-container d-block">
                                         <img src="{{ asset('storage/' . $image->file_path) }}" alt="Product Image">
                                     </a>
                                 </div>
                             @empty
                                 <div class="col-12 text-center py-4">
-                                    <img src="{{ URL::asset('assets/img/Cars-result.jpeg') }}" width="250" class="mb-3 rounded shadow-sm border">
+                                    <img src="{{ URL::asset('assets/img/Cars-result.jpeg') }}" width="250"
+                                        class="mb-3 rounded shadow-sm border">
                                     <p class="text-muted font-weight-bold">العميل لم يرفق صور، تم إرفاق صورة توضيحية للفئة.</p>
                                 </div>
                             @endforelse
@@ -233,33 +270,41 @@
                     <div class="card order-card shadow-sm border" style="border: 2px solid #ffc107 !important;">
                         <div class="card-header bg-warning-transparent border-bottom-0 pb-0">
                             <h5 class="text-warning font-weight-bold mb-0">
-                                <i class="bx bx-check-shield text-warning" style="font-size: 1.5rem; vertical-align: middle;"></i> تقييمك المعتمد لهذا المنتج
+                                <i class="bx bx-check-shield text-warning" style="font-size: 1.5rem; vertical-align: middle;"></i>
+                                تقييمك المعتمد لهذا المنتج
                             </h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-4 text-center">
                                 <span class="text-muted d-block mb-1">السعر الذي أوصيت به</span>
-                                <h2 class="text-warning font-weight-bold m-0" style="font-size: 2.5rem;">{{ number_format($order->expert_price, 2) }} <span style="font-size: 1.2rem;">SAR</span></h2>
+                                <h2 class="text-warning font-weight-bold m-0" style="font-size: 2.5rem;">
+                                    {{ number_format($order->expert_price, 2) }} <span style="font-size: 1.2rem;">SAR</span>
+                                </h2>
                             </div>
 
                             <div class="row mb-4 text-center">
                                 <div class="col-6 border-left">
                                     <span class="text-muted small d-block mb-1">الحد الأدنى للسعر</span>
-                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_min_price, 2) }} SAR</span>
+                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_min_price, 2) }}
+                                        SAR</span>
                                 </div>
                                 <div class="col-6">
                                     <span class="text-muted small d-block mb-1">الحد الأعلى للسعر</span>
-                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_max_price, 2) }} SAR</span>
+                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_max_price, 2) }}
+                                        SAR</span>
                                 </div>
                             </div>
 
                             <div class="mb-4 text-right" style="direction: rtl;">
                                 <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات:</label>
-                                <div class="p-3 bg-light rounded text-dark" style="white-space: pre-line;">{{ $order->expert_reasoning }}</div>
+                                <div class="p-3 bg-light rounded text-dark" style="white-space: pre-line;">
+                                    {{ $order->expert_reasoning }}
+                                </div>
                             </div>
 
                             <div class="alert alert-info text-center border-0 mb-0" style="direction: rtl;">
-                                <i class="bx bx-info-circle ml-1"></i> لقد قمت بتقديم هذا التقييم مسبقاً. ولا يمكن تعديله إلا إذا طلب العميل إعادة تقييم المنتج.
+                                <i class="bx bx-info-circle ml-1"></i> لقد قمت بتقديم هذا التقييم مسبقاً. ولا يمكن تعديله إلا إذا
+                                طلب العميل إعادة تقييم المنتج.
                             </div>
                         </div>
                     </div>
@@ -268,40 +313,49 @@
                     <div class="card order-card" style="border: 2px solid #28a745;">
                         <div class="card-header bg-success-transparent border-bottom-0 pb-0">
                             <h5 class="text-success font-weight-bold mb-0">
-                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك كخبير
+                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك
+                                كخبير
                             </h5>
                         </div>
                         <div class="card-body">
                             <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
                                 @csrf
                                 <div class="mb-4 text-right" style="direction: rtl;">
-                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span class="text-danger">*</span></label>
-                                    <input type="number" name="expert_price" class="form-control form-control-lg border-success text-success font-weight-bold" 
-                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;"
-                                        step="0.01" min="0" value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
+                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" name="expert_price"
+                                        class="form-control form-control-lg border-success text-success font-weight-bold"
+                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;" step="0.01" min="0"
+                                        value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
                                 </div>
 
                                 <div class="row mb-4 text-right" style="direction: rtl;">
                                     <div class="col-6">
                                         <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
-                                        <input type="number" name="expert_min_price" class="form-control bg-light" 
-                                            step="0.01" min="0" value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
+                                        <input type="number" name="expert_min_price" class="form-control bg-light" step="0.01"
+                                            min="0"
+                                            value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
-                                        <input type="number" name="expert_max_price" class="form-control bg-light" 
-                                            step="0.01" min="0" value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
+                                        <input type="number" name="expert_max_price" class="form-control bg-light" step="0.01"
+                                            min="0"
+                                            value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
                                     </div>
                                 </div>
 
                                 <div class="mb-4 text-right" style="direction: rtl;">
-                                    <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span class="text-danger">*</span></label>
-                                    <textarea name="expert_reasoning" class="form-control bg-light" rows="5" 
-                                        placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)" required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
+                                    <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span
+                                            class="text-danger">*</span></label>
+                                    <textarea name="expert_reasoning" class="form-control bg-light" rows="5"
+                                        placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)"
+                                        required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm" style="font-size: 1.1rem; padding: 12px;">
-                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد التقييم وإرساله
+                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm"
+                                    style="font-size: 1.1rem; padding: 12px;">
+                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد
+                                    التقييم وإرساله
                                 </button>
                             </form>
                         </div>
@@ -309,247 +363,265 @@
                 @endif
             </div>
         @else
-        {{-- الجانب الأيمن: بيانات العميل والمنتج --}}
-        <div class="col-lg-8">
-            {{-- كرت بيانات العميل --}}
-            <div class="card order-card">
-                <div class="card-header">
-                    <h5><i class="bx bx-user text-warning"></i> بيانات العميل والطلب</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="info-label">اسم العميل</div>
-                            <div class="info-value">{{ $order->user->first_name . ' ' . $order->user->last_name }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">رقم الهاتف</div>
-                            <div class="info-value text-ltr">{{ $order->user->phone ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">تاريخ الطلب</div>
-                            <div class="info-value">{{ $order->created_at->format('Y-m-d H:i') }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">حالة الطلب</div>
-                            <div class="info-value">
-                                @if($order->status == 'expired')
-                                    <span class="status-badge bg-danger-transparent text-danger">منتهي (لم يتم القبول)</span>
-                                @elseif($order->status == 'refunded')
-                                    <span class="status-badge bg-success-transparent text-success">تم الاسترداد</span>
-                                @else
-                                    <span class="status-badge bg-info-transparent text-info">{{ $order->status }}</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">حالة الدفع</div>
-                            <div class="info-value">
-                                @if(!in_array($order->status, ['pending', 'failed', 'waitingPayment', 'notPaid']))
-                                    <span class="status-badge bg-success-transparent text-success">مدفوع</span>
-                                @else
-                                    <span class="status-badge bg-danger-transparent text-danger">غير مدفوع</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">نوع التقييم</div>
-                            <div class="info-value">{{ $order->evaluation_type ?? 'عادي' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">نوع التثمين</div>
-                            <div class="info-value">
-                                @if(($order->pricing_mode ?? 'valuation_only') === 'valuation_and_sale')
-                                    <span class="status-badge" style="background: rgba(248,180,0,0.15); color: #92620a; border: 1px solid rgba(248,180,0,0.4);">
-                                        <i class="bx bx-store-alt"></i> تثمين والبيع
-                                    </span>
-                                @else
-                                    <span class="status-badge" style="background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.3);">
-                                        <i class="bx bx-calculator"></i> تثمين فقط
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-label">الموافقة على شروط البيع</div>
-                            <div class="info-value">
-                                @if($order->sale_terms_accepted)
-                                    <span class="status-badge bg-success-transparent text-success">
-                                        <i class="bx bx-check-circle"></i> وافق على الشروط
-                                    </span>
-                                @else
-                                    <span class="status-badge bg-light text-muted">
-                                        <i class="bx bx-minus-circle"></i> لم يوافق
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
+            {{-- الجانب الأيمن: بيانات العميل والمنتج --}}
+            <div class="col-lg-8">
+                {{-- كرت بيانات العميل --}}
+                <div class="card order-card">
+                    <div class="card-header">
+                        <h5><i class="bx bx-user text-warning"></i> بيانات العميل والطلب</h5>
                     </div>
-                </div>
-            </div>
-
-            {{-- كرت صور المنتج --}}
-            <div class="card order-card">
-                <div class="card-header">
-                    <h5><i class="bx bx-images text-warning"></i> صور المنتج المرفقة</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        @forelse($order->files->where('type', 'image') as $image)
-                            <div class="col-md-3 col-6">
-                                <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank" class="product-img-container d-block">
-                                    <img src="{{ asset('storage/' . $image->file_path) }}" alt="Product Image">
-                                </a>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="info-label">اسم العميل</div>
+                                <div class="info-value">{{ $order->user->first_name . ' ' . $order->user->last_name }}</div>
                             </div>
-                        @empty
-                            <div class="col-12 text-center py-4">
-                                <img src="{{ URL::asset('assets/img/empty.png') }}" width="60" class="mb-2 opacity-50">
-                                <p class="text-muted italic">لا توجد صور مرفقة لهذا الطلب</p>
+                            <div class="col-md-4">
+                                <div class="info-label">رقم الهاتف</div>
+                                <div class="info-value text-ltr">{{ $order->user->phone ?? '-' }}</div>
                             </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-
-            {{-- كرت تفاصيل الإجابات --}}
-            <div class="card order-card">
-                <div class="card-header">
-                    <h5><i class="bx bx-list-check text-warning"></i> تفاصيل إجابات المستخدم</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-custom mb-0">
-                            <thead>
-                                <tr>
-                                    <th width="50">#</th>
-                                    <th>السؤال</th>
-                                    <th>الإجابة المختارة</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($order->details as $index => $detail)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td class="text-right">{{ $detail->question->question_ar ?? '-' }}</td>
-                                        <td class="text-right font-weight-bold">{{ $detail->option->option_ar ?? $detail->value ?? '-' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- الجانب الأيسر: نتائج التقييم وفورم الخبير --}}
-        <div class="col-lg-4">
-            {{-- كرت نتائج التقييم الحالية --}}
-            <div class="card order-card">
-                <div class="card-header">
-                    <h5><i class="bx bx-bar-chart-alt-2 text-warning"></i> نتائج التقييم</h5>
-                </div>
-                <div class="card-body">
-                    {{-- Refund Section --}}
-                    @if($order->status == 'expired' && $order->user_id == auth()->id())
-                        @if(!$order->refundRequest)
-                            <div class="alert alert-warning border-0 shadow-sm mb-4">
-                                <p class="mb-2 small font-weight-bold">نعتذر منك، لم يتم قبول طلبك خلال 24 ساعة. يمكنك طلب استرداد المبلغ الآن.</p>
-                                <a href="{{ route('refunds.create', $order->id) }}" class="btn btn-warning btn-sm btn-block fw-bold">
-                                    <i class="bx bx-refresh"></i> طلب استرداد المبلغ
-                                </a>
+                            <div class="col-md-4">
+                                <div class="info-label">تاريخ الطلب</div>
+                                <div class="info-value">{{ $order->created_at->format('Y-m-d H:i') }}</div>
                             </div>
-                        @else
-                            <div class="alert alert-success border-0 shadow-sm mb-4">
-                                <p class="mb-0 small font-weight-bold">لقد أرسلت طلب استرداد. حالة الطلب: 
-                                    <strong>
-                                        @if($order->refundRequest->status == 'pending') قيد المراجعة
-                                        @elseif($order->refundRequest->status == 'processed') تم التحويل
-                                        @else مرفوض @endif
-                                    </strong>
-                                </p>
-                            </div>
-                        @endif
-                    @endif
-                    {{-- تقييم AI (مخفي عن الخبير) --}}
-                    @unless(auth()->user()->hasRole('expert'))
-                    <div class="mb-4">
-                        <h6 class="font-weight-bold d-flex align-items-center gap-2 mb-3">
-                            <span class="avatar avatar-sm br-7 bg-primary-transparent text-primary"><i class="fas fa-brain"></i> AI</span>
-                            تقييم الذكاء الاصطناعي
-                        </h6>
-                        @if($order->ai_price)
-                            <div class="evaluation-result">
-                                <div class="h4 font-weight-bold text-primary mb-1">{{ number_format($order->ai_price, 2) }} SAR</div>
-                                <div class="small text-muted">نطاق السعر: {{ number_format($order->ai_min_price, 2) }} - {{ number_format($order->ai_max_price, 2) }}</div>
-                                @php
-                                    $confPct = round(($order->ai_confidence ?? 0) * 100);
-                                    $confColor = $confPct >= 70 ? 'success' : ($confPct >= 50 ? 'warning' : 'danger');
-                                @endphp
-                                <div class="badge bg-{{ $confColor }}-transparent text-{{ $confColor }} mt-2">ثقة: {{ $confPct }}%</div>
-                                <hr class="my-2 border-top-0 border-light">
-                                <div class="reasoning-html-content text-dark">
-                                    @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
-                                        {!! \Illuminate\Support\Str::markdown((string)$order->ai_reasoning) !!}
+                            <div class="col-md-4">
+                                <div class="info-label">حالة الطلب</div>
+                                <div class="info-value">
+                                    @if($order->status == 'expired')
+                                        <span class="status-badge bg-danger-transparent text-danger">منتهي (لم يتم القبول)</span>
+                                    @elseif($order->status == 'refunded')
+                                        <span class="status-badge bg-success-transparent text-success">تم الاسترداد</span>
                                     @else
-                                        {!! $order->ai_reasoning !!}
+                                        <span class="status-badge bg-info-transparent text-info">{{ $order->status }}</span>
                                     @endif
                                 </div>
-                                
-                                @if(is_array($order->ai_features) && count($order->ai_features) > 0)
-                                    <hr class="my-2 border-top-0 border-light">
-                                    <h6 class="font-weight-bold text-primary mb-3">
-                                        <i class="bx bx-grid-alt"></i> التحليل التفصيلي للسلعة:
-                                    </h6>
-                                    @php
-                                        $isCards = isset($order->ai_features[0]['icon']);
-                                    @endphp
-                                    @if($isCards)
-                                        <div class="row g-2">
-                                            @foreach($order->ai_features as $card)
-                                                <div class="col-6">
-                                                    <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:12px 10px;text-align:center;height:100%;">
-                                                        <div style="font-size:1.8rem;margin-bottom:6px;">{{ $card['icon'] ?? '📌' }}</div>
-                                                        <div style="font-size:0.72rem;color:#888;font-weight:600;margin-bottom:4px;">{{ $card['title'] ?? '' }}</div>
-                                                        <div style="font-size:0.95rem;font-weight:800;color:#1a1a1a;margin-bottom:4px;">{{ $card['value'] ?? '-' }}</div>
-                                                        @if(!empty($card['description']))
-                                                            <div style="font-size:0.7rem;color:#aaa;line-height:1.3;">{{ $card['description'] }}</div>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        {{-- عرض قديم كـ tags للطلبات القديمة --}}
-                                        <div class="d-flex flex-wrap gap-2">
-                                            @foreach($order->ai_features as $feature)
-                                                <span class="badge bg-light text-dark border p-2 mb-1 mr-1" style="font-size: 0.9rem;">
-                                                    <i class="bx bx-check-circle text-success align-middle"></i> {{ $feature }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                @endif
                             </div>
-                        @else
-                            <div class="text-center py-3 bg-light rounded">
-                                <p class="text-muted mb-0 small italic">لم يتم إجراء تقييم AI بعد</p>
-                                @hasanyrole('admin|superadmin')
+                            <div class="col-md-4">
+                                <div class="info-label">حالة الدفع</div>
+                                <div class="info-value">
+                                    @if(!in_array($order->status, ['pending', 'failed', 'waitingPayment', 'notPaid']))
+                                        <span class="status-badge bg-success-transparent text-success">مدفوع</span>
+                                    @else
+                                        <span class="status-badge bg-danger-transparent text-danger">غير مدفوع</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-label">نوع التقييم</div>
+                                <div class="info-value">{{ $order->evaluation_type ?? 'عادي' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-label">نوع التثمين</div>
+                                <div class="info-value">
+                                    @if(($order->pricing_mode ?? 'valuation_only') === 'valuation_and_sale')
+                                        <span class="status-badge"
+                                            style="background: rgba(248,180,0,0.15); color: #92620a; border: 1px solid rgba(248,180,0,0.4);">
+                                            <i class="bx bx-store-alt"></i> تثمين والبيع
+                                        </span>
+                                    @else
+                                        <span class="status-badge"
+                                            style="background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.3);">
+                                            <i class="bx bx-calculator"></i> تثمين فقط
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-label">الموافقة على شروط البيع</div>
+                                <div class="info-value">
+                                    @if($order->sale_terms_accepted)
+                                        <span class="status-badge bg-success-transparent text-success">
+                                            <i class="bx bx-check-circle"></i> وافق على الشروط
+                                        </span>
+                                    @else
+                                        <span class="status-badge bg-light text-muted">
+                                            <i class="bx bx-minus-circle"></i> لم يوافق
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- كرت صور المنتج --}}
+                <div class="card order-card">
+                    <div class="card-header">
+                        <h5><i class="bx bx-images text-warning"></i> صور المنتج المرفقة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @forelse($order->files->where('type', 'image') as $image)
+                                <div class="col-md-3 col-6">
+                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank"
+                                        class="product-img-container d-block">
+                                        <img src="{{ asset('storage/' . $image->file_path) }}" alt="Product Image">
+                                    </a>
+                                </div>
+                            @empty
+                                <div class="col-12 text-center py-4">
+                                    <img src="{{ URL::asset('assets/img/empty.png') }}" width="60" class="mb-2 opacity-50">
+                                    <p class="text-muted italic">لا توجد صور مرفقة لهذا الطلب</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                {{-- كرت تفاصيل الإجابات --}}
+                <div class="card order-card">
+                    <div class="card-header">
+                        <h5><i class="bx bx-list-check text-warning"></i> تفاصيل إجابات المستخدم</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>السؤال</th>
+                                        <th>الإجابة المختارة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($order->details as $index => $detail)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td class="text-right">{{ $detail->question->question_ar ?? '-' }}</td>
+                                            <td class="text-right font-weight-bold">
+                                                {{ $detail->option->option_ar ?? $detail->value ?? '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- الجانب الأيسر: نتائج التقييم وفورم الخبير --}}
+            <div class="col-lg-4">
+                {{-- كرت نتائج التقييم الحالية --}}
+                <div class="card order-card">
+                    <div class="card-header">
+                        <h5><i class="bx bx-bar-chart-alt-2 text-warning"></i> نتائج التقييم</h5>
+                    </div>
+                    <div class="card-body">
+                        {{-- Refund Section --}}
+                        @if($order->status == 'expired' && $order->user_id == auth()->id())
+                            @if(!$order->refundRequest)
+                                <div class="alert alert-warning border-0 shadow-sm mb-4">
+                                    <p class="mb-2 small font-weight-bold">نعتذر منك، لم يتم قبول طلبك خلال 24 ساعة. يمكنك طلب استرداد
+                                        المبلغ الآن.</p>
+                                    <a href="{{ route('refunds.create', $order->id) }}"
+                                        class="btn btn-warning btn-sm btn-block fw-bold">
+                                        <i class="bx bx-refresh"></i> طلب استرداد المبلغ
+                                    </a>
+                                </div>
+                            @else
+                                <div class="alert alert-success border-0 shadow-sm mb-4">
+                                    <p class="mb-0 small font-weight-bold">لقد أرسلت طلب استرداد. حالة الطلب:
+                                        <strong>
+                                            @if($order->refundRequest->status == 'pending') قيد المراجعة
+                                            @elseif($order->refundRequest->status == 'processed') تم التحويل
+                                            @else مرفوض @endif
+                                        </strong>
+                                    </p>
+                                </div>
+                            @endif
+                        @endif
+                        {{-- تقييم AI (ظاهر للجميع ومن ضمنهم الخبير للاعتماد) --}}
+                        <div class="mb-4">
+                            <h6 class="font-weight-bold d-flex align-items-center gap-2 mb-3">
+                                <span class="avatar avatar-sm br-7 bg-primary-transparent text-primary"><i
+                                        class="fas fa-brain"></i> AI</span>
+                                تقييم الذكاء الاصطناعي
+                            </h6>
+                            @if($order->ai_price)
+                                <div class="evaluation-result">
+                                    <div class="h4 font-weight-bold text-primary mb-1">{{ number_format($order->ai_price, 2) }} SAR
+                                    </div>
+                                    <div class="small text-muted">نطاق السعر: {{ number_format($order->ai_min_price, 2) }} -
+                                        {{ number_format($order->ai_max_price, 2) }}
+                                    </div>
+                                    @php
+                                        $confPct = round(($order->ai_confidence ?? 0) * 100);
+                                        $confColor = $confPct >= 70 ? 'success' : ($confPct >= 50 ? 'warning' : 'danger');
+                                    @endphp
+                                    <div class="badge bg-{{ $confColor }}-transparent text-{{ $confColor }} mt-2">ثقة:
+                                        {{ $confPct }}%
+                                    </div>
+                                    <hr class="my-2 border-top-0 border-light">
+                                    <div class="reasoning-html-content text-dark">
+                                        @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
+                                            {!! \Illuminate\Support\Str::markdown((string) $order->ai_reasoning) !!}
+                                        @else
+                                            {!! $order->ai_reasoning !!}
+                                        @endif
+                                    </div>
+
+                                    @if(is_array($order->ai_features) && count($order->ai_features) > 0)
+                                        <hr class="my-2 border-top-0 border-light">
+                                        <h6 class="font-weight-bold text-primary mb-3">
+                                            <i class="bx bx-grid-alt"></i> التحليل التفصيلي للسلعة:
+                                        </h6>
+                                        @php
+                                            $isCards = isset($order->ai_features[0]['icon']);
+                                        @endphp
+                                        @if($isCards)
+                                            <div class="row g-2">
+                                                @foreach($order->ai_features as $card)
+                                                    <div class="col-6">
+                                                        <div
+                                                            style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:12px 10px;text-align:center;height:100%;">
+                                                            <div style="font-size:1.8rem;margin-bottom:6px;">{{ $card['icon'] ?? '📌' }}</div>
+                                                            <div style="font-size:0.72rem;color:#888;font-weight:600;margin-bottom:4px;">
+                                                                {{ $card['title'] ?? '' }}
+                                                            </div>
+                                                            <div style="font-size:0.95rem;font-weight:800;color:#1a1a1a;margin-bottom:4px;">
+                                                                {{ $card['value'] ?? '-' }}
+                                                            </div>
+                                                            @if(!empty($card['description']))
+                                                                <div style="font-size:0.7rem;color:#aaa;line-height:1.3;">{{ $card['description'] }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            {{-- عرض قديم كـ tags للطلبات القديمة --}}
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($order->ai_features as $feature)
+                                                    <span class="badge bg-light text-dark border p-2 mb-1 mr-1" style="font-size: 0.9rem;">
+                                                        <i class="bx bx-check-circle text-success align-middle"></i> {{ $feature }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                            @else
+                                <div class="text-center py-3 bg-light rounded">
+                                    <p class="text-muted mb-0 small italic">لم يتم إجراء تقييم AI بعد</p>
+                                    @hasanyrole('admin|superadmin')
                                     <form method="POST" action="{{ route('orders.ai.evaluate', $order->id) }}">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-primary mt-2">
                                             <i class="fas fa-play"></i> تشغيل تقييم AI الآن
                                         </button>
                                     </form>
-                                @endhasanyrole
-                            </div>
-                        @endif
+                                    @endhasanyrole
+                                </div>
+                            @endif
 
-                        {{-- زرار إعادة تقييم AI دايماً ظاهر للأدمن --}}
-                        @hasanyrole('admin|superadmin')
+                            {{-- زرار إعادة تقييم AI دايماً ظاهر للأدمن --}}
+                            @hasanyrole('admin|superadmin')
                             @if($order->ai_price)
                                 <div class="mt-3 text-center">
                                     <form method="POST" action="{{ route('orders.ai.evaluate', $order->id) }}"
-                                          onsubmit="return confirm('سيتم إعادة تقييم الطلب بالذكاء الاصطناعي وستُحدَّث النتيجة. هل أنت متأكد؟')">
+                                        onsubmit="return confirm('سيتم إعادة تقييم الطلب بالذكاء الاصطناعي وستُحدَّث النتيجة. هل أنت متأكد؟')">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-warning">
                                             <i class="fas fa-sync-alt"></i>
@@ -561,121 +633,226 @@
                                     </form>
                                 </div>
                             @endif
-                        @endhasanyrole
-                    </div>
-                    @endunless
+                            @endhasanyrole
+                        </div>
 
-                    {{-- تقييم الخبير (عرض) --}}
-                    <div>
-                        <h6 class="font-weight-bold d-flex align-items-center gap-2 mb-3">
-                            <span class="avatar avatar-sm br-7 bg-warning-transparent text-warning"><i class="bx bx-user"></i></span>
-                            تقييم الخبير الحالي
-                        </h6>
-                        @if($order->expert_price)
-                            <div class="evaluation-result border-warning-transparent bg-warning-transparent">
-                                <div class="h4 font-weight-bold text-warning mb-1">{{ number_format($order->expert_price, 2) }} SAR</div>
-                                <div class="small text-muted">نطاق السعر: {{ number_format($order->expert_min_price, 2) }} - {{ number_format($order->expert_max_price, 2) }}</div>
-                                <hr class="my-2 border-top-0 border-light">
-                                <div class="reasoning-html-content text-dark">
-                                    @if(!preg_match('/<[a-z][\s\S]*>/i', $order->expert_reasoning))
-                                        {!! \Illuminate\Support\Str::markdown((string)$order->expert_reasoning) !!}
-                                    @else
-                                        {!! $order->expert_reasoning !!}
-                                    @endif
-                                </div>
-                            </div>
-                        @else
-                            <div class="text-center py-3 bg-light rounded">
-                                <p class="text-muted mb-0 small italic">بانتظار تقييم الخبير</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            {{-- فورم الخبير (فقط إذا كان المستخدم خبيراً) --}}
-            @if(auth()->user()->hasRole('expert'))
-                <div class="card order-card" style="border: 2px solid #28a745;">
-                    <div class="card-header bg-success-transparent border-bottom-0 pb-0">
-                        <h5 class="text-success font-weight-bold mb-0">
-                            <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك كخبير
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
-                            @csrf
-                            <div class="mb-4">
-                                <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span class="text-danger">*</span></label>
-                                <input type="number" name="expert_price" class="form-control form-control-lg border-success text-success font-weight-bold" 
-                                    style="font-size: 1.5rem; text-align: center; background: #f4fdf6;"
-                                    step="0.01" min="0" value="{{ old('expert_price', $order->expert_price ?? $order->total_price) }}" required>
-                            </div>
-
-                            <div class="row mb-4">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
-                                    <input type="number" name="expert_min_price" class="form-control bg-light" 
-                                        step="0.01" min="0" value="{{ old('expert_min_price', $order->expert_min_price ?? $order->expert_price * 0.8) }}">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
-                                    <input type="number" name="expert_max_price" class="form-control bg-light" 
-                                        step="0.01" min="0" value="{{ old('expert_max_price', $order->expert_max_price ?? $order->expert_price * 1.2) }}">
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span class="text-danger">*</span></label>
-                                <textarea name="expert_reasoning" class="form-control bg-light" rows="5" 
-                                    placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)" required>{{ old('expert_reasoning', $order->expert_reasoning) }}</textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm" style="font-size: 1.1rem; padding: 12px;">
-                                <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> اعتماد التقييم وإرساله
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endif
-
-            {{-- اعتماد تقييم ثمن (للأدمن فقط) --}}
-            @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
-                <div class="card order-card border-primary">
-                    <div class="card-header bg-primary-transparent">
-                        <h5 class="text-primary"><i class="bx bx-badge-check text-primary"></i> اعتماد السعر النهائي (ثمن)</h5>
-                    </div>
-                    <div class="card-body">
-                        @if($order->thamn_price)
-                            <div class="evaluation-result bg-primary-transparent border-primary">
-                                <div class="h3 font-weight-bold text-primary mb-1">{{ number_format($order->thamn_price, 2) }} SAR</div>
-                                <div class="small text-muted mb-2">السعر النهائي المعتمد للمستخدم</div>
-                                @if($order->thamn_reasoning)
+                        {{-- تقييم الخبير (عرض) --}}
+                        <div>
+                            <h6 class="font-weight-bold d-flex align-items-center gap-2 mb-3">
+                                <span class="avatar avatar-sm br-7 bg-warning-transparent text-warning"><i
+                                        class="bx bx-user"></i></span>
+                                تقييم الخبير الحالي
+                            </h6>
+                            @if($order->expert_price)
+                                <div class="evaluation-result border-warning-transparent bg-warning-transparent">
+                                    <div class="h4 font-weight-bold text-warning mb-1">{{ number_format($order->expert_price, 2) }}
+                                        SAR</div>
+                                    <div class="small text-muted">نطاق السعر: {{ number_format($order->expert_min_price, 2) }} -
+                                        {{ number_format($order->expert_max_price, 2) }}
+                                    </div>
+                                    <hr class="my-2 border-top-0 border-light">
                                     <div class="reasoning-html-content text-dark">
-                                        @if(!preg_match('/<[a-z][\s\S]*>/i', $order->thamn_reasoning))
-                                            {!! \Illuminate\Support\Str::markdown((string)$order->thamn_reasoning) !!}
+                                        @if(!preg_match('/<[a-z][\s\S]*>/i', $order->expert_reasoning))
+                                            {!! \Illuminate\Support\Str::markdown((string) $order->expert_reasoning) !!}
                                         @else
-                                            {!! $order->thamn_reasoning !!}
+                                            {!! $order->expert_reasoning !!}
                                         @endif
                                     </div>
-                                @endif
-                                <div class="mt-2 small text-muted">بواسطة: {{ $order->thamnUser->first_name ?? '-' }}</div>
-                            </div>
-                        @else
-                            <form method="POST" action="{{ route('orders.thamn.evaluate', $order->id) }}">
-                                @csrf
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted">ملاحظات الاعتماد (اختياري)</label>
-                                    <textarea name="thamn_reasoning" class="form-control" rows="2" placeholder="ملاحظة تظهر في التقرير النهائي..."></textarea>
                                 </div>
-                                <button class="btn btn-primary btn-block">
-                                    ✔ اعتماد تقييم ثمن النهائي
-                                </button>
-                            </form>
-                        @endif
+                            @else
+                                <div class="text-center py-3 bg-light rounded">
+                                    <p class="text-muted mb-0 small italic">بانتظار تقييم الخبير</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            @endif
-        </div>
+
+                {{-- فورم الخبير (فقط إذا كان المستخدم خبيراً) --}}
+                @if(auth()->user()->hasRole('expert'))
+                    <div class="card order-card" style="border: 2px solid #28a745;">
+                        <div class="card-header bg-success-transparent border-bottom-0 pb-0">
+                            <h5 class="text-success font-weight-bold mb-0">
+                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i>
+                                {{ $order->evaluation_type === 'ai' ? 'مراجعة واعتماد تقييم الذكاء الاصطناعي' : 'ضع تقييمك كخبير' }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($order->evaluation_type === 'ai' && $order->ai_price)
+                                {{-- ملخص قيم الـ AI للخبير قبل الاعتماد --}}
+                                <div class="alert alert-info border-0 mb-4" style="direction:rtl; background:#e8f4fd;">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">السعر المقترح (AI)</div>
+                                            <div class="h5 text-primary font-weight-bold mb-0">{{ number_format($order->ai_price, 0) }}
+                                                <small>SAR</small></div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">الحد الأدنى</div>
+                                            <div class="h5 text-success font-weight-bold mb-0">
+                                                {{ number_format($order->ai_min_price, 0) }} <small>SAR</small></div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="small text-muted mb-1">الحد الأعلى</div>
+                                            <div class="h5 text-warning font-weight-bold mb-0">
+                                                {{ number_format($order->ai_max_price, 0) }} <small>SAR</small></div>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <p class="mb-0 small text-muted">يمكنك اعتماد هذه القيم كما هي أو تعديلها حسب خبرتك. <strong>انسخ
+                                            التقرير</strong> من قسم تقييم الذكاء الاصطناعي أعلاه وضعه في الحقل أدناه أو اكتب تقريرك
+                                        الخاص.</p>
+                                </div>
+                            @endif
+
+                            <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
+                                @csrf
+
+                                {{-- السعر --}}
+                                <div class="mb-4">
+                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span
+                                            class="text-danger">*</span></label>
+                                    @php
+                                        $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
+                                    @endphp
+                                    <input type="number" name="expert_price" id="expert_price_input"
+                                        class="form-control form-control-lg border-success text-success font-weight-bold"
+                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;" step="0.01" min="0"
+                                        value="{{ $formPrice }}" required>
+                                </div>
+
+                                {{-- الحد الأدنى / الأعلى --}}
+                                <div class="row mb-4">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
+                                        @php
+                                            $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: 0));
+                                        @endphp
+                                        <input type="number" name="expert_min_price" class="form-control bg-light" step="0.01"
+                                            min="0" value="{{ $formMin }}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
+                                        @php
+                                            $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: 0));
+                                        @endphp
+                                        <input type="number" name="expert_max_price" class="form-control bg-light" step="0.01"
+                                            min="0" value="{{ $formMax }}">
+                                    </div>
+                                </div>
+
+                                {{-- سبب التقييم (Summernote) --}}
+                                <div class="mb-4">
+                                    <label class="form-label font-weight-bold text-dark">
+                                        تقرير التقييم والملاحظات <span class="text-danger">*</span>
+                                    </label>
+                                    @php
+                                        $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? '');
+                                    @endphp
+                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control bg-light"
+                                        rows="10" placeholder="اكتب تقريرك الاحترافي هنا..."
+                                        required>{!! $existingReasoning !!}</textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm"
+                                    style="font-size: 1.1rem; padding: 12px;">
+                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i>
+                                    {{ $order->evaluation_type === 'ai' ? 'اعتماد التقييم النهائي وإرساله للعميل' : 'اعتماد التقييم وإرساله' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- اعتماد تقييم ثمن (للأدمن فقط) --}}
+                @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
+                    <div class="card order-card border-primary">
+                        <div class="card-header bg-primary-transparent">
+                            <h5 class="text-primary"><i class="bx bx-badge-check text-primary"></i> اعتماد السعر النهائي (ثمن)</h5>
+                        </div>
+                        <div class="card-body">
+                            @if($order->thamn_price)
+                                <div class="evaluation-result bg-primary-transparent border-primary">
+                                    <div class="h3 font-weight-bold text-primary mb-1">{{ number_format($order->thamn_price, 2) }} SAR
+                                    </div>
+                                    <div class="small text-muted mb-2">السعر النهائي المعتمد للمستخدم</div>
+                                    @if($order->thamn_reasoning)
+                                        <div class="reasoning-html-content text-dark">
+                                            @if(!preg_match('/<[a-z][\s\S]*>/i', $order->thamn_reasoning))
+                                                {!! \Illuminate\Support\Str::markdown((string) $order->thamn_reasoning) !!}
+                                            @else
+                                                {!! $order->thamn_reasoning !!}
+                                            @endif
+                                        </div>
+                                    @endif
+                                    <div class="mt-2 small text-muted">بواسطة: {{ $order->thamnUser->first_name ?? '-' }}</div>
+                                </div>
+                            @else
+                                <form method="POST" action="{{ route('orders.thamn.evaluate', $order->id) }}">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">ملاحظات الاعتماد (اختياري)</label>
+                                        <textarea name="thamn_reasoning" class="form-control" rows="2"
+                                            placeholder="ملاحظة تظهر في التقرير النهائي..."></textarea>
+                                    </div>
+                                    <button class="btn btn-primary btn-block">
+                                        ✔ اعتماد تقييم ثمن النهائي
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </div>
         @endif
     </div>
+
+    <!-- Summernote Initialization -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var editor = $('#expert_reasoning_editor');
+            if (!editor.length) return;
+
+                // الخطوة 1: هل عند الخبير reasoning سابق محفوظ؟
+                var existingContent = editor.val().trim();
+
+                // الخطوة 2: لو لم يكتب الخبير شيئاً بعد، نسبق المحرر بتقرير الـ AI
+                @if(auth()->user()->hasRole('expert') && empty($order->expert_reasoning) && !empty($order->ai_reasoning))
+                    try {
+                        // JSON_HEX_TAG يحوّل < و > لـ \u003C و \u003E لمنع كسر الـ script
+                        var aiRaw = {!! json_encode((string) $order->ai_reasoning, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) !!};
+                        var tmp = document.createElement('div');
+                        tmp.innerHTML = aiRaw;
+                        // نزيل جداول الإحصائيات (بطاقات الأرقام) ونُبقي على النص التحليلي
+                        tmp.querySelectorAll('table').forEach(function(t) { t.remove(); });
+                        var cleaned = tmp.innerHTML.trim();
+                        if (cleaned && cleaned.length > 30) {
+                            existingContent = cleaned;
+                        }
+                    } catch(e) { console.warn('AI reasoning parse error:', e); }
+                @endif
+
+                // الخطوة 3: تهيئة محرر Summernote
+                editor.summernote({
+                    height: 280,
+                    toolbar: [
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['para', ['ul', 'ol']],
+                        ['view', ['fullscreen', 'codeview']]
+                    ],
+                    callbacks: {
+                        onChange: function(contents) {
+                            editor.val(contents);
+                        }
+                    }
+                });
+
+                // الخطوة 4: تعيين المحتوى بعد التهيئة
+                if (existingContent.length > 0) {
+                    editor.summernote('code', existingContent);
+                }
+            });
+        </script>
 @endsection
