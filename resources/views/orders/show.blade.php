@@ -2,155 +2,397 @@
 @section('title', 'تفاصيل الطلب #' . $order->id)
 
 @section('css')
-    <style>
-        .order-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            background: #fff;
+<style>
+    /* ===================================================
+       CRITICAL: Prevent content from bleeding under sidebar
+    =================================================== */
+    /* Ensure all elements inside the grid respect column widths */
+    .col-12 .expert-welcome-banner {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    /* Fix flex overflow on Bootstrap columns in RTL */
+    .row > [class*="col"] {
+        min-width: 0;
+    }
+    /* Force right padding on desktop to avoid sidebar overlap if template fails */
+    @media (min-width: 768px) {
+        .expert-desktop-padding {
+            padding-right: 250px !important;
         }
+    }
+    /* Force full-width tab panels */
+    .expert-tab-panel,
+    .expert-tabs-nav {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
 
-        .order-card .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid #f0f0f0;
-            padding: 18px 25px;
-            border-radius: 15px 15px 0 0;
-        }
+    /* ================================================
+       BASE TYPOGRAPHY & DIRECTION
+    ================================================ */
+    body, h1, h2, h3, h4, h5, h6, .btn, .alert, input, textarea, label, span, div, p {
+        font-family: 'Cairo', sans-serif !important;
+    }
 
-        .order-card .card-header h5 {
-            margin: 0;
-            font-weight: 700;
-            color: #1a1a1a;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    /* ================================================
+       ENTRANCE ANIMATIONS
+    ================================================ */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInLeft {
+        from { opacity: 0; transform: translateX(-20px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+        50%       { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    }
+    @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0px); }
+        50%       { transform: translateY(-8px); }
+    }
 
-        .info-label {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 3px;
-        }
+    .anim-1 { animation: fadeInUp 0.6s ease both; animation-delay: 0.05s; }
+    .anim-2 { animation: fadeInUp 0.6s ease both; animation-delay: 0.15s; }
+    .anim-3 { animation: fadeInUp 0.6s ease both; animation-delay: 0.25s; }
+    .anim-4 { animation: fadeInUp 0.6s ease both; animation-delay: 0.35s; }
 
-        .info-value {
-            font-weight: 600;
-            color: #333;
-        }
+    /* ================================================
+       EXPERT WELCOME BANNER
+    ================================================ */
+    .expert-welcome-banner {
+        background: linear-gradient(135deg, #1a3a6b 0%, #1565C0 50%, #0d47a1 100%);
+        border-radius: 18px;
+        padding: 30px 35px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(21, 101, 192, 0.3);
+        direction: rtl;
+        text-align: right;
+    }
+    .expert-welcome-banner::before {
+        content: '⚖️';
+        position: absolute;
+        left: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 6rem;
+        opacity: 0.08;
+        animation: floatIcon 4s ease-in-out infinite;
+    }
+    .expert-welcome-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+    .expert-welcome-banner .welcome-title {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .expert-welcome-banner .welcome-subtitle {
+        color: rgba(255,255,255,0.80);
+        font-size: 0.98rem;
+        font-weight: 500;
+        margin-bottom: 18px;
+        line-height: 1.7;
+    }
+    .banner-order-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: #fff;
+        border-radius: 50px;
+        padding: 6px 18px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        backdrop-filter: blur(8px);
+    }
+    .banner-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 8px 14px;
+        color: rgba(255,255,255,0.9);
+        font-size: 0.85rem;
+        margin-left: 8px;
+        margin-top: 10px;
+        border: 1px solid rgba(255,255,255,0.15);
+    }
 
-        .product-img-container {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #eee;
-            transition: transform 0.3s ease;
-        }
+    /* ================================================
+       ORDER CARD (BASE)
+    ================================================ */
+    .order-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin-bottom: 24px;
+        background: #fff;
+    }
+    .order-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px 24px 14px;
+        border-radius: 16px 16px 0 0;
+    }
+    .order-card .card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .product-img-container:hover {
-            transform: scale(1.02);
-        }
+    /* ================================================
+       SPEC CARDS (مواصفات المنتج)
+    ================================================ */
+    .spec-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 16px;
+        border: 1px solid #ebebeb;
+        border-right: 4px solid #c1953e;
+        transition: all 0.3s ease;
+        height: 100%;
+        direction: rtl;
+        text-align: right;
+    }
+    .spec-card:hover {
+        box-shadow: 0 6px 20px rgba(193,149,62,0.1);
+        transform: translateY(-2px);
+        border-right-color: #a67f31;
+    }
+    .spec-card .spec-label {
+        color: #999;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    .spec-card .spec-value {
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 1rem;
+        line-height: 1.3;
+    }
 
-        .product-img-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    /* ================================================
+       PRODUCT IMAGES
+    ================================================ */
+    .product-img-container {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #eee;
+        transition: all 0.3s ease;
+        display: block;
+    }
+    .product-img-container:hover {
+        transform: scale(1.04);
+        border-color: #c1953e;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .product-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-        .status-badge {
-            padding: 6px 15px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
+    /* ================================================
+       STATUS BADGES
+    ================================================ */
+    .status-badge {
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: inline-block;
+    }
 
-        .evaluation-result {
-            background: #fcf9f2;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #e9dfc6;
-        }
+    /* ================================================
+       AI GLASS CARD
+    ================================================ */
+    .ai-glass-card {
+        background: linear-gradient(135deg, #eef6ff 0%, #f8fbff 100%);
+        border-right: 5px solid #1565C0;
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 8px 30px rgba(21, 101, 192, 0.1);
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        direction: rtl;
+        text-align: right;
+    }
+    .ai-glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #1565C0, #42A5F5, #1565C0);
+        background-size: 200% auto;
+        animation: shimmer 3s linear infinite;
+        border-radius: 14px 14px 0 0;
+    }
+    .ai-glass-card .ai-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1565C0;
+        margin-bottom: 4px;
+    }
+    .ai-glass-card .ai-subtitle {
+        font-size: 0.82rem;
+        color: #888;
+        margin-bottom: 16px;
+    }
+    .ai-price-block {
+        text-align: center;
+        padding: 10px 5px;
+    }
+    .ai-price-block .price-label {
+        font-size: 0.75rem;
+        color: #888;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .ai-price-block .price-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+    .ai-price-block .price-currency {
+        font-size: 0.7rem;
+        font-weight: 600;
+        opacity: 0.7;
+        display: block;
+        margin-top: 2px;
+    }
 
-        .expert-form-container {
-            background: #f8fbf9;
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #e0ede5;
-        }
+    /* ================================================
+       EXPERT FORM CARD
+    ================================================ */
+    .expert-form-card .card-header {
+        background: linear-gradient(135deg, #f0fcf4 0%, #ffffff 100%);
+        border-bottom: 1px solid #e0f0e8;
+    }
+    .premium-input {
+        border-radius: 12px;
+        border: 2px solid #d8eee1;
+        padding: 14px 20px;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        text-align: center;
+        font-weight: 700;
+        direction: rtl;
+    }
+    .premium-input:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.12);
+        outline: none;
+    }
+    .price-main-input {
+        font-size: 2.2rem !important;
+        font-weight: 800 !important;
+        color: #28a745 !important;
+        border-radius: 14px !important;
+        border: 3px solid #d8eee1 !important;
+        text-align: center !important;
+        background: linear-gradient(180deg, #f6fef8, #ffffff) !important;
+        max-width: 280px;
+        margin: 0 auto;
+        display: block;
+    }
+    .price-main-input:focus {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 5px rgba(40, 167, 69, 0.15) !important;
+    }
+    .premium-btn {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        border: none;
+        border-radius: 14px;
+        color: white;
+        font-weight: 800;
+        font-size: 1.15rem;
+        padding: 16px;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        animation: pulseGlow 2.5s infinite;
+    }
+    .premium-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
+        color: white;
+        animation: none;
+    }
+    .premium-btn:active {
+        transform: translateY(-1px);
+    }
 
-        .btn-gold {
-            background-color: #c1953e;
-            border-color: #c1953e;
-            color: white;
-            font-weight: 600;
-            padding: 10px 25px;
-            border-radius: 10px;
-        }
+    /* ================================================
+       EVALUATED STATE (read-only)
+    ================================================ */
+    .evaluated-price-box {
+        background: linear-gradient(135deg, #f0fcf4, #ffffff);
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+        border: 2px solid #d4edda;
+    }
+    .evaluated-price-box .big-price {
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #1e7e34;
+        line-height: 1.1;
+    }
 
-        .btn-gold:hover {
-            background-color: #a67f31;
-            border-color: #a67f31;
-            color: white;
-        }
-
-        .table-custom th {
-            background-color: #f8f9fa;
-            font-weight: 700;
-            color: #555;
-            text-align: center;
-        }
-
-        .table-custom td {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .reasoning-html-content {
-            background: #fff;
-            padding: 18px;
-            border-radius: 12px;
-            border-right: 5px solid #c1953e;
-            line-height: 1.8;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-            margin-top: 10px;
-        }
-
-        .reasoning-html-content ul {
-            padding-right: 25px;
-            margin-bottom: 10px;
-        }
-
-        .reasoning-html-content li {
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .reasoning-html-content b,
-        .reasoning-html-content strong {
-            color: #1a1a1a;
-        }
-
-        .reasoning-html-content p {
-            margin-bottom: 10px;
-        }
-
-        .reasoning-html-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        body,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        .btn,
-        .alert {
-            font-family: 'Cairo', sans-serif !important;
-        }
-    </style>
+    /* ================================================
+       MISC
+    ================================================ */
+    .reasoning-html-content {
+        background: #fafafa;
+        padding: 18px 22px;
+        border-radius: 12px;
+        border-right: 5px solid #c1953e;
+        line-height: 1.85;
+        font-size: 0.93rem;
+        direction: rtl;
+        text-align: right;
+    }
+    .reasoning-html-content ul { padding-right: 25px; }
+    .reasoning-html-content li { margin-bottom: 6px; color: #444; }
+    .reasoning-html-content p { margin-bottom: 10px; }
+    .info-label { color: #888; font-size: 0.82rem; margin-bottom: 2px; }
+    .info-value { font-weight: 600; color: #333; }
+    .evaluation-result { background: #fcf9f2; border-radius: 12px; padding: 20px; border: 1px solid #e9dfc6; }
+    .btn-gold { background-color: #c1953e; border-color: #c1953e; color: white; font-weight: 600; padding: 10px 25px; border-radius: 10px; }
+    .btn-gold:hover { background-color: #a67f31; border-color: #a67f31; color: white; }
+    .table-custom th { background-color: #f8f9fa; font-weight: 700; color: #555; }
+    .table-custom td { vertical-align: middle; }
+</style>
 @endsection
 
 @section('page-header')
@@ -192,213 +434,277 @@
         </div>
     @endif
 
-    <div class="row">
+    <div class="row expert-desktop-padding">
         @if(auth()->user()->hasRole('expert'))
-            {{-- تخطيط الخبير --}}
-            <div class="col-lg-7">
-                {{-- تفاصيل الطلب والمواصفات --}}
-                <div class="card order-card">
-                    <div class="card-header">
-                        <h5><i class="bx bx-car text-warning"></i> مواصفات الطلب</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-custom mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th class="text-right" width="30%">رقم الطلب</th>
-                                        <td class="text-right fw-bold text-primary">#{{ $order->id }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-right">تاريخ الطلب</th>
-                                        <td class="text-right">{{ $order->created_at->format('Y-m-d H:i') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-right">هل يمكن إرساله للسوق؟</th>
-                                        <td class="text-right">
-                                            @if($order->can_send_to_market)
-                                                <span class="badge badge-success"><i class="bx bx-check"></i> نعم (تثمين
-                                                    وبيع)</span>
-                                            @else
-                                                <span class="badge badge-secondary"><i class="bx bx-x"></i> لا (تثمين فقط)</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @foreach($order->details as $index => $detail)
-                                        <tr>
-                                            <th class="text-right">{{ $detail->question->question_ar ?? '-' }}</th>
-                                            <td class="text-right font-weight-bold text-dark">
-                                                {{ $detail->option->option_ar ?? $detail->value ?? '-' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+            {{-- ==========================================
+                 EXPERT WELCOME BANNER (Full Width)
+            ============================================ --}}
+            <div class="col-12 anim-1 mb-4">
+                <div class="expert-welcome-banner">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap">
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="welcome-title">🌟 أهلاً خبيرنا المميز!</div>
+                            <div class="welcome-subtitle">
+                                وصلك طلب تثمين — راجع المواصفات والصور ثم اعتمد سعرك.
+                                <br>تقييمك سيُرسل فوراً وسيكون الأساس في تقرير ثمن الرسمي.
+                            </div>
+                            <div class="mt-3">
+                                <span class="banner-order-badge">
+                                    <i class="bx bx-receipt"></i> طلب رقم: #{{ $order->id }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- الصور --}}
-                <div class="card order-card mt-4">
-                    <div class="card-header">
-                        <h5><i class="bx bx-images text-warning"></i> صور المنتج المرفقة</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            @forelse($order->files->where('type', 'image') as $image)
-                                <div class="col-md-4 col-6">
-                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank"
-                                        class="product-img-container d-block">
-                                        <img src="{{ asset('storage/' . $image->file_path) }}" alt="Product Image">
-                                    </a>
-                                </div>
-                            @empty
-                                <div class="col-12 text-center py-4">
-                                    <img src="{{ URL::asset('assets/img/Cars-result.jpeg') }}" width="250"
-                                        class="mb-3 rounded shadow-sm border">
-                                    <p class="text-muted font-weight-bold">العميل لم يرفق صور، تم إرفاق صورة توضيحية للفئة.</p>
-                                </div>
-                            @endforelse
+                        <div class="d-none d-md-flex flex-column align-items-end ml-3" style="gap:8px; flex-shrink:0;">
+                            <span class="banner-step"><i class="bx bx-search-alt"></i> ١ — المواصفات</span>
+                            <span class="banner-step"><i class="bx bx-images"></i> ٢ — الصور</span>
+                            <span class="banner-step"><i class="bx bx-badge-check"></i> ٣ — الاعتماد</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-5">
-                @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
-                    {{-- عرض التقييم الحالي (قراءة فقط) --}}
-                    <div class="card order-card shadow-sm border" style="border: 2px solid #ffc107 !important;">
-                        <div class="card-header bg-warning-transparent border-bottom-0 pb-0">
-                            <h5 class="text-warning font-weight-bold mb-0">
-                                <i class="bx bx-check-shield text-warning" style="font-size: 1.5rem; vertical-align: middle;"></i>
-                                تقييمك المعتمد لهذا المنتج
-                            </h5>
+            {{-- ==========================================
+                 EXPERT TABBED INTERFACE (Single Column)
+            ============================================ --}}
+            <div class="col-12 anim-2">
+                <div class="card order-card" style="border-radius: 18px; overflow: hidden;">
+
+                    {{-- Tab Navigation --}}
+                    <div class="expert-tabs-nav" style="
+                        display: flex;
+                        background: #f8f9fa;
+                        border-bottom: 2px solid #e9ecef;
+                        direction: rtl;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                    ">
+                        <button class="expert-tab-btn active" onclick="switchTab('specs', this)" style="
+                            flex: 1; min-width: 120px; padding: 14px 10px;
+                            background: none; border: none; border-bottom: 3px solid transparent;
+                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
+                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
+                        ">
+                            <i class="bx bx-list-check" style="font-size: 1.1rem; vertical-align: middle;"></i>
+                            المواصفات
+                        </button>
+                        <button class="expert-tab-btn" onclick="switchTab('photos', this)" style="
+                            flex: 1; min-width: 120px; padding: 14px 10px;
+                            background: none; border: none; border-bottom: 3px solid transparent;
+                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
+                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
+                        ">
+                            <i class="bx bx-camera" style="font-size: 1.1rem; vertical-align: middle;"></i>
+                            الصور
+                            @php $imgCount = $order->files->where('type','image')->count(); @endphp
+                            @if($imgCount > 0)
+                                <span style="background:#1565C0; color:#fff; border-radius:50px; padding: 1px 8px; font-size:0.75rem; margin-right:4px;">{{ $imgCount }}</span>
+                            @endif
+                        </button>
+                        <button class="expert-tab-btn" onclick="switchTab('evaluate', this)" style="
+                            flex: 1; min-width: 120px; padding: 14px 10px;
+                            background: none; border: none; border-bottom: 3px solid transparent;
+                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
+                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
+                        ">
+                            <i class="bx bx-badge-check" style="font-size: 1.1rem; vertical-align: middle;"></i>
+                            @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
+                                التقييم المعتمد ✅
+                            @else
+                                اعتماد التقييم
+                            @endif
+                        </button>
+                    </div>
+
+                    {{-- TAB 1: Specifications --}}
+                    <div id="tab-specs" class="expert-tab-panel" style="display: block; direction: rtl; padding: 20px;">
+                        <div class="row">
+                            {{-- Static specs --}}
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="spec-card">
+                                    <div class="spec-label">رقم الطلب</div>
+                                    <div class="spec-value text-primary">#{{ $order->id }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="spec-card">
+                                    <div class="spec-label">تاريخ الطلب</div>
+                                    <div class="spec-value">{{ $order->created_at->format('Y-m-d H:i') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="spec-card">
+                                    <div class="spec-label">إمكانية البيع</div>
+                                    <div class="spec-value">
+                                        @if($order->can_send_to_market)
+                                            <span class="text-success"><i class="bx bx-check-circle"></i> نعم، تثمين وبيع</span>
+                                        @else
+                                            <span class="text-secondary"><i class="bx bx-info-circle"></i> تثمين فقط</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- Dynamic specs --}}
+                            @foreach($order->details as $detail)
+                                <div class="col-6 col-md-4 mb-3">
+                                    <div class="spec-card">
+                                        <div class="spec-label">{{ $detail->question->question_ar ?? '-' }}</div>
+                                        <div class="spec-value">{{ $detail->option->option_ar ?? $detail->value ?? '-' }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                        <div class="card-body">
-                            <div class="mb-4 text-center">
-                                <span class="text-muted d-block mb-1">السعر الذي أوصيت به</span>
-                                <h2 class="text-warning font-weight-bold m-0" style="font-size: 2.5rem;">
-                                    {{ number_format($order->expert_price, 2) }} <span style="font-size: 1.2rem;">SAR</span>
-                                </h2>
-                            </div>
-
-                            <div class="row mb-4 text-center">
-                                <div class="col-6 border-left">
-                                    <span class="text-muted small d-block mb-1">الحد الأدنى للسعر</span>
-                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_min_price, 2) }}
-                                        SAR</span>
-                                </div>
-                                <div class="col-6">
-                                    <span class="text-muted small d-block mb-1">الحد الأعلى للسعر</span>
-                                    <span class="font-weight-bold text-dark">{{ number_format($order->expert_max_price, 2) }}
-                                        SAR</span>
-                                </div>
-                            </div>
-
-                            <div class="mb-4 text-right" style="direction: rtl;">
-                                <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات:</label>
-                                <div class="p-3 bg-light rounded text-dark" style="white-space: pre-line;">
-                                    {{ $order->expert_reasoning }}
-                                </div>
-                            </div>
-
-                            <div class="alert alert-info text-center border-0 mb-0" style="direction: rtl;">
-                                <i class="bx bx-info-circle ml-1"></i> لقد قمت بتقديم هذا التقييم مسبقاً. ولا يمكن تعديله إلا إذا
-                                طلب العميل إعادة تقييم المنتج.
-                            </div>
+                        {{-- Quick action button to go to evaluate --}}
+                        <div class="text-center mt-2">
+                            <button class="btn btn-outline-primary" onclick="switchTab('photos', document.querySelectorAll('.expert-tab-btn')[1])" style="border-radius:10px; font-weight:700; padding: 10px 30px;">
+                                <i class="bx bx-images"></i> التالي: مراجعة الصور
+                            </button>
                         </div>
                     </div>
-                @else
-                    {{-- نموذج التقييم --}}
-                    <div class="card order-card" style="border: 2px solid #28a745;">
-                        <div class="card-header bg-success-transparent border-bottom-0 pb-0">
-                            <h5 class="text-success font-weight-bold mb-0">
-                                <i class="bx bx-edit text-success" style="font-size: 1.5rem; vertical-align: middle;"></i> ضع تقييمك
-                                كخبير
-                            </h5>
+
+                    {{-- TAB 2: Photos --}}
+                    <div id="tab-photos" class="expert-tab-panel" style="display: none; direction: rtl; padding: 20px;">
+                        <div class="row">
+                            @forelse($order->files->where('type', 'image') as $image)
+                                <div class="col-6 col-sm-4 col-md-3 mb-3">
+                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank" class="product-img-container">
+                                        <img src="{{ asset('storage/' . $image->file_path) }}" alt="صورة المنتج">
+                                    </a>
+                                </div>
+                            @empty
+                                <div class="col-12 text-center py-5" style="background:#f9f9f9; border-radius:12px; border: 2px dashed #ddd;">
+                                    <i class="bx bx-image-alt text-muted" style="font-size: 3.5rem;"></i>
+                                    <p class="text-muted mt-2 font-weight-bold mb-0">لم يرفق العميل صور للمنتج</p>
+                                </div>
+                            @endforelse
                         </div>
-                        <div class="card-body">
+                        <div class="text-center mt-2">
+                            <button class="btn btn-success" onclick="switchTab('evaluate', document.querySelectorAll('.expert-tab-btn')[2])" style="border-radius:10px; font-weight:700; padding: 10px 30px;">
+                                <i class="bx bx-badge-check"></i> التالي: اعتماد التقييم
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- TAB 3: Evaluation --}}
+                    <div id="tab-evaluate" class="expert-tab-panel" style="display: none; direction: rtl; padding: 20px;">
+
+                        @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
+                            {{-- Evaluated: Read-only View --}}
+                            <div class="text-center mb-4">
+                                <i class="bx bxs-check-shield text-success" style="font-size: 3rem;"></i>
+                                <h5 class="font-weight-bold text-success mt-2">تم اعتماد التقييم بنجاح</h5>
+                            </div>
+                            <div class="evaluated-price-box mb-4">
+                                <div class="text-muted mb-1" style="font-size: 0.85rem; font-weight: 600;">السعر المعتمد</div>
+                                <div class="big-price">{{ number_format($order->expert_price, 0) }}</div>
+                                <div class="text-muted" style="font-size: 0.9rem; font-weight: 600;">ريال سعودي (SAR)</div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <div class="spec-card" style="border-right: 4px solid #28a745;">
+                                        <div class="spec-label">الحد الأدنى</div>
+                                        <div class="spec-value text-success">{{ number_format($order->expert_min_price, 0) }} <small>SAR</small></div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="spec-card" style="border-right: 4px solid #ffc107;">
+                                        <div class="spec-label">الحد الأعلى</div>
+                                        <div class="spec-value text-warning">{{ number_format($order->expert_max_price, 0) }} <small>SAR</small></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label font-weight-bold text-dark mb-2">تقرير التقييم:</label>
+                                <div class="reasoning-html-content">{!! $order->expert_reasoning !!}</div>
+                            </div>
+
+                        @else
+                            {{-- Form: Evaluate --}}
+
+                            {{-- AI Glass Card (only if AI evaluation) --}}
                             @if($order->evaluation_type === 'ai' && $order->ai_price)
-                                {{-- ملخص قيم الـ AI للخبير قبل الاعتماد --}}
-                                <div class="alert alert-info border-0 mb-4" style="direction:rtl; background:#e8f4fd;">
-                                    <div class="row text-center">
+                                <div class="ai-glass-card">
+                                    <div class="ai-title">
+                                        <i class="bx bx-bot" style="font-size: 1.2rem; vertical-align: middle;"></i>
+                                        تقرير الذكاء الاصطناعي
+                                    </div>
+                                    <div class="ai-subtitle">تمت التعبئة تلقائياً — يمكنك الاعتماد أو التعديل</div>
+                                    <div class="row">
                                         <div class="col-4">
-                                            <div class="small text-muted mb-1">السعر المقترح (AI)</div>
-                                            <div class="h5 text-primary font-weight-bold mb-0">{{ number_format($order->ai_price, 0) }}
-                                                <small>SAR</small></div>
+                                            <div class="ai-price-block" style="border-left: 1px solid #d0e0f5;">
+                                                <div class="price-label">المقترح</div>
+                                                <div class="price-value text-primary">{{ number_format($order->ai_price, 0) }}</div>
+                                                <span class="price-currency">SAR</span>
+                                            </div>
                                         </div>
                                         <div class="col-4">
-                                            <div class="small text-muted mb-1">الحد الأدنى</div>
-                                            <div class="h5 text-success font-weight-bold mb-0">
-                                                {{ number_format($order->ai_min_price, 0) }} <small>SAR</small></div>
+                                            <div class="ai-price-block">
+                                                <div class="price-label">الأدنى</div>
+                                                <div class="price-value text-success">{{ number_format($order->ai_min_price, 0) }}</div>
+                                                <span class="price-currency">SAR</span>
+                                            </div>
                                         </div>
                                         <div class="col-4">
-                                            <div class="small text-muted mb-1">الحد الأعلى</div>
-                                            <div class="h5 text-warning font-weight-bold mb-0">
-                                                {{ number_format($order->ai_max_price, 0) }} <small>SAR</small></div>
+                                            <div class="ai-price-block" style="border-right: 1px solid #d0e0f5;">
+                                                <div class="price-label">الأعلى</div>
+                                                <div class="price-value text-warning">{{ number_format($order->ai_max_price, 0) }}</div>
+                                                <span class="price-currency">SAR</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <hr class="my-2">
-                                    <p class="mb-0 small text-muted">يمكنك اعتماد هذه القيم كما هي أو تعديلها حسب خبرتك. تم تعبئة البيانات تلقائياً ببيانات الذكاء الاصطناعي لتسهيل الاعتماد.</p>
                                 </div>
                             @endif
 
+                            {{-- Expert Evaluation Form --}}
                             <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
                                 @csrf
-                                <div class="mb-4 text-right" style="direction: rtl;">
-                                    <label class="form-label font-weight-bold text-dark">السعر الموصى به (SAR) <span
-                                            class="text-danger">*</span></label>
+
+                                {{-- Main Price --}}
+                                <div class="mb-4 text-center">
+                                    <label class="form-label font-weight-bold text-dark d-block mb-2">السعر الموصى به <span class="text-danger">*</span></label>
                                     @php
                                         $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
                                     @endphp
                                     <input type="number" name="expert_price"
-                                        class="form-control form-control-lg border-success text-success font-weight-bold"
-                                        style="font-size: 1.5rem; text-align: center; background: #f4fdf6;" step="0.01" min="0"
+                                        class="form-control price-main-input"
+                                        step="0.01" min="0"
                                         value="{{ $formPrice }}" required>
+                                    <small class="text-muted d-block mt-1">ريال سعودي (SAR)</small>
                                 </div>
 
-                                <div class="row mb-4 text-right" style="direction: rtl;">
+                                {{-- Min / Max --}}
+                                <div class="row mb-4">
                                     <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى للسعر</label>
-                                        @php
-                                            $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: ''));
-                                        @endphp
-                                        <input type="number" name="expert_min_price" class="form-control bg-light" step="0.01"
-                                            min="0"
-                                            value="{{ $formMin }}">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى</label>
+                                        @php $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: '')); @endphp
+                                        <input type="number" name="expert_min_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMin }}">
                                     </div>
                                     <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى للسعر</label>
-                                        @php
-                                            $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: ''));
-                                        @endphp
-                                        <input type="number" name="expert_max_price" class="form-control bg-light" step="0.01"
-                                            min="0"
-                                            value="{{ $formMax }}">
+                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى</label>
+                                        @php $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: '')); @endphp
+                                        <input type="number" name="expert_max_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMax }}">
                                     </div>
                                 </div>
 
-                                <div class="mb-4 text-right" style="direction: rtl;">
-                                    <label class="form-label font-weight-bold text-dark">سبب التقييم والملاحظات <span
-                                            class="text-danger">*</span></label>
-                                    @php
-                                        $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? '');
-                                    @endphp
-                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control bg-light" rows="5"
-                                        placeholder="اكتب بالتفصيل الأسباب التي بنيت عليها تقييمك (حالة السلعة، الموديل، الطلب في السوق...)"
-                                        required>{!! $existingReasoning !!}</textarea>
+                                {{-- Reasoning --}}
+                                <div class="mb-4">
+                                    <label class="form-label font-weight-bold text-dark">تقرير التقييم والملاحظات <span class="text-danger">*</span></label>
+                                    @php $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? ''); @endphp
+                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control" rows="5"
+                                        placeholder="اكتب الأسباب التي بنيت عليها تقييمك..." required>{!! $existingReasoning !!}</textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-success btn-block btn-lg shadow-sm"
-                                    style="font-size: 1.1rem; padding: 12px;">
-                                    <i class="bx bx-check-circle" style="font-size: 1.2rem; vertical-align: middle;"></i> 
-                                    {{ $order->evaluation_type === 'ai' ? 'اعتماد التقييم وإرساله' : 'اعتماد التقييم وإرساله' }}
+                                {{-- Submit --}}
+                                <button type="submit" class="btn premium-btn btn-block" style="font-size: 1.15rem; padding: 16px;">
+                                    <i class="bx bx-badge-check" style="font-size: 1.3rem; vertical-align: middle;"></i>
+                                    اعتماد التقييم وإرساله للعميل
                                 </button>
                             </form>
-                        </div>
-                    </div>
-                @endif
-            </div>
+                        @endif
+
+                    </div>{{-- end tab-evaluate --}}
+
+                </div>{{-- end card --}}
+            </div>{{-- end col-12 --}}
         @else
             {{-- الجانب الأيمن: بيانات العميل والمنتج --}}
             <div class="col-lg-8">
@@ -776,10 +1082,53 @@
 
             CKEDITOR.replace('expert_reasoning_editor', {
                 language: 'ar',
-                height: 280,
+                height: 180,
                 removePlugins: 'elementspath',
                 resize_enabled: false
             });
+        });
+
+        /* Expert Tab Switching */
+        function switchTab(tabName, clickedBtn) {
+            // Hide all panels
+            document.querySelectorAll('.expert-tab-panel').forEach(function(panel) {
+                panel.style.display = 'none';
+            });
+            // Deactivate all buttons
+            document.querySelectorAll('.expert-tab-btn').forEach(function(btn) {
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.color = '#888';
+                btn.style.background = 'none';
+            });
+            // Show selected panel with animation
+            var panel = document.getElementById('tab-' + tabName);
+            if (panel) {
+                panel.style.display = 'block';
+                panel.style.animation = 'fadeInUp 0.4s ease both';
+            }
+            // Activate clicked button
+            if (clickedBtn) {
+                clickedBtn.style.borderBottomColor = '#1565C0';
+                clickedBtn.style.color = '#1565C0';
+                clickedBtn.style.background = '#f0f5ff';
+            }
+            // If switching to evaluate tab, reinit CKEditor if needed
+            if (tabName === 'evaluate' && typeof CKEDITOR !== 'undefined') {
+                setTimeout(function() {
+                    var inst = CKEDITOR.instances['expert_reasoning_editor'];
+                    if (inst) inst.resize('100%', 180);
+                }, 100);
+            }
+        }
+
+        // Activate the first tab button on page load
+        $(document).ready(function() {
+            var firstBtn = document.querySelector('.expert-tab-btn');
+            if (firstBtn) {
+                firstBtn.style.borderBottomColor = '#1565C0';
+                firstBtn.style.color = '#1565C0';
+                firstBtn.style.background = '#f0f5ff';
+            }
         });
     </script>
 @endsection

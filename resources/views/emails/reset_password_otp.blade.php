@@ -27,33 +27,23 @@
   <meta name="x-apple-disable-message-reformatting">
   <title>{{ $isRtl ? 'إعادة تعيين كلمة المرور – ثمن' : 'Reset Your Password – Thamn' }}</title>
   <style type="text/css">
-    @font-face {
-      font-family: 'Avenir Arabic';
-      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+    }') format('opentype');
       font-weight: 300;
     }
 
-    @font-face {
-      font-family: 'Avenir Arabic';
-      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+    }') format('opentype');
       font-weight: 400;
     }
 
-    @font-face {
-      font-family: 'Avenir Arabic';
-      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+    }') format('opentype');
       font-weight: 500;
     }
 
-    @font-face {
-      font-family: 'Avenir Arabic';
-      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+    }') format('opentype');
       font-weight: 700;
     }
 
-    @font-face {
-      font-family: 'Avenir Arabic';
-      src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+    }') format('opentype');
       font-weight: 900;
     }
   </style>
@@ -85,7 +75,7 @@
       margin: 0;
       padding: 0;
       background-color: #fff7ed;
-      font-family: 'Avenir Arabic', Arial, sans-serif;
+      font-family: 'Cairo', Arial, sans-serif;
     }
 
     @media only screen and (max-width:640px) {

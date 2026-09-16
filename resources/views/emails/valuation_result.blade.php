@@ -8,33 +8,23 @@
     <meta name="x-apple-disable-message-reformatting">
     <title>نتيجة التقييم — تطبيق ثمن</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Avenir Arabic';
-            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Light1.otf") }}') format('opentype');
+        }') format('opentype');
             font-weight: 300;
         }
 
-        @font-face {
-            font-family: 'Avenir Arabic';
-            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Book.otf") }}') format('opentype');
+        }') format('opentype');
             font-weight: 400;
         }
 
-        @font-face {
-            font-family: 'Avenir Arabic';
-            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Medium.otf") }}') format('opentype');
+        }') format('opentype');
             font-weight: 500;
         }
 
-        @font-face {
-            font-family: 'Avenir Arabic';
-            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Heavy.otf") }}') format('opentype');
+        }') format('opentype');
             font-weight: 700;
         }
 
-        @font-face {
-            font-family: 'Avenir Arabic';
-            src: url('{{ asset("assets/fonts/AvenirArabic/AvenirArabic-Black.otf") }}') format('opentype');
+        }') format('opentype');
             font-weight: 900;
         }
 
@@ -65,7 +55,7 @@
             margin: 0;
             padding: 0;
             background-color: #f0ece4;
-            font-family: 'Avenir Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+            font-family: 'Cairo', Arial, sans-serif;
         }
 
         @media only screen and (max-width:620px) {
@@ -130,7 +120,7 @@
                                 </tr>
                             </table>
                             <p style="margin:14px 0 0;font-size:11px;font-weight:700;color:rgba(255,255,255,.9);
-                        letter-spacing:2.5px;text-transform:uppercase;font-family:'Avenir Arabic',Arial,sans-serif;">
+                        letter-spacing:2.5px;text-transform:uppercase;font-family: 'Cairo', Arial, sans-serif;">
                                 نتيجة التقييم — VALUATION RESULT
                             </p>
                         </td>
@@ -146,7 +136,7 @@
                     {{-- ===== BODY ===== --}}
                     <tr>
                         <td class="body-pad"
-                            style="padding:12px 40px 36px;font-family:'Avenir Arabic',Arial,sans-serif;">
+                            style="padding:12px 40px 36px;font-family: 'Cairo', Arial, sans-serif;">
 
                             {{-- Greeting --}}
                             <h1 class="h1"
@@ -212,17 +202,17 @@
                                     <tr>
                                         <td style="padding:24px 20px;text-align:center;">
                                             <p
-                                                style="margin:0 0 8px;font-size:13px;color:#198754;font-weight:700;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                style="margin:0 0 8px;font-size:13px;color:#198754;font-weight:700;font-family: 'Cairo', Arial, sans-serif;">
                                                 💎 السعر العادل المقدر</p>
                                             <p class="price-amt"
-                                                style="margin:0;font-size:44px;font-weight:900;color:#157347;line-height:1.1;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                style="margin:0;font-size:44px;font-weight:900;color:#157347;line-height:1.1;font-family: 'Cairo', Arial, sans-serif;">
                                                 {{ number_format($recommendedPrice, 0) }}
                                                 <span
                                                     style="font-size:22px;font-weight:700;color:#198754;margin-right:4px;">ريال</span>
                                             </p>
                                             @if($minPrice && $maxPrice)
                                                 <p
-                                                    style="margin:12px 0 0;display:inline-block;background:rgba(255,255,255,.7);border:1px solid #c3e6cb;border-radius:20px;padding:4px 16px;font-size:13px;color:#5a8a6a;font-weight:600;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                    style="margin:12px 0 0;display:inline-block;background:rgba(255,255,255,.7);border:1px solid #c3e6cb;border-radius:20px;padding:4px 16px;font-size:13px;color:#5a8a6a;font-weight:600;font-family: 'Cairo', Arial, sans-serif;">
                                                     نطاق السعر: من {{ number_format($minPrice, 0) }} إلى
                                                     {{ number_format($maxPrice, 0) }} ريال
                                                 </p>
@@ -239,10 +229,10 @@
                                     <tr>
                                         <td style="padding:18px 20px;">
                                             <p
-                                                style="margin:0 0 10px;font-size:14px;font-weight:700;color:#c1953e;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                style="margin:0 0 10px;font-size:14px;font-weight:700;color:#c1953e;font-family: 'Cairo', Arial, sans-serif;">
                                                 📋 ملاحظات التقييم:</p>
                                             <div
-                                                style="font-size:14px;color:#4a4a4a;line-height:1.9;text-align:justify;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                style="font-size:14px;color:#4a4a4a;line-height:1.9;text-align:justify;font-family: 'Cairo', Arial, sans-serif;">
                                                 @if(!preg_match('/<[a-z][\s\S]*>/i', $reasoning))
                                                     {!! \Illuminate\Support\Str::markdown($reasoning) !!}
                                                 @else
@@ -267,7 +257,7 @@
                                     <tr>
                                         <td style="padding-bottom:10px;">
                                             <p
-                                                style="margin:0 0 12px;font-size:14px;font-weight:700;color:#c1953e;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                style="margin:0 0 12px;font-size:14px;font-weight:700;color:#c1953e;font-family: 'Cairo', Arial, sans-serif;">
                                                 🔎 تحليل تفصيلي للسلعة:
                                             </p>
                                         </td>
@@ -283,14 +273,14 @@
                                                                 <div style="font-size:26px;line-height:1;margin-bottom:6px;">
                                                                     {{ $card['icon'] ?? '📌' }}</div>
                                                                 <div
-                                                                    style="font-size:10px;color:#a08050;font-weight:700;margin-bottom:4px;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                    style="font-size:10px;color:#a08050;font-weight:700;margin-bottom:4px;font-family: 'Cairo', Arial, sans-serif;">
                                                                     {{ $card['title'] ?? '' }}</div>
                                                                 <div
-                                                                    style="font-size:14px;font-weight:900;color:#1a1a1a;margin-bottom:4px;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                    style="font-size:14px;font-weight:900;color:#1a1a1a;margin-bottom:4px;font-family: 'Cairo', Arial, sans-serif;">
                                                                     {{ $card['value'] ?? '—' }}</div>
                                                                 @if(!empty($card['description']))
                                                                     <div
-                                                                        style="font-size:10px;color:#999;line-height:1.4;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                                                        style="font-size:10px;color:#999;line-height:1.4;font-family: 'Cairo', Arial, sans-serif;">
                                                                         {{ $card['description'] }}</div>
                                                                 @endif
                                                             </td>
@@ -318,7 +308,7 @@
 
                             {{-- App Store Buttons --}}
                             <p
-                                style="margin:0 0 16px;font-size:14px;font-weight:700;color:#2d2d2d;text-align:center;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                style="margin:0 0 16px;font-size:14px;font-weight:700;color:#2d2d2d;text-align:center;font-family: 'Cairo', Arial, sans-serif;">
                                 🚀 تابع تفاصيل طلبك من خلال التطبيق
                             </p>
 
@@ -416,7 +406,7 @@
                                         <img src="{{ asset('assets/emails/logo_white.png') }}" width="52" alt="ثمن"
                                             style="display:block;border:0;opacity:.85;">
                                         <p
-                                            style="margin:6px 0 0;font-size:11px;color:#c1953e;font-family:'Avenir Arabic',Arial,sans-serif;">
+                                            style="margin:6px 0 0;font-size:11px;color:#c1953e;font-family: 'Cairo', Arial, sans-serif;">
                                             تطبيق ثمن — خيارك الأول للتقييم
                                         </p>
                                     </td>

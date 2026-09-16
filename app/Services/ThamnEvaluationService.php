@@ -257,19 +257,21 @@ PROMPT;
             $whatsapp = app(\App\Services\WhatsAppService::class);
             $experts = \App\Models\User::role('expert')->get();
             $orderLink = route('orders.show', $order->id);
+            
+            $msg = "ياهلا خبير التثمين 👋\nوصلك طلب تثمين بتقنية ال ( Ai ) رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر أو التعديل عليه وفقا لرؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
 
             foreach ($experts as $expert) {
                 if ($expert->phone) {
                     $whatsapp->sendMessage(
                         $expert->phone,
-                        "هلا بك خبير ( التثمين ) 👋 هناك طلب تثمين بواسطة الذكاء الاصطناعي (AI) رقم {$order->id} يحتاج منك التصديق والموافقة على الطلب الآن.\n\nرابط الطلب:\n{$orderLink}"
+                        "{$msg}\n\nرابط الطلب:\n{$orderLink}"
                     );
                 }
                 if ($expert->email) {
                     try {
                         Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                             "مطلوب المصادقة على طلب تثمين AI رقم #{$order->id}",
-                            "هلا بك خبير ( التثمين ) 👋 هناك طلب تثمين بواسطة الذكاء الاصطناعي (AI) رقم {$order->id} يحتاج منك التصديق والموافقة على الطلب الآن.",
+                            $msg,
                             route('orders.show', $order->id)
                         ));
                     } catch (\Throwable $e) {

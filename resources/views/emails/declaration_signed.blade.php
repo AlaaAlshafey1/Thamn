@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
         body {
             font-family: 'Cairo', Arial, sans-serif;
             line-height: 1.8;
