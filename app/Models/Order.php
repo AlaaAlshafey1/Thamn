@@ -24,6 +24,8 @@ class Order extends Model
         'ai_reasoning',
         'expert_id',
         'expert_evaluated',
+        'expert_warning_sent',
+        'customer_progress_notified',
         'expert_price',
         'expert_min_price',
         'expert_max_price',
