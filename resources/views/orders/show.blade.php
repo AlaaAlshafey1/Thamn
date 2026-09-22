@@ -658,32 +658,65 @@
                             <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
                                 @csrf
 
-                                {{-- Main Price --}}
-                                <div class="mb-4 text-center">
-                                    <label class="form-label font-weight-bold text-dark d-block mb-2">السعر الموصى به <span class="text-danger">*</span></label>
-                                    @php
-                                        $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
-                                    @endphp
-                                    <input type="number" name="expert_price"
-                                        class="form-control price-main-input"
-                                        step="0.01" min="0"
-                                        value="{{ $formPrice }}" required>
-                                    <small class="text-muted d-block mt-1">ريال سعودي (SAR)</small>
-                                </div>
+                                @if($order->evaluation_type !== 'ai')
+                                    {{-- Main Price --}}
+                                    <div class="mb-4 text-center">
+                                        <label class="form-label font-weight-bold text-dark d-block mb-2">السعر الموصى به <span class="text-danger">*</span></label>
+                                        @php
+                                            $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
+                                        @endphp
+                                        <input type="number" name="expert_price"
+                                            class="form-control price-main-input"
+                                            step="0.01" min="0"
+                                            value="{{ $formPrice }}" required>
+                                        <small class="text-muted d-block mt-1">ريال سعودي (SAR)</small>
+                                    </div>
 
-                                {{-- Min / Max --}}
-                                <div class="row mb-4">
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأدنى</label>
-                                        @php $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: '')); @endphp
-                                        <input type="number" name="expert_min_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMin }}">
+                                    {{-- Min / Max --}}
+                                    <div class="row mb-4">
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted font-weight-bold">الحد الأدنى</label>
+                                            @php $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: '')); @endphp
+                                            <input type="number" name="expert_min_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMin }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small text-muted font-weight-bold">الحد الأعلى</label>
+                                            @php $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: '')); @endphp
+                                            <input type="number" name="expert_max_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMax }}">
+                                        </div>
                                     </div>
-                                    <div class="col-6">
-                                        <label class="form-label small text-muted font-weight-bold">الحد الأعلى</label>
-                                        @php $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: '')); @endphp
-                                        <input type="number" name="expert_max_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMax }}">
+                                @else
+                                    {{-- AI Valuation Ratings --}}
+                                    <div class="mb-4 text-center">
+                                        <label class="form-label font-weight-bold text-dark d-block mb-3">تقييم التثمين الذكي <span class="text-danger">*</span></label>
+                                        <div class="d-flex justify-content-center flex-wrap gap-2" style="gap: 15px;">
+                                            @foreach($aiRatings as $rating)
+                                                <label class="rating-radio-label" style="cursor: pointer; text-align: center; margin: 0;">
+                                                    <input type="radio" name="ai_valuation_rating_id" value="{{ $rating->id }}" class="d-none" required>
+                                                    <div class="rating-card" style="border: 2px solid #ddd; border-radius: 12px; padding: 15px 25px; transition: all 0.2s;">
+                                                        @if($rating->icon)
+                                                            <img src="{{ asset('storage/' . $rating->icon) }}" style="width:40px; height:40px; object-fit:contain; margin-bottom: 8px;">
+                                                        @endif
+                                                        <div style="font-weight: 700; color: {{ $rating->color ?? '#333' }};">
+                                                            {{ $rating->name_ar }}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        <style>
+                                            .rating-radio-label input:checked + .rating-card {
+                                                border-color: #1565C0 !important;
+                                                background-color: #f0f7ff;
+                                                box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
+                                                transform: translateY(-2px);
+                                            }
+                                            .rating-card:hover {
+                                                background-color: #f8f9fa;
+                                            }
+                                        </style>
                                     </div>
-                                </div>
+                                @endif
 
                                 {{-- Reasoning --}}
                                 <div class="mb-4">

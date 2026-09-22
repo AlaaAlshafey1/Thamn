@@ -45,6 +45,7 @@ class Order extends Model
         'is_ai_evaluated',
         'ai_confidence_score',
         'can_send_to_market',
+        'ai_valuation_rating_id',
     ];
 
     protected $casts = [
@@ -81,6 +82,11 @@ class Order extends Model
     public function expert()
     {
         return $this->belongsTo(User::class, 'expert_id');
+    }
+
+    public function aiValuationRating()
+    {
+        return $this->belongsTo(AiValuationRating::class, 'ai_valuation_rating_id');
     }
 
     // App\Models\Order.php

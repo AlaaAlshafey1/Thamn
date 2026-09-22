@@ -697,6 +697,7 @@ class OrderController extends Controller
             'category',
             'files',
             'expert', // لجلب رقم عضوية الخبير المعتمِد
+            'aiValuationRating', // لتقييم الذكاء الاصطناعي
         ])
             ->where('id', $orderId)
             ->firstOrFail();
@@ -822,6 +823,20 @@ class OrderController extends Controller
             $reasoning = $reasoningText;
         }
 
+        $aiValuationRatings = [];
+        if ($order->evaluation_type === 'ai' && $order->expert_evaluated && $order->ai_valuation_rating_id) {
+            $allRatings = \App\Models\AiValuationRating::where('is_active', true)->get();
+            foreach ($allRatings as $rating) {
+                $aiValuationRatings[] = [
+                    'id' => $rating->id,
+                    'name' => $lang === 'ar' ? $rating->name_ar : ($rating->name_en ?: $rating->name_ar),
+                    'color' => $rating->color,
+                    'icon' => $rating->icon ? full_url($rating->icon) : null,
+                    'selectedByExpert' => $rating->id === $order->ai_valuation_rating_id ? 1 : 0,
+                ];
+            }
+        }
+
         /* ===================== RESPONSE ===================== */
         return response()->json([
             'id' => $order->id,
@@ -839,6 +854,7 @@ class OrderController extends Controller
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
             // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
             'expert_membership_number' => $order->expert?->membership_number ?? null,
+            'ai_valuation_ratings' => $aiValuationRatings,
         ]);
     }
 

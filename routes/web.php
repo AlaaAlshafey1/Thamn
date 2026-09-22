@@ -200,6 +200,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('admin.settings.store');
 
+    // AI Valuation Ratings
+    Route::resource('ai-valuation-ratings', \App\Http\Controllers\Admin\AiValuationRatingController::class, ['as' => 'admin']);
+
 });
 
 Route::get('lang/{locale}', function ($locale) {

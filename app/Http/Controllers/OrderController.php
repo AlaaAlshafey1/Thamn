@@ -97,8 +97,10 @@ class OrderController extends Controller
         }
 
         $order->load(['details', 'files', 'user', 'payments']);
+        
+        $aiRatings = \App\Models\AiValuationRating::where('is_active', true)->get();
 
-        return view('orders.show', compact('order'));
+        return view('orders.show', compact('order', 'aiRatings'));
     }
 
     public function store(Request $request)
@@ -151,22 +153,40 @@ class OrderController extends Controller
             return back()->with('error', 'لقد قمت بتقييم هذا الطلب بالفعل ولا يمكن تعديله.');
         }
 
-        $request->validate([
-            'expert_price' => 'required|numeric|min:0',
-            'expert_min_price' => 'nullable|numeric|min:0',
-            'expert_max_price' => 'nullable|numeric|min:0',
-            'expert_reasoning' => 'required|string|max:5000',
-        ]);
+        if ($order->evaluation_type === 'ai') {
+            $request->validate([
+                'ai_valuation_rating_id' => 'required|exists:ai_valuation_ratings,id',
+                'expert_reasoning' => 'required|string|max:5000',
+            ]);
+            
+            $expertPrice = $order->ai_price ?? $order->total_price;
+            $expertMinPrice = $order->ai_min_price ?? $expertPrice * 0.8;
+            $expertMaxPrice = $order->ai_max_price ?? $expertPrice * 1.2;
+            $aiValuationRatingId = $request->ai_valuation_rating_id;
+        } else {
+            $request->validate([
+                'expert_price' => 'required|numeric|min:0',
+                'expert_min_price' => 'nullable|numeric|min:0',
+                'expert_max_price' => 'nullable|numeric|min:0',
+                'expert_reasoning' => 'required|string|max:5000',
+            ]);
+            
+            $expertPrice = $request->expert_price;
+            $expertMinPrice = $request->expert_min_price ?? $request->expert_price * 0.8;
+            $expertMaxPrice = $request->expert_max_price ?? $request->expert_price * 1.2;
+            $aiValuationRatingId = null;
+        }
 
         // تحديث الأوردر
         $order->update([
             'expert_id' => $user->id,
-            'expert_price' => $request->expert_price,
-            'expert_min_price' => $request->expert_min_price ?? $request->expert_price * 0.8,
-            'expert_max_price' => $request->expert_max_price ?? $request->expert_price * 1.2,
+            'expert_price' => $expertPrice,
+            'expert_min_price' => $expertMinPrice,
+            'expert_max_price' => $expertMaxPrice,
             'expert_reasoning' => $request->expert_reasoning,
+            'ai_valuation_rating_id' => $aiValuationRatingId,
             'expert_evaluated' => true,
-            'total_price' => $request->expert_price,
+            'total_price' => $expertPrice,
             'status' => in_array($order->evaluation_type, ['expert', 'ai']) ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);

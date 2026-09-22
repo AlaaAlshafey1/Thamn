@@ -348,6 +348,15 @@
                             <span class="side-menu__label">إعدادات النظام</span>
                         </a>
                     </li>
+                    <li class="slide">
+                        <a class="side-menu__item" href="{{ route('admin.ai-valuation-ratings.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0V0z" fill="none"/>
+                                <path d="M21 3H3v18h18V3zm-10 14H7v-2h4v2zm6-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            <span class="side-menu__label">تقييمات الذكاء الاصطناعي</span>
+                        </a>
+                    </li>
                     @endhasanyrole
 
                     <li class="slide">
