@@ -1,82 +1,26 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  $emailTitle = $title ?? ($isRtl ? 'إشعار من ثمن' : 'Notification from Thamn');
+@endphp
+@php $banner = 'notification_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-<head>
-    <meta charset="utf-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $title ?? ($isRtl ? 'إشعار من منصة ثمن 🔔' : 'Notification from Thamn 🔔') }}
+  </h1>
 
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
+  <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
+    {{ $messageBody ?? '' }}
+  </p>
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid #eee;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
+  @if($actionUrl)
+  <a href="{{ $actionUrl }}"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+    {{ $isRtl ? 'عرض التفاصيل' : 'View Details' }}
+  </a>
+  @endif
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header img {
-            height: 60px;
-        }
-
-        .content {
-            margin-bottom: 30px;
-            font-size: 16px;
-            text-align: right;
-        }
-
-        .footer {
-            text-align: center;
-            color: #999;
-            font-size: 12px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background-color: #c1953e;
-            color: #fff !important;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>تطبيق ثمن</h2>
-        </div>
-        <div class="content">
-            <p>{!! nl2br(e($messageBody)) !!}</p>
-            @if($actionUrl)
-                <div style="text-align: center;">
-                    <a href="{{ $actionUrl }}" class="btn">اضغط هنا للمتابعة</a>
-                </div>
-            @endif
-        </div>
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} تطبيق ثمن. جميع الحقوق محفوظة.</p>
-        </div>
-    </div>
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

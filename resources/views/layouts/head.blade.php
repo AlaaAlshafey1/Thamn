@@ -1,7 +1,11 @@
 <!-- Title -->
 <title>@yield('title', 'ثمن')</title>
 <!-- Favicon -->
-<link rel="icon" href="{{URL::asset('assets/img/Logo.png')}}" type="image/x-icon"/>
+<link rel="icon" type="image/png" href="{{URL::asset('assets/img/Logo.png')}}"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{{URL::asset('assets/img/Logo.png')}}"/>
+<link rel="icon" type="image/png" sizes="16x16" href="{{URL::asset('assets/img/Logo.png')}}"/>
+<link rel="shortcut icon" type="image/png" href="{{URL::asset('assets/img/Logo.png')}}"/>
+<link rel="apple-touch-icon" href="{{URL::asset('assets/img/Logo.png')}}"/>
 <!-- Icons css -->
 <link href="{{URL::asset('assets/css/icons.css')}}" rel="stylesheet">
 <!--  Custom Scroll bar-->

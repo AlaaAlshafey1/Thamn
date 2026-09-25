@@ -1,125 +1,44 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  $emailTitle = $isRtl ? 'فاتورة طلبك – ثمن' : 'Your Invoice – Thamn';
+@endphp
+@php $banner = 'invoice_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-<head>
-    <meta charset="UTF-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
-        }') format('opentype');
-            font-weight: 300;
-        }
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $isRtl ? 'فاتورة طلبك جاهزة 🧾' : 'Your Invoice is Ready 🧾' }}
+  </h1>
 
-        }') format('opentype');
-            font-weight: 400;
-        }
+  <p style="margin:0 0 20px;font-size:14px;color:#666;line-height:1.85;">
+    {{ $isRtl ? 'شكراً لثقتك بثمن. تجد أدناه تفاصيل فاتورة طلبك.' : 'Thank you for using Thamn. Find your invoice details below.' }}
+  </p>
 
-        }') format('opentype');
-            font-weight: 500;
-        }
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"
+    style="background:#F9F9F9;border-radius:12px;border:1px solid #E5E5E5;margin-bottom:24px;">
+    <tr>
+      <td style="padding:16px 20px;text-align:right;">
+        <p style="margin:0 0 8px;font-size:13px;color:#555;">
+          🆔 {{ $isRtl ? 'رقم الطلب' : 'Order #' }}: <strong style="color:#C1953E;">#{{ $order->id ?? 'N/A' }}</strong>
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;color:#555;">
+          📦 {{ $isRtl ? 'الفئة' : 'Category' }}: <strong style="color:#1A1A1A;">{{ $order->category?->name_ar ?? 'N/A' }}</strong>
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;color:#555;">
+          💰 {{ $isRtl ? 'المبلغ المدفوع' : 'Amount Paid' }}: <strong style="color:#C1953E;">{{ number_format($order->price ?? 0, 2) }} {{ $isRtl ? 'ر.س' : 'SAR' }}</strong>
+        </p>
+        <p style="margin:0;font-size:13px;color:#555;">
+          📅 {{ $isRtl ? 'تاريخ الدفع' : 'Payment Date' }}: <strong style="color:#1A1A1A;">{{ $order->created_at?->format('Y-m-d') ?? now()->format('Y-m-d') }}</strong>
+        </p>
+      </td>
+    </tr>
+  </table>
 
-        }') format('opentype');
-            font-weight: 700;
-        }
+  <a href="https://thmmn.net"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+    {{ $isRtl ? 'عرض الطلب' : 'View Order' }}
+  </a>
 
-        }') format('opentype');
-            font-weight: 900;
-        }
-
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-        }
-
-        .header {
-            background-color: #c1953e;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .content {
-            padding: 20px;
-            text-align: right;
-        }
-
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .invoice-table th,
-        .invoice-table td {
-            padding: 10px;
-            border: 1px solid #eee;
-            text-align: right;
-        }
-
-        .invoice-table th {
-            background-color: #f9f9f9;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>فاتورة الدفع</h2>
-        </div>
-        <div class="content">
-            <p>مرحباً <strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong>،</p>
-            <p>شكراً لثقتك في تطبيق ثمن. تم استلام مبلغ الدفع لطلبك رقم <strong>#{{ $order->id }}</strong> بنجاح.</p>
-
-            <table class="invoice-table">
-                <thead>
-                    <tr>
-                        <th>البيان</th>
-                        <th>القيمة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>رقم الطلب</td>
-                        <td>#{{ $order->id }}</td>
-                    </tr>
-                    <tr>
-                        <td>التاريخ</td>
-                        <td>{{ $order->updated_at->format('Y-m-d H:i') }}</td>
-                    </tr>
-                    <tr>
-                        <td>المبلغ الإجمالي</td>
-                        <td>{{ number_format($order->total_price, 2) }} ريال</td>
-                    </tr>
-                    <tr>
-                        <td>حالة الدفع</td>
-                        <td>تم الدفع بنجاح</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <p style="margin-top: 20px;">بدأنا العمل على طلبك وسوف نوافيك بالنتائج في أقرب وقت.</p>
-        </div>
-        <div class="footer">
-            <p>تم إرسال هذا البريد تلقائياً من تطبيق ثمن.</p>
-        </div>
-    </div>
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

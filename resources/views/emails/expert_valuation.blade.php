@@ -1,116 +1,59 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  
+  // Determine Evaluation Type / Package Name
+  $evalType = $order->evaluation_type ?? 'expert';
+  
+  if ($evalType === 'ai') {
+      $packageTitle = 'باقة التثمين الذكي';
+      $instructionText = 'يرجى إبداء رأيك كخبير في السعر الاسترشادي وفق النتيجة المسبقة للتثمين الذكي وذلك بالاختيار من التالي:';
+  } elseif ($evalType === 'thamn' || $evalType === 'best') {
+      $packageTitle = 'باقة التثمين الاحترافي';
+      $instructionText = 'يرجى إدخال السعر التقديري وفق التقرير المرفق ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي:';
+  } else {
+      // Default to Expert / Arbitrator
+      $packageTitle = 'باقة التثمين المحكم';
+      $instructionText = 'يرجى إدخال السعر التقديري المعتمد ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي:';
+  }
 
-<head>
-    <meta charset="UTF-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
-        }') format('opentype');
-            font-weight: 300;
-        }
+  $emailTitle = $isRtl ? 'مطلوب المصادقة على طلب تثمين' : 'Valuation Authentication Required';
+@endphp
+@php $banner = 'expert_valuation_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-        }') format('opentype');
-            font-weight: 400;
-        }
+  <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#C1953E;text-transform:uppercase;">
+    {{ $packageTitle }}
+  </p>
 
-        }') format('opentype');
-            font-weight: 500;
-        }
+  <h1 class="h1" style="margin:0 0 16px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $isRtl ? 'يا هلا خبير التثمين 👋' : 'Hello Valuation Expert 👋' }}
+  </h1>
 
-        }') format('opentype');
-            font-weight: 700;
-        }
+  <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.85;">
+    @if($isRtl)
+      <strong>للأهمية:</strong> رقم الطلب <strong style="color:#C1953E;">( {{ $order->id ?? 'N/A' }} )</strong><br><br>
+      وصلك طلب (تقييم استرشادي لسلعة).<br>
+      هناك عميل بانتظارك.<br><br>
+      {{ $instructionText }}
+    @else
+      <strong>Urgent:</strong> Order #<strong style="color:#C1953E;">( {{ $order->id ?? 'N/A' }} )</strong><br><br>
+      You have received a new valuation request.<br>
+      A client is waiting for you.<br><br>
+      {{ $instructionText }}
+    @endif
+  </p>
 
-        }') format('opentype');
-            font-weight: 900;
-        }
+  <a href="https://thmmn.net/expert/login"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;margin-bottom:24px;">
+    {{ $isRtl ? 'اضغط هنا للمتابعة' : 'Click Here to Proceed' }}
+  </a>
 
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
+  <p style="margin:0;font-size:14px;color:#666;line-height:1.85;">
+    {{ $isRtl ? 'شاكرين تعاونكم،' : 'Thank you for your cooperation,' }}<br>
+    <strong>{{ $isRtl ? 'فريق تطبيق ثمن' : 'Thamn App Team' }}</strong>
+  </p>
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-        }
-
-        .header {
-            background-color: #c1953e;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 20px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #c1953e;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>إشعار تقييم جديد</h2>
-        </div>
-        <div class="content">
-            <p>مرحباً مدير النظام،</p>
-            <p>نود إعلامك بأن الخبير <strong>{{ $expert->first_name }} {{ $expert->last_name }}</strong> قد انتهى من
-                تقييم الطلب رقم <strong>#{{ $order->id }}</strong>.</p>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر الأدنى:</strong></td>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_min_price, 2) }} ريال
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر الأعلى:</strong></td>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_max_price, 2) }} ريال
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>السعر المقترح:</strong></td>
-                    <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                        {{ number_format($order->expert_price, 2) }} ريال
-                    </td>
-                </tr>
-            </table>
-
-            <p style="margin-top: 20px;"><strong>توضيح الخبير:</strong><br>
-                {{ $order->expert_reasoning }}
-            </p>
-
-            <a href="{{ url('/orders/' . $order->id) }}" class="button">عرض تفاصيل الطلب في لوحة التحكم</a>
-        </div>
-        <div class="footer">
-            <p>تم إرسال هذا البريد تلقائياً من منصة تثمين.</p>
-        </div>
-    </div>
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

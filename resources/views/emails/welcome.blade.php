@@ -1,82 +1,32 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  $emailTitle = $isRtl ? 'مرحباً بك في ثمن' : 'Welcome to Thamn';
+@endphp
+@php $banner = 'welcome_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-<head>
-    <meta charset="UTF-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
-        }') format('opentype');
-            font-weight: 300;
-        }
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $isRtl ? 'مرحباً بك في ثمن 🎉' : 'Welcome to Thamn! 🎉' }}
+  </h1>
 
-        }') format('opentype');
-            font-weight: 400;
-        }
+  <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
+    @if($isRtl)
+      أهلاً <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>،<br>
+      يسعدنا انضمامك لمنصة <strong>ثمن</strong> — المنصة الأولى للتثمين الاسترشادي للسلع المستعملة.<br>
+      حسابك جاهز الآن. ابدأ رحلتك معنا!
+    @else
+      Hi <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>,<br>
+      Welcome to <strong>Thamn</strong> — the leading platform for used goods valuation.<br>
+      Your account is ready. Start your journey with us!
+    @endif
+  </p>
 
-        }') format('opentype');
-            font-weight: 500;
-        }
+  <a href="https://thmmn.net"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+    {{ $isRtl ? 'استكشف ثمن' : 'Explore Thamn' }}
+  </a>
 
-        }') format('opentype');
-            font-weight: 700;
-        }
-
-        }') format('opentype');
-            font-weight: 900;
-        }
-
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-        }
-
-        .header {
-            background-color: #c1953e;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .content {
-            padding: 20px;
-            text-align: right;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{{ asset('assets/img/Logo2.png') }}" alt="شعار ثمن"
-                style="max-height: 80px; margin-bottom: 10px;">
-            <h2>{{ $title }}</h2>
-        </div>
-        <div class="content">
-            <p>مرحباً <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>،</p>
-            <p>مرحباً بك في تطبيق <strong>ثمن</strong>. نحن سعداء بانضمامك إلينا.</p>
-            <p>يمكنك الآن البدء في استخدام كافة مميزات التطبيق لتقييم مقتنياتك بكل سهولة واحترافية.</p>
-        </div>
-        <div class="footer">
-            <p>تم إرسال هذا البريد من تطبيق ثمن.</p>
-        </div>
-    </div>
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

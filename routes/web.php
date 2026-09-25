@@ -214,3 +214,81 @@ Route::get('lang/{locale}', function ($locale) {
 })->name('change.language');
 
 require __DIR__ . '/auth.php';
+
+
+// =============================================
+// DEV ONLY — Email Previews  (local env only)
+// Visit: http://localhost:8000/preview/email/{name}
+// =============================================
+if (app()->environment('local')) {
+
+    Route::get('/preview/email/{name?}', function ($name = 'otp') {
+        app()->setLocale('ar');
+
+        // Mock objects for templates that need DB models
+        $fakeUser = new stdClass();
+        $fakeUser->first_name = 'علاء';
+        $fakeUser->last_name  = 'الشافعي';
+        $fakeUser->email      = 'alaa@example.com';
+
+        $fakeCategory = new stdClass();
+        $fakeCategory->name_ar = 'سيارات فاخرة';
+        $fakeCategory->name_en = 'Luxury Cars';
+
+        $fakeOrder = new stdClass();
+        $fakeOrder->id               = 2456;
+        $fakeOrder->price            = 450;
+        $fakeOrder->created_at       = now();
+        $fakeOrder->category         = $fakeCategory;
+        $fakeOrder->ai_min_price     = 38000;
+        $fakeOrder->ai_max_price     = 46000;
+        $fakeOrder->ai_price         = 42000;
+        $fakeOrder->ai_reasoning     = 'السيارة بحالة ممتازة. الكيلومتراج منخفض نسبياً والمحرك بدون مشاكل. السوق الحالي يدعم هذا السعر.';
+        $fakeOrder->user             = $fakeUser;
+        $fakeOrder->re_evaluation_count = 0;
+
+        $fakeWithdrawal = new stdClass();
+        $fakeWithdrawal->amount     = 1250.00;
+        $fakeWithdrawal->iban       = 'SA0380000000608010167519';
+        $fakeWithdrawal->created_at = now();
+        $fakeWithdrawal->user       = $fakeUser;
+
+        $fakeArbitrator = new stdClass();
+        $fakeArbitrator->full_name = 'محمد عبدالله';
+
+        $fakeDeclaration = new stdClass();
+        $fakeDeclaration->full_name = 'محمد عبدالله';
+        $fakeDeclaration->pdf_path  = null;
+
+        $templates = [
+            'otp'                    => ['emails.otp',                    ['otp' => '35716', 'userName' => 'علاء']],
+            'reset_password'         => ['emails.reset_password_otp',     ['otp' => '98341', 'userName' => 'علاء']],
+            'welcome'                => ['emails.welcome',                 ['user' => $fakeUser, 'title' => 'مرحباً بك']],
+            'expert_registration'    => ['emails.expert_registration',     ['user' => $fakeUser, 'password' => 'Secret@123']],
+            'valuation_result'       => ['emails.valuation_result',        [
+                'order' => $fakeOrder, 'evaluationType' => 'ai',
+                'minPrice' => 38000, 'maxPrice' => 46000, 'recommendedPrice' => 42000,
+                'reasoning' => $fakeOrder->ai_reasoning, 'categoryName' => 'سيارات فاخرة', 'canReEvaluate' => true,
+            ]],
+            'admin_withdrawal'       => ['emails.admin_withdrawal',        ['withdrawal' => $fakeWithdrawal]],
+            'arbitrator_declaration' => ['emails.arbitrator_declaration',  ['arbitrator' => $fakeArbitrator, 'declarationUrl' => 'https://thmmn.net/sign']],
+            'declaration_signed'     => ['emails.declaration_signed',      ['declaration' => $fakeDeclaration, 'downloadUrl' => 'https://thmmn.net/download']],
+            'expert_valuation'       => ['emails.expert_valuation',        ['order' => $fakeOrder, 'expert' => $fakeUser]],
+            'invoice'                => ['emails.invoice',                 ['order' => $fakeOrder]],
+            'system_notification'    => ['emails.system_notification',     ['title' => 'إشعار تجريبي', 'messageBody' => 'هذا إشعار تجريبي من منصة ثمن للتأكد من أن كل شيء يعمل بشكل سليم.', 'actionUrl' => 'https://thmmn.net']],
+            'expert_declaration'     => ['emails.expert_declaration',      ['arbitrator' => $fakeArbitrator, 'declarationUrl' => 'https://thmmn.net/sign']],
+        ];
+
+        if (!isset($templates[$name])) {
+            abort(404, "Email template '{$name}' not found.");
+        }
+
+        [$view, $data] = $templates[$name];
+
+        // Prepend the nav bar
+        $nav = view('emails._preview_nav', ['name' => $name])->render();
+        $email = view($view, $data)->render();
+        return $nav . $email;
+
+    })->name('preview.email');
+}

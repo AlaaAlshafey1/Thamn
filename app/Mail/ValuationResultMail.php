@@ -57,11 +57,20 @@ class ValuationResultMail extends Mailable
 
         $this->categoryName = $order->category?->name_ar ?? $order->category?->name_en ?? 'غير محدد';
         $this->canReEvaluate = ($order->re_evaluation_count ?? 0) < 1;
+        
+        // Fetch the first product image
+        $firstImage = $order->files()->where('type', 'image')->first();
+        if ($firstImage && $firstImage->file_path) {
+            $this->productImageUrl = asset('storage/' . $firstImage->file_path);
+        } else {
+            $this->productImageUrl = null;
+        }
     }
 
     public function build()
     {
-        return $this->subject('نتيجة تقييم طلبك رقم #' . $this->order->id . ' — تطبيق ثمن')
-            ->view('emails.valuation_result');
+        return $this->subject('بطاقة التثمين لطلبك رقم #' . $this->order->id . ' — تطبيق ثمن')
+            ->view('emails.valuation_result')
+            ->with(['productImageUrl' => $this->productImageUrl]);
     }
 }

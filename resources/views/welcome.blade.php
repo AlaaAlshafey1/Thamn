@@ -3,7 +3,25 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name', 'ثمن - Thamn') }}</title>
+        <title>{{ config('app.name', 'ثمن - Thamn') }} — التثمين الاسترشادي للممتلكات والسلع المستعملة</title>
+        <meta name="description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
+        <meta name="keywords" content="ثمن, تقييم, تثمين, مقتنيات فاخرة, ذكاء اصطناعي, Thamn">
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo.png') }}"/>
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ URL::asset('assets/img/Logo.png') }}"/>
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ URL::asset('assets/img/Logo.png') }}"/>
+        <link rel="shortcut icon" type="image/png" href="{{ URL::asset('assets/img/Logo.png') }}"/>
+        <link rel="apple-touch-icon" href="{{ URL::asset('assets/img/Logo.png') }}"/>
+
+        <!-- Open Graph / Social Media -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="ثمن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
+        <meta property="og:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
+        <meta property="og:image" content="{{ URL::asset('assets/img/Logo.png') }}">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="ثمن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
+        <meta name="twitter:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
 
         <!-- Fonts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

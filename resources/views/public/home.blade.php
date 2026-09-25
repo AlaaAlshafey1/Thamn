@@ -43,7 +43,8 @@
         }
 
         html {
-            scroll-behavior: smooth
+            scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
         body {
@@ -183,9 +184,6 @@
             font-weight: 700;
             margin-bottom: 2rem;
             color: var(--primary);
-            text-align: justify;
-            text-align-last: justify;
-            width: max-content;
         }
 
         h1 em {
@@ -619,8 +617,18 @@
                 text-align: center;
             }
 
+            h1 {
+                text-align: center;
+            }
+
+            .hero-tag {
+                justify-content: center;
+                margin-inline: auto;
+            }
+
             .hero-sub {
                 margin-inline: auto;
+                text-align: center;
             }
 
             .btn-group {
@@ -631,12 +639,59 @@
                 justify-content: center;
             }
 
+            .hero-visual {
+                justify-content: center;
+            }
+
+            .scanner-box {
+                margin: 0 auto;
+            }
+
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .feature-card {
+                text-align: center;
+            }
+
+            .feat-icon {
+                margin-inline: auto;
+            }
+
             .steps-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .step-card {
+                text-align: center;
+            }
+
+            .section-header {
+                text-align: center;
+            }
+
+            .section-label {
+                text-align: center;
+                display: block;
+            }
+
+            .section-title {
+                text-align: center;
+            }
+
+            .faq-container {
+                text-align: center;
+            }
+
+            .faq-header {
+                text-align: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .faq-body {
+                text-align: center;
             }
 
             .footer-content {
@@ -647,11 +702,29 @@
             .footer-brand p {
                 margin-inline: auto;
             }
+
+            .footer-links ul {
+                text-align: center;
+            }
+
+            .app-section {
+                text-align: center;
+            }
+
+            .app-section h2,
+            .app-section p {
+                text-align: center;
+            }
         }
 
         @media (max-width: 768px) {
             nav ul {
                 display: none;
+            }
+
+            #hero {
+                padding: 100px 5% 40px;
+                min-height: auto;
             }
 
             .features-grid {
@@ -663,17 +736,50 @@
             }
 
             h1 {
-                font-size: 3rem;
+                font-size: 2.2rem;
+                text-align: center;
             }
 
             .section-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
+                text-align: center;
             }
 
             .scanner-box {
                 width: 100%;
-                max-width: 350px;
-                height: 350px;
+                max-width: 300px;
+                height: 300px;
+                margin: 0 auto;
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 1.5rem;
+                justify-content: center;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .app-section {
+                border-radius: 20px;
+                padding: 60px 5%;
+                margin: 30px 3%;
+            }
+
+            .app-section h2 {
+                font-size: 2rem;
+            }
+
+            section {
+                padding: 60px 5%;
             }
         }
 

@@ -1,192 +1,46 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  $emailTitle = $isRtl ? 'تهانينا! تم قبولك كخبير في ثمن' : 'Congratulations! You are now an Expert on Thamn';
+@endphp
+@php $banner = 'expert_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-<head>
-    <meta charset="UTF-8">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
-        }') format('opentype');
-            font-weight: 300;
-        }
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $isRtl ? 'تم قبولك كخبير في ثمن 🏆' : 'You are now a Thamn Expert! 🏆' }}
+  </h1>
 
-        }') format('opentype');
-            font-weight: 400;
-        }
+  <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
+    @if($isRtl)
+      مبروك <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>!<br>
+      تم تسجيلك بنجاح كخبير في منصة ثمن.<br><br>
+      <strong>بيانات الدخول الخاصة بك:</strong>
+    @else
+      Congratulations <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>!<br>
+      You've been successfully registered as an Expert on Thamn.<br><br>
+      <strong>Your login credentials:</strong>
+    @endif
+  </p>
 
-        }') format('opentype');
-            font-weight: 500;
-        }
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"
+    style="background:#F9F9F9;border-radius:12px;border:1px solid #E5E5E5;margin-bottom:24px;">
+    <tr>
+      <td style="padding:16px 20px;">
+        <p style="margin:0 0 8px;font-size:13px;color:#555;">
+          📧 {{ $isRtl ? 'البريد الإلكتروني' : 'Email' }}: <strong style="color:#1A1A1A;">{{ $user->email ?? '' }}</strong>
+        </p>
+        <p style="margin:0;font-size:13px;color:#555;">
+          🔑 {{ $isRtl ? 'كلمة المرور' : 'Password' }}: <strong style="color:#1A1A1A;">{{ $password }}</strong>
+        </p>
+      </td>
+    </tr>
+  </table>
 
-        }') format('opentype');
-            font-weight: 700;
-        }
+  <a href="https://thmmn.net/expert/login"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+    {{ $isRtl ? 'تسجيل الدخول الآن' : 'Login Now' }}
+  </a>
 
-        }') format('opentype');
-            font-weight: 900;
-        }
-
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.8;
-            color: #333;
-            background-color: #f9f7f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #8B6914, #c1953e, #D4AF37);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .header img {
-            width: 80px;
-            height: auto;
-            margin-bottom: 15px;
-        }
-
-        .header h2 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        .header p {
-            margin: 8px 0 0;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 35px 30px;
-            text-align: right;
-        }
-
-        .content h3 {
-            color: #8B6914;
-            margin-bottom: 5px;
-            font-size: 18px;
-        }
-
-        .content p {
-            margin: 10px 0;
-            color: #555;
-            font-size: 15px;
-        }
-
-        .steps {
-            background: #faf6ee;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .steps h4 {
-            color: #8B6914;
-            margin: 0 0 12px;
-            font-size: 15px;
-        }
-
-        .step-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .step-num {
-            background: #D4AF37;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 25px 30px;
-            background: #faf6ee;
-            border-top: 1px solid #eee;
-        }
-
-        .footer p {
-            font-size: 13px;
-            color: #888;
-            margin: 5px 0;
-        }
-
-        .footer a {
-            color: #8B6914;
-            text-decoration: none;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>🎉 مرحباً بك في فريق خبراء ثمن!</h2>
-            <p>شكراً لتسجيلك كخبير تقييم معتمد</p>
-        </div>
-        <div class="content">
-            <h3>أهلاً {{ $user->first_name }} {{ $user->last_name }}،</h3>
-            <p>شكراً لك على ثقتك في منصة <strong>ثمن</strong> وتسجيلك كخبير تقييم معنا. نحن سعداء جداً بانضمامك لفريقنا
-                المتميز.</p>
-            <p>لقد استلمنا طلبك بنجاح وسيقوم فريقنا المختص بمراجعة بياناتك ومؤهلاتك في أقرب وقت ممكن.</p>
-
-            <div
-                style="background: #fdfdfd; border: 1px dashed #D4AF37; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="margin: 0 0 10px; color: #8B6914;">بيانات الدخول الأولية:</h4>
-                <p style="margin: 5px 0;"><strong>البريد الإلكتروني:</strong> {{ $user->email }}</p>
-                <p style="margin: 5px 0;"><strong>كلمة المرور:</strong> {{ $password }}</p>
-                <p style="font-size: 12px; color: #888; margin-top: 10px;">* يمكنك تغيير كلمة المرور بعد تفعيل حسابك من
-                    لوحة التحكم.</p>
-            </div>
-
-            <div class="steps">
-                <h4>ماذا بعد؟</h4>
-                <div class="step-item">
-                    <div class="step-num">1</div>
-                    <div>مراجعة بياناتك ومؤهلاتك من قبل فريقنا</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">2</div>
-                    <div>التواصل معك للتأكد من المعلومات إذا لزم الأمر</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">3</div>
-                    <div>تفعيل حسابك والبدء في استلام طلبات التقييم</div>
-                </div>
-            </div>
-
-            <p>سنقوم بالرد عليك خلال <strong>48 ساعة</strong> عبر البريد الإلكتروني أو الجوال المُسجل.</p>
-            <p style="color:#8B6914;font-weight:600;">نتطلع للعمل معك 🚀</p>
-        </div>
-        <div class="footer">
-            <p>فريق <strong>ثمن</strong> للتقييم الذكي</p>
-            <p>لأي استفسار تواصل معنا: <a href="mailto:info@package.sa">info@package.sa</a></p>
-            <p style="font-size:11px;color:#aaa;margin-top:15px;">تم إرسال هذا البريد تلقائياً من تطبيق ثمن.</p>
-        </div>
-    </div>
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

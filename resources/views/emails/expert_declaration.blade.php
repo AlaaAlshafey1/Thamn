@@ -1,145 +1,30 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@php
+  $locale = app()->getLocale();
+  $isRtl  = $locale === 'ar';
+  $emailTitle = $isRtl ? 'وثيقة الإقرار للخبير – ثمن' : 'Expert Declaration – Thamn';
+@endphp
+@php $banner = 'declaration_banner.jpg'; @endphp
+@php ob_start(); @endphp
 
-<head>
-    <meta charset="UTF-8">
-    <title>وثيقة الشروط والأحكام - ثمن</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;700;900&display=swap');
-        }') format('opentype');
-            font-weight: 300;
-        }
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+    {{ $isRtl ? 'وثيقة إقرار الخبير 📋' : 'Expert Declaration Document 📋' }}
+  </h1>
 
-        }') format('opentype');
-            font-weight: 400;
-        }
+  <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
+    @if($isRtl)
+      مرحباً <strong style="color:#1A1A1A;">{{ $arbitrator->full_name ?? '' }}</strong>،<br>
+      يرجى مراجعة وثيقة إقرار الخبير الخاصة بمنصة ثمن والتوقيع عليها للمتابعة.
+    @else
+      Hi <strong style="color:#1A1A1A;">{{ $arbitrator->full_name ?? '' }}</strong>,<br>
+      Please review and sign your Expert Declaration document for the Thamn platform.
+    @endif
+  </p>
 
-        }') format('opentype');
-            font-weight: 500;
-        }
+  <a href="{{ $declarationUrl }}"
+     style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+    {{ $isRtl ? 'مراجعة الوثيقة والتوقيع' : 'Review & Sign Declaration' }}
+  </a>
 
-        }') format('opentype');
-            font-weight: 700;
-        }
-
-        }') format('opentype');
-            font-weight: 900;
-        }
-
-        body {
-            font-family: 'Cairo', Arial, sans-serif;
-            background-color: #f8f5f0;
-            margin: 0;
-            padding: 0;
-            direction: rtl;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e0d0b0;
-        }
-
-        .header {
-            background-color: #fdf9f4;
-            padding: 30px;
-            text-align: center;
-            border-bottom: 3px solid #c9933a;
-        }
-
-        .header img {
-            max-height: 80px;
-            margin-bottom: 15px;
-        }
-
-        .header h1 {
-            color: #1a1a2e;
-            font-size: 24px;
-            margin: 0;
-            font-weight: bold;
-        }
-
-        .content {
-            padding: 40px 30px;
-            color: #4a4a4a;
-            line-height: 1.8;
-            font-size: 16px;
-        }
-
-        .content h2 {
-            color: #c9933a;
-            font-size: 20px;
-            margin-top: 0;
-        }
-
-        .btn-box {
-            text-align: center;
-            margin: 35px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            background: linear-gradient(135deg, #d4af37, #c9933a);
-            color: #ffffff !important;
-            text-decoration: none;
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(201, 147, 58, 0.3);
-        }
-
-        .footer {
-            background-color: #1a1a2e;
-            color: #aaaaaa;
-            text-align: center;
-            padding: 20px;
-            font-size: 13px;
-        }
-
-        .footer a {
-            color: #c9933a;
-            text-decoration: none;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-        <div class="header">
-            <img src="{{ url('assets/img/Logo.png') }}" alt="شعار ثمن">
-            <h1>وثيقة الشروط والأحكام وإقرار السرية</h1>
-        </div>
-
-        <div class="content">
-            <h2>مرحباً أ. {{ $user->first_name }}،</h2>
-            <p>نرحب بك في منصة <strong>ثمن</strong> كأحد المحكمين المستقلين.</p>
-            <p>لاستكمال إجراءات انضمامك وتفعيل حسابك كمحكم وتسلم طلبات التثمين، يرجى الاطلاع على <strong>وثيقة الشروط
-                    والأحكام وإقرار السرية</strong> والموافقة عليها والتوقيع عليها إلكترونياً.</p>
-
-            <div class="btn-box">
-                <a href="{{ route('declaration.show', $token) }}" class="btn">عرض وتوقيع الوثيقة الآن</a>
-            </div>
-
-            <p style="font-size: 14px; color: #777;">إذا كنت تواجه صعوبة في الضغط على الزر، يمكنك نسخ هذا الرابط ولصقه
-                في متصفحك:<br>
-                <a href="{{ route('declaration.show', $token) }}"
-                    style="color:#c9933a; word-break: break-all;">{{ route('declaration.show', $token) }}</a>
-            </p>
-        </div>
-
-        <div class="footer">
-            هذه رسالة تلقائية من <a href="{{ url('/') }}">تطبيق ثمن للتثمين المهني</a>. يرجى عدم الرد على هذا
-            البريد.<br>
-            &copy; {{ date('Y') }} جميع الحقوق محفوظة.
-        </div>
-    </div>
-
-</body>
-
-</html>
+@php $slot = ob_get_clean(); @endphp
+@include('emails._layout', compact('banner','emailTitle','slot'))

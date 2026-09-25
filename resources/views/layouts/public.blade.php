@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
-    <meta name="description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <title>@yield('title') - ثمن | التثمين الاسترشادي للممتلكات والسلع المستعملة</title>
+    <meta name="description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
     <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo.png') }}">
-    <meta property="og:title" content="@yield('title') - ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
-    <meta property="og:description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:title" content="@yield('title') - ثمن | التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta property="og:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
     <meta property="og:image" content="{{ URL::asset('assets/img/Logo.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <!-- Bootstrap CSS -->
