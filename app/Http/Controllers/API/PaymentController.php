@@ -37,34 +37,37 @@ class PaymentController extends Controller
     public function payOrder(Request $request, $order_id)
     {
         $order = Order::with(['user', 'details.question', 'details.option', 'files'])->findOrFail($order_id);
-        $amount = (float) $order->total_price;
+        // ─── نحسب السعر دائماً من الباقة المختارة (rateTypeSelection) ───────
+        // هذا يمنع مشكلة ظهور سعر الـ AI (المُثمَّن) عوضاً عن سعر الباقة
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
 
-        // لو السعر = 0، نحسبه من إجابات الأوردر
-        if ($amount <= 0) {
-            $rateTypeAnswer = $order->details()
-                ->whereHas('question', function ($q) {
-                    $q->where('type', 'rateTypeSelection');
-                })
-                ->first();
+        $packagePrice = null;
+        if ($rateTypeAnswer && $rateTypeAnswer->option) {
+            $packagePrice = (float) $rateTypeAnswer->option->price;
 
-            if ($rateTypeAnswer && $rateTypeAnswer->option) {
-                $amount = (float) $rateTypeAnswer->option->price;
-            }
-
-            // نضيف رسوم الصورة لو مفيش صورة مرفوعة
+            // نضيف رسوم الصورة الافتراضية لو مفيش صورة مرفوعة
             if ($order->files->where('type', 'image')->count() === 0) {
-                $amount += (float) env('IMAGE_GENERATION_FEE', 5);
+                $packagePrice += (float) env('IMAGE_GENERATION_FEE', 5);
             }
-
-            if ($amount <= 0) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'قيمة الطلب غير صالحة للدفع'
-                ], 400);
-            }
-
-            $order->update(['total_price' => $amount]);
         }
+
+        // لو عندنا سعر باقة → نستخدمه (ده السعر الصحيح دائماً)
+        // لو مفيش باقة → نرجع لـ total_price (fallback للطلبات القديمة)
+        $amount = $packagePrice ?? (float) $order->total_price;
+
+        if ($amount <= 0) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'قيمة الطلب غير صالحة للدفع'
+            ], 400);
+        }
+
+        // نحدّث total_price بسعر الباقة الصحيح (وليس سعر الـ AI)
+        $order->update(['total_price' => $amount]);
 
         // ── إرجاع رابط مشفر ومحمي لصفحة الدفع ──
         // الرابط هيكون مؤمن بـ Signature وصالح لمدة 30 دقيقة فقط، محدش يقدر يفتحه غير اللي معاه الرابط بالضبط
