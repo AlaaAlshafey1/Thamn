@@ -31,16 +31,16 @@
 @endsection
 
 @section('content')
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white py-3">
-        <h5 class="card-title mb-0 fw-bold">سجلات عمليات السحب</h5>
+<div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden; border-top: 4px solid #17a2b8 !important;">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f0f0f0;">
+        <h5 class="card-title mb-0 fw-bold" style="color: #2c3e50;"><i class="bx bx-list-ul text-info mr-2 ml-2"></i> سجلات عمليات السحب</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table id="withdrawalsTable" class="table table-hover align-middle">
+            <table id="withdrawalsTable" class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th class="text-center">#</th>
+                        <th class="text-center py-3 text-muted">#</th>
                         <th>الخبير</th>
                         <th class="text-center">المبلغ</th>
                         <th class="text-center">الحالة</th>

@@ -135,6 +135,52 @@
 				transform: translateY(0);
 			}
 		}
+
+		/* Expert Custom Cards */
+		.expert-stat-card {
+			position: relative;
+			overflow: hidden;
+			border-radius: 20px;
+			padding: 25px;
+			color: #fff;
+			transition: all 0.4s ease;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+			z-index: 1;
+		}
+		.expert-stat-card::before {
+			content: '';
+			position: absolute;
+			top: -50px;
+			right: -50px;
+			width: 150px;
+			height: 150px;
+			background: rgba(255,255,255,0.1);
+			border-radius: 50%;
+			z-index: -1;
+			transition: transform 0.5s ease;
+		}
+		.expert-stat-card:hover::before {
+			transform: scale(1.5);
+		}
+		.expert-stat-card:hover {
+			transform: translateY(-10px);
+			box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+		}
+		.expert-stat-card .icon-container {
+			width: 60px;
+			height: 60px;
+			background: rgba(255,255,255,0.2);
+			border-radius: 15px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 28px;
+			box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+		}
+		
+		.bg-expert-success { background: linear-gradient(135deg, #10b981, #059669); }
+		.bg-expert-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+		.bg-expert-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
 	</style>
 @endsection
 
@@ -333,71 +379,56 @@
 
 	@if(auth()->user()->hasRole('expert'))
 	<!-- Expert Dashboard View -->
-	<div class="row row-sm fade-in-up delay-1">
-		<div class="col-xl-12">
-			<h5 class="mb-3 font-weight-bold" style="font-family: 'Cairo', sans-serif; color: #2c3e50;">
-				<i class="fas fa-star text-warning mr-2 ml-2"></i> إحصائيات الخبير
-			</h5>
+	<div class="row row-sm fade-in-up delay-1 mb-4">
+		<div class="col-xl-12 mb-3 d-flex justify-content-between align-items-center">
+			<h4 class="font-weight-bold mb-0" style="font-family: 'Cairo', sans-serif; color: #2c3e50;">
+				<i class="fas fa-chart-line text-warning mr-2 ml-2"></i> ملخص أداء الخبير
+			</h4>
+			<span class="badge badge-light px-3 py-2 tx-14 shadow-sm" style="border-radius: 20px;">
+				<i class="fas fa-calendar-alt text-muted mr-1"></i> {{ now()->format('Y-m-d') }}
+			</span>
 		</div>
-		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12">
-			<div class="card overflow-hidden sales-card bg-success-gradient">
-				<div class="pl-3 pt-3 pr-3 pb-2 pt-0">
-					<div class="">
-						<h6 class="mb-3 tx-12 text-white">طلبات مقيمة بنجاح</h6>
+		
+		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
+			<div class="expert-stat-card bg-expert-success">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المنجزة</p>
+						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['orders_completed'] ?? 0) }}</h2>
+						<p class="mb-0 tx-12 op-8"><i class="fas fa-arrow-up mr-1 ml-1"></i> طلبات تم تقييمها بنجاح</p>
 					</div>
-					<div class="pb-0 mt-0">
-						<div class="d-flex">
-							<div class="">
-								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['orders_completed'] ?? 0) }}</h4>
-								<p class="mb-0 tx-12 text-white op-7">عدد الطلبات التي قمت بتقييمها</p>
-							</div>
-							<span class="float-right my-auto mr-auto">
-								<i class="fas fa-check-circle text-white tx-30"></i>
-							</span>
-						</div>
+					<div class="icon-container">
+						<i class="fas fa-check-double text-white"></i>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12">
-			<div class="card overflow-hidden sales-card bg-warning-gradient">
-				<div class="pl-3 pt-3 pr-3 pb-2 pt-0">
-					<div class="">
-						<h6 class="mb-3 tx-12 text-white">الرصيد المتاح</h6>
+		
+		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
+			<div class="expert-stat-card bg-expert-warning">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="mb-2 tx-14 op-8 font-weight-bold">الرصيد المتاح</p>
+						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['balance'] ?? 0, 2) }} <span class="tx-14">ر.س</span></h2>
+						<p class="mb-0 tx-12 op-8"><i class="fas fa-money-bill-wave mr-1 ml-1"></i> أرباحك القابلة للسحب</p>
 					</div>
-					<div class="pb-0 mt-0">
-						<div class="d-flex">
-							<div class="">
-								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['balance'] ?? 0, 2) }} ر.س</h4>
-								<p class="mb-0 tx-12 text-white op-7">أرباحك القابلة للسحب</p>
-							</div>
-							<span class="float-right my-auto mr-auto">
-								<i class="fas fa-wallet text-white tx-30"></i>
-							</span>
-						</div>
+					<div class="icon-container">
+						<i class="fas fa-wallet text-white"></i>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12">
-			<div class="card overflow-hidden sales-card bg-info-gradient">
-				<div class="pl-3 pt-3 pr-3 pb-2 pt-0">
-					<div class="">
-						<h6 class="mb-3 tx-12 text-white">إجمالي الطلبات المتاحة</h6>
+		
+		<div class="col-xl-4 col-lg-6 col-md-12 col-xm-12 mb-3">
+			<div class="expert-stat-card bg-expert-info">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المتاحة للتقييم</p>
+						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['pending_orders'] ?? 0) }}</h2>
+						<p class="mb-0 tx-12 op-8"><i class="fas fa-clock mr-1 ml-1"></i> طلبات بانتظار خبرتك</p>
 					</div>
-					<div class="pb-0 mt-0">
-						<div class="d-flex">
-							<div class="">
-								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['pending_orders'] ?? 0) }}</h4>
-								<p class="mb-0 tx-12 text-white op-7">طلبات بانتظار التقييم في النظام</p>
-							</div>
-							<span class="float-right my-auto mr-auto">
-								<i class="fas fa-list text-white tx-30"></i>
-							</span>
-						</div>
+					<div class="icon-container">
+						<i class="fas fa-layer-group text-white"></i>
 					</div>
 				</div>
 			</div>
@@ -408,53 +439,85 @@
 	<!-- row -->
 	<div class="row row-sm fade-in-up delay-3">
 		<div class="{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'col-md-12 col-lg-8 col-xl-8' : 'col-xl-12' }}">
-			<div class="card card-table-two">
-				<div class="d-flex justify-content-between">
-					<h4 class="card-title mb-1"><i class="fas fa-clock text-primary mr-2 ml-2"></i> آخر الطلبات</h4>
-					<i class="mdi mdi-dots-horizontal text-gray"></i>
+			<div class="card card-table-two" style="border-radius: 20px; overflow: hidden; border: 1px solid #f0f0f0;">
+				<div class="card-header bg-white d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f8f9fa; padding: 20px 25px;">
+					<h4 class="card-title mb-0 font-weight-bold tx-18" style="color: #2c3e50;">
+						<i class="fas fa-clipboard-list text-primary mr-2 ml-2"></i> آخر الطلبات
+					</h4>
+					<span class="badge badge-light-primary text-primary px-3 py-2" style="border-radius: 15px; background: rgba(59, 130, 246, 0.1);">
+						{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'أحدث 5 طلبات في النظام' : 'أحدث 5 طلبات قمت بتقييمها' }}
+					</span>
 				</div>
-				<span class="tx-12 tx-muted mb-3 ">
-					{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'قائمة بآخر 5 طلبات مسجلة في النظام.' : 'قائمة بآخر 5 طلبات قمت بتقييمها.' }}
-				</span>
 				<div class="table-responsive country-table">
-					<table class="table table-striped table-bordered mb-0 text-sm-nowrap text-lg-nowrap text-xl-nowrap">
-						<thead>
+					<table class="table table-hover mb-0 text-md-nowrap align-middle">
+						<thead class="bg-light">
 							<tr>
-								<th class="wd-lg-25p">رقم الطلب</th>
-								<th class="wd-lg-25p">المستخدم</th>
-								<th class="wd-lg-25p">الفئة</th>
-								<th class="wd-lg-25p">الحالة</th>
-								<th class="wd-lg-25p">السعر</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">رقم الطلب</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">المستخدم</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">الفئة</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">الحالة</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">السعر</th>
+								@if(auth()->user()->hasRole('expert'))
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">الإجراء</th>
+								@endif
 							</tr>
 						</thead>
 						<tbody>
-							@foreach($recentOrders as $order)
-							<tr>
-								<td>#{{ $order->id }}</td>
-								<td class="tx-right tx-medium tx-inverse">{{ $order->user->name ?? 'مستخدم' }}</td>
-								<td class="tx-right tx-medium tx-inverse">{{ $order->category->name ?? 'غير محدد' }}</td>
-								<td class="tx-right tx-medium tx-inverse">
+							@forelse($recentOrders as $order)
+							<tr style="transition: all 0.2s ease;">
+								<td class="align-middle font-weight-bold">#{{ $order->id }}</td>
+								<td class="align-middle">
+									<div class="d-flex align-items-center">
+										<div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-2 ml-2" style="width: 35px; height: 35px; color: #6c757d;">
+											<i class="fas fa-user"></i>
+										</div>
+										<span class="tx-medium tx-inverse">{{ $order->user->name ?? 'مستخدم' }}</span>
+									</div>
+								</td>
+								<td class="align-middle tx-medium text-muted">
+									<i class="fas fa-tag mr-1 ml-1 text-warning"></i> {{ $order->category->name ?? 'غير محدد' }}
+								</td>
+								<td class="align-middle text-center">
 									@php
 										$statusClasses = [
 											'pending' => 'badge-warning',
 											'orderReceived' => 'badge-info',
 											'beingEstimated' => 'badge-primary',
 											'estimated' => 'badge-success',
+											'finished' => 'badge-success',
+											'completed' => 'badge-success',
 										];
 										$statusLabels = [
 											'pending' => 'قيد الانتظار',
 											'orderReceived' => 'تم الاستلام',
 											'beingEstimated' => 'جاري التقييم',
 											'estimated' => 'تم التقييم',
+											'finished' => 'مكتمل',
+											'completed' => 'مكتمل',
 										];
 									@endphp
-									<span class="badge {{ $statusClasses[$order->status] ?? 'badge-secondary' }} px-2 py-1 tx-11">
+									<span class="badge {{ $statusClasses[$order->status] ?? 'badge-secondary' }} px-3 py-2 tx-12" style="border-radius: 12px; font-weight: normal;">
 										{{ $statusLabels[$order->status] ?? $order->status }}
 									</span>
 								</td>
-								<td class="tx-right tx-medium tx-danger">{{ number_format($order->total_price, 2) }} ر.س</td>
+								<td class="align-middle tx-medium tx-danger font-weight-bold">{{ number_format($order->total_price, 2) }} <span class="tx-11">ر.س</span></td>
+								
+								@if(auth()->user()->hasRole('expert'))
+								<td class="align-middle text-center">
+									<a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-outline-primary" style="border-radius: 10px;">
+										التفاصيل <i class="fas fa-eye ml-1"></i>
+									</a>
+								</td>
+								@endif
 							</tr>
-							@endforeach
+							@empty
+							<tr>
+								<td colspan="{{ auth()->user()->hasRole('expert') ? '6' : '5' }}" class="text-center py-5 text-muted">
+									<div class="mb-3"><i class="fas fa-folder-open tx-40 text-light"></i></div>
+									لا توجد طلبات حديثة
+								</td>
+							</tr>
+							@endforelse
 						</tbody>
 					</table>
 				</div>

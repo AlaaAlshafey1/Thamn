@@ -1115,7 +1115,8 @@
 
             CKEDITOR.replace('expert_reasoning_editor', {
                 language: 'ar',
-                height: 180,
+                height: 350,
+                versionCheck: false,
                 removePlugins: 'elementspath',
                 resize_enabled: false
             });
@@ -1149,7 +1150,7 @@
             if (tabName === 'evaluate' && typeof CKEDITOR !== 'undefined') {
                 setTimeout(function() {
                     var inst = CKEDITOR.instances['expert_reasoning_editor'];
-                    if (inst) inst.resize('100%', 180);
+                    if (inst) inst.resize('100%', 350);
                 }, 100);
             }
         }
