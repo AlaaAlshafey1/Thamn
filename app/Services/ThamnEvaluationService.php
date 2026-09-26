@@ -270,7 +270,7 @@ PROMPT;
                 if ($expert->email) {
                     try {
                         Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
-                            "مطلوب المصادقة على طلب تثمين AI رقم #{$order->id}",
+                            "مطلوب المصادقة على طلب التثمين الذكي رقم #{$order->id}",
                             $msg,
                             'https://www.thmmn.net/expert/login'
                         ));

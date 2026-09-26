@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Mail\OTPMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use App\Services\WhatsAppService;
 
 class ExpertLoginController extends Controller
@@ -20,52 +23,94 @@ class ExpertLoginController extends Controller
     }
 
     /**
-     * Generate and send OTP via WhatsApp.
+     * Generate and send OTP via WhatsApp or Email based on identifier.
      */
     public function sendOtp(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string|max:20'
+            'identifier' => 'required|string|max:100'
         ], [
-            'phone.required' => 'رقم الجوال مطلوب',
+            'identifier.required' => 'رقم الجوال أو البريد الإلكتروني مطلوب',
         ]);
 
-        $user = User::where('phone', $request->phone)->first();
+        $identifier = trim($request->identifier);
+        $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
+
+        // Find user by phone or email
+        $user = User::where(function ($q) use ($identifier, $isEmail) {
+            if ($isEmail) {
+                $q->where('email', $identifier);
+            } else {
+                $q->where('phone', $identifier);
+            }
+        })->whereNull('deleted_at')->first();
 
         if (!$user) {
-            return back()->withErrors(['phone' => 'رقم الجوال غير مسجل لدينا'])->withInput();
+            $errorKey = $isEmail ? 'identifier' : 'identifier';
+            $errorMsg = $isEmail
+                ? 'البريد الإلكتروني غير مسجل لدينا'
+                : 'رقم الجوال غير مسجل لدينا';
+            return back()->withErrors(['identifier' => $errorMsg])->withInput();
         }
 
-        if (!$user->is_active) {
-            return back()->withErrors(['phone' => 'حسابك غير مفعل بعد، يرجى انتظار موافقة الإدارة'])->withInput();
+        // Check expert role
+        if (!$user->hasRole('expert') && !$user->hasRole('admin') && !$user->hasRole('super-admin')) {
+            return back()->withErrors(['identifier' => 'هذا الحساب لا يملك صلاحية الدخول كخبير'])->withInput();
+        }
+
+        if (isset($user->is_active) && !$user->is_active) {
+            return back()->withErrors(['identifier' => 'حسابك غير مفعل بعد، يرجى انتظار موافقة الإدارة'])->withInput();
         }
 
         // Generate OTP
         $otp = rand(1000, 9999);
 
+        // Remove old OTPs for this user
+        DB::table('otps')->where('user_id', $user->id)->where('type', 'login')->delete();
+
         // Save to DB
         DB::table('otps')->insert([
-            'user_id' => $user->id,
-            'otp' => $otp,
-            'type' => 'login',
+            'user_id'    => $user->id,
+            'otp'        => $otp,
+            'type'       => 'login',
             'expires_at' => now()->addMinutes(10),
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
-        // Send via WhatsApp
-        try {
-            $whatsapp = app(WhatsAppService::class);
-            $whatsapp->sendMessage($user->phone, "رمز تسجيل الدخول الخاص بك في منصة ثمن هو: $otp\nيرجى عدم مشاركته مع أحد.");
-            
-            // Store phone in session for the verify step
-            session(['expert_login_phone' => $user->phone]);
-            
-            return back()->with('otp_sent', true)->with('success', 'تم إرسال رمز التحقق إلى رقم جوالك في الواتساب.');
-        } catch (\Exception $e) {
-            \Log::error('Expert OTP Send Failed: ' . $e->getMessage());
-            return back()->withErrors(['phone' => 'حدث خطأ أثناء إرسال الرمز، يرجى المحاولة لاحقاً'])->withInput();
+        $sent = false;
+
+        if ($isEmail) {
+            // Send via Email
+            try {
+                Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
+                $sent = true;
+                $successMsg = 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.';
+            } catch (\Exception $e) {
+                Log::error('Expert OTP Email Failed: ' . $e->getMessage());
+            }
+        } else {
+            // Send via WhatsApp
+            try {
+                $whatsapp = app(WhatsAppService::class);
+                $whatsapp->sendMessage($user->phone, "رمز تسجيل الدخول الخاص بك في منصة ثمن هو: $otp\nيرجى عدم مشاركته مع أحد.");
+                $sent = true;
+                $successMsg = 'تم إرسال رمز التحقق إلى رقم جوالك على الواتساب.';
+            } catch (\Exception $e) {
+                Log::error('Expert OTP WhatsApp Failed: ' . $e->getMessage());
+            }
         }
+
+        if (!$sent) {
+            return back()->withErrors(['identifier' => 'حدث خطأ أثناء إرسال الرمز، يرجى المحاولة لاحقاً'])->withInput();
+        }
+
+        // Store user id in session for the verify step
+        session(['expert_login_user_id' => $user->id, 'expert_otp_via' => $isEmail ? 'email' : 'phone']);
+
+        return back()
+            ->with('otp_sent', true)
+            ->with('success', $successMsg);
     }
 
     /**
@@ -77,18 +122,17 @@ class ExpertLoginController extends Controller
             'otp' => 'required|digits:4'
         ], [
             'otp.required' => 'رمز التحقق مطلوب',
-            'otp.digits' => 'رمز التحقق يجب أن يتكون من 4 أرقام',
+            'otp.digits'   => 'رمز التحقق يجب أن يتكون من 4 أرقام',
         ]);
 
-        $phone = session('expert_login_phone');
-        if (!$phone) {
-            return redirect()->route('expert.login')->withErrors(['phone' => 'انتهت الجلسة، يرجى المحاولة من جديد']);
+        $userId = session('expert_login_user_id');
+        if (!$userId) {
+            return redirect()->route('expert.login')->withErrors(['identifier' => 'انتهت الجلسة، يرجى المحاولة من جديد']);
         }
 
-        $user = User::where('phone', $phone)->first();
-
+        $user = User::find($userId);
         if (!$user) {
-            return redirect()->route('expert.login')->withErrors(['phone' => 'حدث خطأ، يرجى المحاولة من جديد']);
+            return redirect()->route('expert.login')->withErrors(['identifier' => 'حدث خطأ، يرجى المحاولة من جديد']);
         }
 
         // Verify OTP
@@ -111,7 +155,7 @@ class ExpertLoginController extends Controller
         Auth::login($user);
 
         // Clear session
-        $request->session()->forget('expert_login_phone');
+        $request->session()->forget(['expert_login_user_id', 'expert_otp_via']);
 
         return redirect()->route('dashboard')->with('success', 'تم تسجيل الدخول بنجاح، مرحباً بك في لوحة التحكم.');
     }
