@@ -256,7 +256,7 @@ PROMPT;
         if ($order->evaluation_type === 'ai' && !$order->expert_id) {
             $whatsapp = app(\App\Services\WhatsAppService::class);
             $experts = \App\Models\User::role('expert')->get();
-            $orderLink = route('orders.show', $order->id);
+            $orderLink = 'https://www.thmmn.net/expert/login';
             
             $msg = "ياهلا خبير التثمين 👋\nوصلك طلب تثمين بتقنية ال ( Ai ) رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر أو التعديل عليه وفقا لرؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
 
@@ -272,7 +272,7 @@ PROMPT;
                         Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                             "مطلوب المصادقة على طلب تثمين AI رقم #{$order->id}",
                             $msg,
-                            route('orders.show', $order->id)
+                            'https://www.thmmn.net/expert/login'
                         ));
                     } catch (\Throwable $e) {
                         Log::error("Failed to send expert email for AI order approval: " . $e->getMessage());
@@ -442,7 +442,7 @@ PROMPT;
                     Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                         "هلا بك خبير ( التثمين ) 👋 طلب تثمين احترافي جديد بانتظارك رقم #{$order->id}",
                         "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
-                        route('orders.show', $order->id)
+                        'https://www.thmmn.net/expert/login'
                     ));
                 } catch (\Throwable $e) {
                     Log::error("Failed to send expert email for best order: " . $e->getMessage());

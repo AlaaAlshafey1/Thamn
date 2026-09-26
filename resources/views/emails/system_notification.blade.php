@@ -11,7 +11,7 @@
   </h1>
 
   <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
-    {{ $messageBody ?? '' }}
+    {!! nl2br(e($messageBody ?? '')) !!}
   </p>
 
   @if($actionUrl)
