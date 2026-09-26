@@ -18,7 +18,7 @@
   <a href="{{ $actionUrl }}"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
             font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
-    {{ $isRtl ? 'عرض التفاصيل' : 'View Details' }}
+    {{ $isRtl ? 'عرض الطلب' : 'View Order' }}
   </a>
   @endif
 
