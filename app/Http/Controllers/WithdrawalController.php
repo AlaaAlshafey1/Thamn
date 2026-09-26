@@ -93,6 +93,15 @@ class WithdrawalController extends Controller
                     $whatsapp->sendMessage($admin->phone, $msg);
                 }
             }
+
+            // إشعار الخبير عبر الإيميل بأنه تم استلام طلبه
+            if ($user->email) {
+                Mail::to($user->email)->send(new \App\Mail\SystemNotificationMail(
+                    'استلام طلب سحب أرباح 💸',
+                    "أهلاً {$user->first_name}، لقد استلمنا طلب سحب أرباح بقيمة " . number_format($request->amount, 2) . " ريال. سيتم مراجعة الطلب ومعالجته في أقرب وقت.",
+                    route('withdrawals.my')
+                ));
+            }
         } catch (\Exception $e) {
             \Log::error('Withdrawal Notifications Failed: ' . $e->getMessage());
         }
