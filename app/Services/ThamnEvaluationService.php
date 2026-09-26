@@ -244,9 +244,12 @@ PROMPT;
         // ── إشعار العميل بالانتظار (الجميع الآن ينتظر تصديق الخبير/الأدمن) ──
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
+            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                lang('أوشكنا على النهاية ⏳', 'Almost done ⏳', request()),
-                lang('أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في تصديق الخبراء والمراجعة النهائية.', 'We are almost done, please be patient. Your order is pending expert approval.', request()),
+                $isAr ? 'أوشكنا على النهاية ⏳' : 'Almost done ⏳',
+                $isAr
+                    ? 'أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في تصديق الخبراء والمراجعة النهائية.'
+                    : 'We are almost done, please be patient. Your order is pending expert approval.',
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
             );
@@ -392,9 +395,12 @@ PROMPT;
             $user = $order->user;
             $tokens = $user->getFcmTokens();
             if (!empty($tokens)) {
+                $isAr = ($user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    lang('تم حساب السعر العادل', 'Fair Price Calculated', request()),
-                    lang('لقد قام فريق ثمن بحساب السعر العادل لمنتجك: ' . $thamnPrice . ' ريال', 'Thamn team calculated the fair price for your product: ' . $thamnPrice . ' SAR', request()),
+                    $isAr ? 'تم حساب السعر العادل' : 'Fair Price Calculated',
+                    $isAr
+                        ? 'لقد قام فريق ثمن بحساب السعر العادل لمنتجك: ' . $thamnPrice . ' ريال'
+                        : 'Thamn team calculated the fair price for your product: ' . $thamnPrice . ' SAR',
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_ready']]
                 );

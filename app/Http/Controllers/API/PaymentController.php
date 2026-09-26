@@ -351,9 +351,14 @@ class PaymentController extends Controller
     {
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
+            // نستخدم اللغة المفضلة للمستخدم المحفوظة في DB بدلاً من Accept-Language header
+            // لأن هذا قد يُستدعى من webhook لا يحمل header اللغة
+            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                lang('تم استلام طلبك', 'Order Received', $request),
-                lang('بدأنا العمل على طلب التقييم رقم ' . $order->id, 'We started working on evaluation order #' . $order->id, $request),
+                $isAr ? 'تم استلام طلبك ✅' : 'Order Received ✅',
+                $isAr
+                    ? 'بدأنا العمل على طلب التقييم رقم ' . $order->id
+                    : 'We started working on evaluation order #' . $order->id,
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_received']]
             );
@@ -521,9 +526,12 @@ class PaymentController extends Controller
 
         $userTokens = $order->user->getFcmTokens();
         if (!empty($userTokens)) {
+            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                lang('تم تحويل طلبك للخبراء', 'Order sent to experts', request()),
-                lang('طلبك رقم ' . $order->id . ' قيد المراجعة الآن من قبل خبرائنا، سنقوم بالرد عليك في أقرب وقت', 'Your order #' . $order->id . ' is now being reviewed by our experts, we will get back to you as soon as possible', request()),
+                $isAr ? 'تم تحويل طلبك للخبراء 👨‍💼' : 'Order sent to experts 👨‍💼',
+                $isAr
+                    ? 'طلبك رقم ' . $order->id . ' قيد المراجعة الآن من قبل خبرائنا، سنقوم بالرد عليك في أقرب وقت'
+                    : 'Your order #' . $order->id . ' is now being reviewed by our experts, we will get back to you as soon as possible',
                 $userTokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'expert_pending']]
             );
