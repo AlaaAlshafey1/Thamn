@@ -45,6 +45,7 @@ Route::prefix('auth')->group(function () {
 // ------------------ PUBLIC ENDPOINTS ------------------
 Route::get('categories', [HomeController::class, 'categories']);
 Route::get('valuation-orders/{order}/pdf', [OrderController::class, 'generatePdf'])->name('valuation-order.pdf')->middleware('signed');
+Route::get('valuation-orders/{order}/invoice-pdf', [OrderController::class, 'generateInvoicePdf'])->name('valuation-order.invoice-pdf')->middleware('signed');
 
 // ─── Moyasar Webhook (لا يحتاج Auth — يُستدعى من سيرفرات Moyasar) ───
 Route::post('/payment/webhook/moyasar', [PaymentController::class, 'moyasarWebhook'])

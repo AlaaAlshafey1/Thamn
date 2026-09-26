@@ -938,6 +938,18 @@ class OrderController extends Controller
         return $pdf->stream('valuation-order-' . $order->id . '.pdf');
     }
 
+    public function generateInvoicePdf(Request $request, $orderId)
+    {
+        $order = \App\Models\Order::with(['category', 'user'])->findOrFail($orderId);
+
+        $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
+        $orderName = $payload['order_name'] ?? ($order->category?->name_ar ?? 'N/A');
+
+        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.invoice', compact('order', 'orderName'));
+
+        return $pdf->download('invoice-' . $order->id . '.pdf');
+    }
+
 
 
     public function reEvaluate(Request $request, $orderId)

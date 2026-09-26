@@ -2,6 +2,8 @@
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
   $emailTitle = $isRtl ? 'فاتورة طلبك – ثمن' : 'Your Invoice – Thamn';
+  $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
+  $orderName = $payload['order_name'] ?? ($order->category?->name_ar ?? 'N/A');
 @endphp
 @php $banner = 'invoice_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -22,7 +24,7 @@
           🆔 {{ $isRtl ? 'رقم الطلب' : 'Order #' }}: <strong style="color:#C1953E;">#{{ $order->id ?? 'N/A' }}</strong>
         </p>
         <p style="margin:0 0 8px;font-size:13px;color:#555;">
-          📦 {{ $isRtl ? 'الفئة' : 'Category' }}: <strong style="color:#1A1A1A;">{{ $order->category?->name_ar ?? 'N/A' }}</strong>
+          📦 {{ $isRtl ? 'الطلب' : 'Order' }}: <strong style="color:#1A1A1A;">{{ $orderName }}</strong>
         </p>
         <p style="margin:0 0 8px;font-size:13px;color:#555;">
           💰 {{ $isRtl ? 'المبلغ المدفوع' : 'Amount Paid' }}: <strong style="color:#C1953E;">{{ number_format($order->price ?? 0, 2) }} {{ $isRtl ? 'ر.س' : 'SAR' }}</strong>
@@ -34,10 +36,10 @@
     </tr>
   </table>
 
-  <a href="https://thmmn.net"
+  <a href="{{ URL::signedRoute('valuation-order.invoice-pdf', ['order' => $order->id]) }}"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
             font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
-    {{ $isRtl ? 'عرض الطلب' : 'View Order' }}
+    {{ $isRtl ? 'تنزيل الفاتورة' : 'Download Invoice' }}
   </a>
 
 @php $slot = ob_get_clean(); @endphp
