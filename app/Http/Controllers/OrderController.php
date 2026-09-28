@@ -187,7 +187,7 @@ class OrderController extends Controller
             'ai_valuation_rating_id' => $aiValuationRatingId,
             'expert_evaluated' => true,
             'total_price' => $expertPrice,
-            'status' => in_array($order->evaluation_type, ['expert', 'ai']) ? 'estimated' : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
+            'status' => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
         $commissionType = \App\Models\Setting::where('key', 'expert_commission_type')->value('value') ?? 'fixed';
@@ -226,7 +226,6 @@ class OrderController extends Controller
                 'thamn_by' => null, // تلقائي (ليس بواسطة أدمن يدوياً)
                 'thamn_at' => now(),
                 'total_price' => $thamnPrice,
-                'status' => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
             ]);
 
             // Notify Customer — التثمين اكتمل
