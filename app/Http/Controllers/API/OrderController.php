@@ -583,7 +583,22 @@ class OrderController extends Controller
                     'message' => $lang === 'ar' ? 'تصنيف الحالة غير صالح' : 'Invalid statsCategory'
                 ], 400);
             }
-            $query->whereIn('status', $statusGroups[$request->statsCategory]);
+            if ($request->statsCategory === 'inPricing') {
+                $query->whereIn('status', $statusGroups['inPricing'])
+                      ->where(function($q) {
+                          $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+                      });
+            } elseif ($request->statsCategory === 'priced') {
+                $query->where(function($q) use ($statusGroups) {
+                    $q->whereIn('status', $statusGroups['priced'])
+                      ->orWhere(function($q2) use ($statusGroups) {
+                          $q2->whereIn('status', $statusGroups['inPricing'])
+                             ->where('expert_evaluated', 1);
+                      });
+                });
+            } else {
+                $query->whereIn('status', $statusGroups[$request->statsCategory]);
+            }
         } elseif ($request->filled('status')) {
             if (!in_array($request->status, $validStatuses)) {
                 return response()->json([
@@ -591,7 +606,26 @@ class OrderController extends Controller
                     'message' => $lang === 'ar' ? 'الحالة غير صالحة' : 'Invalid status'
                 ], 400);
             }
-            $query->where('status', $request->status);
+            if (in_array($request->status, $statusGroups['priced'])) {
+                $query->where(function($q) use ($request, $statusGroups) {
+                    $q->where('status', $request->status)
+                      ->orWhere(function($q2) use ($request, $statusGroups) {
+                          // إذا بحث عن estimated، نجيب له كمان ال beingEstimated لو اتقيم
+                          if ($request->status === 'estimated') {
+                              $q2->where('status', 'beingEstimated')->where('expert_evaluated', 1);
+                          } elseif ($request->status === 'reEstimated') {
+                              $q2->where('status', 'beingReEstimated')->where('expert_evaluated', 1);
+                          }
+                      });
+                });
+            } elseif (in_array($request->status, $statusGroups['inPricing'])) {
+                $query->where('status', $request->status)
+                      ->where(function($q) {
+                          $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+                      });
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         if ($request->filled('category_id')) {
@@ -644,11 +678,17 @@ class OrderController extends Controller
                 ])
                 ->values();
 
+            $mappedStatus = $order->status;
+            if ($order->expert_evaluated) {
+                if ($mappedStatus === 'beingEstimated') $mappedStatus = 'estimated';
+                if ($mappedStatus === 'beingReEstimated') $mappedStatus = 'reEstimated';
+            }
+
             return [
                 'id' => $order->id,
                 'user_id' => $order->user_id,
                 'category_id' => $order->category_id,
-                'status' => $order->status,
+                'status' => $mappedStatus,
                 'pricing_mode' => $order->pricing_mode ?? 'valuation_only',
                 'sale_terms_accepted' => (bool) $order->sale_terms_accepted,
                 'total_price' => $order->total_price,
@@ -837,10 +877,17 @@ class OrderController extends Controller
             }
         }
 
+        $mappedStatus = $order->status;
+        if ($order->expert_evaluated) {
+            if ($mappedStatus === 'beingEstimated') $mappedStatus = 'estimated';
+            if ($mappedStatus === 'beingReEstimated') $mappedStatus = 'reEstimated';
+        }
+
         /* ===================== RESPONSE ===================== */
         return response()->json([
             'id' => $order->id,
             'category' => $category,
+            'status' => $mappedStatus,
             'description' => $description,
             'image' => $image,
             'images' => $images,

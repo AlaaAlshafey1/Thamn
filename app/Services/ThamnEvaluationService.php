@@ -206,8 +206,8 @@ PROMPT;
 
         $order->update([
             // التعديل الجديد: جميع التقييمات بما فيها الـ ai تذهب للخبير للمصادقة والتثمين النهائي
-            'status' => $order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated',
-            'expert_evaluated' => 0, // لضمان ظهوره في لوحة تحكم الخبير
+            'status' => in_array($order->status, ['estimated', 'reEstimated', 'completed']) ? $order->status : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
+            'expert_evaluated' => $order->expert_evaluated ? 1 : 0, // لضمان ظهوره في لوحة تحكم الخبير إلا إذا تم تقييمه بالفعل
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
             'ai_price' => $aiResult['recommended_price'] ?? null,
