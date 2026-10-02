@@ -21,7 +21,7 @@ class OTPMail extends Mailable
 
     public function build()
     {
-        return $this->subject('كود تفعيل حساب ثمن: ' . $this->otp)
+        return $this->subject('رمز التحقق الخاص بك')
             ->view('emails.otp');
     }
 }

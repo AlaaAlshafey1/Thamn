@@ -84,18 +84,12 @@
 
               <!-- Title -->
               <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
-                {{ $isRtl ? 'التحقق من تسجيلك في ثمن' : 'Verify Your Thamn Account' }}
+                رمز التحقق الخاص بك
               </h1>
 
               <!-- Description -->
               <p style="margin:0 0 28px;font-size:14px;color:#666666;line-height:1.85;text-align:center;">
-                @if($isRtl)
-                  @if(isset($userName))<strong style="color:#1A1A1A;">{{ $userName }}</strong>، @endif
-                  تلقينا محاولة تسجيل باستخدام الرمز التالي. يرجى إدخاله في نافذة المتصفح التي بدأت منها عملية التسجيل في ثمن.
-                @else
-                  @if(isset($userName))Hi <strong style="color:#1A1A1A;">{{ $userName }}</strong>,<br>@endif
-                  We received a registration attempt. Please enter the code below in the browser window where you started the Thamn sign-up process.
-                @endif
+                مرحباً @if(isset($userName))<strong style="color:#1A1A1A;">{{ $userName }}</strong>@endif رمز التحقق الخاص بك هو :
               </p>
 
               <!-- OTP Code Box -->
@@ -120,9 +114,7 @@
                 style="background:#FFF8EC;border-radius:10px;border:1px solid #F5DFA0;">
                 <tr>
                   <td style="padding:13px 18px;font-size:12px;color:#7A5B00;text-align:center;line-height:1.7;">
-                    ⚠️&nbsp;{{ $isRtl
-                      ? 'لا تشارك هذا الرمز مع أي شخص. فريق ثمن لن يطلبه منك أبداً.'
-                      : "Never share this code. Thamn's team will never ask for it." }}
+                    ⚠️&nbsp;يرجى عدم مشاركته مع أحد
                   </td>
                 </tr>
               </table>

@@ -187,16 +187,16 @@
 @section('page-header')
 	<!-- breadcrumb -->
 	<div class="breadcrumb-header justify-content-between align-items-center mb-4 fade-in-up">
-		<div class="left-content d-flex align-items-center">
-			<div class="d-flex align-items-center">
-				<div class="header-logo-wrap">
-					<img src="{{ asset('assets/img/Logo.png') }}" alt="Thamen Logo" class="ht-60 wd-60 mg-r-3 shadow-sm" style="border-radius: 15px; transition: transform 0.3s;">
+		<div class="left-content w-100">
+			<div class="d-flex align-items-center flex-column flex-md-row text-center text-md-right">
+				<div class="header-logo-wrap mb-2 mb-md-0 ml-md-3">
+					<img src="{{ asset('assets/img/Logo.png') }}" alt="Thamen Logo" class="ht-50 wd-50 ht-md-60 wd-md-60 shadow-sm" style="border-radius: 15px; transition: transform 0.3s;">
 				</div>
-				<div class="mg-l-4">
-					<h2 class="main-content-title tx-28 mg-b-2" style="font-family: 'Cairo', sans-serif; font-weight: 800; color: #2c3e50;">
+				<div class="mt-2 mt-md-0">
+					<h2 class="main-content-title tx-20 tx-md-28 mg-b-2" style="font-family: 'Cairo', sans-serif; font-weight: 800; color: #2c3e50;">
 						لوحة التحكم الذكية <span style="color: #c1953e;">ثمن</span> ✨
 					</h2>
-					<p class="mg-b-0 tx-15 text-muted" style="font-family: 'Cairo', sans-serif;">
+					<p class="mg-b-0 tx-13 tx-md-15 text-muted" style="font-family: 'Cairo', sans-serif;">
 						نظام إدارة متكامل مدعوم بالذكاء الاصطناعي لتحليل البيانات وتسهيل الوصول.
 					</p>
 				</div>
@@ -380,8 +380,8 @@
 	@if(auth()->user()->hasRole('expert'))
 	<!-- Expert Dashboard View -->
 	<div class="row row-sm fade-in-up delay-1 mb-4">
-		<div class="col-xl-12 mb-3 d-flex justify-content-between align-items-center">
-			<h4 class="font-weight-bold mb-0" style="font-family: 'Cairo', sans-serif; color: #2c3e50;">
+		<div class="col-xl-12 mb-3 d-flex justify-content-between align-items-center flex-column flex-md-row">
+			<h4 class="font-weight-bold mb-3 mb-md-0 text-center text-md-right" style="font-family: 'Cairo', sans-serif; color: #2c3e50;">
 				<i class="fas fa-chart-line text-warning mr-2 ml-2"></i> ملخص أداء الخبير
 			</h4>
 			<span class="badge badge-light px-3 py-2 tx-14 shadow-sm" style="border-radius: 20px;">

@@ -233,9 +233,12 @@ class OrderController extends Controller
 
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    lang('اكتمل تثمين منتجك 🎉', 'Your evaluation is ready! 🎉', request()),
-                    lang("تم تثمين منتجك رقم #{$order->id} بنجاح. تفضل اطلع على النتيجة الآن.", "Your product #{$order->id} has been evaluated. Check the result now!", request()),
+                    $isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved',
+                    $isAr 
+                        ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" 
+                        : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
                 );
@@ -296,12 +299,15 @@ class OrderController extends Controller
                 \Log::error('Expert Valuation Notification Failed: ' . $e->getMessage());
             }
 
-            // FCM Notification to Customer (Saudi Phrasing)
+            // FCM Notification to Customer
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    lang('تم تقييم منتجك بنجاح ✅', 'Your evaluation is ready! ✅', request()),
-                    lang("تم تقييم منتجك رقم #{$order->id} بنجاح وتم إرسال التقرير/الفاتورة. تفضل اطلع عليه الآن.", "Your product #{$order->id} has been successfully evaluated and invoice sent. Check it now!", request()),
+                    $isAr ? 'تم تقييم سلعتك بنجاح' : 'Your item has been successfully evaluated',
+                    $isAr 
+                        ? "تم تقييم طلبك رقم {$order->id} وإرسال التقرير/ الفاتورة بنجاح. تفضل اطلع عليه الآن" 
+                        : "Your order #{$order->id} has been evaluated and the report/invoice sent successfully. Please check it now.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_expert']]
                 );
@@ -367,12 +373,15 @@ class OrderController extends Controller
             \Log::error('Thamn Evaluation WhatsApp Failed: ' . $e->getMessage());
         }
 
-        // FCM Notification to Customer (Saudi Phrasing)
+        // FCM Notification to Customer
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
+            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                lang('تم اعتماد التقييم النهائي ⚖️', 'Final Evaluation Approved ⚖️', request()),
-                lang("تم اعتماد التقييم النهائي لمنتجك رقم #{$order->id} بنجاح. تفضل اطلع عليه الآن.", "The final evaluation for your product #{$order->id} has been approved successfully. Check it now!", request()),
+                $isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved',
+                $isAr 
+                    ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" 
+                    : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
             );
@@ -434,6 +443,20 @@ class OrderController extends Controller
 
             // Notify Customer via Notification
             $order->user->notify(new OrderAcceptedByExpertNotification($order));
+
+            // Notify Customer via FCM
+            $tokens = $order->user->getFcmTokens();
+            if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
+                $this->notifyByFirebase(
+                    $isAr ? 'جار تقييم سلعتك' : 'Your item is being evaluated',
+                    $isAr 
+                        ? "استلم خبيرنا طلبك رقم {$order->id} وراح تجيك النتيجة اقرب وقت" 
+                        : "Our expert has received your order #{$order->id}. You will receive the result as soon as possible.",
+                    $tokens,
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_accepted_expert']]
+                );
+            }
 
             // Notify Customer via Email
             Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(

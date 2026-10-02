@@ -70,10 +70,10 @@ class CheckExpiredOrders extends Command
         $userLang = $order->user->preferredLang();
         if ($fcmToken) {
             $this->notifyByFirebase(
-                $userLang === 'ar' ? '⚠️ انتهت مهلة تقييم منتجك' : '⚠️ Evaluation Time Expired',
-                $userLang === 'ar'
-                    ? "نعتذر، لم يتم قبول طلبك رقم #{$order->id} من أي خبير في الوقت المحدد (24 ساعة). يمكنك طلب استرداد المبلغ."
-                    : "We're sorry, your order #{$order->id} was not accepted by any expert within the allowed time (24 hours). You can request a refund.",
+                $userLang === 'ar' ? 'انتهت مهلة تقييم منتجك' : 'Evaluation time expired',
+                $userLang === 'ar' 
+                    ? "نعتذر لم يتم استقبال طلبك رقم {$order->id} من أي خبير خلال (24 ساعة) يمكنك طلب استرداد المبلغ" 
+                    : "We apologize, your order #{$order->id} was not accepted by any expert within (24 hours). You can request a refund.",
                 [$fcmToken],
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_expired']]
             );

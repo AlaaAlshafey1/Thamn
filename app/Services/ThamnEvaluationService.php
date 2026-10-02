@@ -246,10 +246,10 @@ PROMPT;
         if (!empty($tokens)) {
             $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                $isAr ? 'أوشكنا على النهاية ⏳' : 'Almost done ⏳',
-                $isAr
-                    ? 'أوشكنا على النهاية، أرجو منك الصبر. طلبك الآن في تصديق الخبراء والمراجعة النهائية.'
-                    : 'We are almost done, please be patient. Your order is pending expert approval.',
+                $isAr ? 'أوشكنا على النهاية' : 'Almost done',
+                $isAr 
+                    ? 'أوشكنا على النهاية.. طلبك الآن في المراجعة النهائية' 
+                    : 'We are almost done.. Your order is now in final review',
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
             );
@@ -397,10 +397,10 @@ PROMPT;
             if (!empty($tokens)) {
                 $isAr = ($user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    $isAr ? 'تم حساب السعر العادل' : 'Fair Price Calculated',
-                    $isAr
-                        ? 'لقد قام فريق ثمن بحساب السعر العادل لمنتجك: ' . $thamnPrice . ' ريال'
-                        : 'Thamn team calculated the fair price for your product: ' . $thamnPrice . ' SAR',
+                    $isAr ? 'تم حساب السعر العادل' : 'Fair price calculated',
+                    $isAr 
+                        ? "قام فريق ثمن بحساب السعر العادل لمنتجك {$thamnPrice} ريال" 
+                        : "Thamn team has calculated the fair price for your product: {$thamnPrice} SAR",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_ready']]
                 );
@@ -446,8 +446,8 @@ PROMPT;
             if ($expert->email) {
                 try {
                     Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
-                        "هلا بك خبير ( التثمين ) 👋 طلب تثمين احترافي جديد بانتظارك رقم #{$order->id}",
-                        "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
+                        'طلب تقييم جديد بقسمك',
+                        "يوجد طلب جديد رقم : {$order->id} متاح الآن للتقييم .. بادر بتسجيل الدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
                         'https://www.thmmn.net/expert/login'
                     ));
                 } catch (\Throwable $e) {

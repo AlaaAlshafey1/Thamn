@@ -27,7 +27,7 @@ class DeclarationSignedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'نسختك من الاتفاقية القانونية للتعاون - تطبيق ثمن',
+            subject: 'استلام طلب الانضمام كخبير',
         );
     }
 

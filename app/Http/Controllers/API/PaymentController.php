@@ -388,8 +388,8 @@ class PaymentController extends Controller
                     $whatsapp->sendMessage($expert->phone, $expertMsg);
                 }
                 Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
-                    'جاك رزق! طلب تثمين جديد بقسمك',
-                    "يا خبيرنا، فيه طلب تثمين جديد بقسمك لا يفوتك.\nادخل على لوحة التحكم واستلم الطلب الحين.",
+                    'طلب تقييم جديد بقسمك',
+                    "يوجد طلب جديد رقم : {$order->id} متاح الآن للتقييم .. بادر بتسجيل الدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
                     route('orders.index')
                 ));
             }

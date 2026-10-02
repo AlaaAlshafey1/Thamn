@@ -69,7 +69,7 @@ class ValuationResultMail extends Mailable
 
     public function build()
     {
-        return $this->subject('بطاقة التثمين لطلبك رقم #' . $this->order->id . ' — تطبيق ثمن')
+        return $this->subject('تم تقييم طلبك بنجاح')
             ->view('emails.valuation_result')
             ->with(['productImageUrl' => $this->productImageUrl]);
     }

@@ -1123,9 +1123,12 @@ class OrderController extends Controller
         // FCM Notification لإعادة التقييم (Saudi Phrasing)
         $tokens = $order->user->getFcmTokens();
         if (!empty($tokens)) {
+            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                lang('تم استلام طلب إعادة التقييم 🔄', 'Re-evaluation Request Received 🔄', $request),
-                lang("استلمنا طلب إعادة التقييم لمنتجك رقم #{$order->id}. سنباشر التقييم الجديد في أقرب وقت.", "We received your re-evaluation request for product #{$order->id}. We will start the new evaluation shortly.", $request),
+                $isAr ? 'ولايهمك .. تم استلام طلب إعادة التقييم' : 'Re-evaluation request received',
+                $isAr 
+                    ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} بدينا مرحلة المراجعة فورا" 
+                    : "We received your re-evaluation request for product #{$order->id} and started the review process immediately.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
@@ -1287,9 +1290,12 @@ class OrderController extends Controller
             // FCM Notification
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    lang('🛍️ منتجك في السوق الآن!', '🛍️ Your product is live on the Market!', $request),
-                    lang("تم إدراج منتجك رقم #{$order->id} في سوق ثمن بنجاح. يمكن للمشترين رؤيته الآن.", "Your product #{$order->id} has been successfully listed on Thamn Market. Buyers can now see it!", $request),
+                    $isAr ? 'منتجك في السوق الآن' : 'Your product is in the market now',
+                    $isAr 
+                        ? "تم إدراج منتجك رقم {$order->id} في سوق ثمن بنجاح يمكن للمشترين رؤيته الآن" 
+                        : "Your product #{$order->id} has been successfully listed in Thamn market. Buyers can now see it.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
                 );

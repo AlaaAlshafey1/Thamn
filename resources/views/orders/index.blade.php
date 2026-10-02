@@ -122,6 +122,60 @@
         </div>
     </div>
     @endif
+
+    @if(auth()->user()->hasRole('expert') && isset($activeOrders) && $activeOrders->whereNull('expert_id')->count() > 0)
+        @php
+            $firstNewOrder = $activeOrders->whereNull('expert_id')->first();
+        @endphp
+        <!-- New Order Modal -->
+        <div class="modal fade" id="newOrderModal" tabindex="-1" aria-labelledby="newOrderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 pt-0">
+                        <div class="mb-4">
+                            <div style="width: 80px; height: 80px; background: rgba(193, 149, 62, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                <i class="fas fa-bell fa-3x" style="color: #c1953e; animation: ring 2s infinite;"></i>
+                            </div>
+                            <h4 class="fw-bold mb-2" style="color: #2c3e50;">طلب جديد متاح!</h4>
+                            <p class="text-muted">هناك طلب جديد في تخصصك ينتظر التقييم</p>
+                        </div>
+                        <div class="bg-light p-3 mb-4 text-start" style="border-radius: 15px; border: 1px solid #f0f0f0;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">رقم الطلب:</span>
+                                <span class="fw-bold text-dark">#{{ $firstNewOrder->id }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">القسم:</span>
+                                <span class="fw-bold text-dark"><i class="fas fa-tag text-warning mr-1 ml-1"></i> {{ $firstNewOrder->category->name_ar ?? $firstNewOrder->category->name_en ?? 'غير محدد' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">وقت الطلب:</span>
+                                <span class="fw-bold text-dark"><i class="fas fa-clock text-info mr-1 ml-1"></i> {{ $firstNewOrder->created_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-warning btn-lg w-100 fw-bold expert-receive-btn mb-2" data-order-id="{{ $firstNewOrder->id }}" style="border-radius: 12px; background: linear-gradient(135deg, #c1953e, #b08637); border: none; color: white;">
+                            <i class="fas fa-hand-holding-usd ml-1"></i> استلام الطلب الآن
+                        </button>
+                        <button type="button" class="btn btn-light w-100 fw-bold" data-bs-dismiss="modal" style="border-radius: 12px;">تخطي حالياً</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes ring {
+                0% { transform: rotate(0); }
+                10% { transform: rotate(15deg); }
+                20% { transform: rotate(-10deg); }
+                30% { transform: rotate(5deg); }
+                40% { transform: rotate(-5deg); }
+                50% { transform: rotate(0); }
+                100% { transform: rotate(0); }
+            }
+        </style>
+    @endif
 @endsection
 
 @section('js')
@@ -170,6 +224,16 @@
                 }
             });
 
+            // Show new order modal if exists
+            if ($('#newOrderModal').length > 0) {
+                if (typeof bootstrap !== 'undefined') {
+                    var myModal = new bootstrap.Modal(document.getElementById('newOrderModal'));
+                    myModal.show();
+                } else {
+                    $('#newOrderModal').modal('show');
+                }
+            }
+
             // Expert Assignment logic
             $(document).on('click', '.expert-receive-btn', function () {
                 let orderId = $(this).data('order-id');
@@ -184,7 +248,7 @@
                         },
                         success: function (response) {
                             if (response.status) {
-                                location.reload();
+                                window.location.href = '{{ url("orders") }}/' + orderId;
                             } else {
                                 alert(response.message);
                                 location.reload();

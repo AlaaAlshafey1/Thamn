@@ -11,13 +11,8 @@
   </h1>
 
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
-    @if($isRtl)
-      مرحباً <strong style="color:#1A1A1A;">{{ $declaration->full_name ?? '' }}</strong>،<br>
-      نسختك من الاتفاقية القانونية للتعاون مع منصة ثمن مرفقة بهذا البريد الإلكتروني كملف PDF.
-    @else
-      Hi <strong style="color:#1A1A1A;">{{ $declaration->full_name ?? '' }}</strong>,<br>
-      Your signed copy of the Thamn cooperation agreement is attached as a PDF.
-    @endif
+    مرحباً <strong style="color:#1A1A1A;">{{ $declaration->full_name ?? '' }}</strong><br>
+    استلمنا طلب انضمامك لفريق الخبراء في ثمن وسنقوم بمراجعة طلبك والتواصل معك قريباً
   </p>
 
   <a href="{{ $downloadUrl }}"
