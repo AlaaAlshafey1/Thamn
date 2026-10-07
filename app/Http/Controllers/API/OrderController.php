@@ -493,14 +493,29 @@ class OrderController extends Controller
                 ];
             }
 
+            $label = $lang === 'ar'
+                ? ($detail->question->question_ar ?? $detail->question->question_en)
+                : ($detail->question->question_en ?? $detail->question->question_ar);
+
+            $value = $lang === 'ar'
+                ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
+                : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value);
+
+            if ($detail->question->type === 'rateTypeSelection' && $detail->option?->badge) {
+                $badge = $detail->option->badge;
+                if ($badge === 'best') {
+                    $value = $lang === 'ar' ? 'هجين' : 'Hybrid';
+                } elseif ($badge === 'expert') {
+                    $value = $lang === 'ar' ? 'خبير' : 'Expert';
+                } elseif ($badge === 'ai') {
+                    $value = $lang === 'ar' ? 'ذكي' : 'Smart';
+                }
+            }
+
             $groups[$groupId]['items'][] = [
                 'id' => $detail->id,
-                'label' => $lang === 'ar'
-                    ? ($detail->question->question_ar ?? $detail->question->question_en)
-                    : ($detail->question->question_en ?? $detail->question->question_ar),
-                'value' => $lang === 'ar'
-                    ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
-                    : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value),
+                'label' => $label,
+                'value' => $value,
             ];
         }
 
@@ -651,9 +666,19 @@ class OrderController extends Controller
                 $titleParts[] = $categoryName;
 
             $detailValues = $order->details
-                ->map(fn($d) => $lang === 'ar'
-                    ? ($d->option?->option_ar ?? $d->option?->option_en ?? $d->value)
-                    : ($d->option?->option_en ?? $d->option?->option_ar ?? $d->value))
+                ->map(function ($d) use ($lang) {
+                    $val = $lang === 'ar'
+                        ? ($d->option?->option_ar ?? $d->option?->option_en ?? $d->value)
+                        : ($d->option?->option_en ?? $d->option?->option_ar ?? $d->value);
+
+                    if ($d->question && $d->question->type === 'rateTypeSelection' && $d->option?->badge) {
+                        $badge = $d->option->badge;
+                        if ($badge === 'best') $val = $lang === 'ar' ? 'هجين' : 'Hybrid';
+                        elseif ($badge === 'expert') $val = $lang === 'ar' ? 'خبير' : 'Expert';
+                        elseif ($badge === 'ai') $val = $lang === 'ar' ? 'ذكي' : 'Smart';
+                    }
+                    return $val;
+                })
                 ->filter()
                 ->unique()
                 ->values()
@@ -844,6 +869,17 @@ class OrderController extends Controller
                 ? ($detail->option?->option_ar ?? $detail->option?->option_en ?? $detail->value)
                 : ($detail->option?->option_en ?? $detail->option?->option_ar ?? $detail->value);
 
+            if ($detail->question->type === 'rateTypeSelection' && $detail->option?->badge) {
+                $badge = $detail->option->badge;
+                if ($badge === 'best') {
+                    $value = $lang === 'ar' ? 'هجين' : 'Hybrid';
+                } elseif ($badge === 'expert') {
+                    $value = $lang === 'ar' ? 'خبير' : 'Expert';
+                } elseif ($badge === 'ai') {
+                    $value = $lang === 'ar' ? 'ذكي' : 'Smart';
+                }
+            }
+
             if ($title && $value) {
                 $details[] = [
                     'title' => $title,
@@ -954,6 +990,13 @@ class OrderController extends Controller
             $value = $detail->option?->option_ar
                 ?? $detail->option?->option_en
                 ?? $detail->value;
+
+            if ($detail->question->type === 'rateTypeSelection' && $detail->option?->badge) {
+                $badge = $detail->option->badge;
+                if ($badge === 'best') $value = 'هجين';
+                elseif ($badge === 'expert') $value = 'خبير';
+                elseif ($badge === 'ai') $value = 'ذكي';
+            }
 
             if ($title && $value) {
                 $details[] = [
