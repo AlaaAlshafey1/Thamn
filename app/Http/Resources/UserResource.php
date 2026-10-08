@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             'fcm_token_ios' => $this->fcm_token_ios,
             'fcm_token' => $this->fcm_token,
             'device_type' => $this->device_type,
+            'unread_order_notifications_count' => $this->unreadNotifications()->whereNotNull('data->order_id')->count(),
 
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
