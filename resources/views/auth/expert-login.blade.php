@@ -4,8 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول الخبراء - ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- BoxIcons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
+        :root {
+            --ex-gold:       #ff9800;
+            --ex-gold-light: #ffb74d;
+            --ex-card:       #ffffff;
+            --ex-soft:       #f8f9fc;
+            --ex-text:       #111111;
+            --ex-text-muted: #888888;
+            --ex-border:     #eeeeee;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,44 +26,41 @@
         }
 
         body {
-            background-color: #fcf9f6;
+            background: linear-gradient(135deg, #f0f2f5 0%, #ffffff 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            color: var(--ex-text);
         }
 
-        /* Abstract Background Elements */
-        .bg-shape {
+        /* Background Effects */
+        .bg-glow {
             position: absolute;
-            z-index: 1;
-        }
-
-        .bg-bars {
-            bottom: -50px;
-            left: -50px;
             width: 400px;
-            opacity: 0.9;
-        }
-
-        .bg-circle-top {
-            top: -100px;
-            left: -100px;
-            width: 300px;
-            height: 300px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,152,0,0.1) 0%, transparent 70%);
             border-radius: 50%;
-            background: #fff0e6;
+            z-index: 1;
+            pointer-events: none;
         }
-
-        .bg-circle-bottom {
-            bottom: -150px;
-            right: -100px;
-            width: 450px;
-            height: 450px;
-            border-radius: 50%;
-            border: 60px solid #fff0e6;
+        .bg-glow-1 { top: -150px; right: -100px; }
+        .bg-glow-2 { bottom: -150px; left: -100px; width: 500px; height: 500px; opacity: 0.7; }
+        
+        .floating-icon {
+            position: absolute;
+            color: var(--ex-gold);
+            opacity: 0.05;
+            z-index: 1;
+            animation: float 6s ease-in-out infinite;
+        }
+        .icon-1 { top: 15%; left: 15%; font-size: 8rem; animation-delay: 0s; }
+        .icon-2 { bottom: 20%; right: 10%; font-size: 12rem; animation-delay: -3s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
         }
 
         .logo-container {
@@ -60,18 +69,20 @@
             right: 50px;
             z-index: 10;
         }
-
         .logo-container img {
-            height: 50px;
+            height: 45px;
+            transition: opacity 0.3s;
         }
+        .logo-container img:hover { opacity: 0.8; }
 
         .login-card {
-            background: #ffffff;
+            background: var(--ex-card);
             width: 100%;
-            max-width: 460px;
+            max-width: 440px;
             border-radius: 24px;
-            padding: 50px 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            padding: 45px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid var(--ex-border);
             position: relative;
             z-index: 10;
         }
@@ -80,237 +91,247 @@
             text-align: center;
             margin-bottom: 35px;
         }
-
-        .login-header h1 {
-            font-size: 26px;
-            color: #ef7021;
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,152,0,0.1);
+            border: 1px solid rgba(255,152,0,0.2);
+            color: var(--ex-gold);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
             font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .login-header h1 {
+            font-size: 24px;
+            color: var(--ex-text);
+            font-weight: 900;
             margin-bottom: 8px;
         }
-
         .login-header p {
-            color: #777;
-            font-size: 15px;
+            color: var(--ex-text-muted);
+            font-size: 14px;
             font-weight: 600;
+            line-height: 1.6;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 22px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 700;
-            color: #333;
-            font-size: 14px;
+            color: var(--ex-text);
+            font-size: 13px;
         }
 
-        .input-group {
-            position: relative;
-        }
-
+        .input-group { position: relative; }
         .input-group input {
             width: 100%;
             height: 52px;
-            border: 1px solid #e0e0e0;
+            background: var(--ex-soft);
+            border: 1px solid var(--ex-border);
             border-radius: 12px;
             padding: 0 15px 0 45px;
             font-size: 15px;
+            color: var(--ex-text);
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
             direction: ltr;
             text-align: right;
         }
-
         .input-group input:focus {
-            border-color: #ef7021;
+            border-color: var(--ex-gold);
+            box-shadow: 0 0 0 4px rgba(255,152,0,0.1);
+            background: #fff;
         }
-
-        .input-group svg {
+        .input-group input::placeholder { color: #aaa; font-weight: 500; font-size: 13px; text-align: right; }
+        .input-group i {
             position: absolute;
-            left: 15px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            color: #aaa;
+            color: #888;
+            font-size: 1.2rem;
+            transition: color 0.3s;
         }
+        .input-group input:focus + i { color: var(--ex-gold); }
 
-        /* Adjust input padding for OTP to be centered */
-        .input-otp input {
-            text-align: center;
-            padding: 0;
-            letter-spacing: 15px;
-            font-size: 24px;
-            font-weight: 700;
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
         }
+        
+        .custom-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--ex-text-muted);
+            font-weight: 600;
+        }
+        .custom-check input { display: none; }
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .custom-check input:checked + .checkmark {
+            background: var(--ex-gold);
+            border-color: var(--ex-gold);
+        }
+        .checkmark::after {
+            content: '\eb7a';
+            font-family: 'boxicons';
+            color: #fff;
+            font-size: 14px;
+            display: none;
+        }
+        .custom-check input:checked + .checkmark::after { display: block; }
+        
+        .forgot-link { color: var(--ex-gold); text-decoration: none; font-weight: 700; transition: color 0.2s; }
+        .forgot-link:hover { color: var(--ex-gold-light); }
 
-        .btn-submit {
+        .btn-login {
             width: 100%;
             height: 52px;
-            background: #ef7021;
+            background: #111;
             color: #fff;
             border: none;
             border-radius: 12px;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
         }
-
-        .btn-submit:hover {
-            background: #d86219;
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            background: #333;
         }
+        .btn-login:active { transform: translateY(0); }
 
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .alert-danger {
-            background: #ffebe6;
-            color: #d93025;
-            border: 1px solid #f6c8c4;
-        }
-
-        .alert-success {
-            background: #e6f4ea;
-            color: #137333;
-            border: 1px solid #ceead6;
-        }
-
-        .footer-links {
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .footer-links a {
-            display: block;
-            color: #ef7021;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .footer-links p {
-            color: #888;
+        .error-msg {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+            padding: 12px 16px;
+            border-radius: 10px;
             font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .footer-links p a {
-            display: inline;
-            color: #ef7021;
+        .back-link {
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            color: var(--ex-text-muted);
+            text-decoration: none;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+            transition: color 0.3s;
         }
+        .back-link:hover { color: var(--ex-gold); }
 
-        @media (max-width: 768px) {
-            .bg-bars, .bg-circle-top, .bg-circle-bottom {
-                display: none;
-            }
-            .logo-container {
-                top: 20px;
-                right: 20px;
-            }
-            .login-card {
-                padding: 40px 20px;
-                box-shadow: none;
-                background: transparent;
-            }
-            body {
-                background: #fff;
-                align-items: flex-start;
-                padding-top: 100px;
-            }
+        @media (max-width: 576px) {
+            .logo-container { top: 25px; right: 25px; }
+            .back-link { top: 25px; left: 25px; font-size: 0; }
+            .back-link i { font-size: 1.5rem; }
+            .login-card { border-radius: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; border: none; padding: 40px 25px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Background Elements -->
-    <div class="bg-shape bg-circle-top"></div>
-    <div class="bg-shape bg-circle-bottom"></div>
-    
-    <!-- Using SVG for the abstract bars on the bottom left -->
-    <svg class="bg-shape bg-bars" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M40 400V300C40 288.954 48.9543 280 60 280H80C91.0457 280 100 288.954 100 300V400H40Z" fill="#ffdac2"/>
-        <path d="M120 400V200C120 188.954 128.954 180 140 180H160C171.046 180 180 188.954 180 200V400H120Z" fill="#ffc8a6"/>
-        <path d="M200 400V100C200 88.9543 208.954 80 220 80H240C251.046 80 260 88.9543 260 100V400H200Z" fill="#ffb487"/>
-    </svg>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <i class='bx bx-check-shield floating-icon icon-1'></i>
+    <i class='bx bx-diamond floating-icon icon-2'></i>
 
-    <div class="logo-container">
-        <a href="{{ url('/') }}">
-            <img src="{{ asset('assets/img/Logo2.png') }}" alt="ثمن">
-        </a>
-    </div>
+    <a href="{{ url('/') }}" class="logo-container">
+        <img src="{{ asset('assets/img/brand/logo.png') }}" alt="ثمن" onerror="this.src='{{ asset('assets/img/Logo2.png') }}'">
+    </a>
+
+    <a href="{{ url('/') }}" class="back-link">
+        <i class='bx bx-arrow-back'></i>
+        العودة للموقع
+    </a>
 
     <div class="login-card">
         <div class="login-header">
-            <h1>مرحباً بعودتك 👋</h1>
-            <p>{{ session('otp_sent') ? 'أدخل رمز التحقق المرسل إليك على الواتساب أو البريد الإلكتروني' : 'من فضلك قم بتسجيل الدخول كخبير' }}</p>
+            <div class="badge">
+                <i class='bx bxs-shield-check'></i>
+                بوابة الخبراء
+            </div>
+            <h1>مرحباً بعودتك!</h1>
+            <p>قم بتسجيل الدخول للوصول إلى لوحة التقييم والتثمين الخاصة بك</p>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
+        @if ($errors->any())
+            <div class="error-msg">
+                <i class='bx bxs-error-circle'></i>
+                <span>بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.</span>
             </div>
         @endif
 
-        @if($errors->any())
-            <div class="alert alert-danger">
-                @foreach($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
-            </div>
-        @endif
+        <form method="POST" action="{{ route('expert.login.submit') }}">
+            @csrf
 
-        @if(!session('otp_sent'))
-            <!-- Step 1: Request OTP -->
-            <form method="POST" action="{{ route('expert.login.send-otp') }}">
-                @csrf
-                <div class="form-group">
-                    <label>رقم الجوال أو البريد الإلكتروني</label>
-                    <div class="input-group">
-                        <input type="text" name="identifier" value="{{ old('identifier') }}" placeholder="05XXXXXXXX أو example@email.com" required autofocus autocomplete="username">
-                        <!-- User Icon -->
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني</label>
+                <div class="input-group">
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="expert@thamn.com">
+                    <i class='bx bx-envelope'></i>
                 </div>
-                <button type="submit" class="btn-submit">
-                    إرسال رمز التحقق
-                </button>
-            </form>
-        @else
-            <!-- Step 2: Verify OTP -->
-            <form method="POST" action="{{ route('expert.login.verify-otp') }}">
-                @csrf
-                <div class="form-group">
-                    <label>رمز التحقق (OTP)</label>
-                    <div class="input-group input-otp">
-                        <input type="text" name="otp" placeholder="----" maxlength="4" required autofocus>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">
-                    تسجيل الدخول
-                </button>
-            </form>
-            
-            <div class="footer-links" style="margin-top:15px;">
-                <a href="{{ route('expert.login') }}" style="font-weight:600; color:#888;">لم يصلك الرمز؟ حاول مرة أخرى</a>
             </div>
-        @endif
 
-        <div class="footer-links">
-            <a href="{{ url('/') }}">العودة للرئيسية</a>
-        </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <div class="input-group">
+                    <input id="password" type="password" name="password" required placeholder="••••••••">
+                    <i class='bx bx-lock-alt'></i>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="custom-check">
+                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <div class="checkmark"></div>
+                    <span>تذكرني</span>
+                </label>
+
+                @if (Route::has('password.request'))
+                    <a class="forgot-link" href="{{ route('password.request') }}">
+                        نسيت كلمة المرور؟
+                    </a>
+                @endif
+            </div>
+
+            <button type="submit" class="btn-login">
+                تسجيل الدخول
+                <i class='bx bx-log-in-circle' style="font-size: 1.3rem;"></i>
+            </button>
+        </form>
     </div>
 
 </body>

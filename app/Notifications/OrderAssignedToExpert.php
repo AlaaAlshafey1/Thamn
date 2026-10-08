@@ -30,6 +30,7 @@ class OrderAssignedToExpert extends Notification
             'title' => 'هلا بك خبير ( التثمين ) 👋 طلب تثمين احترافي جديد',
             'message' => "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
             'user_id' => $this->order->user_id,
+            'type' => 'new_expert_order',
         ];
     }
 

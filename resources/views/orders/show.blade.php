@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends(auth()->check() && auth()->user()->hasRole('expert') ? 'layouts.expert' : 'layouts.master')
 @section('title', 'تفاصيل الطلب #' . $order->id)
 
 @section('css')
@@ -395,31 +395,13 @@
 </style>
 @endsection
 
-@section('page-header')
-    <div class="breadcrumb-header justify-content-between">
-        <div class="my-auto">
-            <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto text-primary">إدارة الطلبات</h4>
-                <span class="text-muted mt-1 tx-13 mr-2 mb-0">/ تفاصيل الطلب #{{ $order->id }}</span>
-            </div>
-        </div>
-        <div class="d-flex my-xl-auto right-content">
-            <button type="button" class="btn btn-gold d-flex align-items-center gap-2" onclick="window.print()">
-                <i class="bx bx-printer"></i> طباعة الفاتورة
-            </button>
-        </div>
-    </div>
-@endsection
-
 @section('content')
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert"
             style="border-radius: 10px; font-size: 1.1rem;">
             <i class="bx bx-check-circle fs-20 align-middle ml-2"></i>
             <strong class="ml-1">نجاح!</strong> {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -428,316 +410,396 @@
             style="border-radius: 10px; font-size: 1.1rem;">
             <i class="bx bx-error-circle fs-20 align-middle ml-2"></i>
             <strong class="ml-1">خطأ!</strong> {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     <div class="row expert-desktop-padding">
         @if(auth()->user()->hasRole('expert'))
             {{-- ==========================================
-                 EXPERT WELCOME BANNER (Full Width)
+                 EXPERT NEW LAYOUT (Match Image)
             ============================================ --}}
-            <div class="col-12 anim-1 mb-4">
-                <div class="expert-welcome-banner">
-                    <div class="d-flex align-items-start justify-content-between flex-wrap">
-                        <div style="flex: 1; min-width: 0;">
-                            <div class="welcome-title">🌟 أهلاً خبيرنا المميز!</div>
-                            <div class="welcome-subtitle">
-                                وصلك طلب تثمين — راجع المواصفات والصور ثم اعتمد سعرك.
-                                <br>تقييمك سيُرسل فوراً وسيكون الأساس في تقرير ثمن الرسمي.
-                            </div>
-                            <div class="mt-3">
-                                <span class="banner-order-badge">
-                                    <i class="bx bx-receipt"></i> طلب رقم: #{{ $order->id }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="d-none d-md-flex flex-column align-items-end ml-3" style="gap:8px; flex-shrink:0;">
-                            <span class="banner-step"><i class="bx bx-search-alt"></i> ١ — المواصفات</span>
-                            <span class="banner-step"><i class="bx bx-images"></i> ٢ — الصور</span>
-                            <span class="banner-step"><i class="bx bx-badge-check"></i> ٣ — الاعتماد</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <style>
+                .ex-stepper { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 25px 50px; border-radius: 12px; position: relative; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+                .ex-stepper::before { content: ''; position: absolute; top: 35px; left: 80px; right: 80px; height: 4px; background: #f39c12; z-index: 1; }
+                .step-item { position: relative; z-index: 2; text-align: center; background: #fff; padding: 0 10px; cursor: pointer; }
+                .step-circle { width: 24px; height: 24px; border-radius: 50%; background: #f39c12; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; margin: 0 auto 10px; box-shadow: 0 0 0 4px #fff; }
+                .step-label { font-weight: 700; color: #333; font-size: 0.9rem; }
+                
+                .ex-main-card { background: #fff; border-radius: 16px; padding: 40px 30px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.03); }
+                .success-badge { width: 70px; height: 70px; margin: 0 auto 20px; background: url('{{ asset("assets/img/gold-badge.png") }}') center/contain no-repeat; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #333; }
+                .success-title { font-size: 1.6rem; font-weight: 800; color: #333; margin-bottom: 10px; }
+                .success-subtitle { font-size: 0.95rem; color: #666; font-weight: 600; margin-bottom: 40px; }
+                
+                /* Podium Pricing */
+                .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 0; margin-bottom: 30px; margin-top: 20px; border-radius: 16px; overflow: hidden; max-width: 600px; margin-left: auto; margin-right: auto; }
+                .podium-block { flex: 1; padding: 20px 10px; color: #fff; position: relative; }
+                .podium-block .p-icon { width: 20px; height: 20px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 10px; }
+                .podium-block .p-val { font-size: 1.4rem; font-weight: 800; line-height: 1.2; direction: ltr; }
+                .podium-block .p-lbl { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
+                
+                .podium-min { background: #f39c12; height: 120px; border-radius: 0 16px 16px 0; }
+                .podium-main { background: #009688; height: 150px; z-index: 2; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-radius: 12px 12px 0 0; }
+                .podium-main .p-val { font-size: 1.8rem; margin-top: 10px; }
+                .podium-max { background: #f44336; height: 120px; border-radius: 16px 0 0 16px; }
 
-            {{-- ==========================================
-                 EXPERT TABBED INTERFACE (Single Column)
-            ============================================ --}}
-            <div class="col-12 anim-2">
-                <div class="card order-card" style="border-radius: 18px; overflow: hidden;">
+                /* Report Box */
+                .ex-report-box { background: linear-gradient(180deg, #fff9f2, #ffffff); border: 1px solid #f9ebd8; border-radius: 16px; padding: 25px; text-align: right; margin-top: 40px; }
+                .ex-report-title { color: #f39c12; font-weight: 800; font-size: 1.1rem; margin-bottom: 15px; }
+                .ex-report-content { color: #555; font-size: 0.95rem; line-height: 1.8; font-weight: 600; }
+                
+                /* Sidebar Card */
+                .ex-side-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 20px; }
+                .ex-side-header { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
+                .ex-side-body { padding: 0; }
+                .ex-side-row { padding: 15px 20px; border-bottom: 1px solid #f8f8f8; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+                .ex-side-row:last-child { border-bottom: none; }
+                .ex-side-lbl { color: #888; font-weight: 600; }
+                .ex-side-val { color: #333; font-weight: 700; }
+                
+                /* User profile in side */
+                .ex-side-user { display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 5px 15px 5px 5px; border-radius: 50px; }
+                .ex-side-user img { width: 30px; height: 30px; border-radius: 50%; }
+                
+                /* Map */
+                .ex-map { width: 100%; height: 200px; background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Saudi_Arabia_location_map.svg/1200px-Saudi_Arabia_location_map.svg.png') center/cover; position: relative; }
+                .ex-map-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #009688; font-size: 24px; }
 
-                    {{-- Tab Navigation --}}
-                    <div class="expert-tabs-nav" style="
-                        display: flex;
-                        background: #f8f9fa;
-                        border-bottom: 2px solid #e9ecef;
-                        direction: rtl;
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                    ">
-                        <button class="expert-tab-btn active" onclick="switchTab('specs', this)" style="
-                            flex: 1; min-width: 120px; padding: 14px 10px;
-                            background: none; border: none; border-bottom: 3px solid transparent;
-                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
-                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
-                        ">
-                            <i class="bx bx-list-check" style="font-size: 1.1rem; vertical-align: middle;"></i>
-                            المواصفات
-                        </button>
-                        <button class="expert-tab-btn" onclick="switchTab('photos', this)" style="
-                            flex: 1; min-width: 120px; padding: 14px 10px;
-                            background: none; border: none; border-bottom: 3px solid transparent;
-                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
-                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
-                        ">
-                            <i class="bx bx-camera" style="font-size: 1.1rem; vertical-align: middle;"></i>
-                            الصور
-                            @php $imgCount = $order->files->where('type','image')->count(); @endphp
-                            @if($imgCount > 0)
-                                <span style="background:#1565C0; color:#fff; border-radius:50px; padding: 1px 8px; font-size:0.75rem; margin-right:4px;">{{ $imgCount }}</span>
-                            @endif
-                        </button>
-                        <button class="expert-tab-btn" onclick="switchTab('evaluate', this)" style="
-                            flex: 1; min-width: 120px; padding: 14px 10px;
-                            background: none; border: none; border-bottom: 3px solid transparent;
-                            font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.9rem;
-                            color: #888; cursor: pointer; transition: all 0.3s; white-space: nowrap;
-                        ">
-                            <i class="bx bx-badge-check" style="font-size: 1.1rem; vertical-align: middle;"></i>
-                            @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
-                                التقييم المعتمد ✅
-                            @else
-                                اعتماد التقييم
-                            @endif
-                        </button>
-                    </div>
+                /* App-like Mobile View */
+                @media (max-width: 768px) {
+                    .expert-desktop-padding { padding: 10px 5px !important; margin: 0 !important; }
+                    .ex-stepper { flex-direction: column; padding: 20px 10px; border-radius: 20px; margin-bottom: 16px; gap: 10px; align-items: stretch; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+                    .ex-stepper::before { display: none; }
+                    .step-item { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background: #fdfdfd; border-radius: 14px; padding: 14px 16px; border: 1px solid #f0f0f0; }
+                    .step-circle { margin: 0; box-shadow: none; width: 40px; height: 40px; font-size: 1.2rem; flex-shrink: 0; }
+                    .step-label { font-size: 1.05rem; }
+                    .ex-main-card { padding: 24px 16px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+                    
+                    /* Vertical Podium for Mobile */
+                    .podium-container { flex-direction: column; align-items: stretch; border-radius: 20px; overflow: hidden; margin-bottom: 24px; }
+                    .podium-block { height: auto !important; border-radius: 0 !important; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
+                    .podium-block .p-icon { margin: 0; margin-left: 15px; flex-shrink: 0; width: 46px; height: 46px; font-size: 22px; }
+                    .podium-block .p-val { margin: 0 !important; font-size: 1.6rem !important; }
+                    .podium-block > div { display: flex; flex-direction: column; align-items: flex-start; }
+                    .podium-block .p-lbl { font-size: 0.95rem; }
+                    .podium-main { order: 1; } /* Highest price first maybe? Or keep HTML order */
+                    
+                    /* Sidebar on mobile */
+                    .col-lg-3 { padding: 0 10px; }
+                    .ex-side-card { border-radius: 20px; margin-top: 16px; border: 1px solid #eee; }
+                    .ex-side-header { padding: 18px 20px; font-size: 1.1rem; }
+                    .ex-side-row { padding: 16px 20px; }
+                    
+                    /* Forms & Buttons */
+                    .form-control, .form-select { border-radius: 16px !important; padding: 16px 20px !important; font-size: 1.05rem !important; }
+                    .btn-success { width: 100% !important; max-width: none !important; border-radius: 18px !important; padding: 18px !important; font-size: 1.2rem !important; margin-top: 15px; }
+                    
+                    /* Responsive Specs Table inside Tab */
+                    #tab-specs table, #tab-specs thead, #tab-specs tbody, #tab-specs th, #tab-specs td, #tab-specs tr { display: block; width: 100%; text-align: right; }
+                    #tab-specs thead { display: none; }
+                    #tab-specs tr { border: 1px solid #eee; border-radius: 16px; margin-bottom: 12px; padding: 16px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+                    #tab-specs td:nth-child(1) { display: none; } /* hide ID */
+                    #tab-specs td:nth-child(2) { font-size: 1.05rem !important; padding: 0 0 10px 0 !important; border-bottom: 1px dashed #eee; color: #111 !important; }
+                    #tab-specs td:nth-child(3) { padding: 10px 0 0 0 !important; font-size: 1rem !important; color: #009688 !important; }
+                    #tab-specs td:nth-child(3) span { padding: 6px 14px !important; font-size: 0.9rem !important; }
+                }
+            </style>
 
-                    {{-- TAB 1: Specifications --}}
-                    <div id="tab-specs" class="expert-tab-panel" style="display: block; direction: rtl; padding: 20px;">
-                        <div class="row">
-                            {{-- Static specs --}}
-                            <div class="col-6 col-md-4 mb-3">
-                                <div class="spec-card">
-                                    <div class="spec-label">رقم الطلب</div>
-                                    <div class="spec-value text-primary">#{{ $order->id }}</div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-4 mb-3">
-                                <div class="spec-card">
-                                    <div class="spec-label">تاريخ الطلب</div>
-                                    <div class="spec-value">{{ $order->created_at->format('Y-m-d H:i') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-4 mb-3">
-                                <div class="spec-card">
-                                    <div class="spec-label">إمكانية البيع</div>
-                                    <div class="spec-value">
-                                        @if($order->can_send_to_market)
-                                            <span class="text-success"><i class="bx bx-check-circle"></i> نعم، تثمين وبيع</span>
-                                        @else
-                                            <span class="text-secondary"><i class="bx bx-info-circle"></i> تثمين فقط</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            {{-- Dynamic specs --}}
-                            @foreach($order->details as $detail)
-                                <div class="col-6 col-md-4 mb-3">
-                                    <div class="spec-card">
-                                        <div class="spec-label">{{ $detail->question->question_ar ?? '-' }}</div>
-                                        <div class="spec-value">{{ $detail->option->option_ar ?? $detail->value ?? '-' }}</div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                        {{-- Quick action button to go to evaluate --}}
-                        <div class="text-center mt-2">
-                            <button class="btn btn-outline-primary" onclick="switchTab('photos', document.querySelectorAll('.expert-tab-btn')[1])" style="border-radius:10px; font-weight:700; padding: 10px 30px;">
-                                <i class="bx bx-images"></i> التالي: مراجعة الصور
-                            </button>
+            <div class="row">
+                <!-- Center/Main Content -->
+                <div class="col-lg-9 order-lg-1">
+                    
+                    <!-- Breadcrumb is now inside the content area for expert -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div style="font-weight: 800; font-size: 1.8rem; color: #111;">التقييم</div>
+                        <div style="color: #f39c12; font-weight: 600; font-size: 0.9rem;">
+                            الطلبات <i class="bx bx-chevron-left" style="vertical-align: middle;"></i> التقييم
                         </div>
                     </div>
 
-                    {{-- TAB 2: Photos --}}
-                    <div id="tab-photos" class="expert-tab-panel" style="display: none; direction: rtl; padding: 20px;">
-                        <div class="row">
+                    <!-- Stepper -->
+                    <div class="ex-stepper">
+                        <div class="step-item" onclick="switchTab('specs', this)" id="step-specs">
+                            <div class="step-circle"><i class="bx bx-list-check"></i></div>
+                            <div class="step-label">المواصفات</div>
+                        </div>
+                        <div class="step-item" onclick="switchTab('photos', this)" id="step-photos">
+                            <div class="step-circle"><i class="bx bx-images"></i></div>
+                            <div class="step-label">الصور</div>
+                        </div>
+                        <div class="step-item" onclick="switchTab('evaluate', this)" id="step-evaluate">
+                            <div class="step-circle"><i class="bx bx-check"></i></div>
+                            <div class="step-label">التقييم المعتمد</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Specifications -->
+                    <div class="ex-main-card expert-tab-panel" id="tab-specs" style="display:none; text-align:right;">
+                        <div style="font-weight:900;font-size:1.1rem;color:#111;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                            <i class="bx bx-list-check" style="color:#f39c12;"></i> مواصفات الطلب
+                        </div>
+                        <div class="table-responsive">
+                            <table style="width:100%;border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#f9f9f9;border-bottom:2px solid #eee;">
+                                        <th style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">#</th>
+                                        <th style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">السؤال</th>
+                                        <th style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">الإجابة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($order->details as $index => $detail)
+                                    <tr style="border-bottom:1px solid #f5f5f5;">
+                                        <td style="padding:12px 16px;color:#aaa;font-size:0.85rem;font-weight:700;">{{ $index + 1 }}</td>
+                                        <td style="padding:12px 16px;font-weight:700;color:#333;font-size:0.9rem;">{{ $detail->question->question_ar ?? '-' }}</td>
+                                        <td style="padding:12px 16px;font-weight:600;color:#555;font-size:0.9rem;">
+                                            @if($detail->option)
+                                                <span style="background:rgba(243,156,18,0.1);color:#e67e22;padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:800;">{{ $detail->option->option_ar ?? $detail->value }}</span>
+                                            @elseif($detail->value)
+                                                {{ $detail->value }}
+                                            @else
+                                                <span style="color:#ccc;">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="3" style="text-align:center;padding:40px;color:#aaa;"><i class="bx bx-info-circle" style="font-size:2rem;display:block;margin-bottom:8px;"></i> لا توجد مواصفات</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Photos -->
+                    <div class="ex-main-card expert-tab-panel" id="tab-photos" style="display:none; text-align:right;">
+                        <div style="font-weight:900;font-size:1.1rem;color:#111;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                            <i class="bx bx-images" style="color:#f39c12;"></i> صور المنتج
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
                             @forelse($order->files->where('type', 'image') as $image)
-                                <div class="col-6 col-sm-4 col-md-3 mb-3">
-                                    <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank" class="product-img-container">
-                                        <img src="{{ asset('storage/' . $image->file_path) }}" alt="صورة المنتج">
-                                    </a>
-                                </div>
+                                <a href="{{ asset('storage/' . $image->file_path) }}" target="_blank"
+                                   style="display:block;border-radius:12px;overflow:hidden;border:2px solid #eee;aspect-ratio:1;">
+                                    <img src="{{ asset('storage/' . $image->file_path) }}"
+                                         style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;"
+                                         onmouseover="this.style.transform='scale(1.05)'"
+                                         onmouseout="this.style.transform='scale(1)'">
+                                </a>
                             @empty
-                                <div class="col-12 text-center py-5" style="background:#f9f9f9; border-radius:12px; border: 2px dashed #ddd;">
-                                    <i class="bx bx-image-alt text-muted" style="font-size: 3.5rem;"></i>
-                                    <p class="text-muted mt-2 font-weight-bold mb-0">لم يرفق العميل صور للمنتج</p>
+                                <div style="grid-column:1/-1;text-align:center;padding:50px;color:#ccc;">
+                                    <i class="bx bx-image-alt" style="font-size:3rem;display:block;margin-bottom:10px;"></i>
+                                    لا توجد صور مرفقة لهذا الطلب
                                 </div>
                             @endforelse
                         </div>
-                        <div class="text-center mt-2">
-                            <button class="btn btn-success" onclick="switchTab('evaluate', document.querySelectorAll('.expert-tab-btn')[2])" style="border-radius:10px; font-weight:700; padding: 10px 30px;">
-                                <i class="bx bx-badge-check"></i> التالي: اعتماد التقييم
-                            </button>
-                        </div>
                     </div>
 
-                    {{-- TAB 3: Evaluation --}}
-                    <div id="tab-evaluate" class="expert-tab-panel" style="display: none; direction: rtl; padding: 20px;">
+                    <!-- TAB: Evaluate -->
+                    <div class="ex-main-card expert-tab-panel" id="tab-evaluate">
 
                         @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
-                            {{-- Evaluated: Read-only View --}}
-                            <div class="text-center mb-4">
-                                <i class="bx bxs-check-shield text-success" style="font-size: 3rem;"></i>
-                                <h5 class="font-weight-bold text-success mt-2">تم اعتماد التقييم بنجاح</h5>
+                            <!-- Evaluated State -->
+                            <div class="success-badge">
+                                <i class='bx bxs-badge-check' style="font-size: 70px; color: #f39c12; text-shadow: 0 4px 10px rgba(0,0,0,0.1);"></i>
                             </div>
-                            <div class="evaluated-price-box mb-4">
-                                <div class="text-muted mb-1" style="font-size: 0.85rem; font-weight: 600;">السعر المعتمد</div>
-                                <div class="big-price">{{ number_format($order->expert_price, 0) }}</div>
-                                <div class="text-muted" style="font-size: 0.9rem; font-weight: 600;">ريال سعودي (SAR)</div>
-                            </div>
-                            <div class="row mb-4">
-                                <div class="col-6">
-                                    <div class="spec-card" style="border-right: 4px solid #28a745;">
-                                        <div class="spec-label">الحد الأدنى</div>
-                                        <div class="spec-value text-success">{{ number_format($order->expert_min_price, 0) }} <small>SAR</small></div>
-                                    </div>
+                            <div class="success-title">تم اعتماد التقييم بنجاح</div>
+                            <div class="success-subtitle">تم اعتماد تثمين المنتج ، وسيتم اشعار العميل بحالة التثمين</div>
+
+                            <!-- Podium Pricing -->
+                            <div class="podium-container">
+                                <div class="podium-block podium-min">
+                                    <div class="p-icon"><i class="bx bx-minus"></i></div>
+                                    <div class="p-val">{{ number_format($order->expert_min_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-lbl">الحد الأدنى</div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="spec-card" style="border-right: 4px solid #ffc107;">
-                                        <div class="spec-label">الحد الأعلى</div>
-                                        <div class="spec-value text-warning">{{ number_format($order->expert_max_price, 0) }} <small>SAR</small></div>
-                                    </div>
+                                <div class="podium-block podium-main">
+                                    <div class="p-icon" style="background:rgba(255,255,255,0.4);"><i class="bx bx-check"></i></div>
+                                    <div class="p-val">{{ number_format($order->expert_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-lbl">السعر المعتمد</div>
                                 </div>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label font-weight-bold text-dark mb-2">تقرير التقييم:</label>
-                                <div class="reasoning-html-content">{!! $order->expert_reasoning !!}</div>
+                                <div class="podium-block podium-max">
+                                    <div class="p-icon"><i class="bx bx-plus"></i></div>
+                                    <div class="p-val">{{ number_format($order->expert_max_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-lbl">الحد الأعلى</div>
+                                </div>
                             </div>
 
-                        @else
-                            {{-- Form: Evaluate --}}
-
-                            {{-- AI Glass Card (only if AI evaluation) --}}
-                            @if($order->evaluation_type === 'ai' && $order->ai_price)
-                                <div class="ai-glass-card">
-                                    <div class="ai-title">
-                                        <i class="bx bx-bot" style="font-size: 1.2rem; vertical-align: middle;"></i>
-                                        تقرير الذكاء الاصطناعي
+                            @if($order->evaluation_type === 'ai' && $order->ai_valuation_rating_id)
+                                <!-- AI Rating Result Cards -->
+                                <div class="expert-opinions-container mt-4 mb-4" style="background:#f9fbfd; border-radius:16px; padding:20px; direction:rtl; border: 1px solid #f1f5f9;">
+                                    <div class="text-center mb-3" style="font-weight:900; color:#475569; font-size:1.1rem;">
+                                        رأي الخبير المعتمد : ( {{ $aiRatings->where('id', $order->ai_valuation_rating_id)->first()->name_ar ?? '' }} )
                                     </div>
-                                    <div class="ai-subtitle">تمت التعبئة تلقائياً — يمكنك الاعتماد أو التعديل</div>
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <div class="ai-price-block" style="border-left: 1px solid #d0e0f5;">
-                                                <div class="price-label">المقترح</div>
-                                                <div class="price-value text-primary">{{ number_format($order->ai_price, 0) }}</div>
-                                                <span class="price-currency">SAR</span>
+                                    <div class="d-flex flex-wrap justify-content-center" style="gap:12px;">
+                                        @foreach($aiRatings as $rating)
+                                            @php 
+                                                $isSelected = $order->ai_valuation_rating_id == $rating->id; 
+                                            @endphp
+                                            <div class="rating-display-card {{ $isSelected ? 'selected' : '' }}" 
+                                                 style="flex:1; min-width:110px; max-width:140px; background:{{ $rating->color ?? '#fff' }}; 
+                                                        border-radius:16px; padding:15px 10px; text-align:center; position:relative;
+                                                        border: {{ $isSelected ? '3px solid #009688' : '3px solid transparent' }};
+                                                        opacity: {{ $isSelected ? '1' : '0.5' }};
+                                                        transform: {{ $isSelected ? 'scale(1.05)' : 'scale(1)' }};
+                                                        transition: all 0.3s ease;
+                                                        box-shadow: {{ $isSelected ? '0 8px 20px rgba(0,150,136,0.15)' : 'none' }};
+                                                        ">
+                                                @if($isSelected)
+                                                    <div style="position:absolute; top:-10px; right:-10px; background:#009688; color:#fff; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;">
+                                                        <i class="bx bx-check"></i>
+                                                    </div>
+                                                @endif
+                                                <div style="margin-bottom:10px; height:35px; display:flex; align-items:center; justify-content:center;">
+                                                    @if($rating->icon)
+                                                        <img src="{{ asset('storage/' . $rating->icon) }}" style="width:30px; height:30px; object-fit:contain; filter: {{ $isSelected ? 'none' : 'grayscale(100%)' }};">
+                                                    @else
+                                                        <i class="bx bx-bar-chart-alt-2" style="font-size:24px; color:{{ $isSelected ? '#009688' : '#777' }};"></i>
+                                                    @endif
+                                                </div>
+                                                <div style="font-weight:900; font-size:0.85rem; color:{{ $isSelected ? '#0f172a' : '#64748b' }}; line-height:1.2;">
+                                                    {{ $rating->name_ar }}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="ai-price-block">
-                                                <div class="price-label">الأدنى</div>
-                                                <div class="price-value text-success">{{ number_format($order->ai_min_price, 0) }}</div>
-                                                <span class="price-currency">SAR</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="ai-price-block" style="border-right: 1px solid #d0e0f5;">
-                                                <div class="price-label">الأعلى</div>
-                                                <div class="price-value text-warning">{{ number_format($order->ai_max_price, 0) }}</div>
-                                                <span class="price-currency">SAR</span>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endif
 
-                            {{-- Expert Evaluation Form --}}
-                            <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}">
+                            <!-- Report -->
+                            <div class="ex-report-box">
+                                <div class="ex-report-title">تقرير التقييم:</div>
+                                <div class="ex-report-content">
+                                    @if(!preg_match('/<[a-z][\s\S]*>/i', $order->expert_reasoning))
+                                        {!! \Illuminate\Support\Str::markdown((string) $order->expert_reasoning) !!}
+                                    @else
+                                        {!! $order->expert_reasoning !!}
+                                    @endif
+                                </div>
+                            </div>
+
+                        @else
+                            <!-- Not Evaluated State (Form) -->
+                            <div class="success-title mb-4 text-primary" style="font-size:1.3rem;">اعتماد تقييم الطلب</div>
+                            <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}" style="text-align:right;">
                                 @csrf
-
-                                @if($order->evaluation_type !== 'ai')
-                                    {{-- Main Price --}}
-                                    <div class="mb-4 text-center">
-                                        <label class="form-label font-weight-bold text-dark d-block mb-2">السعر الموصى به <span class="text-danger">*</span></label>
-                                        @php
-                                            $formPrice = old('expert_price', $order->expert_price ?: ($order->ai_price ?: $order->total_price));
-                                        @endphp
-                                        <input type="number" name="expert_price"
-                                            class="form-control price-main-input"
-                                            step="0.01" min="0"
-                                            value="{{ $formPrice }}" required>
-                                        <small class="text-muted d-block mt-1">ريال سعودي (SAR)</small>
+                                @if($order->evaluation_type === 'ai')
+                                    <!-- Display AI Prices for Expert Review -->
+                                    <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="font-weight-bold text-primary" style="font-size:0.95rem;">
+                                                <i class="bx bx-check-shield"></i> الأسعار المقترحة من التقييم الذكي:
+                                            </label>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:#f8f9fa; border:1px solid #eee; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#555; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">الحد الأدنى</div>
+                                                <div style="font-size:1.2rem; font-weight:900; color:#333;">{{ number_format($order->ai_min_price ?? 0, 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:rgba(0, 150, 136, 0.05); border:2px solid #009688; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#009688; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">السعر المعتمد</div>
+                                                <div style="font-size:1.3rem; font-weight:900; color:#009688;">{{ number_format($order->ai_price ?? 0, 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:#f8f9fa; border:1px solid #eee; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#555; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">الحد الأعلى</div>
+                                                <div style="font-size:1.2rem; font-weight:900; color:#333;">{{ number_format($order->ai_max_price ?? 0, 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {{-- Min / Max --}}
-                                    <div class="row mb-4">
-                                        <div class="col-6">
-                                            <label class="form-label small text-muted font-weight-bold">الحد الأدنى</label>
-                                            @php $formMin = old('expert_min_price', $order->expert_min_price ?: ($order->ai_min_price ?: '')); @endphp
-                                            <input type="number" name="expert_min_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMin }}">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small text-muted font-weight-bold">الحد الأعلى</label>
-                                            @php $formMax = old('expert_max_price', $order->expert_max_price ?: ($order->ai_max_price ?: '')); @endphp
-                                            <input type="number" name="expert_max_price" class="form-control premium-input" step="0.01" min="0" value="{{ $formMax }}">
+                                    <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-12">
+                                            <label class="font-weight-bold" style="color:#555;font-size:0.95rem;">رأي الخبير المعتمد حول التقييم الذكي <span class="text-danger">*</span></label>
+                                            <select name="ai_valuation_rating_id" class="form-select" style="border-radius:12px; padding:12px; border: 1px solid #ccc; font-size:1rem;" required>
+                                                <option value="" disabled selected>اختر رأيك كخبير معتمد</option>
+                                                @foreach($aiRatings as $rating)
+                                                    <option value="{{ $rating->id }}">{{ $rating->name_ar }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
+                                    <!-- Hide prices since we use AI prices -->
+                                    <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? 0 }}">
+                                    <input type="hidden" name="expert_min_price" value="{{ $order->ai_min_price ?? 0 }}">
+                                    <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
                                 @else
-                                    {{-- AI Valuation Ratings --}}
-                                    <div class="mb-4 text-center">
-                                        <label class="form-label font-weight-bold text-dark d-block mb-3">تقييم التثمين الذكي <span class="text-danger">*</span></label>
-                                        <div class="d-flex justify-content-center flex-wrap gap-2" style="gap: 15px;">
-                                            @foreach($aiRatings as $rating)
-                                                <label class="rating-radio-label" style="cursor: pointer; text-align: center; margin: 0;">
-                                                    <input type="radio" name="ai_valuation_rating_id" value="{{ $rating->id }}" class="d-none" required>
-                                                    <div class="rating-card" style="border: 2px solid #ddd; border-radius: 12px; padding: 15px 25px; transition: all 0.2s;">
-                                                        @if($rating->icon)
-                                                            <img src="{{ asset('storage/' . $rating->icon) }}" style="width:40px; height:40px; object-fit:contain; margin-bottom: 8px;">
-                                                        @endif
-                                                        <div style="font-weight: 700; color: {{ $rating->color ?? '#333' }};">
-                                                            {{ $rating->name_ar }}
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            @endforeach
+                                    <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold" style="color:#555;">الحد الأدنى <span class="text-danger">*</span></label>
+                                            <input type="number" name="expert_min_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_min_price', $order->ai_min_price) }}">
                                         </div>
-                                        <style>
-                                            .rating-radio-label input:checked + .rating-card {
-                                                border-color: #1565C0 !important;
-                                                background-color: #f0f7ff;
-                                                box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
-                                                transform: translateY(-2px);
-                                            }
-                                            .rating-card:hover {
-                                                background-color: #f8f9fa;
-                                            }
-                                        </style>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold text-success" style="color:#009688 !important;">السعر المعتمد <span class="text-danger">*</span></label>
+                                            <input type="number" name="expert_price" class="form-control" style="border-radius:12px; padding:12px; border:2px solid #009688; font-weight:bold; font-size:1.1rem; color:#009688;" required value="{{ old('expert_price', $order->ai_price) }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold" style="color:#555;">الحد الأعلى <span class="text-danger">*</span></label>
+                                            <input type="number" name="expert_max_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_max_price', $order->ai_max_price) }}">
+                                        </div>
                                     </div>
                                 @endif
-
-                                {{-- Reasoning --}}
-                                <div class="mb-4">
-                                    <label class="form-label font-weight-bold text-dark">تقرير التقييم والملاحظات <span class="text-danger">*</span></label>
-                                    @php $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? ''); @endphp
-                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control" rows="5"
-                                        placeholder="اكتب الأسباب التي بنيت عليها تقييمك..." required>{!! $existingReasoning !!}</textarea>
+                                <div class="text-right mb-4" style="direction:rtl;">
+                                    <label class="font-weight-bold text-warning" style="color:#f39c12 !important;font-size:0.95rem;">تقرير التقييم: <span class="text-danger">*</span></label>
+                                    @php $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? $order->ai_reasoning ?? ''); @endphp
+                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control" rows="5" required style="border-radius:12px;">{!! $existingReasoning !!}</textarea>
                                 </div>
-
-                                {{-- Submit --}}
-                                <button type="submit" class="btn premium-btn btn-block" style="font-size: 1.15rem; padding: 16px;">
-                                    <i class="bx bx-badge-check" style="font-size: 1.3rem; vertical-align: middle;"></i>
-                                    اعتماد التقييم وإرساله للعميل
+                                <button type="submit" class="btn btn-success" style="border-radius:50px; padding:14px 40px; font-weight:800; font-size:1.1rem; background:#009688; border:none; width: 100%; max-width: 300px; margin: 0 auto; display: block;">
+                                    <i class="bx bx-check-circle"></i> اعتماد التقييم
                                 </button>
                             </form>
                         @endif
 
-                    </div>{{-- end tab-evaluate --}}
+                    </div>
+                </div>
 
-                </div>{{-- end card --}}
-            </div>{{-- end col-12 --}}
+                <!-- Left Sidebar (Customer Info) -->
+                <div class="col-lg-3 order-lg-2">
+                    <!-- Customer Card -->
+                    <div class="ex-side-card">
+                        <div class="ex-side-header">
+                            <div><i class="bx bx-user" style="color:#888;"></i> معلومات العميل</div>
+                        </div>
+                        <div class="ex-side-body">
+                            <div class="ex-side-row" style="background:#fff;">
+                                <span class="badge" style="background:#fdf2d0; color:#d4a017; border-radius:50px; padding:6px 12px;">
+                                    <i class="bx bxs-circle" style="font-size:8px; vertical-align:middle;"></i> 
+                                    @if(in_array($order->status, ['estimated', 'finished', 'completed'])) تم التقييم @else قيد الانتظار @endif
+                                </span>
+                                <div class="ex-side-user">
+                                    <span style="font-weight:700; font-size:0.85rem;">{{ $order->user->first_name ?? 'العميل' }}</span>
+                                    <img src="{{ $order->user->image ? asset('storage/'.$order->user->image) : asset('assets/img/faces/user.jpg') }}">
+                                </div>
+                            </div>
+                            <div class="ex-side-row">
+                                <span class="ex-side-lbl">رقم الطلب</span>
+                                <span class="ex-side-val">#{{ $order->id }}</span>
+                            </div>
+                            <div class="ex-side-row">
+                                <span class="ex-side-lbl">الفئة</span>
+                                <span class="ex-side-val">{{ $order->category->name_ar ?? 'غير محدد' }}</span>
+                            </div>
+                            <div class="ex-side-row">
+                                <span class="ex-side-lbl">السعر</span>
+                                <span class="ex-side-val">{{ number_format($order->total_price, 2) }} ر.س</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Card -->
+                    <div class="ex-side-card">
+                        <div class="ex-side-header">
+                            <div><i class="bx bx-map" style="color:#888;"></i> الموقع</div>
+                        </div>
+                        <div class="ex-side-body">
+                            <div class="ex-map">
+                                <i class="bx bxs-map ex-map-pin"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @else
             {{-- الجانب الأيمن: بيانات العميل والمنتج --}}
             <div class="col-lg-8">
@@ -1090,14 +1152,38 @@
     </div>
 
 @section('js')
-    <!-- CKEditor Initialization -->
-    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <script>
-        $(document).ready(function () {
+        // ─── TABS LOGIC ───
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.expert-tab-panel').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            const targetPanel = document.getElementById('tab-' + tabId);
+            if(targetPanel) targetPanel.style.display = 'block';
+
+            const allSteps = document.querySelectorAll('.step-item');
+            let clickedIndex = -1;
+            allSteps.forEach((step, index) => {
+                if(step === element) clickedIndex = index;
+            });
+
+            allSteps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if(index === clickedIndex) step.classList.add('active');
+            });
+        }
+
+        // Initialize active tab based on elements present
+        document.addEventListener('DOMContentLoaded', function() {
+            const defaultTab = document.getElementById('step-evaluate');
+            if(defaultTab) {
+                switchTab('evaluate', defaultTab);
+            }
+        });
+        // ─── CKEditor Init (Vanilla JS, no jQuery needed) ───────────────
+        document.addEventListener('DOMContentLoaded', function () {
             var editorEl = document.getElementById('expert_reasoning_editor');
             if (!editorEl) return;
-            
-            var existingContent = editorEl.value.trim();
 
             @if(auth()->user()->hasRole('expert') && empty($order->expert_reasoning) && !empty($order->ai_reasoning))
                 try {
@@ -1107,61 +1193,56 @@
                     tmp.querySelectorAll('table').forEach(function(t) { t.remove(); });
                     var cleaned = tmp.innerHTML.trim();
                     if (cleaned && cleaned.length > 30) {
-                        existingContent = cleaned;
                         editorEl.value = cleaned;
                     }
                 } catch(e) { console.warn('AI reasoning parse error:', e); }
             @endif
 
-            CKEDITOR.replace('expert_reasoning_editor', {
-                language: 'ar',
-                height: 350,
-                versionCheck: false,
-                removePlugins: 'elementspath',
-                resize_enabled: false
-            });
+            if (typeof CKEDITOR !== 'undefined') {
+                CKEDITOR.replace('expert_reasoning_editor', {
+                    language: 'ar',
+                    height: 350,
+                    versionCheck: false,
+                    removePlugins: 'elementspath',
+                    resize_enabled: false,
+                    contentsDir: 'rtl',
+                    bodyClass: 'cke-rtl',
+                    extraPlugins: '',
+                });
+            }
         });
 
-        /* Expert Tab Switching */
-        function switchTab(tabName, clickedBtn) {
-            // Hide all panels
-            document.querySelectorAll('.expert-tab-panel').forEach(function(panel) {
-                panel.style.display = 'none';
+        // ─── Expert Tab Switching ───────────────────────────────────────
+        function switchTab(tabName, clickedEl) {
+            document.querySelectorAll('.expert-tab-panel').forEach(function(p) { p.style.display = 'none'; });
+            document.querySelectorAll('.step-item').forEach(function(b) {
+                b.querySelector('.step-circle').style.background = '#ddd';
+                b.querySelector('.step-label').style.color = '#888';
             });
-            // Deactivate all buttons
-            document.querySelectorAll('.expert-tab-btn').forEach(function(btn) {
-                btn.style.borderBottomColor = 'transparent';
-                btn.style.color = '#888';
-                btn.style.background = 'none';
-            });
-            // Show selected panel with animation
             var panel = document.getElementById('tab-' + tabName);
-            if (panel) {
-                panel.style.display = 'block';
-                panel.style.animation = 'fadeInUp 0.4s ease both';
+            if (panel) { panel.style.display = 'block'; }
+            if (clickedEl) {
+                var circ = clickedEl.querySelector('.step-circle');
+                var lbl  = clickedEl.querySelector('.step-label');
+                if (circ) circ.style.background = '#f39c12';
+                if (lbl)  lbl.style.color = '#111';
             }
-            // Activate clicked button
-            if (clickedBtn) {
-                clickedBtn.style.borderBottomColor = '#1565C0';
-                clickedBtn.style.color = '#1565C0';
-                clickedBtn.style.background = '#f0f5ff';
-            }
-            // If switching to evaluate tab, reinit CKEditor if needed
             if (tabName === 'evaluate' && typeof CKEDITOR !== 'undefined') {
                 setTimeout(function() {
                     var inst = CKEDITOR.instances['expert_reasoning_editor'];
                     if (inst) inst.resize('100%', 350);
-                }, 100);
+                }, 150);
             }
         }
 
-        // Activate the first tab button on page load
-        $(document).ready(function() {
-            var firstBtn = document.querySelector('.expert-tab-btn');
-            if (firstBtn) {
-                firstBtn.style.borderBottomColor = '#1565C0';
-                firstBtn.style.color = '#1565C0';
-                firstBtn.style.background = '#f0f5ff';
+        // ─── Activate first stepper item on load ───────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            var firstStep = document.querySelector('.step-item');
+            if (firstStep) {
+                var circ = firstStep.querySelector('.step-circle');
+                var lbl  = firstStep.querySelector('.step-label');
+                if (circ) circ.style.background = '#f39c12';
+                if (lbl)  lbl.style.color = '#111';
             }
         });
     </script>

@@ -19,7 +19,7 @@ class OrderAcceptedByExpertNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
     }
 
     public function toDatabase($notifiable)

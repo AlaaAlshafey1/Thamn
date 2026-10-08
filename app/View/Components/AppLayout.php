@@ -73,6 +73,10 @@ class AppLayout extends Component
      */
     public function render(): View
     {
+        $user = auth()->user();
+        if ($user && $user->hasRole('expert')) {
+            return view('layouts.expert-dashboard');
+        }
         return view('layouts.app');
     }
 }

@@ -53,6 +53,17 @@ Route::prefix('declaration')->group(function () {
 });
 
 Route::get('/dashboard', function () {
+    if (auth()->check() && auth()->user()->hasRole('expert')) {
+        $user = auth()->user();
+        $stats = [
+            'orders_completed' => $user->expertOrders()->whereIn('status', ['estimated', 'finished', 'completed'])->count(),
+            'balance'          => $user->expert_balance ?? 0,
+            'pending_orders'   => $user->expertOrders()->where('status', 'beingEstimated')->count(),
+            'orders_count'     => $user->expertOrders()->count(),
+        ];
+        $recentOrders = $user->expertOrders()->latest()->take(5)->get();
+        return view('layouts.expert-dashboard', compact('stats', 'recentOrders'));
+    }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -165,6 +176,34 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::post('orders/{order}/evaluate', [OrderController::class, 'expertEvaluate'])->name('orders.expert.evaluate');
+
+    // Expert Notifications (Web Polling)
+    Route::get('/expert/notifications', function () {
+        $notifications = auth()->user()->notifications()->latest()->take(20)->get()->map(function ($n) {
+            return [
+                'id'         => $n->id,
+                'title'      => $n->data['title'] ?? 'إشعار جديد',
+                'message'    => $n->data['message'] ?? '',
+                'order_id'   => $n->data['order_id'] ?? null,
+                'type'       => $n->data['type'] ?? 'general',
+                'read'       => !is_null($n->read_at),
+                'time'       => $n->created_at->diffForHumans(),
+            ];
+        });
+        $unread = auth()->user()->unreadNotifications()->count();
+        return response()->json(['notifications' => $notifications, 'unread' => $unread]);
+    })->name('expert.notifications.fetch')->middleware('auth');
+
+    Route::post('/expert/notifications/{id}/read', function ($id) {
+        $n = auth()->user()->notifications()->where('id', $id)->first();
+        if ($n) $n->markAsRead();
+        return response()->json(['ok' => true]);
+    })->name('expert.notifications.read')->middleware('auth');
+
+    Route::post('/expert/notifications/read-all', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return response()->json(['ok' => true]);
+    })->name('expert.notifications.readAll')->middleware('auth');
     Route::post('/orders/{order}/price', [OrderController::class, 'updatePrice'])
         ->name('orders.updatePrice');
 

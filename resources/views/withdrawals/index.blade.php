@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends(auth()->check() && auth()->user()->hasRole('expert') ? 'layouts.expert' : 'layouts.master')
 @section('title', 'إدارة طلبات السحب')
 
 @section('css')

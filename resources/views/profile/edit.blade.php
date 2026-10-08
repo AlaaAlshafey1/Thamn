@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends(auth()->check() && auth()->user()->hasRole('expert') ? 'layouts.expert' : 'layouts.master')
 
 @section('css')
 <style>
@@ -24,12 +24,12 @@
         background-color: #f8f9fa;
     }
     .premium-input:focus {
-        border-color: #c1953e;
-        box-shadow: 0 0 0 3px rgba(193, 149, 62, 0.15);
+        border-color: #ff9800;
+        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15);
         background-color: #fff;
     }
     .btn-gold {
-        background: linear-gradient(135deg, #d4af37 0%, #c1953e 100%);
+        background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -39,25 +39,20 @@
     }
     .btn-gold:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(193, 149, 62, 0.3);
+        box-shadow: 0 8px 15px rgba(255, 152, 0, 0.3);
         color: white;
     }
 </style>
 @endsection
 
-@section('page-header')
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between mb-4">
-        <div class="my-auto">
-            <div class="d-flex align-items-center">
-                <h4 class="content-title mb-0 my-auto text-primary"><i class="bx bx-user-circle mr-2 ml-2"></i> الملف الشخصي</h4>
-            </div>
+@section('content')
+<div class="px-2 px-md-3 py-1">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+        <div style="font-weight: 900; font-size: 1.8rem; color: #111;">الملف الشخصي</div>
+        <div style="color: var(--ex-orange); font-weight: 700; font-size: 0.9rem;">
+            لوحة الخبير <i class="bx bx-chevron-left" style="vertical-align: middle;"></i> الملف الشخصي
         </div>
     </div>
-    <!-- breadcrumb -->
-@endsection
-
-@section('content')
     <!-- row -->
     <div class="row">
         <div class="col-lg-8 col-md-12 mx-auto">
@@ -259,11 +254,12 @@
                         </div>
 
                         <div class="text-center mt-4">
-                            <button class="btn btn-primary px-5" style="border-radius: 12px; font-weight: 700;" type="submit"><i class="bx bx-key mr-1 ml-1"></i> تحديث كلمة المرور</button>
+                            <button class="btn btn-gold px-5" style="border-radius: 12px; font-weight: 700;" type="submit"><i class="bx bx-key mr-1 ml-1"></i> تحديث كلمة المرور</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 @endsection

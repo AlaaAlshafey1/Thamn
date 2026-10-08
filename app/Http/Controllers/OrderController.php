@@ -63,7 +63,7 @@ class OrderController extends Controller
                 ->latest()
                 ->get();
 
-            return view('orders.index', compact('activeOrders', 'completedOrders'));
+            return view('orders.expert_index', compact('activeOrders', 'completedOrders'));
         } else {
             $orders = Order::with('user')
                 ->latest()

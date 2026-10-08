@@ -57,7 +57,9 @@ class WithdrawalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1'
+            'amount' => 'required|numeric|min:1',
+            'method' => 'required|in:bank,wallet,other',
+            'notes'  => 'nullable|string|max:500',
         ]);
 
         $user = Auth::user();
@@ -106,7 +108,7 @@ class WithdrawalController extends Controller
             \Log::error('Withdrawal Notifications Failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('withdrawals.create')->with('success', 'تم إرسال طلب السحب بنجاح وسيتم معالجته قريباً.');
+        return redirect()->route('withdrawals.my')->with('success', 'تم إرسال طلب السحب بنجاح وسيتم معالجته قريباً.');
     }
 
     // الموافقة على السحب

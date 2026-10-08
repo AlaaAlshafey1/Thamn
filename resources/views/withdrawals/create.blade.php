@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('layouts.expert')
 @section('title', 'طلب سحب رصيد جديد')
 
 @section('css')
@@ -23,8 +23,8 @@
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #2a5298;
-            box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.1);
+            border-color: #ff9800;
+            box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.1);
         }
 
         .input-group-text {
@@ -40,24 +40,24 @@
             border-right: none;
             font-size: 1.5rem;
             font-weight: bold;
-            color: #1e3c72;
+            color: #ff9800;
         }
 
         .submit-btn {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
             color: white;
             border: none;
             border-radius: 12px;
             padding: 14px;
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 800;
             width: 100%;
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
         }
 
         .balance-info {
@@ -76,10 +76,10 @@
 @section('content')
     <div class="container-fluid pt-5 pb-5">
 
-        <div class="form-wrapper">
+        <div class="form-wrapper mt-4">
             <div class="text-center mb-4">
-                <div class="avatar avatar-lg bg-primary-transparent text-primary rounded-circle mb-3 mx-auto"
-                    style="width:70px;height:70px;display:flex;align-items:center;justify-content:center;">
+                <div class="avatar avatar-lg rounded-circle mb-3 mx-auto"
+                    style="width:70px;height:70px;display:flex;align-items:center;justify-content:center;background:rgba(255,152,0,0.1);color:#ff9800;">
                     <i class="bx bx-money" style="font-size:2rem;"></i>
                 </div>
                 <h3 class="fw-bold text-dark">سحب رصيد</h3>
