@@ -269,7 +269,7 @@
     <i class='bx bx-diamond floating-icon icon-2'></i>
 
     <a href="{{ url('/') }}" class="logo-container">
-        <img src="{{ asset('assets/img/brand/logo.png') }}" alt="ثمن" onerror="this.src='{{ asset('assets/img/Logo2.png') }}'">
+        <img src="{{ asset('assets/img/Logo2.png') }}" alt="ثمن">
     </a>
 
     <a href="{{ url('/') }}" class="back-link">
