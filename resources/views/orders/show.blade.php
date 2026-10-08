@@ -475,14 +475,33 @@
                     .step-label { font-size: 1.05rem; }
                     .ex-main-card { padding: 24px 16px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
                     
-                    /* Vertical Podium for Mobile */
-                    .podium-container { flex-direction: column; align-items: stretch; border-radius: 20px; overflow: hidden; margin-bottom: 24px; }
-                    .podium-block { height: auto !important; border-radius: 0 !important; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
-                    .podium-block .p-icon { margin: 0; margin-left: 15px; flex-shrink: 0; width: 46px; height: 46px; font-size: 22px; }
-                    .podium-block .p-val { margin: 0 !important; font-size: 1.6rem !important; }
-                    .podium-block > div { display: flex; flex-direction: column; align-items: flex-start; }
-                    .podium-block .p-lbl { font-size: 0.95rem; }
-                    .podium-main { order: 1; } /* Highest price first maybe? Or keep HTML order */
+                    /* Keep Podium Horizontal on Mobile but scale down */
+                    .podium-container { flex-direction: row; align-items: flex-end; margin-bottom: 20px; border-radius: 12px; }
+                    .podium-block { padding: 15px 5px; border-radius: 10px; display: block; text-align: center; height: auto !important; }
+                    .podium-min, .podium-max { height: 90px !important; }
+                    .podium-main { height: 110px !important; z-index: 2; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
+                    .podium-block .p-icon { margin: 0 auto 5px; width: 20px; height: 20px; font-size: 10px; }
+                    .podium-block .p-val { font-size: 1.1rem !important; margin-top: 0 !important; line-height: 1; }
+                    .podium-main .p-val { font-size: 1.3rem !important; margin-top: 5px !important; }
+                    .podium-block .p-lbl { font-size: 0.7rem; margin-top: 4px; }
+                    .podium-block > div { display: block; }
+                    .podium-main { order: 0; }
+                    
+                    /* Expert Opinion Options horizontally scrollable on mobile */
+                    .expert-opinions-container .d-flex {
+                        flex-wrap: nowrap !important;
+                        overflow-x: auto;
+                        justify-content: flex-start !important;
+                        padding-bottom: 15px;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: none;
+                    }
+                    .expert-opinions-container .d-flex::-webkit-scrollbar { display: none; }
+                    .rating-display-card {
+                        flex: 0 0 auto !important;
+                        min-width: 105px !important;
+                        max-width: 105px !important;
+                    }
                     
                     /* Sidebar on mobile */
                     .col-lg-3 { padding: 0 10px; }
