@@ -2,7 +2,7 @@
 
 @section('css')
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
     :root {
         --ex-gold:       #ff9800;
         --ex-gold-light: #ffb74d;
@@ -14,7 +14,7 @@
     }
     body,h1,h2,h3,h4,h5,h6,p,a,div,span,button,
     input,select,textarea,table,th,td,.btn,.alert,.badge {
-        font-family: 'Cairo', sans-serif !important;
+        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
     }
     .expert-dash-wrap { direction: rtl; padding-bottom: 60px; }
 

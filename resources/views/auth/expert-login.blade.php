@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول الخبراء - ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- BoxIcons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
@@ -22,7 +22,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
         }
 
         body {
@@ -269,7 +269,7 @@
     <i class='bx bx-diamond floating-icon icon-2'></i>
 
     <a href="{{ url('/') }}" class="logo-container">
-        <img src="{{ asset('assets/img/Logo2.png') }}" alt="ثمن">
+        <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن">
     </a>
 
     <a href="{{ url('/') }}" class="back-link">
