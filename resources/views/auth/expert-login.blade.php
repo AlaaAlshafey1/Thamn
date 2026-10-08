@@ -290,48 +290,55 @@
         @if ($errors->any())
             <div class="error-msg">
                 <i class='bx bxs-error-circle'></i>
-                <span>بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.</span>
+                <span>{{ $errors->first() }}</span>
             </div>
         @endif
 
-        <form method="POST" action="{{ route('expert.login.submit') }}">
-            @csrf
+        @if (session('success'))
+            <div class="error-msg" style="background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.2); color: #2ecc71;">
+                <i class='bx bxs-check-circle'></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
 
-            <div class="form-group">
-                <label for="email">البريد الإلكتروني</label>
-                <div class="input-group">
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="expert@thamn.com">
-                    <i class='bx bx-envelope'></i>
+        @if(!session('otp_sent'))
+            <!-- Step 1: Send OTP Form -->
+            <form method="POST" action="{{ route('expert.login.send-otp') }}">
+                @csrf
+                <div class="form-group">
+                    <label for="identifier">البريد الإلكتروني أو رقم الجوال</label>
+                    <div class="input-group">
+                        <input id="identifier" type="text" name="identifier" value="{{ old('identifier') }}" required autofocus placeholder="expert@thamn.com أو 05xxxxxxxx">
+                        <i class='bx bx-user'></i>
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="password">كلمة المرور</label>
-                <div class="input-group">
-                    <input id="password" type="password" name="password" required placeholder="••••••••">
-                    <i class='bx bx-lock-alt'></i>
+                <button type="submit" class="btn-login">
+                    إرسال رمز التحقق
+                    <i class='bx bx-send' style="font-size: 1.3rem;"></i>
+                </button>
+            </form>
+        @else
+            <!-- Step 2: Verify OTP Form -->
+            <form method="POST" action="{{ route('expert.login.verify-otp') }}">
+                @csrf
+                <div class="form-group">
+                    <label for="otp">رمز التحقق (OTP)</label>
+                    <div class="input-group">
+                        <input id="otp" type="text" name="otp" required autofocus placeholder="1234" maxlength="4" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold;">
+                        <i class='bx bx-key'></i>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 10px;">
+                        تم إرسال الرمز إلى حسابك.
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-options">
-                <label class="custom-check">
-                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                    <div class="checkmark"></div>
-                    <span>تذكرني</span>
-                </label>
-
-                @if (Route::has('password.request'))
-                    <a class="forgot-link" href="{{ route('password.request') }}">
-                        نسيت كلمة المرور؟
-                    </a>
-                @endif
-            </div>
-
-            <button type="submit" class="btn-login">
-                تسجيل الدخول
-                <i class='bx bx-log-in-circle' style="font-size: 1.3rem;"></i>
-            </button>
-        </form>
+                <button type="submit" class="btn-login">
+                    تأكيد وتسجيل الدخول
+                    <i class='bx bx-log-in-circle' style="font-size: 1.3rem;"></i>
+                </button>
+            </form>
+        @endif
     </div>
 
 </body>
