@@ -36,7 +36,7 @@
                         <i class="fas fa-info-circle"></i> ملاحظة: عند حفظ الإعدادات، سيتم إرسال رسالة واتساب تلقائية لجميع الخبراء المسجلين لإبلاغهم بالنسبة الجديدة.
                     </div>
 
-                    <form action="{{ route('admin.settings.store') }}" method="POST">
+                    <form action="{{ route('admin.settings.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row row-sm">
                             <div class="col-lg-6">
@@ -63,7 +63,23 @@
                                     @enderror
                                 </div>
                             </div>
-                        </div>
+                                                    <div class="col-lg-12 mt-4">
+                                <div class="main-content-label mg-b-5">
+                                    الاتفاقية القانونية للتعاون مع الخبير
+                                </div>
+                                <p class="mg-b-20">قم برفع ملف PDF يمثل الاتفاقية التي يجب أن يوافق عليها الخبير عند التسجيل.</p>
+                                <div class="form-group">
+                                    <label class="form-label">ملف الاتفاقية (PDF)</label>
+                                    <input type="file" name="expert_agreement_pdf" class="form-control" accept="application/pdf">
+                                    @error('expert_agreement_pdf')
+                                        <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                    @enderror
+                                    @if(isset($settings['expert_agreement_pdf']) && $settings['expert_agreement_pdf'])
+                                        <a href="{{ asset('storage/' . $settings['expert_agreement_pdf']) }}" target="_blank" class="d-block mt-2 text-primary"><i class="fas fa-file-pdf"></i> عرض الملف الحالي (Preview Document)</a>
+                                    @endif
+                                </div>
+                            </div>
+</div>
 
                         <button class="btn btn-main-primary pd-x-20" type="submit">حفظ الإعدادات والتنبيه</button>
                     </form>

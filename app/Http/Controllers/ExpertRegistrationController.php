@@ -26,6 +26,14 @@ class ExpertRegistrationController extends Controller
      */
     public function previewAgreement()
     {
+        $staticAgreement = \App\Models\Setting::where('key', 'expert_agreement_pdf')->value('value');
+        if ($staticAgreement) {
+            $path = storage_path('app/public/' . $staticAgreement);
+            if (file_exists($path)) {
+                return response()->file($path);
+            }
+        }
+
         $dummyDeclaration = new \App\Models\ArbitratorDeclaration([
             'full_name' => 'اسم الخبير (معاينة)',
             'national_id' => 'رقم الهوية',
@@ -139,15 +147,20 @@ class ExpertRegistrationController extends Controller
                     'signed_at' => now(),
                 ]);
 
-                // توليد الـ PDF
-                $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.declaration', [
-                    'declaration' => $declaration,
-                    'user' => $user,
-                ]);
-
-                // حفظ PDF في storage
+                                $staticAgreement = \App\Models\Setting::where('key', 'expert_agreement_pdf')->value('value');
                 $pdfPath = 'declarations/' . $token . '.pdf';
-                \Illuminate\Support\Facades\Storage::disk('public')->put($pdfPath, $pdf->output());
+                
+                if ($staticAgreement && \Illuminate\Support\Facades\Storage::disk('public')->exists($staticAgreement)) {
+                    // Copy the static file instead of generating it
+                    \Illuminate\Support\Facades\Storage::disk('public')->copy($staticAgreement, $pdfPath);
+                } else {
+                    // Generate dynamic PDF
+                    $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.declaration', [
+                        'declaration' => $declaration,
+                        'user' => $user,
+                    ]);
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($pdfPath, $pdf->output());
+                }
 
                 // تحديث مسار الـ PDF
                 $declaration->update(['pdf_path' => $pdfPath]);

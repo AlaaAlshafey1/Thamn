@@ -22,6 +22,7 @@ class SettingController extends Controller
         $request->validate([
             'expert_commission_type' => 'required|in:fixed,percentage',
             'expert_commission_value' => 'required|numeric|min:0',
+            'expert_agreement_pdf' => 'nullable|mimes:pdf',
         ]);
 
         $oldType = Setting::where('key', 'expert_commission_type')->value('value');
@@ -29,6 +30,11 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(['key' => 'expert_commission_type'], ['value' => $request->expert_commission_type]);
         Setting::updateOrCreate(['key' => 'expert_commission_value'], ['value' => $request->expert_commission_value]);
+
+        if ($request->hasFile('expert_agreement_pdf')) {
+            $path = $request->file('expert_agreement_pdf')->store('settings', 'public');
+            Setting::updateOrCreate(['key' => 'expert_agreement_pdf'], ['value' => $path]);
+        }
 
         // إذا تم تغيير النسبة، نقوم بإرسال رسالة للخبراء
         if ($oldType != $request->expert_commission_type || $oldValue != $request->expert_commission_value) {
@@ -43,9 +49,9 @@ class SettingController extends Controller
         try {
             $whatsapp = app(WhatsAppService::class);
             $experts = User::role('expert')->get();
-            
+
             $formattedValue = $type === 'percentage' ? "%{$value}" : "{$value} ريال";
-            
+
             $message = "بشرى سارة لخبرائنا! 🎉\n";
             $message .= "تم تحديث نسبة أرباحكم لتصل إلى {$formattedValue} لكل طلب تقييم يتم إنجازه.\n";
             $message .= "شدوا الهمة ونتمنى لكم التوفيق والنجاح دائماً 🚀\n";
