@@ -69,7 +69,7 @@ input.form-control, select.form-select, textarea.form-control {
                 'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
                 'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
                 'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
-                'dropdown','number','timeCount','count','text','note','typeSelect'
+                'dropdown','number','timeCount','count','text','note','typeSelect','warningLights'
             ] as $type)
                 <option value="{{ $type }}" {{ $question->type == $type ? 'selected' : '' }}>
                     {{ $type }}
@@ -94,6 +94,13 @@ input.form-control, select.form-select, textarea.form-control {
             <option value="market" {{ $question->flow == 'market' ? 'selected' : '' }}>منتجات السوق</option>
             <option value="both" {{ $question->flow == 'both' ? 'selected' : '' }}>كلاهما</option>
         </select>
+    </div>
+
+    <div class="col-6 d-flex align-items-center mt-4">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="is_required" id="isRequiredSwitch" {{ $question->is_required ? 'checked' : '' }} value="1">
+            <label class="form-check-label fw-bold" for="isRequiredSwitch">هل السؤال إجباري؟ (Is Required)</label>
+        </div>
     </div>
 
     <div class="col-6">
@@ -208,7 +215,11 @@ input.form-control, select.form-select, textarea.form-control {
             <input type="hidden" name="sub_options_id[{{ $index }}][]" value="{{ $sub->id }}">
             <input name="sub_options_ar[{{ $index }}][]" class="form-control" value="{{ $sub->option_ar }}" placeholder="سؤال فرعي عربي">
             <input name="sub_options_en[{{ $index }}][]" class="form-control" value="{{ $sub->option_en }}" placeholder="سؤال فرعي EN">
-            <input name="sub_options_order[{{ $index }}][]" class="form-control" value="{{ $sub->order }}" placeholder="Order">
+            <input name="sub_options_order[{{ $index }}][]" class="form-control" value="{{ $sub->order }}" placeholder="Order" style="width: 70px;">
+              <input type="file" name="sub_options_image[{{ $index }}][]" class="form-control" accept="image/*" style="width: 150px;">
+              @if($sub->image)
+                  <img src="{{ asset('storage/' . $sub->image) }}" width="40" height="40" style="border-radius:6px; object-fit:cover;">
+              @endif
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()" title="حذف السؤال الفرعي">حذف</button>
         </div>
         @endforeach
@@ -249,11 +260,23 @@ input.form-control, select.form-select, textarea.form-control {
 
 {{-- ===================== JS (نفس create بالظبط) ===================== --}}
 <script>
+function previewSubImage(input) {
+    if (input.files && input.files[0]) {
+        let reader = new FileReader();
+        let img = input.nextElementSibling;
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            img.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 const optionTypes = [
                 'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
                 'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
                 'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
-                'dropdown','number','timeCount','count','text','note','typeSelect'
+                'dropdown','number','timeCount','count','text','note','typeSelect','warningLights'
 
 ];
 const sliderTypes = [];
@@ -307,7 +330,8 @@ function addSubOption(btn) {
     <div class="sub-option mb-1 d-flex gap-2 align-items-center">
         <input name="sub_options_ar[${optionIndex}][]" class="form-control" placeholder="سؤال فرعي عربي">
         <input name="sub_options_en[${optionIndex}][]" class="form-control" placeholder="سؤال فرعي EN">
-        <input type="number" name="sub_options_order[${optionIndex}][]" class="form-control" placeholder="Order">
+        <input type="number" name="sub_options_order[${optionIndex}][]" class="form-control" placeholder="Order" style="width: 70px;">
+        <input type="file" name="sub_options_image[${optionIndex}][]" class="form-control" accept="image/*" style="width: 150px;">
         <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">حذف</button>
     </div>
     `;

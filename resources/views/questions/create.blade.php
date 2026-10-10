@@ -83,6 +83,7 @@ input.form-control, select.form-select, textarea.form-control {
             <option value="text">text</option>
             <option value="note">note</option>
             <option value="progress">Progress</option>
+            <option value="warningLights">لمبات التنبيه (نعم/لا + اختيار متعدد)</option>
         </select>
     </div>
     <div class="col-6">
@@ -101,6 +102,13 @@ input.form-control, select.form-select, textarea.form-control {
             <option value="market">السوق فقط</option>
             <option value="both">الاثنين</option>
         </select>
+    </div>
+
+    <div class="col-6 d-flex align-items-center mt-4">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="is_required" id="isRequiredSwitch" value="1" checked>
+            <label class="form-check-label fw-bold" for="isRequiredSwitch">هل السؤال إجباري؟ (Is Required)</label>
+        </div>
     </div>
 
     <div class="col-6">
@@ -202,7 +210,7 @@ const optionTypes = [
                 'singleChoiceCard','singleChoiceChip','singleChoiceChipWithImage',
                 'singleChoiceDropdown','multiSelection','counterInput','dateCountInput',
                 'singleSelectionSlider','valueRangeSlider','rating','price','progress','rateTypeSelection','productAges',
-                'dropdown','number','timeCount','count','text','note','typeSelect'
+                'dropdown','number','timeCount','count','text','note','typeSelect','warningLights'
 ];
 const sliderTypes = [];
 

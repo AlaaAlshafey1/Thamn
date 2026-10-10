@@ -142,6 +142,8 @@ Route::middleware('auth')->group(function () {
     Route::post('questions/reorder', [QuestionController::class, 'reorder'])->name('questions.reorder');
     Route::post('questions/toggle-active', [QuestionController::class, 'toggleActive'])->name('questions.toggleActive');
     Route::post('questions/{question}/duplicate', [QuestionController::class, 'duplicate'])->name('questions.duplicate');
+    Route::post('questions/options/{option}/image', [QuestionController::class, 'updateOptionImage'])->name('questions.options.image');
+    Route::post('questions/{question}/options/images', [QuestionController::class, 'bulkOptionImages'])->name('questions.options.bulkImages');
     Route::resource('app_pages', AppPageController::class);
     Route::resource('terms', TermConditionController::class);
     Route::resource('question_steps', QuestionStepController::class);

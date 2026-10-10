@@ -8,6 +8,10 @@ class QuestionOption extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'images' => 'array',
+    ];
+
     protected $fillable = [
         'question_id',
         'parent_option_id',
@@ -16,6 +20,7 @@ class QuestionOption extends Model
         "description_ar",
         "description_en",
         'image',
+        'images',
         'order',
         'price',
         'badge',

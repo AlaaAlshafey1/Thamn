@@ -7,6 +7,8 @@ use App\Models\Question;
 use Illuminate\Http\Request;
 use App\Models\QuestionOption;
 use App\Models\QuestionStep;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class QuestionController extends Controller
 {
@@ -141,6 +143,7 @@ class QuestionController extends Controller
                             'order'            => $subIndex,
                             'min'              => $request->sub_options_min[$index][$subIndex] ?? null,
                             'max'              => $request->sub_options_max[$index][$subIndex] ?? null,
+                            'image'            => isset($request->sub_options_image[$index][$subIndex]) ? $request->sub_options_image[$index][$subIndex]->store('options', 'public') : null,
                             'is_active'        => true,
                         ]);
                     }
@@ -234,15 +237,33 @@ class QuestionController extends Controller
         $keptSubOptionIds = array_filter($keptSubOptionIds);
 
         // Delete options that are not in the kept lists
-        QuestionOption::where('question_id', $question->id)
+        $parentOptionsToDelete = QuestionOption::where('question_id', $question->id)
             ->whereNull('parent_option_id')
             ->whereNotIn('id', $keptOptionIds)
-            ->delete();
+            ->get();
+        foreach ($parentOptionsToDelete as $opt) {
+            try {
+                $opt->delete();
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() == '23000') {
+                    $opt->update(['is_active' => false]);
+                }
+            }
+        }
 
-        QuestionOption::where('question_id', $question->id)
+        $subOptionsToDelete = QuestionOption::where('question_id', $question->id)
             ->whereNotNull('parent_option_id')
             ->whereNotIn('id', $keptSubOptionIds)
-            ->delete();
+            ->get();
+        foreach ($subOptionsToDelete as $opt) {
+            try {
+                $opt->delete();
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() == '23000') {
+                    $opt->update(['is_active' => false]);
+                }
+            }
+        }
 
         foreach ($request->options_ar ?? [] as $index => $option_ar) {
             $optionId = $request->options_id[$index] ?? null;
@@ -304,6 +325,10 @@ class QuestionController extends Controller
                         'is_active'        => true,
                     ];
 
+                      if ($request->hasFile("sub_options_image.{$index}.{$subIndex}")) {
+                          $subData['image'] = $request->file("sub_options_image.{$index}.{$subIndex}")->store('options', 'public');
+                      }
+
                     if ($subOptionId) {
                         $subOption = QuestionOption::find($subOptionId);
                         if ($subOption) {
@@ -356,6 +381,104 @@ class QuestionController extends Controller
     {
         $question->delete();
         return redirect()->route('questions.index')->with('success', 'تم حذف السؤال بنجاح');
+    }
+
+    /**
+     * رفع/تغيير صورة خيار واحد (يُستخدم من شبكة الأيقونات في صفحة تعديل السؤال).
+     */
+    public function updateOptionImage(Request $request, QuestionOption $option)
+    {
+        $request->validate([
+            'image' => 'required|image|max:2048',
+        ]);
+
+        if ($option->image) {
+            Storage::disk('public')->delete($option->image);
+        }
+
+        $option->update([
+            'image' => $request->file('image')->store('options', 'public'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'url'     => asset('storage/' . $option->image),
+        ]);
+    }
+
+    /**
+     * رفع صور كثيرة مرة واحدة وربط كل صورة بالخيار الخاص بها حسب اسم الملف:
+     *  - مفتاح الأيقونة (badge) مثل: check_engine.png
+     *  - أو الاسم الإنجليزي للخيار مثل: Check Engine.png
+     *  - أو رقم ترتيب الخيار مثل: 1.png
+     */
+    public function bulkOptionImages(Request $request, Question $question)
+    {
+        $request->validate([
+            'images'   => 'required|array',
+            'images.*' => 'image|max:2048',
+            'parent_option_id' => 'nullable|exists:question_options,id'
+        ]);
+
+        if ($request->filled('parent_option_id')) {
+            $parentId = $request->parent_option_id;
+            $order = \App\Models\QuestionOption::where('parent_option_id', $parentId)->max('order') ?? 0;
+            $matched = 0;
+            
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('options', 'public');
+                $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $normalize = fn ($v) => \Illuminate\Support\Str::of((string) $v)->lower()->replaceMatches('/[\s\-]+/', '_')->toString();
+                
+                \App\Models\QuestionOption::create([
+                    'question_id' => $question->id,
+                    'parent_option_id' => $parentId,
+                    'badge' => $normalize($name),
+                    'image' => $path,
+                    'order' => ++$order,
+                    'is_active' => true,
+                ]);
+                $matched++;
+            }
+            
+            return back()->with('success', "تم إٶافة $matched 6-vHورة كخيارات فرعية جديدة ");
+        }
+
+        $normalize = fn ($v) => \Illuminate\Support\Str::of((string) $v)->lower()->replaceMatches('/[\s\-]+/', '_')->toString();
+
+        $options = $question->options()->get();
+
+        $matched   = 0;
+        $unmatched = [];
+
+        foreach ($request->file('images') as $file) {
+            $name = $normalize(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+
+            $option = $options->first(function ($opt) use ($name, $normalize) {
+                return $name === $normalize($opt->badge)
+                    || $name === $normalize($opt->option_en)
+                    || $name === (string) $opt->order;
+            });
+
+            if (!$option) {
+                $unmatched[] = $file->getClientOriginalName();
+                continue;
+            }
+
+            if ($option->image) {
+                Storage::disk('public')->delete($option->image);
+            }
+
+            $option->update(['image' => $file->store('options', 'public')]);
+            $matched++;
+        }
+
+        $message = "تم رفع {$matched} صورة بنجاح";
+        if ($unmatched) {
+            $message .= ' — لم يتم ربط: ' . implode('، ', $unmatched);
+        }
+
+        return back()->with($unmatched ? 'error' : 'success', $message);
     }
 
     public function duplicate(Request $request, Question $question)
