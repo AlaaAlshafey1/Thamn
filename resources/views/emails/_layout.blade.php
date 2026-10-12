@@ -5,7 +5,7 @@
 --}}
 @php
   $locale   = app()->getLocale();
-  $isRtl    = $locale === 'ar';
+  $isRtl    = $isRtl ?? ($locale === 'ar');
   $dir      = $isRtl ? 'rtl' : 'ltr';
   $txtAlign = $isRtl ? 'right' : 'left';
   $oppAlign = $isRtl ? 'left'  : 'right';

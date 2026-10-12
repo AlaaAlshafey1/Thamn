@@ -15,13 +15,18 @@ class SetLocaleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $request->header('Accept-Language', 'en');
-
-        if (in_array($locale, ['ar', 'en'])) {
-            app()->setLocale($locale);
-        } else {
-            app()->setLocale('en');
+        $locale = $request->header('Accept-Language', '');
+        $lang = 'en'; // default
+        
+        if ($request->has('lang') && in_array($request->lang, ['ar', 'en'])) {
+            $lang = $request->lang;
+        } elseif (strpos(strtolower($locale), 'ar') !== false) {
+            $lang = 'ar';
         }
+        
+        app()->setLocale($lang);
+        // Also save it for emails
+        $request->session()->put('locale', $lang);
 
         return $next($request);
     }

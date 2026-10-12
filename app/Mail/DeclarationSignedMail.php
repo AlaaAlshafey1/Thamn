@@ -27,7 +27,7 @@ class DeclarationSignedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'استلام طلب الانضمام كخبير',
+            subject: app()->getLocale() === 'ar' ? 'استلام طلب الانضمام كخبير' : 'Expert Registration Request Received',
         );
     }
 

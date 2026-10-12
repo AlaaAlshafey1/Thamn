@@ -1,6 +1,6 @@
 @php
   $locale = app()->getLocale();
-  $isRtl = $locale === 'ar';
+  $isRtl = true; // بريد موجه للإدارة: عربي دائماً
   $emailTitle = $isRtl ? 'طلب سحب رصيد جديد – ثمن (للإدارة)' : 'New Withdrawal Request – Thamn (Admin)';
 @endphp
 @php $banner = 'withdrawal_banner.jpg'; @endphp

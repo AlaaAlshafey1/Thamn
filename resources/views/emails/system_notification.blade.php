@@ -1,7 +1,13 @@
 @php
+  // اللغة تُحدد من محتوى الرسالة نفسها (إن كانت عربية فالإيميل كله عربي)، وإلا من لغة التطبيق
+  $hasArabic = preg_match('/\p{Arabic}/u', ($title ?? '') . ($messageBody ?? '')) === 1;
   $locale = app()->getLocale();
-  $isRtl  = $locale === 'ar';
+  $isRtl  = $hasArabic ? true : ($locale === 'ar');
   $emailTitle = $title ?? ($isRtl ? 'إشعار من ثمن' : 'Notification from Thamn');
+  $isOrderLink = !empty($actionUrl) && preg_match('#/orders?(/|$)#', (string) $actionUrl) === 1;
+  $btnLabel = $isRtl
+      ? ($isOrderLink ? 'عرض الطلب' : 'عرض التفاصيل')
+      : ($isOrderLink ? 'View Order' : 'View Details');
 @endphp
 @php $banner = 'notification_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -18,9 +24,9 @@
   <a href="{{ $actionUrl }}"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
             font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
-    {{ $isRtl ? 'عرض الطلب' : 'View Order' }}
+    {{ $btnLabel }}
   </a>
   @endif
 
 @php $slot = ob_get_clean(); @endphp
-@include('emails._layout', compact('banner','emailTitle','slot'))
+@include('emails._layout', compact('banner','emailTitle','slot','isRtl'))

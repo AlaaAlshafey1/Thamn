@@ -176,7 +176,10 @@ class ExpertRegistrationController extends Controller
                 if ($user->phone) {
                     $whatsapp->sendMessage(
                         $user->phone,
-                        "مرحباً بك {$user->first_name} 👋\nشكراً لتسجيلك كخبير في منصة ثمن. لقد استلمنا طلبك بنجاح.\n\n✅ تم تسجيل موافقتك على الاتفاقية القانونية للتعاون وإرسال نسخة PDF إلى بريدك الإلكتروني ({$user->email}).\nيمكنك تحميلها من الرابط:\n{$downloadUrl}\n\nفريقنا سيراجع بياناتك ونرد عليك في أقرب وقت. نتمنى لك يوماً سعيداً!"
+                        
+                        app()->getLocale() === 'ar' 
+                        ? "مرحباً بك {$user->first_name} 👋\nشكراً لتسجيلك كخبير في منصة ثمن. لقد استلمنا طلبك بنجاح.\n\nلقد تم تسجيل موافقتك على الاتفاقية القانونية للتعاون، وتم توليد ملف PDF الكتروني خاص بك (يحتوي على تفاصيلك).\nيمكنك تحميل نسختك من الرابط أدناه:\n{$downloadUrl}\n\nسيقوم فريقنا بمراجعة طلبك والتواصل معك قريباً. نتمنى لك يوماً سعيداً!"
+                        : "Welcome {$user->first_name} 👋\nThank you for registering as an expert on Thamn. We have successfully received your request.\n\nYour agreement to the legal cooperation terms has been recorded, and a customized PDF file has been generated for you.\nYou can download your copy from the link below:\n{$downloadUrl}\n\nOur team will review your request and contact you soon. Have a great day!"
                     );
                 }
             } catch (\Exception $e) {
@@ -195,7 +198,7 @@ class ExpertRegistrationController extends Controller
 
                 $adminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
                 Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                    'يا مدير، خبير جديد سجل ووافق على الاتفاقية!',
+                    'مشرفنا الغالي، خبير جديد سجل ووافق على الاتفاقية!',
                     "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\n\nالخبير وافق ضمينًا على الاتفاقية القانونية وتم توليد ملف PDF في ملفه الشخصي.\nادخل على لوحة التحكم وشيك على ملفه.",
                     route('experts.show', $user->id)
                 ));

@@ -1,7 +1,12 @@
 @php
-  $locale = app()->getLocale();
-  $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'تم إصدار بطاقة التثمين لطلبك بنجاح' : 'Your Valuation Card is Ready';
+  $userLang = $order->user->preferred_language ?? 'ar';
+  $isRtl  = $userLang !== 'en';
+  $emailTitle = $isRtl ? 'تم تقييم طلبك بنجاح' : 'Your order has been evaluated';
+  $byLabel = $evaluationType == 'ai'
+      ? ($isRtl ? 'ذكاء اصطناعي' : 'AI')
+      : ($evaluationType == 'expert'
+          ? ($isRtl ? 'خبير' : 'Expert')
+          : ($isRtl ? 'خبير / ذكاء اصطناعي' : 'Expert / AI'));
 
   // Use the product image if available, otherwise fallback to the default banner
   $customBanner = $productImageUrl ?? null;
@@ -16,8 +21,11 @@
   </h1>
 
   <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.85;font-weight:600;">
-    تم تقييم طلبك رقم [{{ $order->id }}] بنجاح بواسطة : 
-    [{{ $evaluationType == 'ai' ? 'ذكاء اصطناعي' : ($evaluationType == 'expert' ? 'خبير' : 'خبير / ذكاء اصطناعي') }}]
+    @if($isRtl)
+      تم تقييم طلبك رقم [{{ $order->id }}] بنجاح بواسطة : [{{ $byLabel }}]
+    @else
+      Your order #[{{ $order->id }}] has been evaluated successfully by: [{{ $byLabel }}]
+    @endif
   </p>
 
   {{-- Price block --}}
@@ -26,9 +34,9 @@
     style="background:#FFF8EC;border-radius:12px;border:1px solid #F5DFA0;margin-bottom:20px;">
     <tr>
       <td style="padding:16px 20px;text-align:center;">
-        <p style="margin:0 0 4px;font-size:13px;color:#888;">السعر النهائي :</p>
+        <p style="margin:0 0 4px;font-size:13px;color:#888;">{{ $isRtl ? 'السعر النهائي :' : 'Final price:' }}</p>
         <p style="margin:0;font-size:28px;font-weight:900;color:#C1953E;">
-          [{{ number_format($recommendedPrice, 0) }}] ريال
+          [{{ number_format($recommendedPrice, 0) }}] {{ $isRtl ? 'ريال' : 'SAR' }}
         </p>
       </td>
     </tr>
@@ -36,7 +44,7 @@
   @endif
 
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
-    شكراً لاستخدامك ثمن.
+    {{ $isRtl ? 'شكراً لاستخدامك ثمن.' : 'Thank you for using Thamn.' }}
   </p>
 
 @php $slot = ob_get_clean(); @endphp

@@ -403,7 +403,7 @@ class PaymentController extends Controller
 
             // بريد الأدمن
             Mail::to('thmmnapplic@gmail.com')->send(new \App\Mail\SystemNotificationMail(
-                'يا مدير، فيه طلب تثمين جديد اندفع!',
+                'مشرفنا الغالي، فيه طلب تثمين جديد اندفع!',
                 "بشرى سارة! العميل {$order->user->first_name} دفع قيمة طلب التثمين رقم {$order->id}.\nشيك على الطلب في لوحة التحكم.",
                 route('orders.show', $order->id)
             ));

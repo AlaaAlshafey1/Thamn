@@ -261,7 +261,7 @@ class OrderController extends Controller
                 $categoryName = $order->category->name_ar ?? 'القسم';
                 Mail::to('thmmnapplic@gmail.com')->send(new \App\Mail\SystemNotificationMail(
                     "تم اعتماد التثمين الهجين للطلب #{$order->id} تلقائياً",
-                    "يا مدير، قام الخبير {$expertName} من قسم {$categoryName} بتقييم الطلب رقم {$order->id}. تم احتساب السعر الهجين تلقائياً: {$thamnPrice} ريال وإبلاغ العميل.",
+                    "مشرفنا الغالي، قام الخبير {$expertName} من قسم {$categoryName} بتقييم الطلب رقم {$order->id}. تم احتساب السعر الهجين تلقائياً: {$thamnPrice} ريال وإبلاغ العميل.",
                     route('orders.show', $order->id)
                 ));
             } catch (\Throwable $e) {
