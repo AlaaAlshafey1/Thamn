@@ -25,8 +25,10 @@ class SetLocaleMiddleware
         }
         
         app()->setLocale($lang);
-        // Also save it for emails
-        $request->session()->put('locale', $lang);
+        // Also save it for web sessions if available
+        if ($request->hasSession()) {
+            $request->session()->put('locale', $lang);
+        }
 
         return $next($request);
     }
