@@ -20,12 +20,16 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>{{ $isRtl ? 'رمز التحقق — ثمن' : 'Verification Code — Thamn' }}</title>
   <style type="text/css">
     body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; border-collapse:collapse; }
     img { -ms-interpolation-mode:bicubic; border:0; height:auto; outline:none; text-decoration:none; }
-    body { margin:0; padding:0; background-color:#F2F4F7; font-family:'Cairo',Arial,sans-serif; }
+    body { margin:0; padding:0; background-color:#F2F4F7; font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif; }
+    p, h1, h2, a, strong, span { font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif; }
 
     @media only screen and (max-width:640px) {
       .email-card { width:100% !important; border-radius:0 !important; }
@@ -133,7 +137,7 @@
                     <img src="{{ $baseUrl }}/assets/emails/logo_white.png"
                          width="48" alt="ثمن"
                          style="display:block;border:0;opacity:.85;margin-bottom:6px;">
-                    <p style="margin:0;font-size:11px;color:#888888;font-family:Arial,sans-serif;">
+                    <p style="margin:0;font-size:11px;color:#888888;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;">
                       {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
                     </p>
                   </td>

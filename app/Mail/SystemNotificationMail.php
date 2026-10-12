@@ -13,12 +13,14 @@ class SystemNotificationMail extends Mailable
     public $title;
     public $messageBody;
     public $actionUrl;
+    public $actionLabel;
 
-    public function __construct($title, $messageBody, $actionUrl = null)
+    public function __construct($title, $messageBody, $actionUrl = null, $actionLabel = null)
     {
         $this->title = $title;
         $this->messageBody = $messageBody;
         $this->actionUrl = $actionUrl;
+        $this->actionLabel = $actionLabel;
     }
 
     public function build()

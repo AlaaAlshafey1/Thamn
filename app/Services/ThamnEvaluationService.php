@@ -278,7 +278,8 @@ PROMPT;
                         Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                             "مطلوب المصادقة على طلب التثمين الذكي رقم #{$order->id}",
                             $msg,
-                            'https://www.thmmn.net/expert/login'
+                            'https://www.thmmn.net/expert/login',
+                            'عرض الطلب'
                         ));
                     } catch (\Throwable $e) {
                         Log::error("Failed to send expert email for AI order approval: " . $e->getMessage());

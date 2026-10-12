@@ -5,19 +5,25 @@
   $isRtl  = $hasArabic ? true : ($locale === 'ar');
   $emailTitle = $title ?? ($isRtl ? 'إشعار من ثمن' : 'Notification from Thamn');
   $isOrderLink = !empty($actionUrl) && preg_match('#/orders?(/|$)#', (string) $actionUrl) === 1;
-  $btnLabel = $isRtl
+  $btnLabel = !empty($actionLabel) ? $actionLabel : ($isRtl
       ? ($isOrderLink ? 'عرض الطلب' : 'عرض التفاصيل')
-      : ($isOrderLink ? 'View Order' : 'View Details');
+      : ($isOrderLink ? 'View Order' : 'View Details'));
+  // إبراز نوع الطلب (تثمين ذكي): خط تحت + لون برتقالي
+  $bodyHtml = nl2br(e($messageBody ?? ''));
+  $bodyHtml = str_replace('تثمين ذكي',
+      '<span style="color:#F58220;text-decoration:underline;font-weight:700;">تثمين ذكي</span>', $bodyHtml);
+  $titleHtml = str_replace('التثمين الذكي',
+      '<span style="color:#F58220;text-decoration:underline;">التثمين الذكي</span>', e($title ?? ($isRtl ? 'إشعار من منصة ثمن 🔔' : 'Notification from Thamn 🔔')));
 @endphp
 @php $banner = 'notification_banner.jpg'; @endphp
 @php ob_start(); @endphp
 
   <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
-    {{ $title ?? ($isRtl ? 'إشعار من منصة ثمن 🔔' : 'Notification from Thamn 🔔') }}
+    {!! $titleHtml !!}
   </h1>
 
   <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
-    {!! nl2br(e($messageBody ?? '')) !!}
+    {!! $bodyHtml !!}
   </p>
 
   @if($actionUrl)

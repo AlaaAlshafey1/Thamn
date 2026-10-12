@@ -35,13 +35,17 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <meta name="x-apple-disable-message-reformatting">
   <title>{{ $emailTitle ?? 'ثمن' }}</title>
   <style>
     body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
     table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}
     img{border:0;height:auto;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}
-    body{margin:0;padding:0;background:#F2F4F7;font-family:'Cairo',Arial,sans-serif}
+    body,table,td,p,h1,h2,h3,a,span,strong{font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif !important}
+    body{margin:0;padding:0;background:#F2F4F7;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif}
     @media only screen and (max-width:600px){
       .email-card{width:100% !important;border-radius:0 !important}
       .banner-img{height:200px !important}
@@ -94,7 +98,7 @@
                 <td align="{{ $txtAlign }}" valign="middle">
                   <img src="{{ $logoWht }}" width="44" alt="ثمن"
                        style="display:block;border:0;opacity:.85;margin-bottom:5px;">
-                  <p style="margin:0;font-size:11px;color:#888;font-family:Arial,sans-serif;">
+                  <p style="margin:0;font-size:11px;color:#888;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;">
                     {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
                   </p>
                 </td>
