@@ -19,7 +19,7 @@ class SocialAuthController extends Controller
     public function checkSocialAccount(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'provider' => 'required|in:google',
+            'provider' => 'required|in:google,apple',
             'social_id' => 'required|string',
             'email' => 'nullable|email'
         ]);
@@ -91,10 +91,10 @@ class SocialAuthController extends Controller
     public function registerSocialAccount(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'provider' => 'required|in:google',
+            'provider' => 'required|in:google,apple',
             'social_id' => 'required|string',
-            'email' => 'required|email',
-            'name' => 'required|string|max:255',
+            'email' => 'required_unless:provider,apple|nullable|email',
+            'name' => 'required_unless:provider,apple|nullable|string|max:255',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -105,7 +105,17 @@ class SocialAuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->email)->first();
+        // Apple only sends email/name on first login, so also match by social id
+        $user = User::where('social_id', $request->social_id)
+            ->where('social_provider', $request->provider)
+            ->first();
+
+        if (!$user && $request->email) {
+            $user = User::where('email', $request->email)->first();
+        }
+
+        $email = $request->email ?: ($request->provider . '_' . md5($request->social_id) . '@privaterelay.thamn.local');
+        $name = $request->name ?: 'Apple User';
 
         if ($user) {
             $user->update([
@@ -113,14 +123,14 @@ class SocialAuthController extends Controller
                 'social_provider' => $request->provider,
             ]);
         } else {
-            $fullName = explode(" ", $request->name);
+            $fullName = explode(" ", $name);
             $first = $fullName[0] ?? '';
             $last = $fullName[1] ?? '';
 
             $data = [
                 'first_name' => $first,
                 'last_name' => $last,
-                'email' => $request->email,
+                'email' => $email,
                 'password' => Hash::make(uniqid()),
                 'phone' => $request->phone ?? null,
                 'social_id' => $request->social_id,
