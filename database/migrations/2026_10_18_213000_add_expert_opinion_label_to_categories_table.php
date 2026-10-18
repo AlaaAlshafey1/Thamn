@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->string('expert_opinion_label_ar')->nullable()->default('رأي الخبير  عضويك')->after('description_en');
+            $table->string('expert_opinion_label_ar')->nullable()->default('رأي الخبير  عضوية')->after('description_en');
             $table->string('expert_opinion_label_en')->nullable()->default('Certified Expert Opinion')->after('expert_opinion_label_ar');
         });
     }
