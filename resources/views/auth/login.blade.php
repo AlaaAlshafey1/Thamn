@@ -1,15 +1,17 @@
-﻿@extends('layouts.master2')
+@extends('layouts.master2')
 
 @section('css')
 <!-- Google Arabic Font -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Sidemenu-respoansive-tabs css -->
 <link href="{{ URL::asset('assets/plugins/sidemenu-responsive-tabs/css/sidemenu-responsive-tabs.css') }}" rel="stylesheet">
 
 <style>
-    body, input, button, label, h1, h2, h5 {
-        font-family: 'Cairo', sans-serif !important;
+    *, *::before, *::after, body, input, button, label, h1, h2, h5, p, a, span {
+        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
     }
 
     h2 {

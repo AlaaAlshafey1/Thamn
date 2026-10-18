@@ -22,15 +22,15 @@
 @php $banner = 'expert_valuation_banner.jpg'; @endphp
 @php ob_start(); @endphp
 
-  <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#C1953E;text-transform:uppercase;">
+  <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#C1953E;text-transform:uppercase;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $packageTitle }}
   </p>
 
-  <h1 class="h1" style="margin:0 0 16px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+  <h1 class="h1" style="margin:0 0 16px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $isRtl ? 'يا هلا خبير التثمين 👋' : 'Hello Valuation Expert 👋' }}
   </h1>
 
-  <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.85;">
+  <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.85;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     @if($isRtl)
       <strong>للأهمية:</strong> رقم الطلب <strong style="color:#C1953E;">( {{ $order->id ?? 'N/A' }} )</strong><br><br>
       وصلك طلب (تقييم استرشادي لسلعة).<br>
@@ -46,11 +46,11 @@
 
   <a href="https://thmmn.net/expert/login"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
-            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;margin-bottom:24px;">
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;margin-bottom:24px;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $isRtl ? 'اضغط هنا للمتابعة' : 'Click Here to Proceed' }}
   </a>
 
-  <p style="margin:0;font-size:14px;color:#666;line-height:1.85;">
+  <p style="margin:0;font-size:14px;color:#666;line-height:1.85;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $isRtl ? 'شاكرين تعاونكم،' : 'Thank you for your cooperation,' }}<br>
     <strong>{{ $isRtl ? 'فريق تطبيق ثمن' : 'Thamn App Team' }}</strong>
   </p>

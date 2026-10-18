@@ -14,6 +14,8 @@ class Category extends Model
         'name_en',
         'description_ar',
         'description_en',
+        'expert_opinion_label_ar',
+        'expert_opinion_label_en',
         'is_active',
         'image',
         'questions_image',

@@ -1,11 +1,12 @@
-﻿@extends('layouts.master')
+@extends('layouts.master')
 @section('title', 'إدارة الأسئلة')
 
 @section('css')
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
-body { background-color: #f0f2f5; font-family: 'Cairo', sans-serif; }
+body { font-family: 'IBM Plex Sans Arabic', sans-serif !important; }
+body { background-color: #f0f2f5; }
 
 /* ── Page Header ── */
 .page-header {

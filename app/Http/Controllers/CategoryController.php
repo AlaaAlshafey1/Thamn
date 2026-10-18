@@ -21,16 +21,20 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name_ar'         => 'required|string|max:255',
-            'name_en'         => 'nullable|string|max:255',
-            'description_ar'  => 'nullable|string',
-            'description_en'  => 'nullable|string',
-            'is_active'       => 'nullable|boolean',
-            'image'           => 'nullable|image|max:5120',
-            'questions_image' => 'nullable|image|max:5120',
+            'name_ar'                 => 'required|string|max:255',
+            'name_en'                 => 'nullable|string|max:255',
+            'description_ar'          => 'nullable|string',
+            'description_en'          => 'nullable|string',
+            'expert_opinion_label_ar' => 'nullable|string|max:255',
+            'expert_opinion_label_en' => 'nullable|string|max:255',
+            'is_active'               => 'nullable|boolean',
+            'image'                   => 'nullable|image|max:5120',
+            'questions_image'         => 'nullable|image|max:5120',
         ]);
 
         $data = $request->except(['image', 'questions_image']);
+        $data['expert_opinion_label_ar'] = !empty($data['expert_opinion_label_ar']) ? $data['expert_opinion_label_ar'] : 'رأي الخبير المعتمد';
+        $data['expert_opinion_label_en'] = !empty($data['expert_opinion_label_en']) ? $data['expert_opinion_label_en'] : 'Certified Expert Opinion';
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
@@ -56,13 +60,20 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name_ar'         => 'required|string|max:255',
-            'name_en'         => 'nullable|string|max:255',
-            'image'           => 'nullable|image|max:5120',
-            'questions_image' => 'nullable|image|max:5120',
+            'name_ar'                 => 'required|string|max:255',
+            'name_en'                 => 'nullable|string|max:255',
+            'description_ar'          => 'nullable|string',
+            'description_en'          => 'nullable|string',
+            'expert_opinion_label_ar' => 'nullable|string|max:255',
+            'expert_opinion_label_en' => 'nullable|string|max:255',
+            'is_active'               => 'nullable|boolean',
+            'image'                   => 'nullable|image|max:5120',
+            'questions_image'         => 'nullable|image|max:5120',
         ]);
 
         $data = $request->except(['image', 'questions_image']);
+        $data['expert_opinion_label_ar'] = !empty($data['expert_opinion_label_ar']) ? $data['expert_opinion_label_ar'] : 'رأي الخبير المعتمد';
+        $data['expert_opinion_label_en'] = !empty($data['expert_opinion_label_en']) ? $data['expert_opinion_label_en'] : 'Certified Expert Opinion';
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');

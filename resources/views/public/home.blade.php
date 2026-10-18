@@ -12,8 +12,9 @@
     <meta property="og:image" content="{{ asset('assets/img/Logo.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Outfit:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
@@ -50,7 +51,7 @@
         body {
             background: var(--bg);
             color: var(--text-main);
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
         }
@@ -102,7 +103,7 @@
 
         .logo span {
             color: var(--primary);
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 1.8rem;
             font-weight: 800;
         }
@@ -178,7 +179,7 @@
         }
 
         h1 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: clamp(2.5rem, 5vw, 4.8rem);
             line-height: 1.1;
             font-weight: 700;
@@ -355,7 +356,7 @@
         }
 
         .section-title {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 3.2rem;
             color: var(--primary);
             line-height: 1.2;
@@ -484,7 +485,7 @@
             cursor: pointer;
             font-size: 1.2rem;
             font-weight: 700;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             color: var(--primary);
             text-align: right;
         }
@@ -517,7 +518,7 @@
         }
 
         .app-section h2 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 3.5rem;
             margin-bottom: 1.5rem;
             font-weight: 800;
@@ -563,7 +564,7 @@
         }
 
         .footer-brand h2 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 2.2rem;
             color: var(--gold);
             margin-bottom: 1.5rem;
@@ -898,7 +899,7 @@
         }
 
         .banner-caption h3 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 1.4rem;
             font-weight: 700;
             color: var(--gold-light);
@@ -1249,7 +1250,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-brand">
-                <h2 style="font-family: 'Cairo', sans-serif; font-weight: 800;">ثمن</h2>
+                <h2 style="font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 800;">ثمن</h2>
                 <p>منصة تطبيق سعودي في مجال التثمين الاسترشادي للسلع المستعملة باستخدام معايير فنية وتقنية.</p>
             </div>
             <div class="footer-links">

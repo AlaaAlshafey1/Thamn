@@ -24,7 +24,7 @@
         font-size: 1.1rem; font-weight: 700; opacity: 0.95; margin-bottom: 5px;
     }
     .wallet-balance {
-        font-size: 3rem; font-weight: 900; margin-bottom: 25px; font-family: 'Cairo', sans-serif;
+        font-size: 3rem; font-weight: 900; margin-bottom: 25px; font-family: 'IBM Plex Sans Arabic', sans-serif;
     }
     .wallet-currency {
         font-size: 1.2rem; font-weight: 600; opacity: 0.9;

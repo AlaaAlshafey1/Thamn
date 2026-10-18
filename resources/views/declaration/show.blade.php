@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الاتفاقية القانونية للتعاون مع الخبير - تطبيق ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,7 +16,7 @@
         }
 
         body {
-            font-family: 'Cairo', 'Tahoma', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
             background: #e8e0d4;
             direction: rtl;
             min-height: 100vh;
@@ -50,7 +51,7 @@
             font-size: 120px;
             font-weight: 900;
             color: rgba(180, 150, 100, 0.12);
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             pointer-events: none;
             line-height: 1;
         }
@@ -155,7 +156,7 @@
             border: none;
             border-bottom: 1.5px dotted #a89070;
             background: transparent;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 13px;
             color: #1a1a1a;
             padding: 1px 4px;
@@ -356,7 +357,7 @@
             border: 1px solid #ddd;
             background: transparent;
             padding: 4px 12px;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 11px;
             color: #888;
             border-radius: 4px;
@@ -406,7 +407,7 @@
             color: white;
             border: none;
             border-radius: 8px;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 15px;
             font-weight: 800;
             cursor: pointer;

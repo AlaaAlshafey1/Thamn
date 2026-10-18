@@ -37,15 +37,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="x-apple-disable-message-reformatting">
   <title>{{ $emailTitle ?? 'ثمن' }}</title>
-  <style>
+  <!--[if !mso]><!-->
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+  </style>
+  <!--<![endif]-->
+  <style type="text/css">
     body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
     table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}
     img{border:0;height:auto;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}
-    body,table,td,p,h1,h2,h3,a,span,strong{font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif !important}
-    body{margin:0;padding:0;background:#F2F4F7;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif}
+    *,body,table,td,p,h1,h2,h3,h4,h5,a,span,strong{font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif !important}
+    body{margin:0;padding:0;background:#F2F4F7;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif}
     @media only screen and (max-width:600px){
       .email-card{width:100% !important;border-radius:0 !important}
       .banner-img{height:200px !important}
@@ -56,7 +61,7 @@
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#F2F4F7;">
+<body style="margin:0;padding:0;background:#F2F4F7;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
     <td align="center" style="padding:36px 12px;">
@@ -83,7 +88,7 @@
 
         {{-- BODY --}}
         <tr>
-          <td class="body-cell" style="padding:28px 40px 36px;text-align:center;">
+          <td class="body-cell" style="padding:28px 40px 36px;text-align:center;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
             {!! $slot !!}
           </td>
         </tr>
@@ -98,7 +103,7 @@
                 <td align="{{ $txtAlign }}" valign="middle">
                   <img src="{{ $logoWht }}" width="44" alt="ثمن"
                        style="display:block;border:0;opacity:.85;margin-bottom:5px;">
-                  <p style="margin:0;font-size:11px;color:#888;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;">
+                  <p style="margin:0;font-size:11px;color:#888;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
                     {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
                   </p>
                 </td>

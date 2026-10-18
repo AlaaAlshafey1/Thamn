@@ -24,11 +24,14 @@
         <meta name="twitter:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
 
         <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <style>
-            body {
-                font-family: 'Cairo', sans-serif;
+            *, *::before, *::after, body {
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
             }
             .glass {
                 background: rgba(255, 255, 255, 0.05);
@@ -58,7 +61,7 @@
                         <div class="w-full h-[2px] bg-white"></div>
                         <div class="text-[10px] font-black tracking-widest text-white leading-none">ثمن</div>
                     </div>
-                    <span class="text-white text-2xl font-black tracking-tight" style="font-family: 'Cairo';">ثمن</span>
+                    <span class="text-white text-2xl font-black tracking-tight" style="font-family: 'IBM Plex Sans Arabic';">ثمن</span>
                 </div>
                 <nav class="hidden md:flex items-center gap-8 text-white/90">
                     <a href="#" class="hover:text-primary transition-colors">الرئيسية</a>

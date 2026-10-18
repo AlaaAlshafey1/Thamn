@@ -600,16 +600,16 @@ class OrderController extends Controller
             }
             if ($request->statsCategory === 'inPricing') {
                 $query->whereIn('status', $statusGroups['inPricing'])
-                      ->where(function($q) {
-                          $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
-                      });
+                    ->where(function ($q) {
+                        $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+                    });
             } elseif ($request->statsCategory === 'priced') {
-                $query->where(function($q) use ($statusGroups) {
+                $query->where(function ($q) use ($statusGroups) {
                     $q->whereIn('status', $statusGroups['priced'])
-                      ->orWhere(function($q2) use ($statusGroups) {
-                          $q2->whereIn('status', $statusGroups['inPricing'])
-                             ->where('expert_evaluated', 1);
-                      });
+                        ->orWhere(function ($q2) use ($statusGroups) {
+                            $q2->whereIn('status', $statusGroups['inPricing'])
+                                ->where('expert_evaluated', 1);
+                        });
                 });
             } else {
                 $query->whereIn('status', $statusGroups[$request->statsCategory]);
@@ -622,22 +622,22 @@ class OrderController extends Controller
                 ], 400);
             }
             if (in_array($request->status, $statusGroups['priced'])) {
-                $query->where(function($q) use ($request, $statusGroups) {
+                $query->where(function ($q) use ($request, $statusGroups) {
                     $q->where('status', $request->status)
-                      ->orWhere(function($q2) use ($request, $statusGroups) {
-                          // إذا بحث عن estimated، نجيب له كمان ال beingEstimated لو اتقيم
-                          if ($request->status === 'estimated') {
-                              $q2->where('status', 'beingEstimated')->where('expert_evaluated', 1);
-                          } elseif ($request->status === 'reEstimated') {
-                              $q2->where('status', 'beingReEstimated')->where('expert_evaluated', 1);
-                          }
-                      });
+                        ->orWhere(function ($q2) use ($request, $statusGroups) {
+                            // إذا بحث عن estimated، نجيب له كمان ال beingEstimated لو اتقيم
+                            if ($request->status === 'estimated') {
+                                $q2->where('status', 'beingEstimated')->where('expert_evaluated', 1);
+                            } elseif ($request->status === 'reEstimated') {
+                                $q2->where('status', 'beingReEstimated')->where('expert_evaluated', 1);
+                            }
+                        });
                 });
             } elseif (in_array($request->status, $statusGroups['inPricing'])) {
                 $query->where('status', $request->status)
-                      ->where(function($q) {
-                          $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
-                      });
+                    ->where(function ($q) {
+                        $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
+                    });
             } else {
                 $query->where('status', $request->status);
             }
@@ -673,9 +673,12 @@ class OrderController extends Controller
 
                     if ($d->question && $d->question->type === 'rateTypeSelection' && $d->option?->badge) {
                         $badge = $d->option->badge;
-                        if ($badge === 'best') $val = $lang === 'ar' ? 'هجين' : 'Hybrid';
-                        elseif ($badge === 'expert') $val = $lang === 'ar' ? 'خبير' : 'Expert';
-                        elseif ($badge === 'ai') $val = $lang === 'ar' ? 'ذكي' : 'Smart';
+                        if ($badge === 'best')
+                            $val = $lang === 'ar' ? 'هجين' : 'Hybrid';
+                        elseif ($badge === 'expert')
+                            $val = $lang === 'ar' ? 'خبير' : 'Expert';
+                        elseif ($badge === 'ai')
+                            $val = $lang === 'ar' ? 'ذكي' : 'Smart';
                     }
                     return $val;
                 })
@@ -705,8 +708,10 @@ class OrderController extends Controller
 
             $mappedStatus = $order->status;
             if ($order->expert_evaluated) {
-                if ($mappedStatus === 'beingEstimated') $mappedStatus = 'estimated';
-                if ($mappedStatus === 'beingReEstimated') $mappedStatus = 'reEstimated';
+                if ($mappedStatus === 'beingEstimated')
+                    $mappedStatus = 'estimated';
+                if ($mappedStatus === 'beingReEstimated')
+                    $mappedStatus = 'reEstimated';
             }
 
             return [
@@ -915,9 +920,16 @@ class OrderController extends Controller
 
         $mappedStatus = $order->status;
         if ($order->expert_evaluated) {
-            if ($mappedStatus === 'beingEstimated') $mappedStatus = 'estimated';
-            if ($mappedStatus === 'beingReEstimated') $mappedStatus = 'reEstimated';
+            if ($mappedStatus === 'beingEstimated')
+                $mappedStatus = 'estimated';
+            if ($mappedStatus === 'beingReEstimated')
+                $mappedStatus = 'reEstimated';
         }
+
+        /* ===================== EXPERT OPINION LABEL ===================== */
+        $expertOpinionLabel = $lang === 'ar'
+            ? ($order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد')
+            : ($order->category?->expert_opinion_label_en ?: 'Certified Expert Opinion');
 
         /* ===================== RESPONSE ===================== */
         return response()->json([
@@ -935,6 +947,10 @@ class OrderController extends Controller
             'created_at' => $order->created_at,
             'is_re_evaluated' => $order->re_evaluation_count > 0,
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
+            // مسمى / عنوان رأي الخبير المعتمد المخصص لكل فئة
+            'expert_opinion_label' => $expertOpinionLabel,
+            'expert_opinion_label_ar' => $order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد',
+            'expert_opinion_label_en' => $order->category?->expert_opinion_label_en ?: 'Certified Expert Opinion',
             // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
             'expert_membership_number' => $order->expert?->membership_number ?? null,
             'ai_valuation_ratings' => $aiValuationRatings,
@@ -993,9 +1009,12 @@ class OrderController extends Controller
 
             if ($detail->question->type === 'rateTypeSelection' && $detail->option?->badge) {
                 $badge = $detail->option->badge;
-                if ($badge === 'best') $value = 'هجين';
-                elseif ($badge === 'expert') $value = 'خبير';
-                elseif ($badge === 'ai') $value = 'ذكي';
+                if ($badge === 'best')
+                    $value = 'هجين';
+                elseif ($badge === 'expert')
+                    $value = 'خبير';
+                elseif ($badge === 'ai')
+                    $value = 'ذكي';
             }
 
             if ($title && $value) {
@@ -1169,9 +1188,9 @@ class OrderController extends Controller
             $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
                 $isAr ? 'ولايهمك .. تم استلام طلب إعادة التقييم' : 'Re-evaluation request received',
-                $isAr 
-                    ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} بدينا مرحلة المراجعة فورا" 
-                    : "We received your re-evaluation request for product #{$order->id} and started the review process immediately.",
+                $isAr
+                ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} بدينا مرحلة المراجعة فورا"
+                : "We received your re-evaluation request for product #{$order->id} and started the review process immediately.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
@@ -1336,9 +1355,9 @@ class OrderController extends Controller
                 $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
                     $isAr ? 'منتجك في السوق الآن' : 'Your product is in the market now',
-                    $isAr 
-                        ? "تم إدراج منتجك رقم {$order->id} في سوق ثمن بنجاح يمكن للمشترين رؤيته الآن" 
-                        : "Your product #{$order->id} has been successfully listed in Thamn market. Buyers can now see it.",
+                    $isAr
+                    ? "تم إدراج منتجك رقم {$order->id} في سوق ثمن بنجاح يمكن للمشترين رؤيته الآن"
+                    : "Your product #{$order->id} has been successfully listed in Thamn market. Buyers can now see it.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
                 );

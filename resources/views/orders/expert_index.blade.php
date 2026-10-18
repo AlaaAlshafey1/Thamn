@@ -34,6 +34,55 @@
     .ex-empty i { font-size:3rem; opacity:.3; display:block; margin-bottom:12px; }
     .ex-price { font-weight:900; color:#009688; }
 
+    /* Order Status Header & Badges (جديد / منجز / منتهي) */
+    .ord-hdr-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+    }
+    .ord-hdr-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 800;
+        color: var(--ex-text);
+    }
+    .ord-hdr-title .ord-lbl {
+        color: #777;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+    .order-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.2px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .pill-new {
+        background: #ff9800;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35);
+    }
+    .pill-completed {
+        background: rgba(0, 150, 136, 0.12);
+        color: #009688 !important;
+        border: 1px solid rgba(0, 150, 136, 0.25);
+    }
+    .pill-expired {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626 !important;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
     /* Mobile adjustments */
     @media (max-width: 768px) {
         .orders-card { background: transparent; border: none; box-shadow: none; }
@@ -41,9 +90,15 @@
         .ex-tbl, .ex-tbl tbody, .ex-tbl tr, .ex-tbl td { display: block; width: 100%; }
         .ex-tbl thead { display: none; }
         .ex-tbl tbody tr { background: var(--ex-card); border-radius: 16px; border: 1px solid var(--ex-border); margin-bottom: 16px; padding: 12px 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .ex-tbl tbody tr.card-order-new {
+            border: 1.5px solid #ff9800 !important;
+            background: #fffdfa !important;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.1) !important;
+        }
         .ex-tbl tbody td { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; text-align: left; }
         .ex-tbl tbody td:last-child { border-bottom: none; padding-bottom: 0; }
         .ex-tbl tbody td::before { content: attr(data-label); font-size: 0.8rem; font-weight: 800; color: #888; }
+        .ex-tbl tbody td:nth-child(1)::before { display: none !important; }
         .ex-urow { flex-direction: row-reverse; }
     }
 </style>
@@ -79,8 +134,16 @@
                 </thead>
                 <tbody>
                     @forelse($activeOrders as $order)
-                    <tr>
-                        <td data-label="رقم الطلب"><span class="ex-ord-num">#{{ $order->id }}</span></td>
+                    <tr class="card-order-new">
+                        <td data-label="رقم الطلب">
+                            <div class="ord-hdr-row">
+                                <span class="ord-hdr-title">
+                                    <span class="ord-lbl">طلب</span>
+                                    <span class="ex-ord-num">#{{ $order->id }}</span>
+                                </span>
+                                <span class="order-status-pill pill-new"><i class="bx bxs-star"></i> جديد</span>
+                            </div>
+                        </td>
                         <td data-label="العميل">
                             <div class="ex-urow">
                                 <div class="ex-avatar"><i class="bx bx-user"></i></div>
@@ -89,7 +152,7 @@
                         </td>
                         <td data-label="الفئة" style="color:var(--ex-muted);">
                             <i class="bx bx-tag" style="color:var(--ex-orange);vertical-align:middle;"></i>
-                            {{ $order->category->name ?? 'غير محدد' }}
+                            {{ $order->category->name_ar ?? $order->category->name_en ?? $order->category->name ?? 'غير محدد' }}
                         </td>
                         <td data-label="السعر">
                             <span class="ex-price">{{ number_format($order->total_price, 0) }}</span>
@@ -152,7 +215,15 @@
                 <tbody>
                     @forelse($completedOrders as $order)
                     <tr>
-                        <td data-label="رقم الطلب"><span class="ex-ord-num">#{{ $order->id }}</span></td>
+                        <td data-label="رقم الطلب">
+                            <div class="ord-hdr-row">
+                                <span class="ord-hdr-title">
+                                    <span class="ord-lbl">طلب</span>
+                                    <span class="ex-ord-num">#{{ $order->id }}</span>
+                                </span>
+                                <span class="order-status-pill pill-completed"><i class="bx bx-check-circle"></i> منجز</span>
+                            </div>
+                        </td>
                         <td data-label="العميل">
                             <div class="ex-urow">
                                 <div class="ex-avatar"><i class="bx bx-user"></i></div>
@@ -161,7 +232,7 @@
                         </td>
                         <td data-label="الفئة" style="color:var(--ex-muted);">
                             <i class="bx bx-tag" style="color:var(--ex-orange);vertical-align:middle;"></i>
-                            {{ $order->category->name ?? 'غير محدد' }}
+                            {{ $order->category->name_ar ?? $order->category->name_en ?? $order->category->name ?? 'غير محدد' }}
                         </td>
                         <td data-label="السعر">
                             <span class="ex-price">{{ number_format($order->total_price, 0) }}</span>

@@ -27,7 +27,7 @@
     width: 100%;
     height: 100%;
     position: relative;
-    font-family: 'Cairo', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
     background-color: {{ $appPage->background_color ?? '#fff' }};
     color: {{ $appPage->text_color ?? '#000' }};
 }

@@ -153,28 +153,36 @@ class OrderController extends Controller
             return back()->with('error', 'لقد قمت بتقييم هذا الطلب بالفعل ولا يمكن تعديله.');
         }
 
+        // الاعتماد التلقائي على تقرير الذكاء الاصطناعي دون إلزام الخبير بكتابة نصوص
+        $expertReasoning = $request->input('expert_reasoning') ?: ($order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.');
+
         if ($order->evaluation_type === 'ai') {
             $request->validate([
                 'ai_valuation_rating_id' => 'required|exists:ai_valuation_ratings,id',
-                'expert_reasoning' => 'required|string|max:5000',
             ]);
             
             $expertPrice = $order->ai_price ?? $order->total_price;
             $expertMinPrice = $order->ai_min_price ?? $expertPrice * 0.8;
             $expertMaxPrice = $order->ai_max_price ?? $expertPrice * 1.2;
             $aiValuationRatingId = $request->ai_valuation_rating_id;
-        } else {
+        } elseif ($order->evaluation_type === 'expert') {
+            // باقة الخبير فقط: الخبير يدخل أو يغير السعر المعتمد (بدون كتابة كلام)
             $request->validate([
                 'expert_price' => 'required|numeric|min:0',
                 'expert_min_price' => 'nullable|numeric|min:0',
                 'expert_max_price' => 'nullable|numeric|min:0',
-                'expert_reasoning' => 'required|string|max:5000',
             ]);
             
-            $expertPrice = $request->expert_price;
-            $expertMinPrice = $request->expert_min_price ?? $request->expert_price * 0.8;
-            $expertMaxPrice = $request->expert_max_price ?? $request->expert_price * 1.2;
+            $expertPrice = (float) $request->expert_price;
+            $expertMinPrice = $request->filled('expert_min_price') ? (float) $request->expert_min_price : round($expertPrice * 0.8);
+            $expertMaxPrice = $request->filled('expert_max_price') ? (float) $request->expert_max_price : round($expertPrice * 1.2);
             $aiValuationRatingId = null;
+        } else {
+            // باقي الباقات (التقييم الشامل best أو غيرها): الخبير يعتمد السعر المقترح من الذكاء الاصطناعي
+            $expertPrice = $order->ai_price ?? $order->total_price ?? (float) $request->input('expert_price', 0);
+            $expertMinPrice = $order->ai_min_price ?? round($expertPrice * 0.8);
+            $expertMaxPrice = $order->ai_max_price ?? round($expertPrice * 1.2);
+            $aiValuationRatingId = $request->input('ai_valuation_rating_id');
         }
 
         // تحديث الأوردر
@@ -183,7 +191,7 @@ class OrderController extends Controller
             'expert_price' => $expertPrice,
             'expert_min_price' => $expertMinPrice,
             'expert_max_price' => $expertMaxPrice,
-            'expert_reasoning' => $request->expert_reasoning,
+            'expert_reasoning' => $expertReasoning,
             'ai_valuation_rating_id' => $aiValuationRatingId,
             'expert_evaluated' => true,
             'total_price' => $expertPrice,
@@ -339,7 +347,9 @@ class OrderController extends Controller
             );
         }
 
-        return back()->with('success', $successMsg);
+        return back()
+            ->with('success', $successMsg)
+            ->with('wallet_alert', 'راجع محفظتك تم إضافة رصيدك بنجاح');
     }
 
     public function thamnEvaluate(Request $request, Order $order, ThamnEvaluationService $evaluationService)

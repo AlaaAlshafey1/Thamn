@@ -2,6 +2,15 @@
   $locale = app()->getLocale();
   $isRtl = true; // بريد موجه للإدارة: عربي دائماً
   $emailTitle = $isRtl ? 'طلب سحب رصيد جديد – ثمن (للإدارة)' : 'New Withdrawal Request – Thamn (Admin)';
+
+  // رابط مراجعة الطلب: نضمن توجيهه مباشرة لتفاصيل الطلب على الرابط الفعلي
+  $appUrl = config('app.url');
+  if (empty($appUrl) || str_contains($appUrl, 'localhost') || str_contains($appUrl, '127.0.0.1')) {
+      $baseUrl = 'https://thmmn.net';
+  } else {
+      $baseUrl = rtrim($appUrl, '/');
+  }
+  $reviewUrl = $baseUrl . '/withdrawals/' . $withdrawal->id . '/show';
 @endphp
 @php $banner = 'withdrawal_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -29,7 +38,7 @@
       </p>
       <p style="margin:0 0 8px;font-size:13px;color:#555;">
         🏦 {{ $isRtl ? 'رقم الآيبان' : 'IBAN' }}: <strong
-          style="color:#1A1A1A;">{{ $withdrawal->iban ?? 'N/A' }}</strong>
+          style="color:#1A1A1A;" dir="ltr">{{ $withdrawal->user->iban ?? $withdrawal->iban ?? 'غير متوفر' }}</strong>
       </p>
       <p style="margin:0;font-size:13px;color:#555;">
         📅 {{ $isRtl ? 'تاريخ الطلب' : 'Request Date' }}: <strong
@@ -39,10 +48,15 @@
   </tr>
 </table>
 
-<a href="{{ url('/withdrawals') }}" style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
-            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
-  {{ $isRtl ? 'مراجعة الطلب' : 'Review Request' }}
-</a>
+<div style="text-align:center;margin:28px 0;">
+  <a href="{{ $reviewUrl }}" style="display:inline-block;padding:14px 40px;background:#C1953E;color:#fff;
+              font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;box-shadow:0 4px 12px rgba(193,149,62,0.3);">
+    {{ $isRtl ? 'مراجعة الطلب' : 'Review Request' }}
+  </a>
+  <div style="margin-top:12px;font-size:11px;color:#888;direction:ltr;word-break:break-all;">
+    <a href="{{ $reviewUrl }}" style="color:#C1953E;text-decoration:underline;">{{ $reviewUrl }}</a>
+  </div>
+</div>
 
 @php $slot = ob_get_clean(); @endphp
 @include('emails._layout', compact('banner', 'emailTitle', 'slot'))

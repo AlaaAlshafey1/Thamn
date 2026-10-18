@@ -5,8 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تم التوقيع بنجاح - الاتفاقية القانونية - تطبيق ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after, body, button, input, select, textarea, div, span, p, h1, h2, h3, h4, h5, h6 {
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +19,6 @@
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;

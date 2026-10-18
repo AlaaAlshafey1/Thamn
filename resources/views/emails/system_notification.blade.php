@@ -18,18 +18,18 @@
 @php $banner = 'notification_banner.jpg'; @endphp
 @php ob_start(); @endphp
 
-  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
+  <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {!! $titleHtml !!}
   </h1>
 
-  <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
+  <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {!! $bodyHtml !!}
   </p>
 
   @if($actionUrl)
   <a href="{{ $actionUrl }}"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
-            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
+            font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $btnLabel }}
   </a>
   @endif

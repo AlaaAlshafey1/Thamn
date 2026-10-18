@@ -10,9 +10,18 @@ use Illuminate\Support\Facades\Mail;
 
 class WithdrawalController extends Controller
 {
-    // عرض كل طلبات السحب (للادمن)
+    // عرض كل طلبات السحب (للادمن فقط)
     public function index()
     {
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->hasRole('expert') && !$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin')) {
+            return redirect()->route('withdrawals.my');
+        }
+
+        if (!$currentUser || (!$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('super-admin'))) {
+            abort(403, 'غير مصرح لك بالوصول لإدارة طلبات السحب.');
+        }
+
         $requests = WithdrawalRequest::with('user')->latest()->get();
         return view('withdrawals.index', compact('requests'));
     }
@@ -24,9 +33,18 @@ class WithdrawalController extends Controller
         return view('withdrawals.my', compact('requests'));
     }
 
-    // عرض تفاصيل طلب سحب محدد (للادمن)
+    // عرض تفاصيل طلب سحب محدد (للادمن فقط)
     public function show($id)
     {
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->hasRole('expert') && !$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin')) {
+            return redirect()->route('withdrawals.my');
+        }
+
+        if (!$currentUser || (!$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('super-admin'))) {
+            abort(403, 'غير مصرح لك بالوصول لبيانات طلب السحب.');
+        }
+
         $request = WithdrawalRequest::with('user')->findOrFail($id);
         $expert = $request->user;
 
@@ -111,9 +129,14 @@ class WithdrawalController extends Controller
         return redirect()->route('withdrawals.my')->with('success', 'تم إرسال طلب السحب بنجاح وسيتم معالجته قريباً.');
     }
 
-    // الموافقة على السحب
+    // الموافقة على السحب (للادمن فقط)
     public function approve(Request $request, $id)
     {
+        $currentUser = auth()->user();
+        if (!$currentUser || (!$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('super-admin'))) {
+            abort(403, 'غير مصرح لك بالموافقة على طلبات السحب. هذه الصلاحية خاصة بالإدارة فقط.');
+        }
+
         $req = WithdrawalRequest::findOrFail($id);
         $transferType = $request->input('transfer_type', 'manual');
 
@@ -171,6 +194,32 @@ class WithdrawalController extends Controller
             }
         }
 
+        // ==========================================
+        // Moyasar Automated Payout Integration
+        // ==========================================
+        if ($transferType === 'moyasar') {
+            try {
+                $moyasarService = app(\App\Services\MoyasarPaymentService::class);
+                $payoutResult = $moyasarService->createPayout(
+                    amount: (float) $req->amount,
+                    iban: (string) ($user->iban ?? ''),
+                    accountName: trim($user->first_name . ' ' . $user->last_name),
+                    phone: $user->phone,
+                    metadata: [
+                        'withdrawal_id' => $req->id,
+                        'expert_id' => $user->id
+                    ]
+                );
+
+                if (!$payoutResult['success']) {
+                    return back()->with('error', 'فشل التحويل الآلي عبر ميسر (Moyasar): ' . ($payoutResult['message'] ?? 'يرجى مراجعة إعدادات ميسر.'));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Moyasar Payout Exception: ' . $e->getMessage());
+                return back()->with('error', 'حدث خطأ غير متوقع أثناء محاولة التحويل عبر ميسر.');
+            }
+        }
+
         // خصم الرصيد
         $user->balance -= $req->amount;
         $user->save();
@@ -200,9 +249,14 @@ class WithdrawalController extends Controller
         return back()->with('success', 'تم الموافقة على طلب السحب وتحويل الأموال آلياً بنجاح.');
     }
 
-    // رفض السحب
+    // رفض السحب (للادمن فقط)
     public function reject($id)
     {
+        $currentUser = auth()->user();
+        if (!$currentUser || (!$currentUser->hasRole('superadmin') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('super-admin'))) {
+            abort(403, 'غير مصرح لك برفض طلبات السحب. هذه الصلاحية خاصة بالإدارة فقط.');
+        }
+
         $req = WithdrawalRequest::findOrFail($id);
 
         if ($req->status != 'pending') {

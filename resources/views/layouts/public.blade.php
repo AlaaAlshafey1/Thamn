@@ -13,10 +13,14 @@
     <meta name="twitter:card" content="summary_large_image">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after, body, button, input, select, textarea, .btn {
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+        }
         body {
-            font-family: 'Cairo', sans-serif;
             background-color: #f8f9fa;
             color: #333;
             line-height: 1.6;

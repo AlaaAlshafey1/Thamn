@@ -1,4 +1,4 @@
-@extends(auth()->check() && auth()->user()->hasRole('expert') ? 'layouts.expert' : 'layouts.master')
+@extends('layouts.master')
 @section('title', 'إدارة طلبات السحب')
 
 @section('css')
@@ -25,7 +25,7 @@
 <div class="page-header py-3 px-3 mt-3 mb-3 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3" style="direction: rtl;">
     <div class="d-flex flex-column">
         <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-wallet"></i> إدارة طلبات السحب</h4>
-        <small class="text-muted">قبول أو رفض طلبات السحب</small>
+        <small class="text-muted">مراجعة وتحويل مستحقات الخبراء (للإدارة فقط)</small>
     </div>
 </div>
 @endsection
@@ -45,7 +45,7 @@
                         <th class="text-center">المبلغ</th>
                         <th class="text-center">الحالة</th>
                         <th class="text-center">التاريخ</th>
-                        <th class="text-center">التحكم</th>
+                        <th class="text-center">الإجراء</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,26 +78,9 @@
                             </td>
                             <td class="text-center text-muted small">{{ $req->created_at->format('Y-m-d H:i') }}</td>
                             <td class="text-center">
-                                    <div class="btn-group">
-                                        <a href="{{ route('withdrawals.show', $req->id) }}" class="btn btn-sm btn-info-light btn-icon" title="عرض التفاصيل">
-                                            <i class="bx bx-show fs-18"></i>
-                                        </a>
-                                        @if($req->status == 'pending')
-                                        <form action="{{ route('withdrawals.approve', $req->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-sm btn-success-light btn-icon" title="موافقة">
-                                                <i class="bx bx-check fs-18"></i>
-                                            </button>
-                                        </form>
-
-                                        <form action="{{ route('withdrawals.reject', $req->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-sm btn-danger-light btn-icon" title="رفض">
-                                                <i class="bx bx-x fs-18"></i>
-                                            </button>
-                                        </form>
-                                        @endif
-                                    </div>
+                                <a href="{{ route('withdrawals.show', $req->id) }}" class="btn btn-sm btn-info-light px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" title="مراجعة الطلب وخيارات التحويل">
+                                    <i class="bx bx-show fs-16"></i> <span>مراجعة الطلب</span>
+                                </a>
                             </td>
                         </tr>
                     @endforeach

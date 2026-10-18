@@ -22,10 +22,31 @@
             --ex-border:  #eeeeee;
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+        }
+
+        body, button, input, select, textarea, .btn, .alert, .badge, table, th, td, h1, h2, h3, h4, h5, h6, p, a, label {
+            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Protect Boxicons and icon fonts from being overridden */
+        .bx, [class^="bx-"], [class*=" bx-"],
+        .bx::before, [class^="bx-"]::before, [class*=" bx-"]::before {
+            font-family: 'boxicons' !important;
+            font-style: normal;
+            font-weight: normal;
+            text-transform: none;
+            line-height: 1;
+            display: inline-block;
+        }
+        .fa, .fas, .far, .fab,
+        .fa::before, .fas::before, .far::before, .fab::before {
+            font-family: "Font Awesome 5 Free", "FontAwesome" !important;
+        }
 
         body {
-            font-family: 'IBM Plex Sans Arabic', sans-serif !important;
             background-color: var(--ex-bg);
             color: var(--ex-text);
             margin: 0; padding: 0;
@@ -104,7 +125,7 @@
         .search-bar input {
             background: #f5f5f5; border: none; border-radius: 50px;
             padding: 9px 40px 9px 90px; font-size: 0.88rem; outline: none;
-            width: 320px; font-family: 'Cairo', sans-serif;
+            width: 320px; font-family: 'IBM Plex Sans Arabic', sans-serif;
             transition: box-shadow 0.2s;
         }
         .search-bar input:focus { box-shadow: 0 0 0 3px rgba(255,152,0,0.15); }
@@ -113,7 +134,7 @@
             position: absolute; left: 4px; top: 4px; bottom: 4px;
             background: #111; color: #fff; border: none; border-radius: 50px;
             padding: 0 18px; font-size: 0.82rem; font-weight: 800;
-            cursor: pointer; font-family: 'Cairo', sans-serif;
+            cursor: pointer; font-family: 'IBM Plex Sans Arabic', sans-serif;
             transition: background 0.2s;
         }
         .search-btn:hover { background: #333; }
@@ -215,6 +236,9 @@
 
         /* ══════════ MOBILE ══════════ */
         .mobile-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: #333; background: none; border: none; padding: 4px; }
+        .header-logo { display: none; align-items: center; text-decoration: none; }
+        .header-logo img { height: 36px; width: auto; object-fit: contain; display: block; transition: opacity 0.2s; }
+        .header-logo:hover img { opacity: 0.85; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; }
         .sidebar-overlay.show { display: block; }
 
@@ -223,7 +247,8 @@
             .ex-sidebar.open { transform: translateX(0); box-shadow: -8px 0 30px rgba(0,0,0,0.1); }
             .ex-header { right: 0; padding: 0 16px; }
             .ex-main { margin-right: 0; padding: 16px; }
-            .mobile-toggle { display: flex; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            .header-logo { display: flex; }
             .search-bar { display: none; }
             .notif-dropdown { left: auto; right: -10px; width: 320px; }
         }
@@ -324,11 +349,20 @@
 
     <!-- ══════════ HEADER ══════════ -->
     <header class="ex-header">
-        <!-- Right: Toggle + Search -->
+        <!-- Right: Toggle + Logo + Search -->
         <div class="header-right">
             <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="فتح القائمة">
                 <i class='bx bx-menu'></i>
             </button>
+
+            <!-- Header Logo (mobile) -->
+            <a href="{{ route('dashboard') }}" class="header-logo" title="منصة ثمن">
+                <img 
+                    src="{{ asset('assets/img/Logo-black.png') }}" 
+                    alt="ثمن"
+                    onerror="this.onerror=null; this.src='{{ asset('assets/img/Logo.png') }}'"
+                >
+            </a>
 
             <div class="search-bar d-none d-lg-block">
                 <i class='bx bx-search s-icon'></i>
@@ -635,11 +669,35 @@
         }
     }
 
-    // ─── Start Polling ─────────────────────────────────────────────
+    // ─── Start Polling & Flash Toasts ──────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         requestNotifPermission();
         fetchNotifications(); // Initial fetch
         setInterval(fetchNotifications, 30000); // Poll every 30s
+
+        @if(session('wallet_alert'))
+            showToast({
+                type: 'eval',
+                title: 'تنبيه المحفظة 🎉',
+                message: "{{ session('wallet_alert') }}"
+            });
+        @endif
+
+        @if(session('success'))
+            showToast({
+                type: 'eval',
+                title: 'عملية ناجحة',
+                message: "{{ session('success') }}"
+            });
+        @endif
+
+        @if(session('error'))
+            showToast({
+                type: 'warn',
+                title: 'تنبيه',
+                message: "{{ session('error') }}"
+            });
+        @endif
     });
     </script>
     @yield('js')

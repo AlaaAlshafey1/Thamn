@@ -98,6 +98,24 @@
                             <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>غير مفعّلة</option>
                         </select>
                     </div>
+
+                    <!-- Expert Opinion Title Customization -->
+                    <div class="col-12 mt-3">
+                        <div class="p-3 rounded-3" style="background-color: #f8f9fa; border: 1px dashed #d0d7de;">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bx bx-badge-check text-warning"></i> مسمى / عنوان بطاقة رأي الخبير في التطبيق</h6>
+                            <p class="text-muted small mb-3">هذا النص يظهر في بطاقة نتيجة التقييم في تطبيق الموبايل قبل رقم عضوية الخبير (مثل: <code>رأي الخبير المعتمد</code>، أو <code>رأي المقيم العقاري المعتمد</code>، أو <code>فحص فاحص السيارات المعتمد</code>)</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">مسمى رأي الخبير (عربي)</label>
+                                    <input type="text" name="expert_opinion_label_ar" class="form-control" value="{{ old('expert_opinion_label_ar', 'رأي الخبير المعتمد') }}" placeholder="رأي الخبير المعتمد">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">مسمى رأي الخبير (إنجليزي)</label>
+                                    <input type="text" name="expert_opinion_label_en" class="form-control" value="{{ old('expert_opinion_label_en', 'Certified Expert Opinion') }}" placeholder="Certified Expert Opinion">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

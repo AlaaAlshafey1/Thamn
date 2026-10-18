@@ -22,14 +22,19 @@
   <meta name="x-apple-disable-message-reformatting">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <title>{{ $isRtl ? 'رمز التحقق — ثمن' : 'Verification Code — Thamn' }}</title>
+  <!--[if !mso]><!-->
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+  </style>
+  <!--<![endif]-->
   <style type="text/css">
     body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; border-collapse:collapse; }
     img { -ms-interpolation-mode:bicubic; border:0; height:auto; outline:none; text-decoration:none; }
-    body { margin:0; padding:0; background-color:#F2F4F7; font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif; }
-    p, h1, h2, a, strong, span { font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif; }
+    *, body, table, td, p, h1, h2, a, strong, span { font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif !important; }
+    body { margin:0; padding:0; background-color:#F2F4F7; font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif; }
 
     @media only screen and (max-width:640px) {
       .email-card { width:100% !important; border-radius:0 !important; }
@@ -41,7 +46,7 @@
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#F2F4F7;">
+<body style="margin:0;padding:0;background-color:#F2F4F7;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2F4F7">
     <tr>

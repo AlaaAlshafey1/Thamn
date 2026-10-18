@@ -10,11 +10,12 @@ class CategoryResource extends JsonResource
     {
         return [
             'id'             => $this->id,
-            'name'           => lang($this->name_ar, $this->name_en, $request),
-            'image'          => $this->image ? asset('storage/' . $this->image) : null,
-            'questions_image'=> $this->questions_image ? asset('storage/' . $this->questions_image) : null,
-            "is_active"      => $this->is_active,
-            'created_at'     => $this->created_at->format('Y-m-d'),
+            'name'                   => lang($this->name_ar, $this->name_en, $request),
+            'expert_opinion_label'   => lang($this->expert_opinion_label_ar ?: 'رأي الخبير المعتمد', $this->expert_opinion_label_en ?: 'Certified Expert Opinion', $request),
+            'image'                  => $this->image ? asset('storage/' . $this->image) : null,
+            'questions_image'        => $this->questions_image ? asset('storage/' . $this->questions_image) : null,
+            "is_active"              => $this->is_active,
+            'created_at'             => $this->created_at->format('Y-m-d'),
         ];
     }
 }

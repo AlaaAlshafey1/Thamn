@@ -32,8 +32,8 @@
     /* ================================================
        BASE TYPOGRAPHY & DIRECTION
     ================================================ */
-    body, h1, h2, h3, h4, h5, h6, .btn, .alert, input, textarea, label, span, div, p {
-        font-family: 'Cairo', sans-serif !important;
+    body, h1, h2, h3, h4, h5, h6, .btn, .alert, input, textarea, select, label, p {
+        font-family: 'IBM Plex Sans Arabic', sans-serif !important;
     }
 
     /* ================================================
@@ -432,16 +432,113 @@
                 .success-subtitle { font-size: 0.95rem; color: #666; font-weight: 600; margin-bottom: 40px; }
                 
                 /* Podium Pricing */
-                .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 0; margin-bottom: 30px; margin-top: 20px; border-radius: 16px; overflow: hidden; max-width: 600px; margin-left: auto; margin-right: auto; }
-                .podium-block { flex: 1; padding: 20px 10px; color: #fff; position: relative; }
-                .podium-block .p-icon { width: 20px; height: 20px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 10px; }
-                .podium-block .p-val { font-size: 1.4rem; font-weight: 800; line-height: 1.2; direction: ltr; }
-                .podium-block .p-lbl { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
+                .podium-container { 
+                    display: flex; 
+                    align-items: flex-end; 
+                    justify-content: center; 
+                    gap: 0; 
+                    margin-bottom: 30px; 
+                    margin-top: 20px; 
+                    border-radius: 18px; 
+                    overflow: hidden; 
+                    max-width: 620px; 
+                    margin-left: auto; 
+                    margin-right: auto;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+                }
+                .podium-block { 
+                    flex: 1; 
+                    padding: 18px 8px; 
+                    color: #fff; 
+                    position: relative; 
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: space-between;
+                    box-sizing: border-box;
+                    text-align: center;
+                }
+                .podium-block .p-icon { 
+                    width: 24px; 
+                    height: 24px; 
+                    background: rgba(255,255,255,0.25); 
+                    border-radius: 50%; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    margin: 0 auto 8px; 
+                    font-size: 12px; 
+                    flex-shrink: 0;
+                }
+                .podium-block .p-val { 
+                    display: flex;
+                    align-items: baseline;
+                    justify-content: center;
+                    gap: 4px;
+                    direction: rtl;
+                    white-space: nowrap;
+                    margin: 4px 0;
+                    line-height: 1.2;
+                }
+                .podium-block .p-val .p-num {
+                    font-size: 1.45rem;
+                    font-weight: 800;
+                    letter-spacing: -0.5px;
+                }
+                .podium-block .p-val .p-curr {
+                    font-size: 0.82rem;
+                    font-weight: 700;
+                    opacity: 0.92;
+                }
+                .podium-block .p-lbl { 
+                    font-size: 0.82rem; 
+                    font-weight: 700; 
+                    margin-top: 6px; 
+                    white-space: nowrap;
+                    opacity: 0.95;
+                }
                 
-                .podium-min { background: #f39c12; height: 120px; border-radius: 0 16px 16px 0; }
-                .podium-main { background: #009688; height: 150px; z-index: 2; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-radius: 12px 12px 0 0; }
-                .podium-main .p-val { font-size: 1.8rem; margin-top: 10px; }
-                .podium-max { background: #f44336; height: 120px; border-radius: 16px 0 0 16px; }
+                .podium-min { background: #f39c12; min-height: 130px; border-radius: 0 18px 18px 0; }
+                .podium-main { 
+                    background: #009688; 
+                    min-height: 165px; 
+                    z-index: 2; 
+                    box-shadow: 0 -6px 20px rgba(0,0,0,0.12); 
+                    border-radius: 14px 14px 0 0; 
+                    padding: 22px 10px;
+                }
+                .podium-main .p-icon {
+                    background: rgba(255,255,255,0.35);
+                    width: 28px;
+                    height: 28px;
+                    font-size: 14px;
+                }
+                .podium-main .p-val .p-num { font-size: 1.9rem; font-weight: 900; }
+                .podium-main .p-val .p-curr { font-size: 0.95rem; }
+                .podium-main .p-lbl { font-size: 0.9rem; font-weight: 800; }
+                .podium-max { background: #f44336; min-height: 130px; border-radius: 18px 0 0 18px; }
+
+                /* Expert Opinion Container (Desktop) */
+                .expert-opinions-container {
+                    background: #f9fbfd;
+                    border-radius: 20px;
+                    padding: 28px 24px 22px;
+                    direction: rtl;
+                    border: 1px solid #f1f5f9;
+                    margin-top: 28px;
+                    margin-bottom: 28px;
+                    position: relative;
+                }
+                .expert-opinions-title {
+                    font-weight: 800;
+                    color: #334155;
+                    font-size: 1.15rem;
+                    margin-bottom: 24px;
+                    text-align: center;
+                }
+                .opinions-scroll-wrap {
+                    padding: 16px 12px 18px;
+                }
 
                 /* Report Box */
                 .ex-report-box { background: linear-gradient(180deg, #fff9f2, #ffffff); border: 1px solid #f9ebd8; border-radius: 16px; padding: 25px; text-align: right; margin-top: 40px; }
@@ -475,32 +572,107 @@
                     .step-label { font-size: 1.05rem; }
                     .ex-main-card { padding: 24px 16px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
                     
-                    /* Keep Podium Horizontal on Mobile but scale down */
-                    .podium-container { flex-direction: row; align-items: flex-end; margin-bottom: 20px; border-radius: 12px; }
-                    .podium-block { padding: 15px 5px; border-radius: 10px; display: block; text-align: center; height: auto !important; }
-                    .podium-min, .podium-max { height: 90px !important; }
-                    .podium-main { height: 110px !important; z-index: 2; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
-                    .podium-block .p-icon { margin: 0 auto 5px; width: 20px; height: 20px; font-size: 10px; }
-                    .podium-block .p-val { font-size: 1.1rem !important; margin-top: 0 !important; line-height: 1; }
-                    .podium-main .p-val { font-size: 1.3rem !important; margin-top: 5px !important; }
-                    .podium-block .p-lbl { font-size: 0.7rem; margin-top: 4px; }
-                    .podium-block > div { display: block; }
+                    /* Keep Podium Horizontal on Mobile but scale down gracefully without overlapping */
+                    .podium-container { 
+                        flex-direction: row; 
+                        align-items: flex-end; 
+                        margin-bottom: 24px; 
+                        border-radius: 14px; 
+                        gap: 0;
+                    }
+                    .podium-block { 
+                        padding: 14px 4px !important; 
+                        border-radius: 0 !important; 
+                        display: flex !important; 
+                        flex-direction: column !important;
+                        align-items: center !important;
+                        justify-content: space-between !important;
+                        text-align: center; 
+                        height: auto !important; 
+                    }
+                    .podium-min { 
+                        min-height: 110px !important; 
+                        height: auto !important; 
+                        border-radius: 0 14px 14px 0 !important; 
+                    }
+                    .podium-max { 
+                        min-height: 110px !important; 
+                        height: auto !important; 
+                        border-radius: 14px 0 0 14px !important; 
+                    }
+                    .podium-main { 
+                        min-height: 130px !important; 
+                        height: auto !important; 
+                        z-index: 2; 
+                        box-shadow: 0 -4px 12px rgba(0,0,0,0.12); 
+                        border-radius: 10px 10px 0 0 !important;
+                    }
+                    .podium-block .p-icon { 
+                        margin: 0 auto 4px !important; 
+                        width: 20px !important; 
+                        height: 20px !important; 
+                        font-size: 11px !important; 
+                    }
+                    .podium-block .p-val { 
+                        margin: 3px 0 !important; 
+                        display: flex !important;
+                        align-items: baseline !important;
+                        justify-content: center !important;
+                        gap: 3px !important;
+                        line-height: 1.2 !important;
+                    }
+                    .podium-block .p-val .p-num {
+                        font-size: 1.05rem !important;
+                        font-weight: 800 !important;
+                    }
+                    .podium-block .p-val .p-curr {
+                        font-size: 0.68rem !important;
+                        font-weight: 700 !important;
+                    }
+                    .podium-main .p-val .p-num { 
+                        font-size: 1.25rem !important; 
+                        font-weight: 900 !important;
+                    }
+                    .podium-main .p-val .p-curr {
+                        font-size: 0.75rem !important;
+                        font-weight: 700 !important;
+                    }
+                    .podium-block .p-lbl { 
+                        font-size: 0.72rem !important; 
+                        margin-top: 4px !important; 
+                        line-height: 1.2 !important;
+                        font-weight: 700 !important;
+                    }
                     .podium-main { order: 0; }
                     
-                    /* Expert Opinion Options horizontally scrollable on mobile */
-                    .expert-opinions-container .d-flex {
-                        flex-wrap: nowrap !important;
+                    /* Expert Opinion Options horizontally scrollable on mobile with generous padding */
+                    .expert-opinions-container {
+                        padding: 22px 14px 18px !important;
+                        margin: 22px 0 !important;
+                        border-radius: 16px !important;
+                    }
+                    .expert-opinions-title {
+                        font-size: 1.05rem !important;
+                        margin-bottom: 20px !important;
+                    }
+                    .opinions-scroll-wrap {
                         overflow-x: auto;
-                        justify-content: flex-start !important;
-                        padding-bottom: 15px;
                         -webkit-overflow-scrolling: touch;
                         scrollbar-width: none;
+                        padding: 16px 6px 16px !important;
                     }
-                    .expert-opinions-container .d-flex::-webkit-scrollbar { display: none; }
+                    .opinions-scroll-wrap::-webkit-scrollbar { display: none; }
+                    .opinions-scroll-wrap .d-flex {
+                        flex-wrap: nowrap !important;
+                        justify-content: flex-start !important;
+                        gap: 12px !important;
+                        padding: 8px 4px !important;
+                    }
                     .rating-display-card {
                         flex: 0 0 auto !important;
-                        min-width: 105px !important;
-                        max-width: 105px !important;
+                        min-width: 110px !important;
+                        max-width: 122px !important;
+                        padding: 16px 8px 12px !important;
                     }
                     
                     /* Sidebar on mobile */
@@ -540,22 +712,22 @@
                     <div class="ex-stepper">
                         <div class="step-item" onclick="switchTab('specs', this)" id="step-specs">
                             <div class="step-circle"><i class="bx bx-list-check"></i></div>
-                            <div class="step-label">المواصفات</div>
+                            <div class="step-label">مواصفات السلعة</div>
                         </div>
                         <div class="step-item" onclick="switchTab('photos', this)" id="step-photos">
                             <div class="step-circle"><i class="bx bx-images"></i></div>
-                            <div class="step-label">الصور</div>
+                            <div class="step-label">صور السلعة</div>
                         </div>
                         <div class="step-item" onclick="switchTab('evaluate', this)" id="step-evaluate">
                             <div class="step-circle"><i class="bx bx-check"></i></div>
-                            <div class="step-label">التقييم المعتمد</div>
+                            <div class="step-label">السعر التقديري</div>
                         </div>
                     </div>
 
                     <!-- TAB: Specifications -->
                     <div class="ex-main-card expert-tab-panel" id="tab-specs" style="display:none; text-align:right;">
                         <div style="font-weight:900;font-size:1.1rem;color:#111;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
-                            <i class="bx bx-list-check" style="color:#f39c12;"></i> مواصفات الطلب
+                            <i class="bx bx-list-check" style="color:#f39c12;"></i> مواصفات السلعة
                         </div>
                         <div class="table-responsive">
                             <table style="width:100%;border-collapse:collapse;">
@@ -592,7 +764,7 @@
                     <!-- TAB: Photos -->
                     <div class="ex-main-card expert-tab-panel" id="tab-photos" style="display:none; text-align:right;">
                         <div style="font-weight:900;font-size:1.1rem;color:#111;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
-                            <i class="bx bx-images" style="color:#f39c12;"></i> صور المنتج
+                            <i class="bx bx-images" style="color:#f39c12;"></i> صور السلعة
                         </div>
                         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
                             @forelse($order->files->where('type', 'image') as $image)
@@ -623,62 +795,94 @@
                             <div class="success-title">تم اعتماد التقييم بنجاح</div>
                             <div class="success-subtitle">تم اعتماد تثمين المنتج ، وسيتم اشعار العميل بحالة التثمين</div>
 
+                            <!-- Alert: Wallet Balance Added -->
+                            <div class="wallet-credit-alert d-flex align-items-center gap-3 p-3 mb-4 shadow-sm"
+                                 style="border-radius: 16px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1.5px solid #81c784; color: #1b5e20; text-align: right; max-width: 620px; margin-left: auto; margin-right: auto;">
+                                <div style="width: 48px; height: 48px; border-radius: 14px; background: #2e7d32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(46,125,50,0.25);">
+                                    <i class="bx bx-wallet"></i>
+                                </div>
+                                <div style="flex-grow: 1;">
+                                    <div style="font-weight: 800; font-size: 1.05rem; color: #1b5e20; margin-bottom: 2px;">
+                                        راجع محفظتك تم إضافة رصيدك بنجاح
+                                    </div>
+                                    <div style="font-size: 0.82rem; color: #2e7d32; font-weight: 600;">
+                                        تم إيداع أتعاب التقييم في محفظتك بنجاح، يمكنك متابعة رصيدك وسحب أرباحك في أي وقت.
+                                    </div>
+                                </div>
+                                <a href="{{ route('withdrawals.my') }}" class="btn btn-success btn-sm"
+                                   style="border-radius: 10px; font-weight: 800; white-space: nowrap; background: #2e7d32; border: none; padding: 8px 16px; box-shadow: 0 2px 6px rgba(46,125,50,0.3); font-size: 0.85rem;">
+                                    <i class="bx bx-wallet me-1"></i> المحفظة
+                                </a>
+                            </div>
+
                             <!-- Podium Pricing -->
                             <div class="podium-container">
                                 <div class="podium-block podium-min">
                                     <div class="p-icon"><i class="bx bx-minus"></i></div>
-                                    <div class="p-val">{{ number_format($order->expert_min_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-val">
+                                        <span class="p-num">{{ number_format($order->expert_min_price, 0) }}</span>
+                                        <span class="p-curr">ر.س</span>
+                                    </div>
                                     <div class="p-lbl">الحد الأدنى</div>
                                 </div>
                                 <div class="podium-block podium-main">
-                                    <div class="p-icon" style="background:rgba(255,255,255,0.4);"><i class="bx bx-check"></i></div>
-                                    <div class="p-val">{{ number_format($order->expert_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-icon"><i class="bx bx-check"></i></div>
+                                    <div class="p-val">
+                                        <span class="p-num">{{ number_format($order->expert_price, 0) }}</span>
+                                        <span class="p-curr">ر.س</span>
+                                    </div>
                                     <div class="p-lbl">السعر المعتمد</div>
                                 </div>
                                 <div class="podium-block podium-max">
                                     <div class="p-icon"><i class="bx bx-plus"></i></div>
-                                    <div class="p-val">{{ number_format($order->expert_max_price, 0) }} <sub>ر.س</sub></div>
+                                    <div class="p-val">
+                                        <span class="p-num">{{ number_format($order->expert_max_price, 0) }}</span>
+                                        <span class="p-curr">ر.س</span>
+                                    </div>
                                     <div class="p-lbl">الحد الأعلى</div>
                                 </div>
                             </div>
 
                             @if($order->evaluation_type === 'ai' && $order->ai_valuation_rating_id)
                                 <!-- AI Rating Result Cards -->
-                                <div class="expert-opinions-container mt-4 mb-4" style="background:#f9fbfd; border-radius:16px; padding:20px; direction:rtl; border: 1px solid #f1f5f9;">
-                                    <div class="text-center mb-3" style="font-weight:900; color:#475569; font-size:1.1rem;">
-                                        رأي الخبير المعتمد : ( {{ $aiRatings->where('id', $order->ai_valuation_rating_id)->first()->name_ar ?? '' }} )
+                                <div class="expert-opinions-container">
+                                    <div class="expert-opinions-title">
+                                        رأي الخبير المعتمد : ( <span style="color:#009688;">{{ $aiRatings->where('id', $order->ai_valuation_rating_id)->first()->name_ar ?? '' }}</span> )
                                     </div>
-                                    <div class="d-flex flex-wrap justify-content-center" style="gap:12px;">
-                                        @foreach($aiRatings as $rating)
-                                            @php 
-                                                $isSelected = $order->ai_valuation_rating_id == $rating->id; 
-                                            @endphp
-                                            <div class="rating-display-card {{ $isSelected ? 'selected' : '' }}" 
-                                                 style="flex:1; min-width:110px; max-width:140px; background:{{ $rating->color ?? '#fff' }}; 
-                                                        border-radius:16px; padding:15px 10px; text-align:center; position:relative;
-                                                        border: {{ $isSelected ? '3px solid #009688' : '3px solid transparent' }};
-                                                        opacity: {{ $isSelected ? '1' : '0.5' }};
-                                                        transform: {{ $isSelected ? 'scale(1.05)' : 'scale(1)' }};
-                                                        transition: all 0.3s ease;
-                                                        box-shadow: {{ $isSelected ? '0 8px 20px rgba(0,150,136,0.15)' : 'none' }};
-                                                        ">
-                                                @if($isSelected)
-                                                    <div style="position:absolute; top:-10px; right:-10px; background:#009688; color:#fff; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;">
-                                                        <i class="bx bx-check"></i>
-                                                    </div>
-                                                @endif
-                                                <div style="margin-bottom:10px; height:35px; display:flex; align-items:center; justify-content:center;">
-                                                    @if($rating->icon)
-                                                        <img src="{{ asset('storage/' . $rating->icon) }}" style="width:30px; height:30px; object-fit:contain; filter: {{ $isSelected ? 'none' : 'grayscale(100%)' }};">
-                                                    @else
-                                                        <i class="bx bx-bar-chart-alt-2" style="font-size:24px; color:{{ $isSelected ? '#009688' : '#777' }};"></i>
+                                    <div class="opinions-scroll-wrap">
+                                        <div class="d-flex flex-wrap justify-content-center" style="gap:14px;">
+                                            @foreach($aiRatings as $rating)
+                                                @php 
+                                                    $isSelected = $order->ai_valuation_rating_id == $rating->id; 
+                                                @endphp
+                                                <div class="rating-display-card {{ $isSelected ? 'selected' : '' }}" 
+                                                     style="flex:1; min-width:115px; max-width:145px; background:{{ $rating->color ?? '#fff' }}; 
+                                                            border-radius:18px; padding:18px 10px 14px; text-align:center; position:relative;
+                                                            border: {{ $isSelected ? '2.5px solid #009688' : '2px solid transparent' }};
+                                                            opacity: {{ $isSelected ? '1' : '0.55' }};
+                                                            transform: {{ $isSelected ? 'translateY(-2px)' : 'none' }};
+                                                            transition: all 0.25s ease;
+                                                            box-shadow: {{ $isSelected ? '0 8px 22px rgba(0,150,136,0.18)' : '0 2px 6px rgba(0,0,0,0.02)' }};
+                                                            margin: 4px;
+                                                            ">
+                                                    @if($isSelected)
+                                                        <div style="position:absolute; top:-9px; right:-9px; background:#009688; color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 3px 8px rgba(0,150,136,0.35); z-index:10; border:2px solid #fff;">
+                                                            <i class="bx bx-check"></i>
+                                                        </div>
                                                     @endif
+                                                    <div style="margin-bottom:10px; height:36px; display:flex; align-items:center; justify-content:center;">
+                                                        @if($rating->icon)
+                                                            <img src="{{ asset('storage/' . $rating->icon) }}" style="width:32px; height:32px; object-fit:contain; filter: {{ $isSelected ? 'none' : 'grayscale(100%)' }};">
+                                                        @else
+                                                            <i class="bx bx-bar-chart-alt-2" style="font-size:26px; color:{{ $isSelected ? '#009688' : '#777' }};"></i>
+                                                        @endif
+                                                    </div>
+                                                    <div style="font-weight:800; font-size:0.88rem; color:{{ $isSelected ? '#0f172a' : '#64748b' }}; line-height:1.3;">
+                                                        {{ $rating->name_ar }}
+                                                    </div>
                                                 </div>
-                                                <div style="font-weight:900; font-size:0.85rem; color:{{ $isSelected ? '#0f172a' : '#64748b' }}; line-height:1.2;">
-                                                    {{ $rating->name_ar }}
-                                                </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
                             @endif
@@ -740,30 +944,90 @@
                                         </div>
                                     </div>
                                     <!-- Hide prices since we use AI prices -->
-                                    <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? 0 }}">
+                                    <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? $order->total_price ?? 0 }}">
                                     <input type="hidden" name="expert_min_price" value="{{ $order->ai_min_price ?? 0 }}">
                                     <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
-                                @else
+                                @elseif($order->evaluation_type === 'expert')
+                                    <!-- باقة الخبير: الخبير يغير السعر فقط بدون كتابة كلام -->
                                     <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-12 mb-2">
+                                            <label class="font-weight-bold text-primary" style="font-size:0.95rem;">
+                                                <i class="bx bx-edit-alt"></i> تحديد وتعديل السعر بواسطة الخبير:
+                                            </label>
+                                        </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="font-weight-bold" style="color:#555;">الحد الأدنى <span class="text-danger">*</span></label>
-                                            <input type="number" name="expert_min_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_min_price', $order->ai_min_price) }}">
+                                            <input type="number" name="expert_min_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_min_price', $order->ai_min_price ?? round(($order->total_price ?: 50000) * 0.8)) }}">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="font-weight-bold text-success" style="color:#009688 !important;">السعر المعتمد <span class="text-danger">*</span></label>
-                                            <input type="number" name="expert_price" class="form-control" style="border-radius:12px; padding:12px; border:2px solid #009688; font-weight:bold; font-size:1.1rem; color:#009688;" required value="{{ old('expert_price', $order->ai_price) }}">
+                                            <input type="number" name="expert_price" class="form-control" style="border-radius:12px; padding:12px; border:2px solid #009688; font-weight:bold; font-size:1.1rem; color:#009688;" required value="{{ old('expert_price', $order->ai_price ?? $order->total_price) }}">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="font-weight-bold" style="color:#555;">الحد الأعلى <span class="text-danger">*</span></label>
-                                            <input type="number" name="expert_max_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_max_price', $order->ai_max_price) }}">
+                                            <input type="number" name="expert_max_price" class="form-control" style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required value="{{ old('expert_max_price', $order->ai_max_price ?? round(($order->total_price ?: 50000) * 1.2)) }}">
                                         </div>
                                     </div>
+                                @else
+                                    <!-- باقي الباقات (التقييم الشامل best وغيرها): عرض الأسعار المقترحة واعتمادها مباشرة -->
+                                    <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="font-weight-bold text-primary" style="font-size:0.95rem;">
+                                                <i class="bx bx-check-shield"></i> الأسعار المعتمدة من التقييم الذكي:
+                                            </label>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:#f8f9fa; border:1px solid #eee; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#555; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">الحد الأدنى</div>
+                                                <div style="font-size:1.2rem; font-weight:900; color:#333;">{{ number_format($order->ai_min_price ?? round(($order->total_price ?: 50000) * 0.8), 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:rgba(0, 150, 136, 0.05); border:2px solid #009688; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#009688; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">السعر المعتمد</div>
+                                                <div style="font-size:1.3rem; font-weight:900; color:#009688;">{{ number_format($order->ai_price ?? $order->total_price, 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div style="background:#f8f9fa; border:1px solid #eee; border-radius:12px; padding:15px; text-align:center;">
+                                                <div style="color:#555; font-size:0.85rem; font-weight:bold; margin-bottom:5px;">الحد الأعلى</div>
+                                                <div style="font-size:1.2rem; font-weight:900; color:#333;">{{ number_format($order->ai_max_price ?? round(($order->total_price ?: 50000) * 1.2), 0) }} <small style="font-size:0.7rem; color:#888;">ر.س</small></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? $order->total_price ?? 0 }}">
+                                    <input type="hidden" name="expert_min_price" value="{{ $order->ai_min_price ?? 0 }}">
+                                    <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
                                 @endif
+
+                                <!-- تقرير التقييم الذكي: شكل متهندل وأنيق دون حاجة لـ CKEditor أو كتابة نصوص -->
                                 <div class="text-right mb-4" style="direction:rtl;">
-                                    <label class="font-weight-bold text-warning" style="color:#f39c12 !important;font-size:0.95rem;">تقرير التقييم: <span class="text-danger">*</span></label>
-                                    @php $existingReasoning = old('expert_reasoning', $order->expert_reasoning ?? $order->ai_reasoning ?? ''); @endphp
-                                    <textarea name="expert_reasoning" id="expert_reasoning_editor" class="form-control" rows="5" required style="border-radius:12px;">{!! $existingReasoning !!}</textarea>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label class="font-weight-bold mb-0" style="color:#2c3e50; font-size:0.95rem;">
+                                            <i class="bx bx-file text-warning ml-1"></i> تقرير التقييم الذكي:
+                                        </label>
+                                        <span class="badge" style="background: rgba(0, 150, 136, 0.1); color: #009688; border-radius: 20px; font-weight: 700; padding: 4px 10px; font-size: 0.75rem;">
+                                            <i class="bx bx-bot"></i> تقرير AI المعتمد
+                                        </span>
+                                    </div>
+
+                                    <div class="p-3 p-md-4 rounded-3 border" style="background:#fcfdfd; border-color:#e8ebef !important; max-height:350px; overflow-y:auto; line-height:1.85; color:#374151; font-size:0.92rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);">
+                                        @if(!empty($order->ai_reasoning))
+                                            @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
+                                                {!! \Illuminate\Support\Str::markdown((string) $order->ai_reasoning) !!}
+                                            @else
+                                                {!! $order->ai_reasoning !!}
+                                            @endif
+                                        @else
+                                            <div class="text-muted text-center py-3">
+                                                <i class="bx bx-info-circle fs-4 text-warning mb-1 d-block"></i>
+                                                تم إعداد التقييم بناءً على خوارزميات الذكاء الاصطناعي ومؤشرات أسعار السوق.
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <input type="hidden" name="expert_reasoning" value="{{ $order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.' }}">
                                 </div>
+
                                 <button type="submit" class="btn btn-success" style="border-radius:50px; padding:14px 40px; font-weight:800; font-size:1.1rem; background:#009688; border:none; width: 100%; max-width: 300px; margin: 0 auto; display: block;">
                                     <i class="bx bx-check-circle"></i> اعتماد التقييم
                                 </button>
@@ -807,16 +1071,6 @@
                     </div>
 
                     <!-- Map Card -->
-                    <div class="ex-side-card">
-                        <div class="ex-side-header">
-                            <div><i class="bx bx-map" style="color:#888;"></i> الموقع</div>
-                        </div>
-                        <div class="ex-side-body">
-                            <div class="ex-map">
-                                <i class="bx bxs-map ex-map-pin"></i>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         @else
@@ -1172,96 +1426,32 @@
 
 @section('js')
     <script>
-        // ─── TABS LOGIC ───
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.expert-tab-panel').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            const targetPanel = document.getElementById('tab-' + tabId);
-            if(targetPanel) targetPanel.style.display = 'block';
-
-            const allSteps = document.querySelectorAll('.step-item');
-            let clickedIndex = -1;
-            allSteps.forEach((step, index) => {
-                if(step === element) clickedIndex = index;
-            });
-
-            allSteps.forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if(index === clickedIndex) step.classList.add('active');
-            });
-        }
-
-        // Initialize active tab based on elements present
-        document.addEventListener('DOMContentLoaded', function() {
-            const defaultTab = document.getElementById('step-evaluate');
-            if(defaultTab) {
-                switchTab('evaluate', defaultTab);
-            }
-        });
-        // ─── CKEditor Init (Vanilla JS, no jQuery needed) ───────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            var editorEl = document.getElementById('expert_reasoning_editor');
-            if (!editorEl) return;
-
-            @if(auth()->user()->hasRole('expert') && empty($order->expert_reasoning) && !empty($order->ai_reasoning))
-                try {
-                    var aiRaw = {!! json_encode((string) $order->ai_reasoning, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) !!};
-                    var tmp = document.createElement('div');
-                    tmp.innerHTML = aiRaw;
-                    tmp.querySelectorAll('table').forEach(function(t) { t.remove(); });
-                    var cleaned = tmp.innerHTML.trim();
-                    if (cleaned && cleaned.length > 30) {
-                        editorEl.value = cleaned;
-                    }
-                } catch(e) { console.warn('AI reasoning parse error:', e); }
-            @endif
-
-            if (typeof CKEDITOR !== 'undefined') {
-                CKEDITOR.replace('expert_reasoning_editor', {
-                    language: 'ar',
-                    height: 350,
-                    versionCheck: false,
-                    removePlugins: 'elementspath',
-                    resize_enabled: false,
-                    contentsDir: 'rtl',
-                    bodyClass: 'cke-rtl',
-                    extraPlugins: '',
-                });
-            }
-        });
-
         // ─── Expert Tab Switching ───────────────────────────────────────
         function switchTab(tabName, clickedEl) {
             document.querySelectorAll('.expert-tab-panel').forEach(function(p) { p.style.display = 'none'; });
             document.querySelectorAll('.step-item').forEach(function(b) {
-                b.querySelector('.step-circle').style.background = '#ddd';
-                b.querySelector('.step-label').style.color = '#888';
+                b.classList.remove('active');
+                var circ = b.querySelector('.step-circle');
+                var lbl  = b.querySelector('.step-label');
+                if (circ) circ.style.background = '#ddd';
+                if (lbl)  lbl.style.color = '#888';
             });
             var panel = document.getElementById('tab-' + tabName);
             if (panel) { panel.style.display = 'block'; }
             if (clickedEl) {
+                clickedEl.classList.add('active');
                 var circ = clickedEl.querySelector('.step-circle');
                 var lbl  = clickedEl.querySelector('.step-label');
                 if (circ) circ.style.background = '#f39c12';
                 if (lbl)  lbl.style.color = '#111';
             }
-            if (tabName === 'evaluate' && typeof CKEDITOR !== 'undefined') {
-                setTimeout(function() {
-                    var inst = CKEDITOR.instances['expert_reasoning_editor'];
-                    if (inst) inst.resize('100%', 350);
-                }, 150);
-            }
         }
 
-        // ─── Activate first stepper item on load ───────────────────────
+        // ─── Activate default stepper item on load ──────────────────────
         document.addEventListener('DOMContentLoaded', function() {
-            var firstStep = document.querySelector('.step-item');
-            if (firstStep) {
-                var circ = firstStep.querySelector('.step-circle');
-                var lbl  = firstStep.querySelector('.step-label');
-                if (circ) circ.style.background = '#f39c12';
-                if (lbl)  lbl.style.color = '#111';
+            var evalStep = document.getElementById('step-evaluate');
+            if (evalStep) {
+                switchTab('evaluate', evalStep);
             }
         });
     </script>

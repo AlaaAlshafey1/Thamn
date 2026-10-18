@@ -12,9 +12,16 @@
         --ex-text-muted: #888888;
         --ex-border:     #eeeeee;
     }
-    body,h1,h2,h3,h4,h5,h6,p,a,div,span,button,
-    input,select,textarea,table,th,td,.btn,.alert,.badge {
+    body,h1,h2,h3,h4,h5,h6,p,a,label,input,select,textarea,table,th,td,.btn,.alert,.badge {
         font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    }
+    .bx, [class^="bx-"], [class*=" bx-"],
+    .bx::before, [class^="bx-"]::before, [class*=" bx-"]::before {
+        font-family: 'boxicons' !important;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1;
+        display: inline-block;
     }
     .expert-dash-wrap { direction: rtl; padding-bottom: 60px; }
 
@@ -109,6 +116,71 @@
     .ex-empty i { font-size:3rem; opacity:.3; display:block; margin-bottom:12px; }
     .ex-price { font-weight:900; color:#009688; }
 
+    /* Order Status Header & Badges (جديد / منجز / منتهي) */
+    .ord-hdr-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+    }
+    .ord-hdr-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 800;
+        color: var(--ex-text);
+    }
+    .ord-hdr-title .ord-lbl {
+        color: #777;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+    .order-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.2px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .pill-new {
+        background: #ff9800;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35);
+        animation: pill-glow 2.2s infinite ease-in-out;
+    }
+    @keyframes pill-glow {
+        0%, 100% { box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35); }
+        50% { box-shadow: 0 4px 14px rgba(255, 152, 0, 0.6); }
+    }
+    .pill-completed {
+        background: rgba(0, 150, 136, 0.12);
+        color: #009688 !important;
+        border: 1px solid rgba(0, 150, 136, 0.25);
+    }
+    .pill-expired {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626 !important;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Desktop table row highlights */
+    .ex-tbl tbody tr.card-order-new {
+        background: rgba(255, 152, 0, 0.03);
+    }
+    .ex-tbl tbody tr.card-order-new:hover {
+        background: rgba(255, 152, 0, 0.07);
+    }
+    .ex-tbl tbody tr.card-order-expired {
+        opacity: 0.75;
+    }
+
     /* Mobile adjustments - App-like look */
     @media (max-width: 768px) {
         .expert-dash-wrap { padding: 10px 5px !important; }
@@ -157,6 +229,19 @@
             grid-template-rows: auto auto auto;
             gap: 12px;
             position: relative;
+            transition: all .25s ease;
+        }
+        .ex-tbl tbody tr.card-order-new {
+            border: 1.5px solid #ff9800 !important;
+            background: #fffdfa !important;
+            box-shadow: 0 4px 18px rgba(255, 152, 0, 0.12) !important;
+        }
+        .ex-tbl tbody tr.card-order-completed {
+            border: 1px solid rgba(0, 150, 136, 0.22) !important;
+        }
+        .ex-tbl tbody tr.card-order-expired {
+            border: 1px solid #e0e0e0 !important;
+            opacity: 0.75;
         }
         .ex-tbl tbody td {
             display: flex;
@@ -169,8 +254,15 @@
         .ex-tbl tbody td::before { display: none; } /* Hide old data labels */
         
         /* 1: Order Num */
-        .ex-tbl tbody td:nth-child(1) { grid-column: 1 / 3; border-bottom: 1px dashed #f0f0f0; padding-bottom: 12px; font-size: 1.05rem; }
-        .ex-tbl tbody td:nth-child(1)::before { content: "طلب "; font-size: 0.9rem; color: #888; margin-left: 4px; display: inline-block; }
+        .ex-tbl tbody td:nth-child(1) { 
+            grid-column: 1 / 3; 
+            border-bottom: 1px dashed #f0f0f0; 
+            padding-bottom: 12px; 
+            font-size: 1.05rem; 
+            display: block !important; 
+            width: 100% !important; 
+        }
+        .ex-tbl tbody td:nth-child(1)::before { display: none !important; }
         
         /* 2: Client */
         .ex-tbl tbody td:nth-child(2) { grid-column: 1 / 3; }
@@ -260,7 +352,7 @@
             <div class="d-flex align-items-start justify-content-between flex-wrap" style="gap:16px;">
                 <div>
                     <div class="hero-badge">
-                        <i class="bx bx-badge-check"></i> خبير معتمد — منصة ثمن
+                        <i class="bx bx-badge-check"></i> خبير معتمد — {{ auth()->user()->category->name_ar ?? auth()->user()->category->name_en ?? (auth()->user()->expertise ?: 'السيارات') }}
                     </div>
                     <div class="hero-name">
                         أهلاً، <span>{{ auth()->user()->first_name ?? auth()->user()->name }}</span> 👋
@@ -289,6 +381,17 @@
 
     {{-- Stat Cards --}}
     <div class="row an2" style="margin-bottom:24px;">
+        {{-- 1. الطلبات الجديدة (المربع الأول) --}}
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="ex-stat s-gold" style="border: 1.5px solid rgba(255, 152, 0, 0.45); background: linear-gradient(135deg, #ffffff 0%, #fffdfa 100%);">
+                <div class="ex-stat-icon" style="background: rgba(255, 152, 0, 0.15);"><i class="bx bxs-star" style="color:#ff9800;"></i></div>
+                <div class="ex-stat-lbl">الطلبات الجديدة</div>
+                <div class="ex-stat-val" style="color: #ff9800;">{{ number_format($stats['pending_orders'] ?? 0) }}</div>
+                <div class="ex-stat-note"><i class="bx bx-bell"></i> تنتظر تقييمك</div>
+            </div>
+        </div>
+
+        {{-- 2. الطلبات المنجزة --}}
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="ex-stat s-green">
                 <div class="ex-stat-icon"><i class="bx bx-check-double" style="color:#2ecc71;"></i></div>
@@ -297,22 +400,18 @@
                 <div class="ex-stat-note"><i class="bx bx-trending-up"></i> تم تقييمها بنجاح</div>
             </div>
         </div>
+
+        {{-- 3. الرصيد المتاح --}}
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="ex-stat s-gold">
-                <div class="ex-stat-icon"><i class="bx bx-wallet" style="color:#ff9800;"></i></div>
+            <div class="ex-stat s-blue">
+                <div class="ex-stat-icon"><i class="bx bx-wallet" style="color:#2196f3;"></i></div>
                 <div class="ex-stat-lbl">الرصيد المتاح</div>
                 <div class="ex-stat-val" style="font-size:1.65rem;">{{ number_format($stats['balance'] ?? 0, 2) }}</div>
                 <div class="ex-stat-note"><i class="bx bx-money"></i> ريال سعودي</div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="ex-stat s-blue">
-                <div class="ex-stat-icon"><i class="bx bx-time-five" style="color:#2196f3;"></i></div>
-                <div class="ex-stat-lbl">الطلبات المتاحة</div>
-                <div class="ex-stat-val">{{ number_format($stats['pending_orders'] ?? 0) }}</div>
-                <div class="ex-stat-note"><i class="bx bx-bell"></i> تنتظر تقييمك</div>
-            </div>
-        </div>
+
+        {{-- 4. إجمالي طلباتي --}}
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="ex-stat s-purple">
                 <div class="ex-stat-icon"><i class="bx bx-briefcase" style="color:#c084fc;"></i></div>
@@ -348,8 +447,32 @@
                         </thead>
                         <tbody>
                             @forelse($recentOrders as $order)
-                            <tr>
-                                <td data-label="رقم الطلب"><span class="ex-ord-num">#{{ $order->id }}</span></td>
+                            @php
+                                $isCompleted = in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated', 'estimatedAndStored']) 
+                                    || (bool)($order->expert_evaluated ?? false);
+                                
+                                $isExpired = in_array($order->status, ['expired', 'cancelled', 'failed', 'refunded', 'inComplete', 'notPaid', 'rejected']);
+
+                                $isNew = !$isCompleted && !$isExpired;
+
+                                $cardClass = $isNew ? 'card-order-new' : ($isCompleted ? 'card-order-completed' : ($isExpired ? 'card-order-expired' : ''));
+                            @endphp
+                            <tr class="{{ $cardClass }}">
+                                <td data-label="رقم الطلب">
+                                    <div class="ord-hdr-row">
+                                        <span class="ord-hdr-title">
+                                            <span class="ord-lbl">طلب</span>
+                                            <span class="ex-ord-num">#{{ $order->id }}</span>
+                                        </span>
+                                        @if($isNew)
+                                            <span class="order-status-pill pill-new"><i class="bx bxs-star"></i> جديد</span>
+                                        @elseif($isCompleted)
+                                            <span class="order-status-pill pill-completed"><i class="bx bx-check-circle"></i> منجز</span>
+                                        @elseif($isExpired)
+                                            <span class="order-status-pill pill-expired"><i class="bx bx-time-five"></i> منتهي</span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td data-label="العميل">
                                     <div class="ex-urow">
                                         <div class="ex-avatar"><i class="bx bx-user"></i></div>
@@ -358,7 +481,7 @@
                                 </td>
                                 <td data-label="الفئة" style="color:var(--ex-text-muted);">
                                     <i class="bx bx-tag" style="color:var(--ex-gold);vertical-align:middle;"></i>
-                                    {{ $order->category->name ?? 'غير محدد' }}
+                                    {{ $order->category->name_ar ?? $order->category->name_en ?? $order->category->name ?? 'غير محدد' }}
                                 </td>
                                 <td data-label="السعر">
                                     <span class="ex-price">{{ number_format($order->total_price, 0) }}</span>
@@ -418,7 +541,7 @@
                     <span>طلبات منجزة</span>
                     <span class="qa-cnt" style="background:rgba(46,204,113,0.15);color:#2ecc71;">{{ $stats['orders_completed'] ?? 0 }}</span>
                 </a>
-                <a href="{{ route('withdrawals.index') }}" class="qa-btn">
+                <a href="{{ route('withdrawals.create') }}" class="qa-btn">
                     <div class="qa-icon qi-blue"><i class="bx bx-money-withdraw"></i></div>
                     <span>طلب سحب رصيد</span>
                 </a>
@@ -509,7 +632,7 @@
             Swal.fire({
                 title: 'طلب جديد بانتظارك',
                 html: `
-                    <div style="font-family:'Cairo',sans-serif; text-align:center; direction:rtl;">
+                    <div style="font-family:'IBM Plex Sans Arabic',sans-serif; text-align:center; direction:rtl;">
                         <p style="font-size: 1.1rem; color: #555; margin-bottom: 20px;">
                             يوجد طلب جديد متاح للتقييم.
                         </p>

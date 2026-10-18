@@ -1,11 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>انضم كخبير — تطبيق ثمن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -40,7 +42,7 @@
         body {
             background: var(--bg-alt);
             color: var(--text-main);
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             line-height: 1.6;
         }
 
@@ -74,7 +76,7 @@
 
         .logo span {
             color: var(--primary);
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 1.8rem;
             font-weight: 800;
         }
@@ -109,7 +111,7 @@
         }
 
         .reg-info h1 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 3.5rem;
             color: var(--primary);
             margin-bottom: 2rem;
@@ -185,7 +187,7 @@
         }
 
         .form-header h2 {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 2.2rem;
             color: var(--primary);
             font-weight: 800;
@@ -271,7 +273,7 @@
         }
 
         .footer-logo {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
             font-size: 2rem;
             color: var(--gold);
             margin-bottom: 1rem;

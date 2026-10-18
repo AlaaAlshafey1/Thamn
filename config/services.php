@@ -40,9 +40,10 @@ return [
     ],
 
     'moyasar' => [
-        'publishable_key' => env('MOYASAR_PUBLISHABLE_KEY'),
-        'secret_key'      => env('MOYASAR_SECRET_KEY'),
-        'webhook_secret'  => env('MOYASAR_WEBHOOK_SECRET'),
+        'publishable_key'  => env('MOYASAR_PUBLISHABLE_KEY'),
+        'secret_key'       => env('MOYASAR_SECRET_KEY'),
+        'webhook_secret'   => env('MOYASAR_WEBHOOK_SECRET'),
+        'payout_source_id' => env('MOYASAR_PAYOUT_SOURCE_ID'),
     ],
     'openai' => [
         'OPENAI_API_KEY' => env('OPENAI_KEY'),

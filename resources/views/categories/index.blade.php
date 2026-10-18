@@ -126,6 +126,7 @@
                         <th>#</th>
                         <th>الاسم</th>
                         <th>الوصف</th>
+                        <th>مسمى رأي الخبير</th>
                         <th>الحالة</th>
                         <th>التحكم</th>
                     </tr>
@@ -141,6 +142,11 @@
                             <td class="row-number">{{ $key + 1 }}</td>
                             <td>{{ $category->name_ar }}</td>
                             <td>{{ $category->description_ar ?? '-' }}</td>
+                            <td>
+                                <span class="badge bg-light text-primary border px-2 py-1">
+                                    {{ $category->expert_opinion_label_ar ?: 'رأي الخبير المعتمد' }}
+                                </span>
+                            </td>
                             <td>
                                 @if($category->is_active)
                                     <span class="badge bg-success">مفعّل</span>

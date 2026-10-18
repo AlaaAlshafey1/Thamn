@@ -9,10 +9,6 @@
 		<meta name="Keywords" content="ثمن, تقييم, تثمين, مقتنيات فاخرة, ذكاء اصطناعي, Thamn, تقييم منتجات, تسعير"/>
 		@include('layouts.head')
 		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
-			body, h1, h2, h3, h4, h5, h6, p, a, div, span, button, input, select, textarea, table, th, td, .btn, .alert, .badge {
-				font-family: 'Cairo', sans-serif !important;
-			}
 			/* Mobile: prevent horizontal scroll since sidebar is hidden */
 			@media (max-width: 767px) {
 				.app-content,

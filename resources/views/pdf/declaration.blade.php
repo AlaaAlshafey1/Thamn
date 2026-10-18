@@ -6,7 +6,7 @@
     <title>اتفاقية تعاون خبير ثمن - {{ $declaration->full_name }}</title>
     <style>
         body {
-            font-family: 'Cairo', 'DejaVu Sans', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', 'Cairo', 'DejaVu Sans', sans-serif;
             font-size: 14px;
             color: #222;
             line-height: 1.8;
