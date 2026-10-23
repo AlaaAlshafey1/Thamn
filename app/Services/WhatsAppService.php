@@ -32,6 +32,11 @@ class WhatsAppService
             $phone = '966' . substr($phone, 1);
         }
 
+        // Real tappable button via WhatsApp Cloud API (if configured)
+        if ($this->sendWithButton($phone, $message)) {
+            return true;
+        }
+
         try {
             $response = Http::withoutVerifying()->asForm()->post("{$this->baseUrl}/messages/chat", [
                 'token' => $this->token,
@@ -56,8 +61,75 @@ class WhatsAppService
     }
 
     /**
-     * Get instance status
+     * Send a message that ends with an action link (see formatActionLink) as a
+     * WhatsApp Cloud API template with a real tappable URL button.
+     *
+     * Returns false when Cloud API is not configured, when the message has no
+     * short action link, or when Meta rejects the request, so the caller falls
+     * back to the normal UltraMsg text message.
      */
+    private function sendWithButton(string $phone, string $message): bool
+    {
+        $cfg = config('services.whatsapp_cloud');
+        if (empty($cfg['token']) || empty($cfg['phone_id'])) {
+            return false;
+        }
+
+        // ...text...\n\n{icon} *{label}* ⬅️\n{https://host/l/{code}}
+        if (!preg_match('/^(.*?)\n\n\S+ \*(.+?)\* ⬅️\n\S*\/l\/([a-z0-9]+)\s*$/su', $message, $m)) {
+            return false;
+        }
+
+        [, $text, $label, $code] = $m;
+
+        $templates = $cfg['templates'];
+        $template = match (true) {
+            str_contains($label, 'فاتورة')            => $templates['invoice'],
+            str_contains($label, 'تسجيل الدخول')      => $templates['login'],
+            str_contains($label, 'الاتفاقية')         => $templates['document'],
+            default                                   => $templates['order'],
+        };
+
+        // Template variables cannot contain new lines, tabs or 4+ consecutive spaces
+        $body = trim(preg_replace('/\s*\n+\s*/u', ' .. ', trim($text)));
+        $body = preg_replace('/ {2,}/u', ' ', $body);
+
+        try {
+            $response = Http::withToken($cfg['token'])
+                ->post("https://graph.facebook.com/{$cfg['version']}/{$cfg['phone_id']}/messages", [
+                    'messaging_product' => 'whatsapp',
+                    'to'                => $phone,
+                    'type'              => 'template',
+                    'template'          => [
+                        'name'       => $template,
+                        'language'   => ['code' => $cfg['language']],
+                        'components' => [
+                            [
+                                'type'       => 'body',
+                                'parameters' => [['type' => 'text', 'text' => $body]],
+                            ],
+                            [
+                                'type'       => 'button',
+                                'sub_type'   => 'url',
+                                'index'      => '0',
+                                'parameters' => [['type' => 'text', 'text' => $code]],
+                            ],
+                        ],
+                    ],
+                ]);
+
+            if ($response->successful()) {
+                Log::info("WhatsApp Cloud button message sent to $phone ($template)");
+                return true;
+            }
+
+            Log::warning("WhatsApp Cloud failed to $phone, falling back to UltraMsg", $response->json() ?? []);
+        } catch (\Throwable $e) {
+            Log::warning('WhatsApp Cloud exception, falling back to UltraMsg: ' . $e->getMessage());
+        }
+
+        return false;
+    }
     /**
      * Send Image message
      */
@@ -210,7 +282,10 @@ class WhatsAppService
      */
     public static function formatActionLink(string $label, string $url, string $icon = '🔗'): string
     {
-        return "\n\n{$icon} *{$label}* ⬅️\n{$url}";
+        // Long signed URLs look suspicious in chat, so send a short clean link instead
+        $shortUrl = \App\Models\ShortLink::shorten($url, $label);
+
+        return "\n\n{$icon} *{$label}* ⬅️\n{$shortUrl}";
     }
 }
 

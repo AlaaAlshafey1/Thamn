@@ -10,9 +10,7 @@
 
   // Use the product image if available, otherwise fallback to the default banner
   $customBanner = $productImageUrl ?? null;
-  if (!$customBanner) {
-      $banner = 'valuation_banner.jpg';
-  }
+  $banner = 'valuation_banner.jpg';
 @endphp
 @php ob_start(); @endphp
 

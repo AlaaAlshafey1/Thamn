@@ -45,6 +45,9 @@ Route::post('/expert/login/send-otp', [App\Http\Controllers\Auth\ExpertLoginCont
 Route::post('/expert/login/verify-otp', [App\Http\Controllers\Auth\ExpertLoginController::class, 'verifyOtp'])->name('expert.login.verify-otp')->middleware('guest');
 Route::get('/expert/auto-login/{user}', [App\Http\Controllers\Auth\ExpertLoginController::class, 'autoLogin'])->name('expert.auto-login')->middleware('signed');
 
+// Short links used in WhatsApp messages (redirect to the original signed URL)
+Route::get('/l/{code}', [App\Http\Controllers\ShortLinkController::class, 'redirect'])->name('short.link')->where('code', '[a-z0-9]+');
+
 // ======= إقرار السرية للمحكمين المستقلين =======
 Route::prefix('declaration')->group(function () {
     Route::get('/{token}', [ArbitratorDeclarationController::class, 'show'])->name('declaration.show');

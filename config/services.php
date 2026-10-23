@@ -53,5 +53,22 @@ return [
         'instance' => env('ULTRAMSG_INSTANCE'),
     ],
 
+    // WhatsApp Business Cloud API (Meta) - enables real tappable buttons.
+    // Leave token / phone_id empty to keep sending everything through UltraMsg.
+    'whatsapp_cloud' => [
+        'token'    => env('WHATSAPP_CLOUD_TOKEN'),
+        'phone_id' => env('WHATSAPP_CLOUD_PHONE_ID'),
+        'version'  => env('WHATSAPP_CLOUD_VERSION', 'v21.0'),
+        'language' => env('WHATSAPP_CLOUD_LANG', 'ar'),
+        // Approved template names (each has ONE body variable and ONE dynamic URL button
+        // whose base URL is https://www.thmmn.net/l/{{1}})
+        'templates' => [
+            'order'    => env('WHATSAPP_TPL_ORDER', 'thamn_open_order'),
+            'login'    => env('WHATSAPP_TPL_LOGIN', 'thamn_login'),
+            'invoice'  => env('WHATSAPP_TPL_INVOICE', 'thamn_invoice'),
+            'document' => env('WHATSAPP_TPL_DOCUMENT', 'thamn_document'),
+        ],
+    ],
+
 
 ];
