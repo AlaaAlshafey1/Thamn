@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'tajawal', 'cairo', 'dejavusans', sans-serif;
+            font-family: 'ibmplexsansarabic', 'tajawal', 'cairo', 'dejavusans', sans-serif;
             direction: rtl;
             font-size: 11px;
             color: #1F2937;
@@ -253,26 +253,32 @@
     <div class="header-bar">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
-                <td width="55%" align="right" valign="middle">
-                    <table cellpadding="0" cellspacing="0" border="0">
+                <td width="30%" align="right" valign="middle">
+                    <div style="font-size: 16px; font-weight: bold; color: #FFFFFF; line-height: 1.2;">فاتورة تثمين</div>
+                    <div style="font-size: 9px; color: #9CA3AF; margin-top: 3px;">مواصفات وتسعير</div>
+                </td>
+                <td width="40%" align="center" valign="middle">
+                    <table cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
-                            <td valign="middle">
+                            <td valign="middle" align="center">
                                 @if(file_exists(public_path('assets/emails/logo_white.png')))
-                                    <img src="{{ public_path('assets/emails/logo_white.png') }}" height="38" style="display:block;">
+                                    <img src="{{ public_path('assets/emails/logo_white.png') }}" height="38" style="display:inline-block; vertical-align:middle;">
                                 @elseif(file_exists(public_path('assets/img/brand/logo-white.png')))
-                                    <img src="{{ public_path('assets/img/brand/logo-white.png') }}" height="30" style="display:block;">
+                                    <img src="{{ public_path('assets/img/brand/logo-white.png') }}" height="30" style="display:inline-block; vertical-align:middle;">
                                 @endif
+                                <span style="font-size: 22px; font-weight: bold; color: #FFFFFF; vertical-align:middle; margin-right: 6px;">ثمن</span>
                             </td>
-                            <td valign="middle" style="padding-right: 10px;">
-                                <div style="font-size: 20px; font-weight: bold; color: #FFFFFF; line-height: 1.1;">ثمن</div>
-                                <div style="font-size: 8.5px; color: #C1953E; margin-top: 2px; font-weight: bold;">منصة التثمين الذكي</div>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding-top: 2px;">
+                                <div style="font-size: 10px; color: #C1953E; font-weight: bold; letter-spacing: 0.5px;">فرص رقمية</div>
                             </td>
                         </tr>
                     </table>
                 </td>
-                <td width="45%" align="left" valign="middle">
-                    <div style="font-size: 18px; font-weight: bold; color: #FFFFFF; line-height: 1.1;">فاتورة تثمين</div>
-                    <div style="font-size: 9.5px; color: #9CA3AF; margin-top: 3px;">مواصفات وتسعير ، رقم {{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
+                <td width="30%" align="left" valign="middle">
+                    <div style="font-size: 9px; color: #9CA3AF;">رقم الفاتورة</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #FFFFFF; margin-top: 2px;">{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
                 </td>
             </tr>
         </table>
@@ -473,7 +479,7 @@
         {{-- Footer Attribution --}}
         <div class="footer-note">
             * القيمة استرشادية مبنية على البيانات المدخلة ولا تُعد عرض شراء ملزماً.<br>
-            صادر عن منصة <strong style="color: #C1953E;">ثمن</strong> للتثمين الذكي
+            صادر عن <strong style="color: #C1953E;">ثمن</strong> – فرص رقمية
         </div>
 
     </div>
