@@ -257,6 +257,8 @@ class OrderController extends Controller
                 if ($order->user->phone) {
                     $whatsapp = app(\App\Services\WhatsAppService::class);
                     $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+                    $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
+                    $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
                     $whatsapp->sendMessage($order->user->phone, $msg);
                 }
             } catch (\Throwable $e) {
@@ -268,15 +270,15 @@ class OrderController extends Controller
                 $expertName = $user->first_name . ' ' . $user->last_name;
                 $categoryName = $order->category->name_ar ?? 'القسم';
                 Mail::to('thmmnapplic@gmail.com')->send(new \App\Mail\SystemNotificationMail(
-                    "تم اعتماد التثمين الهجين للطلب #{$order->id} تلقائياً",
-                    "مشرفنا الغالي، قام الخبير {$expertName} من قسم {$categoryName} بتقييم الطلب رقم {$order->id}. تم احتساب السعر الهجين تلقائياً: {$thamnPrice} ريال وإبلاغ العميل.",
+                    "تم اعتماد التثمين الهجين للطلب رقم {$order->id} تلقائياً",
+                    "مشرفنا الغالي .. قام الخبير {$expertName} من قسم {$categoryName} بتقييم الطلب رقم {$order->id} .. تم احتساب السعر الهجين تلقائياً {$thamnPrice} ريال وإبلاغ العميل",
                     route('orders.show', $order->id)
                 ));
             } catch (\Throwable $e) {
                 \Log::error('Best-type Admin Info Email Failed: ' . $e->getMessage());
             }
 
-            $successMsg = 'تم تقييم الأوردر بنجاح واحتساب السعر الهجين تلقائياً وبشرنا العميل!';
+            $successMsg = 'تم تقييم الأوردر بنجاح واحتساب السعر الهجين تلقائياً وبشرنا العميل';
         } else {
             // Regular expert type or ai type (evaluated by expert) flow: notify user directly
             $evalTypeStr = $order->evaluation_type === 'ai' ? 'ai' : 'expert';
@@ -295,7 +297,7 @@ class OrderController extends Controller
 
                 // إضافة الفاتورة / شهادة التثمين
                 $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
-                $msg .= "\n\nلتحميل الفاتورة يرجى زيارة الرابط التالي:\n" . $invoiceLink;
+                $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
 
                 $whatsapp->sendMessage($order->user->phone, $msg);
 
@@ -377,6 +379,8 @@ class OrderController extends Controller
             if ($order->user->phone) {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
+                $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
+                $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
                 $whatsapp->sendMessage($order->user->phone, $msg);
             }
         } catch (\Exception $e) {
@@ -430,6 +434,12 @@ class OrderController extends Controller
 
             // 2. Notify Current Expert (Urgency)
             $expertMsg = \App\Services\WhatsAppService::getTemplate('order_accepted_expert', ['id' => $order->id]);
+            $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'expert.auto-login',
+                now()->addDays(7),
+                ['user' => auth()->id(), 'redirect' => route('orders.show', $order->id)]
+            );
+            $expertMsg .= \App\Services\WhatsAppService::formatActionLink('الدخول لتقييم الطلب', $expertLink, '📝');
             $whatsapp->sendMessage(auth()->user()->phone, $expertMsg);
 
             // 3. Notify Other Experts in same category

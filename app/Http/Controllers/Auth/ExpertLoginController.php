@@ -19,6 +19,10 @@ class ExpertLoginController extends Controller
      */
     public function showForm()
     {
+        if (Auth::check() && (Auth::user()->hasRole('expert') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin') || Auth::user()->hasRole('superadmin'))) {
+            return redirect()->route('dashboard');
+        }
+
         return view('auth.expert-login');
     }
 
@@ -151,12 +155,40 @@ class ExpertLoginController extends Controller
         // Mark OTP as used
         DB::table('otps')->where('id', $otpRecord->id)->update(['is_used' => true]);
 
-        // Login user
-        Auth::login($user);
+        // Login user with remember enabled so they stay logged in
+        Auth::login($user, true);
 
         // Clear session
         $request->session()->forget(['expert_login_user_id', 'expert_otp_via']);
 
         return redirect()->route('dashboard')->with('success', 'تم تسجيل الدخول بنجاح، مرحباً بك في لوحة التحكم.');
+    }
+
+    /**
+     * Auto Login for experts via secure signed link.
+     */
+    public function autoLogin(Request $request, User $user)
+    {
+        if (!$request->hasValidSignature()) {
+            return redirect()->route('expert.login')->withErrors(['identifier' => 'رابط الدخول غير صالح أو منتهي الصلاحية']);
+        }
+
+        if (!$user->hasRole('expert') && !$user->hasRole('admin') && !$user->hasRole('super-admin') && !$user->hasRole('superadmin')) {
+            return redirect()->route('expert.login')->withErrors(['identifier' => 'هذا الحساب لا يملك صلاحية الدخول كخبير']);
+        }
+
+        if (isset($user->is_active) && !$user->is_active) {
+            return redirect()->route('expert.login')->withErrors(['identifier' => 'حسابك غير مفعل بعد، يرجى انتظار موافقة الإدارة']);
+        }
+
+        // Persistent login
+        Auth::login($user, true);
+
+        $redirectUrl = $request->query('redirect');
+        if ($redirectUrl) {
+            return redirect($redirectUrl);
+        }
+
+        return redirect()->route('dashboard');
     }
 }

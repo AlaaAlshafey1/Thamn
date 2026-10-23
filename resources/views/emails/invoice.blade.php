@@ -21,7 +21,7 @@
     <tr>
       <td style="padding:16px 20px;text-align:right;">
         <p style="margin:0 0 8px;font-size:13px;color:#555;">
-          🆔 {{ $isRtl ? 'رقم الطلب' : 'Order #' }}: <strong style="color:#C1953E;">#{{ $order->id ?? 'N/A' }}</strong>
+          🆔 {{ $isRtl ? 'رقم الطلب' : 'Order' }}: <strong style="color:#C1953E;">{{ $order->id ?? '' }}</strong>
         </p>
         <p style="margin:0 0 8px;font-size:13px;color:#555;">
           📦 {{ $isRtl ? 'الطلب' : 'Order' }}: <strong style="color:#1A1A1A;">{{ $orderName }}</strong>

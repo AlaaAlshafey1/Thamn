@@ -1,7 +1,12 @@
 @php
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'تهانينا! تم قبولك كخبير في ثمن' : 'Congratulations! You are now an Expert on Thamn';
+  $emailTitle = $isRtl ? 'تم قبولك كخبير في ثمن' : 'Congratulations! You are now an Expert on Thamn';
+
+  $actionLink = 'https://thmmn.net/expert/login';
+  if (isset($user) && $user) {
+      $actionLink = \Illuminate\Support\Facades\URL::temporarySignedRoute('expert.auto-login', now()->addDays(30), ['user' => $user->id, 'redirect' => route('dashboard')]);
+  }
 @endphp
 @php $banner = 'expert_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -12,12 +17,12 @@
 
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
     @if($isRtl)
-      مبروك <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>!<br>
-      تم تسجيلك بنجاح كخبير في منصة ثمن.<br><br>
+      مبروك <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong><br>
+      تم تسجيلك بنجاح كخبير في منصة ثمن<br><br>
       <strong>بيانات الدخول الخاصة بك:</strong>
     @else
-      Congratulations <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>!<br>
-      You've been successfully registered as an Expert on Thamn.<br><br>
+      Congratulations <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong><br>
+      You have been successfully registered as an Expert on Thamn<br><br>
       <strong>Your login credentials:</strong>
     @endif
   </p>
@@ -36,10 +41,10 @@
     </tr>
   </table>
 
-  <a href="https://thmmn.net/expert/login"
+  <a href="{{ $actionLink }}"
      style="display:inline-block;padding:14px 36px;background:#C1953E;color:#fff;
             font-size:15px;font-weight:700;border-radius:100px;text-decoration:none;">
-    {{ $isRtl ? 'تسجيل الدخول الآن' : 'Login Now' }}
+    {{ $isRtl ? 'الدخول المباشر للوحة التحكم' : 'Login Now' }}
   </a>
 
 @php $slot = ob_get_clean(); @endphp

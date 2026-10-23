@@ -116,7 +116,13 @@ public function storeExpert(UserRequest $request)
     try {
         if ($user->phone && $user->is_active) {
             $whatsapp = app(\App\Services\WhatsAppService::class);
+            $loginLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'expert.auto-login',
+                now()->addDays(30),
+                ['user' => $user->id, 'redirect' => route('orders.index')]
+            );
             $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+            $msg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول لمنصة الخبراء', $loginLink, '🔐');
             $whatsapp->sendMessage($user->phone, $msg);
         }
     } catch (\Exception $e) {
@@ -179,7 +185,13 @@ public function updateExpert(UserRequest $request, User $user)
         try {
             if ($user->phone) {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
+                $loginLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'expert.auto-login',
+                    now()->addDays(30),
+                    ['user' => $user->id, 'redirect' => route('orders.index')]
+                );
                 $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+                $msg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول لمنصة الخبراء', $loginLink, '🔐');
                 $whatsapp->sendMessage($user->phone, $msg);
             }
         } catch (\Exception $e) {
@@ -265,7 +277,13 @@ public function updateExpert(UserRequest $request, User $user)
             try {
                 if ($user->phone) {
                     $whatsapp = app(\App\Services\WhatsAppService::class);
+                    $loginLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                        'expert.auto-login',
+                        now()->addDays(30),
+                        ['user' => $user->id, 'redirect' => route('orders.index')]
+                    );
                     $msg = \App\Services\WhatsAppService::getTemplate('expert_approved');
+                    $msg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول لمنصة الخبراء', $loginLink, '🔐');
                     $whatsapp->sendMessage($user->phone, $msg);
                 }
 

@@ -1,172 +1,483 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
     <meta charset="UTF-8">
-    <title>بطاقة تسعير ومواصفات #{{ $order->id }}</title>
+    <title>فاتورة تثمين رقم {{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
-        body { 
-            font-family: 'dejavusans', sans-serif; 
-            direction: rtl; 
-            font-size: 13px;
-            color: #1A1A1A;
-            line-height: 1.6;
+        @page {
+            margin-top: 0mm;
+            margin-bottom: 8mm;
+            margin-left: 0mm;
+            margin-right: 0mm;
+        }
+
+        body {
+            font-family: 'tajawal', 'cairo', 'dejavusans', sans-serif;
+            direction: rtl;
+            font-size: 11px;
+            color: #1F2937;
+            line-height: 1.5;
             margin: 0;
             padding: 0;
+            background-color: #FFFFFF;
         }
-        .header {
+
+        /* Top Dark Header */
+        .header-bar {
+            background-color: #162221;
             width: 100%;
-            border-bottom: 2px solid #C1953E;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding: 14px 26px;
         }
-        .sec-title {
-            color: #C1953E;
-            font-size: 16px;
+
+        .gold-stripe {
+            height: 4px;
+            background-color: #C1953E;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        /* Content Container */
+        .content-container {
+            padding: 0 26px 10px;
+        }
+
+        /* 4-Column Metadata Card */
+        .meta-card {
+            width: 100%;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            background-color: #FFFFFF;
+            margin-bottom: 14px;
+            border-collapse: collapse;
+        }
+
+        .meta-cell {
+            padding: 7px 10px;
+            text-align: center;
+            vertical-align: middle;
+            border-left: 1px solid #E5E7EB;
+        }
+
+        .meta-cell-last {
+            padding: 7px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .meta-lbl {
+            font-size: 9px;
+            color: #6B7280;
+            margin-bottom: 2px;
+        }
+
+        .meta-val {
+            font-size: 13px;
             font-weight: bold;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #EEEEEE;
-            padding-bottom: 5px;
+            color: #111827;
         }
-        .specs-table {
+
+        /* Hero Product & Valuation Section */
+        .hero-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+
+        .product-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 3px;
+            line-height: 1.25;
+        }
+
+        .product-subtitle {
+            font-size: 10px;
+            color: #4B5563;
+            margin-bottom: 6px;
+        }
+
+        .tag-pill {
+            display: inline-block;
+            padding: 2px 7px;
+            margin-left: 4px;
+            margin-bottom: 3px;
+            background-color: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 8.5px;
+            color: #4B5563;
+        }
+
+        /* Prominent Service Price Card */
+        .price-card {
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            padding: 8px 12px;
+            background-color: #FFFFFF;
+            margin-top: 8px;
+        }
+
+        .price-num {
+            font-size: 26px;
+            font-weight: bold;
+            color: #111827;
+            line-height: 1;
+        }
+
+        .price-unit {
+            font-size: 10.5px;
+            color: #4B5563;
+            font-weight: bold;
+            margin-right: 3px;
+        }
+
+        .image-frame {
+            width: 100%;
+            height: 145px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            background-color: #FAFAFA;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Section Headings */
+        .sec-header {
+            font-size: 12.5px;
+            font-weight: bold;
+            color: #111827;
+            margin-top: 10px;
+            margin-bottom: 6px;
+        }
+
+        /* Pricing Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .items-table th {
+            background-color: #162221;
+            color: #FFFFFF;
+            padding: 6px 10px;
+            font-size: 9.5px;
+            font-weight: bold;
+            border-bottom: 1px solid #162221;
+        }
+
+        .items-table td {
+            padding: 6px 10px;
+            font-size: 9px;
+            border-bottom: 1px solid #E5E7EB;
+            color: #1F2937;
+        }
+
+        .items-table tr.total-row td {
+            background-color: #F3F4F6;
+            font-size: 10px;
+            font-weight: bold;
+            color: #111827;
+            padding: 7px 10px;
+        }
+
+        /* Two-Column Specs & Condition */
+        .two-cols-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .sub-sec-title {
+            font-size: 11.5px;
+            font-weight: bold;
+            color: #111827;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #111827;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .detail-table {
             width: 100%;
             border-collapse: collapse;
         }
-        .specs-table td {
-            padding: 10px;
-            border: 1px solid #EEEEEE;
-            background-color: #F9F9FB;
+
+        .detail-table td {
+            padding: 4px 6px;
+            font-size: 8.5px;
+            border-bottom: 1px solid #F0F2F5;
         }
-        .spec-lbl {
-            font-size: 11px;
-            color: #888888;
+
+        .detail-lbl {
+            color: #6B7280;
+            width: 42%;
+        }
+
+        .detail-val {
+            color: #111827;
             font-weight: bold;
-            display: block;
+            width: 58%;
         }
-        .spec-val {
-            font-size: 13px;
-            font-weight: bold;
-            color: #1A1A1A;
-        }
-        .price-box {
-            background-color: #1A1A1A;
-            color: #FFFFFF;
-            text-align: center;
-            padding: 25px;
-            border-radius: 8px;
-        }
-        .notes-box {
-            background-color: #FDFDFD;
+
+        /* Report Box */
+        .report-box {
+            background-color: #F9FAFB;
             border-right: 4px solid #C1953E;
-            padding: 15px;
-            font-size: 13px;
-            color: #444;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 9px;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 10px;
         }
-        .owner-box {
-            background-color: #F9F9FB;
-            padding: 15px;
-            border: 1px solid #EEEEEE;
-            border-radius: 8px;
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            font-size: 8.5px;
+            color: #6B7280;
+            padding-top: 8px;
+            border-top: 1px solid #E5E7EB;
+            margin-top: 6px;
         }
     </style>
 </head>
+
 <body>
 
-    <table class="header" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-            <td width="70%" valign="middle">
-                <span style="color: #C1953E; font-size: 11px; font-weight: bold;">&#9670; بطاقة تثمين رسمية &#9670;</span>
-                <h1 style="margin: 5px 0; font-size: 24px; color: #1A1A1A;">مواصفات وتسعير</h1>
-                <span style="color: #888888; font-size: 12px;">
-                    رقم البطاقة: <strong style="color: #C1953E;">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</strong>
-                    &nbsp;|&nbsp; {{ $category }} &nbsp;|&nbsp; {{ $order->updated_at?->format('Y/m/d') }}
-                </span>
-            </td>
-            <td width="30%" align="left" valign="middle">
-                <img src="{{ public_path('assets/img/Logo.png') }}" height="60">
-            </td>
-        </tr>
-    </table>
-
-    @if(isset($image) && $image)
-    <div style="text-align: center; margin-bottom: 30px;">
-        <img src="{{ $image }}" height="220" style="border: 1px solid #EEEEEE; padding: 5px; border-radius: 8px;">
-    </div>
-    @endif
-
-    <div class="sec-title">المواصفات الفنية</div>
-    
-    <table class="specs-table">
-        @php $chunks = array_chunk($details, 2); @endphp
-        @foreach($chunks as $chunk)
-        <tr>
-            @foreach($chunk as $detail)
-            <td width="50%">
-                <span class="spec-lbl">{{ $detail['title'] }}</span>
-                <span class="spec-val">{{ $detail['value'] }}</span>
-            </td>
-            @endforeach
-            @if(count($chunk) == 1)
-            <td width="50%" style="background: transparent; border: none;"></td>
-            @endif
-        </tr>
-        @endforeach
-    </table>
-
-    <div class="sec-title">التسعير المعتمد</div>
-    <div class="price-box">
-        <div style="font-size: 12px; color: #C1953E; margin-bottom: 5px;">&#10022; التسعير العادل المعتمد &#10022;</div>
-        <div style="font-size: 12px; color: #999999;">القيمة الاسترشادية للسلعة</div>
-        <div style="font-size: 42px; font-weight: bold; margin: 10px 0;">
-            {{ $prices['average'] ? number_format($prices['average']) : '---' }}
-        </div>
-        <div style="font-size: 14px; color: #999999;">ريال سعودي</div>
-
-        @if($prices['lowest'] || $prices['highest'])
-        <table width="60%" align="center" style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-                <td width="50%" align="center">
-                    <span style="font-size: 11px; color: #888;">الحد الأدنى</span><br>
-                    <strong style="font-size: 16px; color: #CCC;">{{ $prices['lowest'] ? number_format($prices['lowest']) : '---' }}</strong>
-                </td>
-                <td width="50%" align="center" style="border-right: 1px solid #444;">
-                    <span style="font-size: 11px; color: #888;">الحد الأعلى</span><br>
-                    <strong style="font-size: 16px; color: #CCC;">{{ $prices['highest'] ? number_format($prices['highest']) : '---' }}</strong>
-                </td>
-            </tr>
-        </table>
-        @endif
-    </div>
-
-    @if($reasoning)
-    <div class="sec-title">ملاحظات وتقرير الخبير</div>
-    <div class="notes-box">
-        {{ $reasoning }}
-    </div>
-    @endif
-
-    @if($order->user)
-    <div class="sec-title">بيانات طالب التثمين</div>
-    <div class="owner-box">
+    {{-- Top Dark Header --}}
+    <div class="header-bar">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
-                <td width="50%">
-                    <span style="font-size: 11px; color: #888; display: block;">الاسم</span>
-                    <strong style="font-size: 14px;">{{ $order->user->first_name }} {{ $order->user->last_name }}</strong>
+                <td width="55%" align="right" valign="middle">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td valign="middle">
+                                @if(file_exists(public_path('assets/emails/logo_white.png')))
+                                    <img src="{{ public_path('assets/emails/logo_white.png') }}" height="38" style="display:block;">
+                                @elseif(file_exists(public_path('assets/img/brand/logo-white.png')))
+                                    <img src="{{ public_path('assets/img/brand/logo-white.png') }}" height="30" style="display:block;">
+                                @endif
+                            </td>
+                            <td valign="middle" style="padding-right: 10px;">
+                                <div style="font-size: 20px; font-weight: bold; color: #FFFFFF; line-height: 1.1;">ثمن</div>
+                                <div style="font-size: 8.5px; color: #C1953E; margin-top: 2px; font-weight: bold;">منصة التثمين الذكي</div>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
-                <td width="50%" align="left">
-                    <span style="font-size: 11px; color: #888; display: block;">رقم التواصل</span>
-                    <strong style="font-size: 14px;" dir="ltr">{{ $order->user->phone_number ?? '---' }}</strong>
+                <td width="45%" align="left" valign="middle">
+                    <div style="font-size: 18px; font-weight: bold; color: #FFFFFF; line-height: 1.1;">فاتورة تثمين</div>
+                    <div style="font-size: 9.5px; color: #9CA3AF; margin-top: 3px;">مواصفات وتسعير ، رقم {{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
                 </td>
             </tr>
         </table>
     </div>
-    @endif
 
-    <div style="text-align: center; font-size: 11px; color: #999; margin-top: 30px; border-top: 1px solid #EEE; padding-top: 15px;">
-        * السعر المذكور قيمة استرشادية مبنية على البيانات المدخلة ولا يُعدّ عرض شراء ملزماً.<br>
-        صادر عن منصة <strong style="color: #C1953E;">ثمن</strong> للتثمين الذكي
+    {{-- Gold Accent Stripe --}}
+    <div class="gold-stripe"></div>
+
+    {{-- Page Body Container --}}
+    <div class="content-container">
+
+        {{-- 4-Column Metadata Card --}}
+        <table class="meta-card">
+            <tr>
+                <td class="meta-cell" width="25%">
+                    <div class="meta-lbl">رقم البطاقة</div>
+                    <div class="meta-val">{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
+                </td>
+                <td class="meta-cell" width="25%">
+                    <div class="meta-lbl">تاريخ الإصدار</div>
+                    <div class="meta-val">{{ $order->created_at ? $order->created_at->format('Y/m/d') : now()->format('Y/m/d') }}</div>
+                </td>
+                <td class="meta-cell" width="25%">
+                    <div class="meta-lbl">القسم</div>
+                    <div class="meta-val">{{ $category }}</div>
+                </td>
+                <td class="meta-cell-last" width="25%">
+                    <div class="meta-lbl">طالب التثمين</div>
+                    <div class="meta-val">{{ $customerName }}</div>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Hero Product & Service Price Section --}}
+        <table class="hero-table">
+            <tr>
+                <td width="65%" valign="top" style="padding-left: 14px;">
+                    <div class="product-title">{{ $itemTitle }}</div>
+                    <div class="product-subtitle">{{ $itemSubDescription }}</div>
+
+                    @if(!empty($tags))
+                        <div style="margin-bottom: 6px;">
+                            @foreach($tags as $tag)
+                                <span class="tag-pill">{{ $tag }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    {{-- Prominent Service Price Card --}}
+                    <div class="price-card">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td width="58%" align="right" valign="middle">
+                                    <div style="font-size: 9px; color: #6B7280; margin-bottom: 2px;">رسوم خدمة التثمين المعتمدة</div>
+                                    <div>
+                                        <span class="price-num">{{ number_format($servicePrice, 0) }}</span>
+                                        <span class="price-unit">ريال سعودي</span>
+                                    </div>
+                                </td>
+                                <td width="42%" align="left" valign="middle" style="border-right: 1px solid #E5E7EB; padding-right: 8px;">
+                                    <div style="font-size: 8.5px; color: #888888; margin-bottom: 2px;">الباقة المختارة</div>
+                                    <div style="font-size: 10.5px; font-weight: bold; color: #C1953E; margin-bottom: 4px;">{{ $packageName }}</div>
+                                    <span style="display: inline-block; background-color: #ECFDF5; color: #059669; font-size: 8px; font-weight: bold; padding: 2px 6px; border-radius: 4px; border: 1px solid #A7F3D0;">
+                                        مدفوع بالكامل
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+
+                <td width="35%" valign="top" align="center">
+                    <div class="image-frame">
+                        @if(isset($image) && $image && file_exists($image))
+                            <table width="100%" height="145" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" valign="middle">
+                                        <img src="{{ $image }}" style="max-width: 92%; max-height: 135px; border-radius: 4px; object-fit: contain;">
+                                    </td>
+                                </tr>
+                            </table>
+                        @else
+                            <table width="100%" height="145" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" valign="middle">
+                                        <div style="font-size: 24px; color: #9CA3AF; margin-bottom: 4px;">&#128247;</div>
+                                        <div style="font-size: 10px; font-weight: bold; color: #6B7280;">مكان صورة المنتج</div>
+                                        <div style="font-size: 8.5px; color: #9CA3AF; margin-top: 2px;">يُرفق هنا</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        {{-- بنود التثمين (Pricing Breakdown Table) --}}
+        <div class="sec-header">بنود التثمين</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th align="right" width="40%">البند</th>
+                    <th align="right" width="42%">التفاصيل</th>
+                    <th align="center" width="18%">القيمة (ر.س)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: bold;">رسوم خدمة التثمين</td>
+                    <td style="color: #4B5563;">{{ $packageName }} (سداد إلكتروني معتمد)</td>
+                    <td align="center" style="font-weight: bold;">{{ number_format($servicePrice, 2) }}</td>
+                </tr>
+                @if($prices['average'] > 0)
+                    <tr>
+                        <td>القيمة السوقية الاسترشادية للسلعة</td>
+                        <td style="color: #4B5563;">{{ $itemTitle }} (تقدير عادل حسب المواصفات والحالة)</td>
+                        <td align="center" style="font-weight: bold;">{{ number_format($prices['average']) }}</td>
+                    </tr>
+                @endif
+                @if($prices['lowest'] || $prices['highest'])
+                    <tr>
+                        <td>النطاق التقديري العادل (السوقي)</td>
+                        <td style="color: #4B5563;">
+                            الحد الأدنى: {{ $prices['lowest'] ? number_format($prices['lowest']) : '---' }}
+                            &nbsp; | &nbsp;
+                            الحد الأعلى: {{ $prices['highest'] ? number_format($prices['highest']) : '---' }}
+                        </td>
+                        <td align="center" style="color: #6B7280;">نطاق تقديري</td>
+                    </tr>
+                @endif
+                <tr class="total-row">
+                    <td colspan="2">إجمالي رسوم الخدمة المدفوعة للفاتورة ({{ $packageName }})</td>
+                    <td align="center" style="color: #C1953E; font-size: 11px;">{{ number_format($servicePrice, 2) }} ر.س</td>
+                </tr>
+            </tbody>
+        </table>
+
+        {{-- Two-Column Specifications & Condition --}}
+        <table class="two-cols-table">
+            <tr>
+                {{-- Right Column: Specifications --}}
+                <td width="49%" valign="top">
+                    <div class="sub-sec-title">المواصفات الفنية</div>
+                    <table class="detail-table">
+                        @forelse(array_slice($specsDetails, 0, 7) as $index => $spec)
+                            <tr style="background-color: {{ $index % 2 === 0 ? '#FFFFFF' : '#F9FAFB' }};">
+                                <td class="detail-lbl">{{ $spec['title'] }}</td>
+                                <td class="detail-val" align="left">{{ $spec['value'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #9CA3AF; padding: 6px;">لا توجد مواصفات إضافية</td>
+                            </tr>
+                        @endforelse
+                    </table>
+                </td>
+
+                {{-- Spacer --}}
+                <td width="2%"></td>
+
+                {{-- Left Column: Condition & Usage --}}
+                <td width="49%" valign="top">
+                    <div class="sub-sec-title">الحالة والاستخدام</div>
+                    <table class="detail-table">
+                        @forelse(array_slice($conditionDetails, 0, 7) as $index => $cond)
+                            <tr style="background-color: {{ $index % 2 === 0 ? '#FFFFFF' : '#F9FAFB' }};">
+                                <td class="detail-lbl">{{ $cond['title'] }}</td>
+                                <td class="detail-val" align="left">{{ $cond['value'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #9CA3AF; padding: 6px;">لا توجد بيانات حالة إضافية</td>
+                            </tr>
+                        @endforelse
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Expert / AI Report --}}
+        @php
+            $cleanReasoning = trim($reasoning ?? '');
+            $hasHtml = strip_tags($cleanReasoning) !== $cleanReasoning;
+        @endphp
+
+        @if($cleanReasoning)
+            <div class="sec-header">تقرير الخبير</div>
+            <div class="report-box">
+                @if($hasHtml)
+                    {!! strip_tags($cleanReasoning, '<p><br><b><strong><span><div><ul><li><ol><table><tr><td><th>') !!}
+                @else
+                    {!! nl2br(e($cleanReasoning)) !!}
+                @endif
+            </div>
+        @endif
+
+        {{-- Footer Attribution --}}
+        <div class="footer-note">
+            * القيمة استرشادية مبنية على البيانات المدخلة ولا تُعد عرض شراء ملزماً.<br>
+            صادر عن منصة <strong style="color: #C1953E;">ثمن</strong> للتثمين الذكي
+        </div>
+
     </div>
 
 </body>
+
 </html>

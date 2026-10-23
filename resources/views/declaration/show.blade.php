@@ -7,7 +7,8 @@
     <title>الاتفاقية القانونية للتعاون مع الخبير - تطبيق ثمن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -601,7 +602,7 @@
 
             {{-- Logo top-right --}}
             <div class="barcode-logo">
-                <img src="{{ asset('assets/img/Logo.png') }}" alt="ثمن" style="height:70px; width:auto;">
+                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن" style="height:70px; width:auto;">
             </div>
 
             <div class="doc-title-block">

@@ -420,11 +420,16 @@
                  EXPERT NEW LAYOUT (Match Image)
             ============================================ --}}
             <style>
-                .ex-stepper { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 25px 50px; border-radius: 12px; position: relative; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-                .ex-stepper::before { content: ''; position: absolute; top: 35px; left: 80px; right: 80px; height: 4px; background: #f39c12; z-index: 1; }
-                .step-item { position: relative; z-index: 2; text-align: center; background: #fff; padding: 0 10px; cursor: pointer; }
-                .step-circle { width: 24px; height: 24px; border-radius: 50%; background: #f39c12; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; margin: 0 auto 10px; box-shadow: 0 0 0 4px #fff; }
-                .step-label { font-weight: 700; color: #333; font-size: 0.9rem; }
+                .ex-stepper { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 25px 50px; border-radius: 16px; position: relative; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+                .ex-stepper::before { content: ''; position: absolute; top: 38px; left: 80px; right: 80px; height: 3px; background: #e2e8f0; z-index: 1; }
+                .step-item { position: relative; z-index: 2; text-align: center; background: #fff; padding: 0 10px; cursor: pointer; transition: all 0.25s; }
+                .step-main-info { display: flex; flex-direction: column; align-items: center; }
+                .step-circle { width: 34px; height: 34px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 16px; margin: 0 auto 8px; box-shadow: 0 0 0 4px #fff; transition: all 0.25s; }
+                .step-label { font-weight: 700; color: #64748b; font-size: 0.95rem; transition: color 0.25s; }
+                .step-stage-circle { width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 2px solid #cbd5e1; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 800; margin: 8px auto 0; transition: all 0.25s; }
+                .step-item.active .step-circle { background: #f39c12; color: #fff; }
+                .step-item.active .step-label { color: #111; font-weight: 800; }
+                .step-item.active .step-stage-circle { background: #f39c12; border-color: #f39c12; color: #fff; box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2); }
                 
                 .ex-main-card { background: #fff; border-radius: 16px; padding: 40px 30px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.03); }
                 .success-badge { width: 70px; height: 70px; margin: 0 auto 20px; background: url('{{ asset("assets/img/gold-badge.png") }}') center/contain no-repeat; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #333; }
@@ -565,11 +570,109 @@
                 /* App-like Mobile View */
                 @media (max-width: 768px) {
                     .expert-desktop-padding { padding: 10px 5px !important; margin: 0 !important; }
-                    .ex-stepper { flex-direction: column; padding: 20px 10px; border-radius: 20px; margin-bottom: 16px; gap: 10px; align-items: stretch; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+                    .ex-stepper {
+                        position: relative;
+                        flex-direction: column;
+                        padding: 16px 14px;
+                        border-radius: 20px;
+                        margin-bottom: 16px;
+                        gap: 12px;
+                        align-items: stretch;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                        background: #fff;
+                    }
                     .ex-stepper::before { display: none; }
-                    .step-item { display: flex; align-items: center; justify-content: flex-start; gap: 15px; background: #fdfdfd; border-radius: 14px; padding: 14px 16px; border: 1px solid #f0f0f0; }
-                    .step-circle { margin: 0; box-shadow: none; width: 40px; height: 40px; font-size: 1.2rem; flex-shrink: 0; }
-                    .step-label { font-size: 1.05rem; }
+                    /* خط المراحل الرأسي الواصل بين الدوائر ١ ٢ ٣ على اليسار */
+                    .ex-stepper::after {
+                        content: '';
+                        position: absolute;
+                        left: 33px;
+                        top: 42px;
+                        bottom: 42px;
+                        width: 3px;
+                        background: #e2e8f0;
+                        z-index: 1;
+                        border-radius: 3px;
+                    }
+                    .step-item {
+                        position: relative;
+                        z-index: 2;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        background: #ffffff;
+                        border-radius: 14px;
+                        padding: 14px 16px;
+                        border: 1px solid #eef2f6;
+                        cursor: pointer;
+                        transition: all 0.25s ease;
+                    }
+                    .step-main-info {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        gap: 14px;
+                    }
+                    .step-circle {
+                        margin: 0;
+                        box-shadow: none;
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 50%;
+                        background: #f1f5f9;
+                        color: #94a3b8;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.25rem;
+                        flex-shrink: 0;
+                        transition: all 0.25s;
+                    }
+                    .step-label {
+                        font-size: 1.05rem;
+                        font-weight: 800;
+                        color: #475569;
+                        transition: color 0.25s;
+                    }
+                    /* دوائر مراحل مرقمة ١ ٢ ٣ على اليسار بالضبط كما في الصورة 2 */
+                    .step-stage-circle {
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 50%;
+                        background: #ffffff;
+                        border: 2px solid #cbd5e1;
+                        color: #64748b;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.15rem;
+                        font-weight: 900;
+                        flex-shrink: 0;
+                        margin: 0;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                        position: relative;
+                        z-index: 3;
+                        transition: all 0.25s ease;
+                    }
+                    /* الحالة النشطة للمرحلة */
+                    .step-item.active {
+                        background: #ffffff;
+                        border-color: #f39c12;
+                        box-shadow: 0 4px 14px rgba(243, 156, 18, 0.12);
+                    }
+                    .step-item.active .step-circle {
+                        background: #f39c12;
+                        color: #ffffff;
+                    }
+                    .step-item.active .step-label {
+                        color: #0f172a;
+                    }
+                    .step-item.active .step-stage-circle {
+                        background: #f39c12;
+                        border-color: #f39c12;
+                        color: #ffffff;
+                        box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2);
+                    }
                     .ex-main-card { padding: 24px 16px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
                     
                     /* Keep Podium Horizontal on Mobile but scale down gracefully without overlapping */
@@ -708,19 +811,28 @@
                         </div>
                     </div>
 
-                    <!-- Stepper -->
+                    <!-- Stepper with numbered stage circles ١ ٢ ٣ -->
                     <div class="ex-stepper">
                         <div class="step-item" onclick="switchTab('specs', this)" id="step-specs">
-                            <div class="step-circle"><i class="bx bx-list-check"></i></div>
-                            <div class="step-label">مواصفات السلعة</div>
+                            <div class="step-main-info">
+                                <div class="step-circle"><i class="bx bx-list-check"></i></div>
+                                <div class="step-label">مواصفات السلعة</div>
+                            </div>
+                            <div class="step-stage-circle">١</div>
                         </div>
                         <div class="step-item" onclick="switchTab('photos', this)" id="step-photos">
-                            <div class="step-circle"><i class="bx bx-images"></i></div>
-                            <div class="step-label">صور السلعة</div>
+                            <div class="step-main-info">
+                                <div class="step-circle"><i class="bx bx-images"></i></div>
+                                <div class="step-label">صور السلعة</div>
+                            </div>
+                            <div class="step-stage-circle">٢</div>
                         </div>
-                        <div class="step-item" onclick="switchTab('evaluate', this)" id="step-evaluate">
-                            <div class="step-circle"><i class="bx bx-check"></i></div>
-                            <div class="step-label">السعر التقديري</div>
+                        <div class="step-item active" onclick="switchTab('evaluate', this)" id="step-evaluate">
+                            <div class="step-main-info">
+                                <div class="step-circle"><i class="bx bx-check"></i></div>
+                                <div class="step-label">السعر التقديري</div>
+                            </div>
+                            <div class="step-stage-circle">٣</div>
                         </div>
                     </div>
 
@@ -1431,19 +1543,11 @@
             document.querySelectorAll('.expert-tab-panel').forEach(function(p) { p.style.display = 'none'; });
             document.querySelectorAll('.step-item').forEach(function(b) {
                 b.classList.remove('active');
-                var circ = b.querySelector('.step-circle');
-                var lbl  = b.querySelector('.step-label');
-                if (circ) circ.style.background = '#ddd';
-                if (lbl)  lbl.style.color = '#888';
             });
             var panel = document.getElementById('tab-' + tabName);
             if (panel) { panel.style.display = 'block'; }
             if (clickedEl) {
                 clickedEl.classList.add('active');
-                var circ = clickedEl.querySelector('.step-circle');
-                var lbl  = clickedEl.querySelector('.step-label');
-                if (circ) circ.style.background = '#f39c12';
-                if (lbl)  lbl.style.color = '#111';
             }
         }
 

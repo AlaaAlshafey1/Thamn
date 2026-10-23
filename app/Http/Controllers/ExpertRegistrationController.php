@@ -174,13 +174,11 @@ class ExpertRegistrationController extends Controller
                 // إرسال واتساب للخبير بالإتفاقية
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 if ($user->phone) {
-                    $whatsapp->sendMessage(
-                        $user->phone,
-                        
-                        app()->getLocale() === 'ar' 
-                        ? "مرحباً بك {$user->first_name} 👋\nشكراً لتسجيلك كخبير في منصة ثمن. لقد استلمنا طلبك بنجاح.\n\nلقد تم تسجيل موافقتك على الاتفاقية القانونية للتعاون، وتم توليد ملف PDF الكتروني خاص بك (يحتوي على تفاصيلك).\nيمكنك تحميل نسختك من الرابط أدناه:\n{$downloadUrl}\n\nسيقوم فريقنا بمراجعة طلبك والتواصل معك قريباً. نتمنى لك يوماً سعيداً!"
-                        : "Welcome {$user->first_name} 👋\nThank you for registering as an expert on Thamn. We have successfully received your request.\n\nYour agreement to the legal cooperation terms has been recorded, and a customized PDF file has been generated for you.\nYou can download your copy from the link below:\n{$downloadUrl}\n\nOur team will review your request and contact you soon. Have a great day!"
-                    );
+                    $expertMsg = app()->getLocale() === 'ar' 
+                        ? "مرحباً بك {$user->first_name}\nشكراً لتسجيلك كخبير في منصة ثمن .. لقد استلمنا طلبك بنجاح\nتم تسجيل موافقتك على الاتفاقية القانونية للتعاون وتوليد ملف PDF الإلكتروني الخاص بك\nسيقوم فريقنا بمراجعة طلبك والتواصل معك قريباً"
+                        : "Welcome {$user->first_name}\nThank you for registering as an expert on Thamn. We have successfully received your request.\nYour agreement to legal cooperation has been recorded.";
+                    $expertMsg .= \App\Services\WhatsAppService::formatActionLink('تحميل نسختك من الاتفاقية', $downloadUrl, '📄');
+                    $whatsapp->sendMessage($user->phone, $expertMsg);
                 }
             } catch (\Exception $e) {
                 \Log::error('Expert Auto-Declaration Failed: ' . $e->getMessage());
@@ -196,16 +194,19 @@ class ExpertRegistrationController extends Controller
                 $msg = \App\Services\WhatsAppService::getTemplate('new_expert_reg', ['name' => $user->first_name . ' ' . $user->last_name]);
                 $whatsapp = app(\App\Services\WhatsAppService::class);
 
+                $adminLink = route('experts.show', $user->id);
+                $adminMsg = $msg . \App\Services\WhatsAppService::formatActionLink('مراجعة بيانات الخبير', $adminLink, '👤');
+
                 $adminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
                 Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
-                    'مشرفنا الغالي، خبير جديد سجل ووافق على الاتفاقية!',
-                    "فيه خبير جديد سجل بالمنصة باسم: " . $user->first_name . " " . $user->last_name . ".\n\nالخبير وافق ضمينًا على الاتفاقية القانونية وتم توليد ملف PDF في ملفه الشخصي.\nادخل على لوحة التحكم وشيك على ملفه.",
-                    route('experts.show', $user->id)
+                    'مشرفنا الغالي .. خبير جديد سجل ووافق على الاتفاقية',
+                    "فيه خبير جديد سجل بالمنصة باسم " . $user->first_name . " " . $user->last_name . "\n\nالخبير وافق على الاتفاقية القانونية وتم توليد ملف PDF في ملفه الشخصي\nادخل على لوحة التحكم وشيك على ملفه",
+                    $adminLink
                 ));
 
                 foreach ($admins as $admin) {
                     if ($admin->phone) {
-                        $whatsapp->sendMessage($admin->phone, $msg);
+                        $whatsapp->sendMessage($admin->phone, $adminMsg);
                     }
                 }
             } catch (\Exception $e) {

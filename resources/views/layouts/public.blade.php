@@ -6,20 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - ثمن | التثمين الاسترشادي للممتلكات والسلع المستعملة</title>
     <meta name="description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
-    <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo-black.png') }}">
     <meta property="og:title" content="@yield('title') - ثمن | التثمين الاسترشادي للممتلكات والسلع المستعملة">
     <meta property="og:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
-    <meta property="og:image" content="{{ URL::asset('assets/img/Logo.png') }}">
+    <meta property="og:image" content="{{ URL::asset('assets/img/Logo-black.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
-        *, *::before, *::after, body, button, input, select, textarea, .btn {
+        *,
+        *::before,
+        *::after,
+        body,
+        button,
+        input,
+        select,
+        textarea,
+        .btn {
             font-family: 'IBM Plex Sans Arabic', sans-serif !important;
         }
+
         body {
             background-color: #f8f9fa;
             color: #333;
@@ -78,7 +88,7 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container d-flex justify-content-center">
             <a class="navbar-brand" href="/">
-                <img src="{{ URL::asset('assets/img/Logo.png') }}" alt="Logo" class="main-logo">
+                <img src="{{ URL::asset('assets/img/Logo-black.png') }}" alt="Logo" class="main-logo">
             </a>
         </div>
     </nav>
@@ -96,7 +106,7 @@
     <footer class="mt-5 py-4 border-top">
         <div class="container text-center">
             <div class="mb-3">
-                <img src="{{ URL::asset('assets/img/Logo.png') }}" alt="Logo" class="main-logo opacity-75 mb-3"
+                <img src="{{ URL::asset('assets/img/Logo-black.png') }}" alt="Logo" class="main-logo opacity-75 mb-3"
                     style="max-height: 40px;">
             </div>
             <div class="mb-3 text-muted">

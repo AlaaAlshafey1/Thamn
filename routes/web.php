@@ -40,9 +40,10 @@ Route::get('/experts/register', [App\Http\Controllers\ExpertRegistrationControll
 Route::post('/experts/register', [App\Http\Controllers\ExpertRegistrationController::class, 'register'])->name('experts.register.submit');
 
 // Expert Login (OTP)
-Route::get('/expert/login', [App\Http\Controllers\Auth\ExpertLoginController::class, 'showForm'])->name('expert.login')->middleware('guest');
+Route::get('/expert/login', [App\Http\Controllers\Auth\ExpertLoginController::class, 'showForm'])->name('expert.login');
 Route::post('/expert/login/send-otp', [App\Http\Controllers\Auth\ExpertLoginController::class, 'sendOtp'])->name('expert.login.send-otp')->middleware('guest');
 Route::post('/expert/login/verify-otp', [App\Http\Controllers\Auth\ExpertLoginController::class, 'verifyOtp'])->name('expert.login.verify-otp')->middleware('guest');
+Route::get('/expert/auto-login/{user}', [App\Http\Controllers\Auth\ExpertLoginController::class, 'autoLogin'])->name('expert.auto-login')->middleware('signed');
 
 // ======= إقرار السرية للمحكمين المستقلين =======
 Route::prefix('declaration')->group(function () {

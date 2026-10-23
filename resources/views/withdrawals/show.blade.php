@@ -170,7 +170,7 @@
                                 @csrf
                                 <input type="hidden" name="transfer_type" value="moyasar">
                                 <button type="submit" class="btn btn-success px-3 py-2 fw-bold shadow-sm"
-                                    onclick="return confirm('هل أنت متأكد من الموافقة؟ سيتم محاولة تحويل المبلغ آلياً عبر Tap Payments.');">
+                                    onclick="return confirm('هل أنت متأكد من الموافقة؟ سيتم محاولة تحويل المبلغ آلياً عبر ميسر (Moyasar).');">
                                     <i class="bx bx-paper-plane ml-1"></i> موافقة (تحويل آلي ميسر)
                                 </button>
                             </form>

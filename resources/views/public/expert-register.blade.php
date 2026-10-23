@@ -7,7 +7,8 @@
     <title>انضم كخبير — تطبيق ثمن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -330,7 +331,7 @@
 
     <nav>
         <a href="{{ route('home') }}" class="logo">
-            <img src="{{ asset('assets/img/Logo.png') }}" alt="Thamn Logo">
+            <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamn Logo">
             <span>ثمن</span>
         </a>
         <ul>

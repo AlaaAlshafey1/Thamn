@@ -384,27 +384,37 @@ class PaymentController extends Controller
             ]);
 
             foreach ($experts as $expert) {
+                // رابط الدخول التلقائي للخبير للداشبورد مباشرة
+                $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'expert.auto-login',
+                    now()->addDays(7),
+                    ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
+                );
+
                 if ($expert->phone) {
-                    $whatsapp->sendMessage($expert->phone, $expertMsg);
+                    $personalizedMsg = $expertMsg . \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
+                    $whatsapp->sendMessage($expert->phone, $personalizedMsg);
                 }
+
                 Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
-                    'طلب تقييم جديد بقسمك',
-                    "يوجد طلب جديد رقم : {$order->id} متاح الآن للتقييم .. بادر بتسجيل الدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
-                    route('orders.index')
+                    "طلب تثمين جديد بقسمك رقم {$order->id}",
+                    "يوجد طلب جديد رقم {$order->id} متاح الآن للتقييم .. بادر بالدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
+                    $expertLink,
+                    'عرض الطلب واستلامه'
                 ));
             }
 
             // بريد العميل
             Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
-                'وصلنا مبلغك.. وجاري العمل على طلبك!',
-                "يا هلا والله! استلمنا مبلغك لطلبك رقم {$order->id}.\nطلبك الحين عند أفضل خبرائنا، خلك قريب وبنبشرك بالنتيجة.",
+                'وصلنا مبلغك وجاري العمل على طلبك',
+                "يا هلا والله .. استلمنا مبلغك لطلبك رقم {$order->id}\nطلبك الحين عند أفضل خبرائنا وخلك قريب وبنبشرك بالنتيجة",
                 route('orders.show', $order->id)
             ));
 
             // بريد الأدمن
             Mail::to('thmmnapplic@gmail.com')->send(new \App\Mail\SystemNotificationMail(
-                'مشرفنا الغالي، فيه طلب تثمين جديد اندفع!',
-                "بشرى سارة! العميل {$order->user->first_name} دفع قيمة طلب التثمين رقم {$order->id}.\nشيك على الطلب في لوحة التحكم.",
+                'مشرفنا الغالي فيه طلب تثمين جديد اندفع',
+                "أبشر بالخير .. العميل {$order->user->first_name} دفع قيمة طلب التثمين رقم {$order->id}\nشيك على الطلب في لوحة التحكم",
                 route('orders.show', $order->id)
             ));
 

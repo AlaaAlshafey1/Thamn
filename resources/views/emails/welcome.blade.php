@@ -12,13 +12,13 @@
 
   <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">
     @if($isRtl)
-      أهلاً <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>،<br>
-      يسعدنا انضمامك لمنصة <strong>ثمن</strong> — المنصة الأولى للتثمين الاسترشادي للسلع المستعملة.<br>
-      حسابك جاهز الآن. ابدأ رحلتك معنا!
+      أهلاً <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong><br>
+      يسعدنا انضمامك لمنصة <strong>ثمن</strong> — المنصة الأولى للتثمين الاسترشادي للسلع المستعملة<br>
+      حسابك جاهز الآن .. ابدأ رحلتك معنا
     @else
       Hi <strong style="color:#1A1A1A;">{{ $user->first_name ?? '' }}</strong>,<br>
       Welcome to <strong>Thamn</strong> — the leading platform for used goods valuation.<br>
-      Your account is ready. Start your journey with us!
+      Your account is ready. Start your journey with us
     @endif
   </p>
 

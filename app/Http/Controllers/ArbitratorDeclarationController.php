@@ -136,10 +136,9 @@ class ArbitratorDeclarationController extends Controller
             // إرسال رسالة واتساب للخبير
             $whatsapp = app(\App\Services\WhatsAppService::class);
             if ($declaration->phone) {
-                $whatsapp->sendMessage(
-                    $declaration->phone,
-                    "✅ مرحباً {$expertName}،\nتم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمن بنجاح.\n\n📄 تم إرسال نسخة PDF إلى بريدك الإلكتروني ({$declaration->email}).\nيمكنك أيضاً تحميلها من الرابط:\n{$downloadUrl}\n\nشكراً لتعاونك! 🤝"
-                );
+                $msg = "مرحباً {$expertName}\nتم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمن بنجاح\nتم إرسال نسخة PDF إلى بريدك الإلكتروني ({$declaration->email})\nشكراً لتعاونك معنا";
+                $msg .= \App\Services\WhatsAppService::formatActionLink('تحميل نسختك من الاتفاقية', $downloadUrl, '📄');
+                $whatsapp->sendMessage($declaration->phone, $msg);
             }
 
             \Log::info("Declaration signed PDF sent to expert: {$declaration->email}");

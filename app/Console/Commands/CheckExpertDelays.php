@@ -107,10 +107,16 @@ class CheckExpertDelays extends Command
                     // WhatsApp
                     try {
                         if ($otherExpert->phone) {
+                            $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                                'expert.auto-login',
+                                now()->addDays(7),
+                                ['user' => $otherExpert->id, 'redirect' => route('orders.show', $order->id)]
+                            );
                             $msg = \App\Services\WhatsAppService::getTemplate('new_order_expert', [
                                 'name' => $otherExpert->first_name ?? '',
                                 'category' => $order->category->name_ar ?? 'القسم',
                             ]);
+                            $msg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
                             $whatsapp->sendMessage($otherExpert->phone, $msg);
                         }
                     } catch (\Throwable $e) {
@@ -154,8 +160,14 @@ class CheckExpertDelays extends Command
             // WhatsApp للخبير
             try {
                 if ($expert->phone) {
+                    $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                        'expert.auto-login',
+                        now()->addDays(2),
+                        ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
+                    );
                     $whatsapp = app(\App\Services\WhatsAppService::class);
                     $msg = \App\Services\WhatsAppService::getTemplate('expert_evaluation_warning', ['id' => $order->id]);
+                    $msg .= \App\Services\WhatsAppService::formatActionLink('إكمال تقييم الطلب الآن', $expertLink, '⚡');
                     $whatsapp->sendMessage($expert->phone, $msg);
                 }
             } catch (\Throwable $e) {

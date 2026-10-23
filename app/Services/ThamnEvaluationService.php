@@ -262,23 +262,27 @@ PROMPT;
         if ($order->evaluation_type === 'ai' && !$order->expert_id) {
             $whatsapp = app(\App\Services\WhatsAppService::class);
             $experts = \App\Models\User::role('expert')->get();
-            $orderLink = 'https://www.thmmn.net/expert/login';
             
-            $msg = "ياهلا خبير التثمين 👋\nوصلك طلب تثمين ذكي رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر أو التعديل عليه وفقا لرؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
+            $msg = "ياهلا خبير التثمين\nوصلك طلب تثمين ذكي رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر أو التعديل عليه وفق رؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
 
             foreach ($experts as $expert) {
+                // رابط دخول تلقائي آمن للخبير للداشبورد مباشرة
+                $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'expert.auto-login',
+                    now()->addDays(7),
+                    ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
+                );
+
                 if ($expert->phone) {
-                    $whatsapp->sendMessage(
-                        $expert->phone,
-                        "{$msg}\n\nرابط الطلب:\n{$orderLink}"
-                    );
+                    $whatsappMsg = $msg . \App\Services\WhatsAppService::formatActionLink('عرض الطلب واعتماد التثمين', $expertLink, '🔍');
+                    $whatsapp->sendMessage($expert->phone, $whatsappMsg);
                 }
                 if ($expert->email) {
                     try {
                         Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
-                            "مطلوب المصادقة على طلب التثمين الذكي رقم #{$order->id}",
+                            "مطلوب المصادقة على طلب التثمين الذكي رقم {$order->id}",
                             $msg,
-                            'https://www.thmmn.net/expert/login',
+                            $expertLink,
                             'عرض الطلب'
                         ));
                     } catch (\Throwable $e) {
@@ -439,20 +443,26 @@ PROMPT;
         // Notify ALL Experts via Email, WhatsApp, and DB Notification
         $experts = \App\Models\User::role('expert')->get();
         foreach ($experts as $expert) {
+            $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'expert.auto-login',
+                now()->addDays(7),
+                ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
+            );
+
             // Send WhatsApp
             if ($expert->phone) {
-                $whatsapp->sendMessage(
-                    $expert->phone,
-                    "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت."
-                );
+                $expertMsg = "هلا بك خبير ثمن .. وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء .. نرجو منك الدخول وتقييم الطلب في أسرع وقت";
+                $expertMsg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
+                $whatsapp->sendMessage($expert->phone, $expertMsg);
             }
             // Send Email
             if ($expert->email) {
                 try {
                     Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                         'طلب تقييم جديد بقسمك',
-                        "يوجد طلب جديد رقم : {$order->id} متاح الآن للتقييم .. بادر بتسجيل الدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
-                        'https://www.thmmn.net/expert/login'
+                        "يوجد طلب جديد رقم {$order->id} متاح الآن للتقييم .. بادر بالدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
+                        $expertLink,
+                        'عرض الطلب واستلامه'
                     ));
                 } catch (\Throwable $e) {
                     Log::error("Failed to send expert email for best order: " . $e->getMessage());

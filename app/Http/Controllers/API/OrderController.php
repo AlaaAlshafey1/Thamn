@@ -1030,10 +1030,118 @@ class OrderController extends Controller
             ?? $order->ai_reasoning
             ?? '';
 
-        /* ===================== MAIN IMAGE ===================== */
-        $imageFile = $order->files->firstWhere('type', 'image');
-        $image = $imageFile ? public_path('storage/' . $imageFile->file_path) : null;
+        /* ===================== CUSTOMER & PACKAGE & SERVICE PRICE ===================== */
+        $customerName = $order->user ? trim($order->user->first_name . ' ' . $order->user->last_name) : 'عميل منصة ثمن';
 
+        $rateTypeAnswer = $order->details()->whereHas('question', function ($q) {
+            $q->where('type', 'rateTypeSelection');
+        })->first();
+
+        $packageName = 'باقة التثمين الذكي';
+        if ($evalType === 'expert') {
+            $packageName = 'باقة التثمين المحكم';
+        } elseif ($evalType === 'best') {
+            $packageName = 'باقة التثمين الاحترافي';
+        }
+
+        $servicePrice = null;
+        if ($rateTypeAnswer && $rateTypeAnswer->option && (float)$rateTypeAnswer->option->price > 0) {
+            $servicePrice = (float) $rateTypeAnswer->option->price;
+            $packageName = $rateTypeAnswer->option->option_ar ?? $rateTypeAnswer->option->option_en ?? $packageName;
+        }
+
+        $paymentAmount = $order->payments()->where('status', 'orderReceived')->value('amount');
+        if ($paymentAmount && (float)$paymentAmount > 0) {
+            $servicePrice = (float) $paymentAmount;
+        }
+
+        if (!$servicePrice) {
+            if ($evalType === 'ai') $servicePrice = 15.0;
+            elseif ($evalType === 'best') $servicePrice = 35.0;
+            elseif ($evalType === 'expert') $servicePrice = 50.0;
+            else $servicePrice = 15.0;
+        }
+
+        /* ===================== ITEM TITLE & TAGS ===================== */
+        $brand = null;
+        $model = null;
+        $year = null;
+        $tags = [];
+
+        foreach ($order->details as $d) {
+            $qText = $d->question?->question_ar ?? '';
+            $val = $d->option?->option_ar ?? $d->value ?? '';
+            if (!$val) continue;
+
+            if (str_contains($qText, 'ماركة') || str_contains($qText, 'المصنعة')) {
+                $brand = $val;
+            }
+            if (str_contains($qText, 'نوع') || str_contains($qText, 'فئة')) {
+                $model = $val;
+            }
+            if (str_contains($qText, 'سنة الصنع')) {
+                $year = $val;
+            }
+            if (mb_strlen($val) <= 25 && !str_contains($val, 'قيمة تجريبية') && $val !== 'No V' && (str_contains($qText, 'الحالة') || str_contains($qText, 'ضمان') || str_contains($qText, 'استهلاك') || str_contains($qText, 'وقود') || str_contains($qText, 'نظافة'))) {
+                $tags[] = $val;
+            }
+        }
+
+        $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
+        $itemTitle = $payload['order_name'] ?? null;
+        if (!$itemTitle) {
+            if ($brand && $model) {
+                $itemTitle = "{$brand} – {$model}";
+            } elseif ($brand) {
+                $itemTitle = "{$category} – {$brand}";
+            } else {
+                $itemTitle = "طلب تثمين {$category}";
+            }
+        }
+
+        $subDescParts = array_filter([$brand, $model, $year ? "موديل {$year}" : null]);
+        $itemSubDescription = !empty($subDescParts) ? implode(' ، ', $subDescParts) : ($category ?? 'سلعة');
+        $tags = array_slice(array_unique($tags), 0, 5);
+
+        /* ===================== SPECS & CONDITION SECTIONS ===================== */
+        $specsDetails = [];
+        $conditionDetails = [];
+
+        foreach ($details as $item) {
+            $t = $item['title'];
+            $v = $item['value'];
+            if (str_contains($t, 'طريقة التقييم') || str_contains($t, 'حدد طريقة') || str_contains($t, 'rateTypeSelection')) {
+                continue; // don't repeat the package question in specs
+            }
+            if ($v === 'No V' || str_contains($v, 'قيمة تجريبية') || empty(trim($v))) {
+                continue;
+            }
+            if (str_contains($t, 'حالة') || str_contains($t, 'استهلاك') || str_contains($t, 'عيب') || str_contains($t, 'صيانة') || str_contains($t, 'نظافة') || str_contains($t, 'ضمان') || str_contains($t, 'بيع') || str_contains($t, 'مستبدلة') || str_contains($t, 'عطل')) {
+                $conditionDetails[] = $item;
+            } else {
+                $specsDetails[] = $item;
+            }
+        }
+
+        /* ===================== MAIN IMAGE ===================== */
+        $image = null;
+        $imageFile = $order->files->where('type', 'image')->first();
+        if ($imageFile && $imageFile->file_path) {
+            $filePath = ltrim(str_replace(['public/', 'storage/'], '', $imageFile->file_path), '/');
+            $candidates = [
+                public_path('storage/' . $filePath),
+                storage_path('app/public/' . $filePath),
+                public_path($imageFile->file_path),
+                storage_path('app/' . $imageFile->file_path),
+                base_path($imageFile->file_path),
+            ];
+            foreach ($candidates as $cand) {
+                if (file_exists($cand) && is_file($cand)) {
+                    $image = $cand;
+                    break;
+                }
+            }
+        }
 
         $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.order-valuation-result', compact(
             'order',
@@ -1041,7 +1149,15 @@ class OrderController extends Controller
             'prices',
             'details',
             'reasoning',
-            'image'
+            'image',
+            'customerName',
+            'servicePrice',
+            'packageName',
+            'itemTitle',
+            'itemSubDescription',
+            'tags',
+            'specsDetails',
+            'conditionDetails'
         ));
 
         return $pdf->stream('valuation-order-' . $order->id . '.pdf');
@@ -1049,12 +1165,42 @@ class OrderController extends Controller
 
     public function generateInvoicePdf(Request $request, $orderId)
     {
-        $order = \App\Models\Order::with(['category', 'user'])->findOrFail($orderId);
+        $order = \App\Models\Order::with(['category', 'user', 'payments', 'details.question', 'details.option'])->findOrFail($orderId);
 
         $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
         $orderName = $payload['order_name'] ?? ($order->category?->name_ar ?? 'N/A');
 
-        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.invoice', compact('order', 'orderName'));
+        $evalType = $order->evaluation_type;
+        $rateTypeAnswer = $order->details()->whereHas('question', function ($q) {
+            $q->where('type', 'rateTypeSelection');
+        })->first();
+
+        $packageName = 'باقة التثمين الذكي';
+        if ($evalType === 'expert') {
+            $packageName = 'باقة التثمين المحكم';
+        } elseif ($evalType === 'best') {
+            $packageName = 'باقة التثمين الاحترافي';
+        }
+
+        $servicePrice = null;
+        if ($rateTypeAnswer && $rateTypeAnswer->option && (float)$rateTypeAnswer->option->price > 0) {
+            $servicePrice = (float) $rateTypeAnswer->option->price;
+            $packageName = $rateTypeAnswer->option->option_ar ?? $rateTypeAnswer->option->option_en ?? $packageName;
+        }
+
+        $paymentAmount = $order->payments()->where('status', 'orderReceived')->value('amount');
+        if ($paymentAmount && (float)$paymentAmount > 0) {
+            $servicePrice = (float) $paymentAmount;
+        }
+
+        if (!$servicePrice) {
+            if ($evalType === 'ai') $servicePrice = 15.0;
+            elseif ($evalType === 'best') $servicePrice = 35.0;
+            elseif ($evalType === 'expert') $servicePrice = 50.0;
+            else $servicePrice = 15.0;
+        }
+
+        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.invoice', compact('order', 'orderName', 'servicePrice', 'packageName'));
 
         return $pdf->download('invoice-' . $order->id . '.pdf');
     }

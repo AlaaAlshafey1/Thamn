@@ -29,10 +29,10 @@ class OrderEvaluated extends Notification
     {
         return (new MailMessage)
             ->subject('تم تقييم طلبك بنجاح')
-            ->line("تم تقييم طلبك رقم #{$this->order->id} بنجاح بواسطة: {$this->type}")
+            ->line("تم تقييم طلبك رقم {$this->order->id} بنجاح بواسطة {$this->type}")
             ->line("السعر النهائي: {$this->order->total_price}")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
-            ->line('شكراً لاستخدامك خدمتنا!');
+            ->line('شكراً لاستخدامك خدمتنا');
     }
 
     public function toDatabase($notifiable)
@@ -42,12 +42,12 @@ class OrderEvaluated extends Notification
             'type' => $this->type,
             'total_price' => $this->order->total_price,
             'title' => 'تم تقييم طلبك',
-            'message' => "تم تقييم طلبك رقم #{$this->order->id} بنجاح"
+            'message' => "تم تقييم طلبك رقم {$this->order->id} بنجاح"
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم تقييم طلبك رقم #{$this->order->id} بنجاح";
+        return "تطبيق ثمن\n" . "تم تقييم طلبك رقم {$this->order->id} بنجاح";
     }
 }

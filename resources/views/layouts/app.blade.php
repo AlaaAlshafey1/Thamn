@@ -4,10 +4,9 @@
 	<link href="{{URL::asset('assets/plugins/owl-carousel/owl.carousel.css')}}" rel="stylesheet" />
 	<!-- Maps css -->
 	<link href="{{URL::asset('assets/plugins/jqvmap/jqvmap.min.css')}}" rel="stylesheet">
-	
+
 	<!-- Custom Dashboard Styles -->
 	<style>
-
 		/* AI Assistant Pulse */
 		.ai-widget {
 			background: linear-gradient(135deg, #1f2937, #111827);
@@ -16,14 +15,16 @@
 			color: #fff;
 			position: relative;
 			overflow: hidden;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-			border: 1px solid rgba(193,149,62,0.3);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(193, 149, 62, 0.3);
 			transition: all 0.3s ease;
 		}
+
 		.ai-widget:hover {
 			transform: translateY(-5px);
-			box-shadow: 0 15px 35px rgba(193,149,62,0.4);
+			box-shadow: 0 15px 35px rgba(193, 149, 62, 0.4);
 		}
+
 		.ai-widget::before {
 			content: '';
 			position: absolute;
@@ -31,23 +32,42 @@
 			left: -50%;
 			width: 200%;
 			height: 200%;
-			background: radial-gradient(circle, rgba(193,149,62,0.1) 0%, transparent 60%);
+			background: radial-gradient(circle, rgba(193, 149, 62, 0.1) 0%, transparent 60%);
 			animation: rotate 15s linear infinite;
 		}
+
 		@keyframes rotate {
-			0% { transform: rotate(0deg); }
-			100% { transform: rotate(360deg); }
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
 		}
+
 		.ai-icon {
 			font-size: 3rem;
 			color: #c1953e;
 			animation: pulse 2s infinite;
-			text-shadow: 0 0 15px rgba(193,149,62,0.6);
+			text-shadow: 0 0 15px rgba(193, 149, 62, 0.6);
 		}
+
 		@keyframes pulse {
-			0% { transform: scale(1); opacity: 1; }
-			50% { transform: scale(1.1); opacity: 0.8; }
-			100% { transform: scale(1); opacity: 1; }
+			0% {
+				transform: scale(1);
+				opacity: 1;
+			}
+
+			50% {
+				transform: scale(1.1);
+				opacity: 0.8;
+			}
+
+			100% {
+				transform: scale(1);
+				opacity: 1;
+			}
 		}
 
 		/* Module Cards */
@@ -57,7 +77,7 @@
 			padding: 20px;
 			text-align: center;
 			transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-			box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 			border-bottom: 4px solid transparent;
 			display: block;
 			color: #333;
@@ -65,12 +85,14 @@
 			margin-bottom: 20px;
 			height: calc(100% - 20px);
 		}
+
 		.module-card:hover {
 			transform: translateY(-10px);
-			box-shadow: 0 15px 30px rgba(193,149,62,0.15);
+			box-shadow: 0 15px 30px rgba(193, 149, 62, 0.15);
 			border-bottom: 4px solid #c1953e;
 			color: #c1953e;
 		}
+
 		.module-icon-wrap {
 			width: 65px;
 			height: 65px;
@@ -83,13 +105,14 @@
 			font-size: 26px;
 			color: #c1953e;
 			transition: all 0.5s ease;
-			box-shadow: inset 0 0 10px rgba(193,149,62,0.1);
+			box-shadow: inset 0 0 10px rgba(193, 149, 62, 0.1);
 		}
+
 		.module-card:hover .module-icon-wrap {
 			background: linear-gradient(135deg, #c1953e, #b08637);
 			color: #fff;
 			transform: rotateY(180deg) scale(1.1);
-			box-shadow: 0 5px 15px rgba(193,149,62,0.4);
+			box-shadow: 0 5px 15px rgba(193, 149, 62, 0.4);
 		}
 
 		/* Stats Cards (Update existing) */
@@ -98,32 +121,43 @@
 			border-radius: 15px;
 			overflow: hidden;
 		}
+
 		.sales-card:hover {
 			transform: scale(1.02) translateY(-5px);
-			box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+			box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
 		}
 
 		/* Glassmorphism for tables */
 		.card-table-two {
 			border-radius: 15px;
-			box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
 			border: none;
 			transition: all 0.3s;
 		}
+
 		.card-table-two:hover {
-			box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 		}
-		
+
 		/* Fade in animations */
 		.fade-in-up {
 			animation: fadeInUp 0.8s ease-out forwards;
 			opacity: 0;
 			transform: translateY(20px);
 		}
-		.delay-1 { animation-delay: 0.1s; }
-		.delay-2 { animation-delay: 0.2s; }
-		.delay-3 { animation-delay: 0.3s; }
-		
+
+		.delay-1 {
+			animation-delay: 0.1s;
+		}
+
+		.delay-2 {
+			animation-delay: 0.2s;
+		}
+
+		.delay-3 {
+			animation-delay: 0.3s;
+		}
+
 		@keyframes fadeInUp {
 			to {
 				opacity: 1;
@@ -139,9 +173,10 @@
 			padding: 25px;
 			color: #fff;
 			transition: all 0.4s ease;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 			z-index: 1;
 		}
+
 		.expert-stat-card::before {
 			content: '';
 			position: absolute;
@@ -149,33 +184,44 @@
 			right: -50px;
 			width: 150px;
 			height: 150px;
-			background: rgba(255,255,255,0.1);
+			background: rgba(255, 255, 255, 0.1);
 			border-radius: 50%;
 			z-index: -1;
 			transition: transform 0.5s ease;
 		}
+
 		.expert-stat-card:hover::before {
 			transform: scale(1.5);
 		}
+
 		.expert-stat-card:hover {
 			transform: translateY(-10px);
-			box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+			box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 		}
+
 		.expert-stat-card .icon-container {
 			width: 60px;
 			height: 60px;
-			background: rgba(255,255,255,0.2);
+			background: rgba(255, 255, 255, 0.2);
 			border-radius: 15px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			font-size: 28px;
-			box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+			box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
 		}
-		
-		.bg-expert-success { background: linear-gradient(135deg, #10b981, #059669); }
-		.bg-expert-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-		.bg-expert-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+		.bg-expert-success {
+			background: linear-gradient(135deg, #10b981, #059669);
+		}
+
+		.bg-expert-warning {
+			background: linear-gradient(135deg, #f59e0b, #d97706);
+		}
+
+		.bg-expert-info {
+			background: linear-gradient(135deg, #3b82f6, #2563eb);
+		}
 	</style>
 @endsection
 
@@ -185,10 +231,13 @@
 		<div class="left-content w-100">
 			<div class="d-flex align-items-center flex-column flex-md-row text-center text-md-right">
 				<div class="header-logo-wrap mb-2 mb-md-0 ml-md-3">
-					<img src="{{ asset('assets/img/Logo.png') }}" alt="Thamen Logo" class="ht-50 wd-50 ht-md-60 wd-md-60 shadow-sm" style="border-radius: 15px; transition: transform 0.3s;">
+					<img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamen Logo"
+						class="ht-50 wd-50 ht-md-60 wd-md-60 shadow-sm"
+						style="border-radius: 15px; transition: transform 0.3s;">
 				</div>
 				<div class="mt-2 mt-md-0">
-					<h2 class="main-content-title tx-20 tx-md-28 mg-b-2" style="font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 800; color: #2c3e50;">
+					<h2 class="main-content-title tx-20 tx-md-28 mg-b-2"
+						style="font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 800; color: #2c3e50;">
 						لوحة التحكم الذكية <span style="color: #c1953e;">ثمن</span> ✨
 					</h2>
 					<p class="mg-b-0 tx-13 tx-md-15 text-muted" style="font-family: 'IBM Plex Sans Arabic', sans-serif;">
@@ -212,16 +261,24 @@
 						<i class="fas fa-brain"></i>
 					</div>
 					<div style="z-index: 1; position: relative; width: 100%;">
-						<h4 class="mb-2 font-weight-bold" style="font-family: 'IBM Plex Sans Arabic', sans-serif; color: #e5cc98;">مساعد ثمن الذكي (AI)</h4>
-						<p class="mb-0 text-white-50 tx-15" style="font-family: 'IBM Plex Sans Arabic', sans-serif;" id="ai-response-text">
-							<i class="fas fa-magic text-warning"></i> تحليل البيانات يشير إلى أداء ممتاز! تم إنجاز {{ $stats['orders_count'] ?? 0 }} طلب تقييم، والمنصة تجذب المزيد من المستخدمين بشكل مستمر.
+						<h4 class="mb-2 font-weight-bold"
+							style="font-family: 'IBM Plex Sans Arabic', sans-serif; color: #e5cc98;">مساعد ثمن الذكي (AI)
+						</h4>
+						<p class="mb-0 text-white-50 tx-15" style="font-family: 'IBM Plex Sans Arabic', sans-serif;"
+							id="ai-response-text">
+							<i class="fas fa-magic text-warning"></i> تحليل البيانات يشير إلى أداء ممتاز! تم إنجاز
+							{{ $stats['orders_count'] ?? 0 }} طلب تقييم، والمنصة تجذب المزيد من المستخدمين بشكل مستمر.
 						</p>
 						<div class="mt-3">
 							<form id="ai-chat-form" class="d-flex align-items-center" onsubmit="askAI(event)">
-								<input type="text" id="ai-prompt" class="form-control" placeholder="اسأل مساعد ثمن الذكي أي شيء عن المنصة..." style="background: rgba(255,255,255,0.1); border: 1px solid rgba(193,149,62,0.4); color: white; border-radius: 10px; margin-left: 10px;">
-								<button type="submit" class="btn btn-warning" style="border-radius: 10px; font-weight: bold; min-width: 100px;">
+								<input type="text" id="ai-prompt" class="form-control"
+									placeholder="اسأل مساعد ثمن الذكي أي شيء عن المنصة..."
+									style="background: rgba(255,255,255,0.1); border: 1px solid rgba(193,149,62,0.4); color: white; border-radius: 10px; margin-left: 10px;">
+								<button type="submit" class="btn btn-warning"
+									style="border-radius: 10px; font-weight: bold; min-width: 100px;">
 									<span id="ai-btn-text">إرسال <i class="fas fa-paper-plane ml-1"></i></span>
-									<span id="ai-btn-loader" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+									<span id="ai-btn-loader" style="display: none;"><i
+											class="fas fa-spinner fa-spin"></i></span>
 								</button>
 							</form>
 						</div>
@@ -238,7 +295,7 @@
 				<i class="fas fa-th-large text-warning mr-2 ml-2"></i> الوصول السريع للإضافات (Modules)
 			</h5>
 		</div>
-		
+
 		<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
 			<a href="{{ route('orders.index') }}" class="module-card">
 				<div class="module-icon-wrap"><i class="fas fa-shopping-cart"></i></div>
@@ -294,7 +351,8 @@
 						<div class="d-flex">
 							<div class="">
 								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['users_count'] ?? 0) }}</h4>
+									{{ number_format($stats['users_count'] ?? 0) }}
+								</h4>
 								<p class="mb-0 tx-12 text-white op-7">عدد المستخدمين المسجلين في النظام</p>
 							</div>
 							<span class="float-right my-auto mr-auto">
@@ -315,7 +373,8 @@
 						<div class="d-flex">
 							<div class="">
 								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['experts_count'] ?? 0) }}</h4>
+									{{ number_format($stats['experts_count'] ?? 0) }}
+								</h4>
 								<p class="mb-0 tx-12 text-white op-7">عدد الخبراء المعتمدين</p>
 							</div>
 							<span class="float-right my-auto mr-auto">
@@ -336,9 +395,11 @@
 						<div class="d-flex">
 							<div class="">
 								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['orders_count'] ?? 0) }}</h4>
+									{{ number_format($stats['orders_count'] ?? 0) }}
+								</h4>
 								<p class="mb-0 tx-12 text-white op-7">إجمالي الطلبات (بانتظار التقييم:
-									{{ $stats['pending_orders'] ?? 0 }})</p>
+									{{ $stats['pending_orders'] ?? 0 }})
+								</p>
 							</div>
 							<span class="float-right my-auto mr-auto">
 								<i class="fas fa-shopping-cart text-white tx-30"></i>
@@ -358,7 +419,8 @@
 						<div class="d-flex">
 							<div class="">
 								<h4 class="tx-20 font-weight-bold mb-1 text-white">
-									{{ number_format($stats['total_revenue'] ?? 0, 2) }} ر.س</h4>
+									{{ number_format($stats['total_revenue'] ?? 0, 2) }} ر.س
+								</h4>
 								<p class="mb-0 tx-12 text-white op-7">إجمالي المدفوعات المكتملة</p>
 							</div>
 							<span class="float-right my-auto mr-auto">
@@ -373,73 +435,78 @@
 	@endhasanyrole
 
 	@if(auth()->user()->hasRole('expert'))
-	<!-- Expert Dashboard View -->
-	<div class="row row-sm fade-in-up delay-1 mb-4">
-		<div class="col-xl-12 mb-3 d-flex justify-content-between align-items-center flex-column flex-md-row">
-			<h4 class="font-weight-bold mb-3 mb-md-0 text-center text-md-right" style="font-family: 'IBM Plex Sans Arabic', sans-serif; color: #2c3e50;">
-				<i class="fas fa-chart-line text-warning mr-2 ml-2"></i> ملخص أداء الخبير
-			</h4>
-			<span class="badge badge-light px-3 py-2 tx-14 shadow-sm" style="border-radius: 20px;">
-				<i class="fas fa-calendar-alt text-muted mr-1"></i> {{ now()->format('Y-m-d') }}
-			</span>
-		</div>
-		
-		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
-			<div class="expert-stat-card bg-expert-success">
-				<div class="d-flex justify-content-between align-items-center">
-					<div>
-						<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المنجزة</p>
-						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['orders_completed'] ?? 0) }}</h2>
-						<p class="mb-0 tx-12 op-8"><i class="fas fa-arrow-up mr-1 ml-1"></i> طلبات تم تقييمها بنجاح</p>
+		<!-- Expert Dashboard View -->
+		<div class="row row-sm fade-in-up delay-1 mb-4">
+			<div class="col-xl-12 mb-3 d-flex justify-content-between align-items-center flex-column flex-md-row">
+				<h4 class="font-weight-bold mb-3 mb-md-0 text-center text-md-right"
+					style="font-family: 'IBM Plex Sans Arabic', sans-serif; color: #2c3e50;">
+					<i class="fas fa-chart-line text-warning mr-2 ml-2"></i> ملخص أداء الخبير
+				</h4>
+				<span class="badge badge-light px-3 py-2 tx-14 shadow-sm" style="border-radius: 20px;">
+					<i class="fas fa-calendar-alt text-muted mr-1"></i> {{ now()->format('Y-m-d') }}
+				</span>
+			</div>
+
+			<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
+				<div class="expert-stat-card bg-expert-success">
+					<div class="d-flex justify-content-between align-items-center">
+						<div>
+							<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المنجزة</p>
+							<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['orders_completed'] ?? 0) }}</h2>
+							<p class="mb-0 tx-12 op-8"><i class="fas fa-arrow-up mr-1 ml-1"></i> طلبات تم تقييمها بنجاح</p>
+						</div>
+						<div class="icon-container">
+							<i class="fas fa-check-double text-white"></i>
+						</div>
 					</div>
-					<div class="icon-container">
-						<i class="fas fa-check-double text-white"></i>
+				</div>
+			</div>
+
+			<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
+				<div class="expert-stat-card bg-expert-warning">
+					<div class="d-flex justify-content-between align-items-center">
+						<div>
+							<p class="mb-2 tx-14 op-8 font-weight-bold">الرصيد المتاح</p>
+							<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['balance'] ?? 0, 2) }} <span
+									class="tx-14">ر.س</span></h2>
+							<p class="mb-0 tx-12 op-8"><i class="fas fa-money-bill-wave mr-1 ml-1"></i> أرباحك القابلة للسحب</p>
+						</div>
+						<div class="icon-container">
+							<i class="fas fa-wallet text-white"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xl-4 col-lg-6 col-md-12 col-xm-12 mb-3">
+				<div class="expert-stat-card bg-expert-info">
+					<div class="d-flex justify-content-between align-items-center">
+						<div>
+							<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المتاحة للتقييم</p>
+							<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['pending_orders'] ?? 0) }}</h2>
+							<p class="mb-0 tx-12 op-8"><i class="fas fa-clock mr-1 ml-1"></i> طلبات بانتظار خبرتك</p>
+						</div>
+						<div class="icon-container">
+							<i class="fas fa-layer-group text-white"></i>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		
-		<div class="col-xl-4 col-lg-6 col-md-6 col-xm-12 mb-3">
-			<div class="expert-stat-card bg-expert-warning">
-				<div class="d-flex justify-content-between align-items-center">
-					<div>
-						<p class="mb-2 tx-14 op-8 font-weight-bold">الرصيد المتاح</p>
-						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['balance'] ?? 0, 2) }} <span class="tx-14">ر.س</span></h2>
-						<p class="mb-0 tx-12 op-8"><i class="fas fa-money-bill-wave mr-1 ml-1"></i> أرباحك القابلة للسحب</p>
-					</div>
-					<div class="icon-container">
-						<i class="fas fa-wallet text-white"></i>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<div class="col-xl-4 col-lg-6 col-md-12 col-xm-12 mb-3">
-			<div class="expert-stat-card bg-expert-info">
-				<div class="d-flex justify-content-between align-items-center">
-					<div>
-						<p class="mb-2 tx-14 op-8 font-weight-bold">الطلبات المتاحة للتقييم</p>
-						<h2 class="tx-30 font-weight-bold mb-1">{{ number_format($stats['pending_orders'] ?? 0) }}</h2>
-						<p class="mb-0 tx-12 op-8"><i class="fas fa-clock mr-1 ml-1"></i> طلبات بانتظار خبرتك</p>
-					</div>
-					<div class="icon-container">
-						<i class="fas fa-layer-group text-white"></i>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 	@endif
 
 	<!-- row -->
 	<div class="row row-sm fade-in-up delay-3">
-		<div class="{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'col-md-12 col-lg-8 col-xl-8' : 'col-xl-12' }}">
+		<div
+			class="{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'col-md-12 col-lg-8 col-xl-8' : 'col-xl-12' }}">
 			<div class="card card-table-two" style="border-radius: 20px; overflow: hidden; border: 1px solid #f0f0f0;">
-				<div class="card-header bg-white d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f8f9fa; padding: 20px 25px;">
+				<div class="card-header bg-white d-flex justify-content-between align-items-center"
+					style="border-bottom: 1px solid #f8f9fa; padding: 20px 25px;">
 					<h4 class="card-title mb-0 font-weight-bold tx-18" style="color: #2c3e50;">
 						<i class="fas fa-clipboard-list text-primary mr-2 ml-2"></i> آخر الطلبات
 					</h4>
-					<span class="badge badge-light-primary text-primary px-3 py-2" style="border-radius: 15px; background: rgba(59, 130, 246, 0.1);">
+					<span class="badge badge-light-primary text-primary px-3 py-2"
+						style="border-radius: 15px; background: rgba(59, 130, 246, 0.1);">
 						{{ auth()->user()->hasAnyRole(['admin', 'superadmin']) ? 'أحدث 5 طلبات في النظام' : 'أحدث 5 طلبات قمت بتقييمها' }}
 					</span>
 				</div>
@@ -450,75 +517,84 @@
 								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">رقم الطلب</th>
 								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">المستخدم</th>
 								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">الفئة</th>
-								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">الحالة</th>
+								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">
+									الحالة</th>
 								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold">السعر</th>
 								@if(auth()->user()->hasRole('expert'))
-								<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">الإجراء</th>
+									<th class="wd-lg-25p border-bottom-0 py-3 tx-muted tx-13 font-weight-bold text-center">
+										الإجراء</th>
 								@endif
 							</tr>
 						</thead>
 						<tbody>
 							@forelse($recentOrders as $order)
-							<tr style="transition: all 0.2s ease;">
-								<td class="align-middle font-weight-bold">#{{ $order->id }}</td>
-								<td class="align-middle">
-									<div class="d-flex align-items-center">
-										<div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-2 ml-2" style="width: 35px; height: 35px; color: #6c757d;">
-											<i class="fas fa-user"></i>
+								<tr style="transition: all 0.2s ease;">
+									<td class="align-middle font-weight-bold">#{{ $order->id }}</td>
+									<td class="align-middle">
+										<div class="d-flex align-items-center">
+											<div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-2 ml-2"
+												style="width: 35px; height: 35px; color: #6c757d;">
+												<i class="fas fa-user"></i>
+											</div>
+											<span class="tx-medium tx-inverse">{{ $order->user->name ?? 'مستخدم' }}</span>
 										</div>
-										<span class="tx-medium tx-inverse">{{ $order->user->name ?? 'مستخدم' }}</span>
-									</div>
-								</td>
-								<td class="align-middle tx-medium text-muted">
-									<i class="fas fa-tag mr-1 ml-1 text-warning"></i> {{ $order->category->name ?? 'غير محدد' }}
-								</td>
-								<td class="align-middle text-center">
-									@php
-										$statusClasses = [
-											'pending' => 'badge-warning',
-											'orderReceived' => 'badge-info',
-											'beingEstimated' => 'badge-primary',
-											'estimated' => 'badge-success',
-											'finished' => 'badge-success',
-											'completed' => 'badge-success',
-										];
-										$statusLabels = [
-											'pending' => 'قيد الانتظار',
-											'orderReceived' => 'تم الاستلام',
-											'beingEstimated' => 'جاري التقييم',
-											'estimated' => 'تم التقييم',
-											'finished' => 'مكتمل',
-											'completed' => 'مكتمل',
-										];
-									@endphp
-									<span class="badge {{ $statusClasses[$order->status] ?? 'badge-secondary' }} px-3 py-2 tx-12" style="border-radius: 12px; font-weight: normal;">
-										{{ $statusLabels[$order->status] ?? $order->status }}
-									</span>
-								</td>
-								<td class="align-middle tx-medium tx-danger font-weight-bold">{{ number_format($order->total_price, 2) }} <span class="tx-11">ر.س</span></td>
-								
-								@if(auth()->user()->hasRole('expert'))
-								<td class="align-middle text-center">
-									<a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-outline-primary" style="border-radius: 10px;">
-										التفاصيل <i class="fas fa-eye ml-1"></i>
-									</a>
-								</td>
-								@endif
-							</tr>
+									</td>
+									<td class="align-middle tx-medium text-muted">
+										<i class="fas fa-tag mr-1 ml-1 text-warning"></i>
+										{{ $order->category->name ?? 'غير محدد' }}
+									</td>
+									<td class="align-middle text-center">
+										@php
+											$statusClasses = [
+												'pending' => 'badge-warning',
+												'orderReceived' => 'badge-info',
+												'beingEstimated' => 'badge-primary',
+												'estimated' => 'badge-success',
+												'finished' => 'badge-success',
+												'completed' => 'badge-success',
+											];
+											$statusLabels = [
+												'pending' => 'قيد الانتظار',
+												'orderReceived' => 'تم الاستلام',
+												'beingEstimated' => 'جاري التقييم',
+												'estimated' => 'تم التقييم',
+												'finished' => 'مكتمل',
+												'completed' => 'مكتمل',
+											];
+										@endphp
+										<span
+											class="badge {{ $statusClasses[$order->status] ?? 'badge-secondary' }} px-3 py-2 tx-12"
+											style="border-radius: 12px; font-weight: normal;">
+											{{ $statusLabels[$order->status] ?? $order->status }}
+										</span>
+									</td>
+									<td class="align-middle tx-medium tx-danger font-weight-bold">
+										{{ number_format($order->total_price, 2) }} <span class="tx-11">ر.س</span></td>
+
+									@if(auth()->user()->hasRole('expert'))
+										<td class="align-middle text-center">
+											<a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-outline-primary"
+												style="border-radius: 10px;">
+												التفاصيل <i class="fas fa-eye ml-1"></i>
+											</a>
+										</td>
+									@endif
+								</tr>
 							@empty
-							<tr>
-								<td colspan="{{ auth()->user()->hasRole('expert') ? '6' : '5' }}" class="text-center py-5 text-muted">
-									<div class="mb-3"><i class="fas fa-folder-open tx-40 text-light"></i></div>
-									لا توجد طلبات حديثة
-								</td>
-							</tr>
+								<tr>
+									<td colspan="{{ auth()->user()->hasRole('expert') ? '6' : '5' }}"
+										class="text-center py-5 text-muted">
+										<div class="mb-3"><i class="fas fa-folder-open tx-40 text-light"></i></div>
+										لا توجد طلبات حديثة
+									</td>
+								</tr>
 							@endforelse
 						</tbody>
 					</table>
 				</div>
 			</div>
 		</div>
-		
+
 		@hasanyrole('admin|superadmin')
 		<div class="col-md-12 col-lg-8 col-xl-4">
 			<div class="card card-table-two">
@@ -538,15 +614,16 @@
 						</thead>
 						<tbody>
 							@foreach($recentPayments as $payment)
-							<tr>
-								<td>{{ $payment->order->user->name ?? 'مستخدم' }}</td>
-								<td class="tx-right tx-medium tx-inverse">{{ number_format($payment->amount, 2) }} ر.س</td>
-								<td class="tx-right tx-medium tx-inverse">
-									<span class="badge {{ $payment->status == 'CAPTURED' ? 'badge-success' : 'badge-danger' }} px-2 py-1 tx-11">
-										{{ $payment->status == 'CAPTURED' ? 'ناجحة' : 'فاشلة' }}
-									</span>
-								</td>
-							</tr>
+								<tr>
+									<td>{{ $payment->order->user->name ?? 'مستخدم' }}</td>
+									<td class="tx-right tx-medium tx-inverse">{{ number_format($payment->amount, 2) }} ر.س</td>
+									<td class="tx-right tx-medium tx-inverse">
+										<span
+											class="badge {{ $payment->status == 'CAPTURED' ? 'badge-success' : 'badge-danger' }} px-2 py-1 tx-11">
+											{{ $payment->status == 'CAPTURED' ? 'ناجحة' : 'فاشلة' }}
+										</span>
+									</td>
+								</tr>
 							@endforeach
 						</tbody>
 					</table>
@@ -610,20 +687,20 @@
 				},
 				body: JSON.stringify({ prompt: promptText })
 			})
-			.then(response => response.json())
-			.then(data => {
-				document.getElementById('ai-response-text').innerHTML = `<i class="fas fa-robot text-warning"></i> ${data.response}`;
-				promptInput.value = '';
-			})
-			.catch(error => {
-				document.getElementById('ai-response-text').innerHTML = `<i class="fas fa-exclamation-triangle text-danger"></i> حدث خطأ، يرجى المحاولة لاحقاً.`;
-			})
-			.finally(() => {
-				document.getElementById('ai-btn-text').style.display = 'inline-block';
-				document.getElementById('ai-btn-loader').style.display = 'none';
-				promptInput.disabled = false;
-				promptInput.focus();
-			});
+				.then(response => response.json())
+				.then(data => {
+					document.getElementById('ai-response-text').innerHTML = `<i class="fas fa-robot text-warning"></i> ${data.response}`;
+					promptInput.value = '';
+				})
+				.catch(error => {
+					document.getElementById('ai-response-text').innerHTML = `<i class="fas fa-exclamation-triangle text-danger"></i> حدث خطأ، يرجى المحاولة لاحقاً.`;
+				})
+				.finally(() => {
+					document.getElementById('ai-btn-text').style.display = 'inline-block';
+					document.getElementById('ai-btn-loader').style.display = 'none';
+					promptInput.disabled = false;
+					promptInput.focus();
+				});
 		}
 	</script>
 @endsection

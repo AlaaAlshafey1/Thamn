@@ -70,7 +70,7 @@ $(function(e) {
 		swal({
 			title: 'Lovely!',
 			text: 'your image is uploaded.',
-			imageUrl: 'assets/img/brand/Logo.png',
+			imageUrl: 'assets/img/brand/Logo-black.png',
 			animation: false
 		})
 	});

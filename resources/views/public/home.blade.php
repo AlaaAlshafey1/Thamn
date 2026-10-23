@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
     <meta name="description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo-black.png') }}">
     <meta property="og:title" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
     <meta property="og:description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
-    <meta property="og:image" content="{{ asset('assets/img/Logo.png') }}">
+    <meta property="og:image" content="{{ asset('assets/img/Logo-black.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -863,8 +863,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .banner-media {
@@ -914,7 +919,8 @@
             background: #111;
         }
 
-        .banner-prev, .banner-next {
+        .banner-prev,
+        .banner-next {
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -928,7 +934,8 @@
             justify-content: center;
         }
 
-        .banner-prev:hover, .banner-next:hover {
+        .banner-prev:hover,
+        .banner-next:hover {
             background: var(--gold);
             border-color: var(--gold);
             color: #fff;
@@ -964,7 +971,7 @@
                 <button class="banner-popup-close" id="banner-popup-close-btn" aria-label="Close modal">
                     <i class="fas fa-times"></i>
                 </button>
-                
+
                 <div class="banner-slider">
                     @foreach($banners as $index => $banner)
                         <div class="banner-slide {{ $index === 0 ? 'active' : '' }}" data-index="{{ $index }}">
@@ -977,7 +984,8 @@
                                 </div>
                             @else
                                 <div class="banner-media">
-                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'ثمن سلعتك المستعملة' }}" class="banner-img">
+                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'ثمن سلعتك المستعملة' }}"
+                                        class="banner-img">
                                 </div>
                             @endif
 
@@ -1007,7 +1015,7 @@
 
     <nav id="navbar">
         <a href="{{ route('home') }}" class="logo">
-            <img src="{{ asset('assets/img/Logo.png') }}" alt="Thamn Logo">
+            <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamn Logo">
             <span>ثمن</span>
         </a>
         <ul>
@@ -1072,9 +1080,10 @@
                 <div class="scanner-box">
                     <div class="scanner-line"></div>
                     @if($welcomeIntro && $welcomeIntro->image)
-                        <img src="{{ $welcomeIntro->image }}" alt="Scanning Asset" style="width: 80%; height: 80%; object-fit: contain; filter: none; opacity: 0.9;">
+                        <img src="{{ $welcomeIntro->image }}" alt="Scanning Asset"
+                            style="width: 80%; height: 80%; object-fit: contain; filter: none; opacity: 0.9;">
                     @else
-                        <img src="{{ asset('assets/img/Logo.png') }}" alt="Scanning Asset">
+                        <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Scanning Asset">
                     @endif
                 </div>
             </div>
@@ -1084,7 +1093,8 @@
     <!-- FEATURES -->
     <section id="features">
         <div class="section-header" data-aos="fade-up">
-            <span class="section-label">{{ $featureSteps && $featureSteps->getSubTitle($lang) ? $featureSteps->getSubTitle($lang) : 'لماذا ثمن؟' }}</span>
+            <span
+                class="section-label">{{ $featureSteps && $featureSteps->getSubTitle($lang) ? $featureSteps->getSubTitle($lang) : 'لماذا ثمن؟' }}</span>
             <h2 class="section-title">
                 @if($featureSteps && $featureSteps->getTitle($lang))
                     {{ $featureSteps->getTitle($lang) }}
@@ -1097,16 +1107,23 @@
             @if($featureSteps && !empty($featureSteps->getLocalizedItems($lang)))
                 @php
                     $defaultIcons = [
-                        'fas fa-microchip', 'fas fa-user-tie', 'fas fa-file-invoice-dollar',
-                        'fas fa-gem', 'fas fa-shield-alt', 'fas fa-chart-line',
-                        'fas fa-star', 'fas fa-check-circle', 'fas fa-award'
+                        'fas fa-microchip',
+                        'fas fa-user-tie',
+                        'fas fa-file-invoice-dollar',
+                        'fas fa-gem',
+                        'fas fa-shield-alt',
+                        'fas fa-chart-line',
+                        'fas fa-star',
+                        'fas fa-check-circle',
+                        'fas fa-award'
                     ];
                 @endphp
                 @foreach($featureSteps->getLocalizedItems($lang) as $index => $item)
                     <div class="feature-card" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
                         <div class="feat-icon">
                             @if(!empty($item['image']))
-                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}" style="width: 38px; height: 38px; object-fit: contain;">
+                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}"
+                                    style="width: 38px; height: 38px; object-fit: contain;">
                             @else
                                 <i class="{{ $defaultIcons[$index % count($defaultIcons)] }}"></i>
                             @endif
@@ -1153,7 +1170,8 @@
     <!-- HOW IT WORKS -->
     <section id="how-it-works">
         <div class="section-header" data-aos="fade-up">
-            <span class="section-label">{{ $workSteps && $workSteps->getSubTitle($lang) ? $workSteps->getSubTitle($lang) : 'آلية العمل' }}</span>
+            <span
+                class="section-label">{{ $workSteps && $workSteps->getSubTitle($lang) ? $workSteps->getSubTitle($lang) : 'آلية العمل' }}</span>
             <h2 class="section-title">
                 @if($workSteps && $workSteps->getTitle($lang))
                     {{ $workSteps->getTitle($lang) }}
@@ -1169,7 +1187,8 @@
                         <div class="step-num">{{ sprintf('%02d', $index + 1) }}</div>
                         @if(!empty($item['image']))
                             <div style="margin-bottom: 1rem;">
-                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}" style="height: 60px; object-fit: contain;">
+                                <img src="{{ $item['image'] }}" alt="{{ $item['label'] }}"
+                                    style="height: 60px; object-fit: contain;">
                             </div>
                         @endif
                         <h4>{{ $item['label'] ?? '' }}</h4>
@@ -1265,15 +1284,20 @@
             <div class="footer-links">
                 <h4>تواصل معنا</h4>
                 @if($contactInfo && $contactInfo->email)
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem;"><i class="fas fa-envelope" style="color: var(--gold); margin-left: 0.5rem;"></i> {{ $contactInfo->email }}</p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem;"><i
+                            class="fas fa-envelope" style="color: var(--gold); margin-left: 0.5rem;"></i>
+                        {{ $contactInfo->email }}</p>
                 @endif
                 @if($contactInfo && $contactInfo->phone)
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;"><i class="fas fa-phone-alt" style="color: var(--gold); margin-left: 0.5rem;"></i> <span style="direction: ltr; display: inline-block;">{{ $contactInfo->phone }}</span></p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;"><i
+                            class="fas fa-phone-alt" style="color: var(--gold); margin-left: 0.5rem;"></i> <span
+                            style="direction: ltr; display: inline-block;">{{ $contactInfo->phone }}</span></p>
                 @endif
                 <ul>
                     @if(!empty($socialMedia))
                         @foreach($socialMedia as $social)
-                            <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><i class="{{ $social['icon'] }}"></i> {{ $social['name'] }}</a></li>
+                            <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><i
+                                        class="{{ $social['icon'] }}"></i> {{ $social['name'] }}</a></li>
                         @endforeach
                     @else
                         <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>

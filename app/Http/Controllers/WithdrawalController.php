@@ -103,6 +103,8 @@ class WithdrawalController extends Controller
                 'name' => $user->first_name . ' ' . $user->last_name,
                 'amount' => $request->amount
             ]);
+            $adminLink = route('withdrawals.show', $withdrawal->id);
+            $adminMsg = $msg . \App\Services\WhatsAppService::formatActionLink('مراجعة طلب السحب', $adminLink, '💳');
 
             $adminEmail = 'thmmnapplic@gmail.com';
             // Send the beautiful formatted table email
@@ -110,7 +112,7 @@ class WithdrawalController extends Controller
 
             foreach ($admins as $admin) {
                 if ($admin->phone) {
-                    $whatsapp->sendMessage($admin->phone, $msg);
+                    $whatsapp->sendMessage($admin->phone, $adminMsg);
                 }
             }
 
