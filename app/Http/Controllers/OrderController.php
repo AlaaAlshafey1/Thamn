@@ -326,16 +326,33 @@ class OrderController extends Controller
             $successMsg = 'تم تقييم الأوردر بنجاح وبشرنا العميل بالنتيجة!';
         }
 
-        // ─── شكر الخبير على إنجاز التثمين ────────────────────────────
-        // WhatsApp
+        // ─── شكر الخبير على إنجاز التثمين وإرسال نسخة الفاتورة ────────────
+        $expertInvoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
+
+        // WhatsApp للخبير مع رابط الفاتورة
         try {
             if ($user->phone) {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 $thankMsg = \App\Services\WhatsAppService::getTemplate('expert_order_done', ['id' => $order->id]);
+                $thankMsg .= \App\Services\WhatsAppService::formatActionLink('اعرض نسخة الفاتورة والتقرير', $expertInvoiceLink, '📄');
                 $whatsapp->sendMessage($user->phone, $thankMsg);
             }
         } catch (\Throwable $e) {
             \Log::error('Expert Thank-You WhatsApp Failed: ' . $e->getMessage());
+        }
+
+        // إيميل للخبير مع نسخة من الفاتورة
+        if ($user->email) {
+            try {
+                Mail::to($user->email)->send(new \App\Mail\SystemNotificationMail(
+                    "نسخة من فاتورة وتقرير التثمين للطلب رقم {$order->id}",
+                    "كفو يا بطل .. أتممت تثمين الطلب رقم {$order->id} بنجاح وتم إبلاغ العميل بالنتيجة .. يمكنك الاطلاع على نسخة الفاتورة والتقرير من الرابط أدناه",
+                    $expertInvoiceLink,
+                    'عرض نسخة الفاتورة'
+                ));
+            } catch (\Throwable $e) {
+                \Log::error('Expert Valuation Email Failed: ' . $e->getMessage());
+            }
         }
 
         // FCM push للخبير
@@ -383,8 +400,36 @@ class OrderController extends Controller
                 $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
                 $whatsapp->sendMessage($order->user->phone, $msg);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Thamn Evaluation WhatsApp Failed: ' . $e->getMessage());
+        }
+
+        // Notify Expert with Invoice copy if assigned
+        if ($order->expert) {
+            $expertInvoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
+            if ($order->expert->phone) {
+                try {
+                    $whatsapp = app(\App\Services\WhatsAppService::class);
+                    $expertThank = \App\Services\WhatsAppService::getTemplate('expert_order_done', ['id' => $order->id]);
+                    $expertThank .= \App\Services\WhatsAppService::formatActionLink('اعرض نسخة الفاتورة والتقرير', $expertInvoiceLink, '📄');
+                    $whatsapp->sendMessage($order->expert->phone, $expertThank);
+                } catch (\Throwable $e) {
+                    \Log::error('Thamn Evaluation Expert WhatsApp Failed: ' . $e->getMessage());
+                }
+            }
+
+            if ($order->expert->email) {
+                try {
+                    Mail::to($order->expert->email)->send(new \App\Mail\SystemNotificationMail(
+                        "نسخة من فاتورة وتقرير التثمين المعتمد للطلب رقم {$order->id}",
+                        "تم اعتماد التثمين النهائي للطلب رقم {$order->id} بنجاح .. يمكنك الاطلاع على نسخة الفاتورة والتقرير المعتمد من الرابط أدناه",
+                        $expertInvoiceLink,
+                        'عرض نسخة الفاتورة'
+                    ));
+                } catch (\Throwable $e) {
+                    \Log::error('Thamn Evaluation Expert Email Failed: ' . $e->getMessage());
+                }
+            }
         }
 
         // FCM Notification to Customer

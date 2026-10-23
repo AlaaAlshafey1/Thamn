@@ -21,6 +21,12 @@ return [
     'watermark_text_alpha'     => 0.1,
     'custom_font_dir'          => base_path('resources/fonts/'),
     'custom_font_data'         => [
+        'ibmplexsansarabic' => [
+            'R'  => 'IBMPlexSansArabic-Regular.ttf',
+            'B'  => 'IBMPlexSansArabic-Bold.ttf',
+            'useOTL' => 0xFF,
+            'useKashida' => 75,
+        ],
         'tajawal' => [
             'R'  => 'Tajawal-Regular.ttf',
             'B'  => 'Tajawal-Bold.ttf',

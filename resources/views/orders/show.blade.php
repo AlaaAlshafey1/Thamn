@@ -955,6 +955,17 @@
                                 </div>
                             </div>
 
+                            <!-- Action Button: View & Download Invoice PDF -->
+                            <div class="text-center my-4">
+                                <a href="{{ \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]) }}"
+                                   target="_blank"
+                                   class="btn btn-lg px-4 py-3"
+                                   style="background: linear-gradient(135deg, #162221 0%, #1c2e2c 100%); color: #C1953E; font-weight: 800; border: 1.5px solid #C1953E; border-radius: 14px; box-shadow: 0 4px 15px rgba(193, 149, 62, 0.25); display: inline-flex; align-items: center; gap: 10px; text-decoration: none;">
+                                    <i class="bx bxs-file-pdf" style="font-size: 1.5rem; color: #C1953E;"></i>
+                                    <span>عرض وتحميل نسخة فاتورة التثمين المعتمدة (PDF)</span>
+                                </a>
+                            </div>
+
                             @if($order->evaluation_type === 'ai' && $order->ai_valuation_rating_id)
                                 <!-- AI Rating Result Cards -->
                                 <div class="expert-opinions-container">
