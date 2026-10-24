@@ -147,64 +147,131 @@
             letter-spacing: 0.5px;
         }
 
-        /* Moyasar Form Overrides */
-        /* لا نعكس الاتجاه للفورم لأن ذلك يسبب تداخل الأزرار */
+        /* Moyasar Form Overrides & Method Buttons Isolation */
         .moyasar-form {
             direction: ltr;
             unicode-bidi: isolate;
+            -webkit-tap-highlight-color: transparent !important;
         }
 
-        /* عزل أزرار طرق الدفع - كل واحد في سطر مستقل */
-        .mysr-form-cb-wrapper {
+        /* حاوية أزرار الدفع السريع (Apple Pay و STC Pay) */
+        #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons,
+        div.mysr-form-methodButtons {
             display: flex !important;
             flex-direction: column !important;
-            flex-wrap: nowrap !important;
-            gap: 10px !important;
-            margin-bottom: 16px !important;
+            gap: 16px !important;
+            margin-bottom: 24px !important;
+            padding: 2px !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
 
-        .mysr-form-cb-wrapper label {
+        /* عنوان واضح ومميز يوجه المستخدم للاختيار */
+        #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons::before {
+            content: "اختر وسيلة الدفع السريع:";
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: #475569;
+            margin-bottom: 4px;
+            text-align: right;
+            direction: rtl;
+        }
+
+        /* كل زر في حاوية منعزلة ومتباعدة تماماً لمنع التداخل والضغط المزدوج */
+        #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons .mysr-form-methodButton,
+        div.mysr-form-methodButtons .mysr-form-methodButton {
+            margin-bottom: 16px !important;
+            -webkit-margin-after: 16px !important;
+            margin-block-end: 16px !important;
             width: 100% !important;
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            padding: 14px !important;
-            border-radius: 12px !important;
-            border: 2px solid var(--border) !important;
-            cursor: pointer !important;
-            transition: border-color 0.2s ease !important;
-            /* كل label له stacking context مستقل تماماً */
+            position: relative !important;
             isolation: isolate !important;
             contain: layout !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
 
-        .mysr-form-cb-wrapper label:hover {
-            border-color: #475569 !important;
+        #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons .mysr-form-methodButton:last-of-type,
+        div.mysr-form-methodButtons .mysr-form-methodButton:last-of-type {
+            margin-bottom: 0 !important;
+            -webkit-margin-after: 0 !important;
+            margin-block-end: 0 !important;
         }
 
-        /*
-         * apple-pay-button هو web component خاص من Apple
-         * يجب أن يكون له حاوية واضحة ولا يتداخل مع عناصر أخرى
-         */
-        apple-pay-button {
+        /* 1. زر Apple Pay - حواف واضحة وظل وتأثير اختيار مميز */
+        apple-pay-button,
+        .mysr-form-applePayButton,
+        #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-applePayButton {
             display: block !important;
             width: 100% !important;
-            min-height: 48px !important;
-            margin-top: 10px !important;
-            /* عزل تام عن العناصر الأخرى */
+            height: 52px !important;
+            min-height: 52px !important;
+            border-radius: 14px !important;
+            border: 2.5px solid #000000 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+            cursor: pointer !important;
             position: relative !important;
             z-index: 10 !important;
             isolation: isolate !important;
             -webkit-tap-highlight-color: transparent !important;
+            transition: all 0.2s ease !important;
         }
 
-        /* حاوية Apple Pay في Moyasar */
-        .mysr-applepay-button-wrapper,
-        [class*="applepay"],
-        [class*="apple-pay"] {
+        apple-pay-button:hover,
+        .mysr-form-applePayButton:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22) !important;
+        }
+
+        apple-pay-button:active,
+        .mysr-form-applePayButton:active,
+        .mysr-form-applePayButton.selected-payment,
+        apple-pay-button.selected-payment {
+            transform: scale(0.98) !important;
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3) !important;
+            border-color: #000 !important;
+        }
+
+        /* 2. زر STC Pay - لون بنفسجي وحواف بارزة وظل مستقل */
+        .mysr-form-stcPayButton,
+        #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton,
+        button.mysr-form-stcPayButton {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 52px !important;
+            min-height: 52px !important;
+            border-radius: 14px !important;
+            background-color: #5f1896 !important;
+            border: 2.5px solid #4a1077 !important;
+            box-shadow: 0 4px 14px rgba(95, 24, 150, 0.25) !important;
+            cursor: pointer !important;
             position: relative !important;
             z-index: 10 !important;
             isolation: isolate !important;
+            -webkit-tap-highlight-color: transparent !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .mysr-form-stcPayButton:hover,
+        #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton:hover {
+            transform: translateY(-2px) !important;
+            background-color: #50137f !important;
+            box-shadow: 0 6px 20px rgba(95, 24, 150, 0.4) !important;
+        }
+
+        .mysr-form-stcPayButton:active,
+        #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton:active,
+        .mysr-form-stcPayButton.selected-payment {
+            transform: scale(0.98) !important;
+            box-shadow: 0 0 0 4px rgba(95, 24, 150, 0.4) !important;
+            border-color: #4a1077 !important;
+        }
+
+        /* منع التظليل العشوائي في متصفحات الجوال */
+        #mysr-form-form-el *,
+        .moyasar-form * {
+            -webkit-tap-highlight-color: transparent !important;
         }
 
         /* Trust Badges */
@@ -385,10 +452,32 @@
         // الـ event من الوصول للعناصر اللي وراه.
         // ============================================================
         (function fixApplePayClickThrough() {
-            if (window.location.protocol !== 'https:') return;
-
             var formEl = document.querySelector('.moyasar-form');
             if (!formEl) return;
+
+            // تمييز بصري فوري للزر المختار عند الضغط لمنع اللبس
+            document.addEventListener('click', function (e) {
+                var appleBtn = e.target.closest('apple-pay-button, .mysr-form-applePayButton');
+                var stcBtn = e.target.closest('.mysr-form-stcPayButton');
+                var cardFields = e.target.closest('.mysr-form-cardInfo, .mysr-form-inputGroup');
+
+                if (appleBtn) {
+                    appleBtn.classList.add('selected-payment');
+                    var stc = formEl.querySelector('.mysr-form-stcPayButton');
+                    if (stc) stc.classList.remove('selected-payment');
+                } else if (stcBtn) {
+                    stcBtn.classList.add('selected-payment');
+                    var apple = formEl.querySelector('apple-pay-button, .mysr-form-applePayButton');
+                    if (apple) apple.classList.remove('selected-payment');
+                } else if (cardFields) {
+                    var stc = formEl.querySelector('.mysr-form-stcPayButton');
+                    var apple = formEl.querySelector('apple-pay-button, .mysr-form-applePayButton');
+                    if (stc) stc.classList.remove('selected-payment');
+                    if (apple) apple.classList.remove('selected-payment');
+                }
+            }, true);
+
+            if (window.location.protocol !== 'https:') return;
 
             var observer = new MutationObserver(function () {
                 var applePayBtn = formEl.querySelector('apple-pay-button');
@@ -397,33 +486,15 @@
                 applePayBtn._fixedClickThrough = true;
 
                 // منع الـ click من الوصول للعناصر الأخرى (stopPropagation)
-                // لكن نسمح بـ Apple Pay نفسه يكمل عمله (لا نعمل preventDefault)
                 applePayBtn.addEventListener('click', function (e) {
                     e.stopImmediatePropagation();
-                }, true); // capture phase - يمسك الـ event قبل أي listener تاني
+                }, true);
 
                 // تأكد إن الـ radio button بتاع Apple Pay محدد
                 var applePayRadio = formEl.querySelector('input[value="applepay"]');
                 if (applePayRadio && !applePayRadio.checked) {
                     applePayRadio.checked = true;
                     applePayRadio.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-
-                // منع أي radio button تاني يتحدد لما apple-pay-button موجود ومرئي
-                var applePayWrapper = applePayBtn.closest('[class*="applepay"], [class*="apple"]');
-                if (applePayWrapper) {
-                    var otherRadios = formEl.querySelectorAll('input[type="radio"]:not([value="applepay"])');
-                    otherRadios.forEach(function (radio) {
-                        radio.addEventListener('click', function (e) {
-                            // إذا apple-pay-button مرئي والـ click جاي من داخله، امنعه
-                            var applePayVisible = applePayBtn.offsetParent !== null;
-                            var clickedInsideApplePay = applePayBtn.contains(e.target);
-                            if (applePayVisible && clickedInsideApplePay) {
-                                e.preventDefault();
-                                e.stopImmediatePropagation();
-                            }
-                        }, true);
-                    });
                 }
             });
 

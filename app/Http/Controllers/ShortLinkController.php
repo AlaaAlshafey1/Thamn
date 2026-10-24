@@ -21,13 +21,13 @@ class ShortLinkController extends Controller
         $ua = strtolower((string) $request->userAgent());
         foreach (['whatsapp', 'facebookexternalhit', 'twitterbot', 'telegrambot', 'slackbot', 'linkedinbot'] as $bot) {
             if (str_contains($ua, $bot)) {
-                $title = e($link->title ?: 'ثمن');
-                $image = e(url('assets/emails/logo_white.png'));
+                $title = e($link->title ?: 'منصة ثمن - اعتماد التثمين');
+                $image = e('https://thmmn.net/assets/emails/logo_white.png');
                 return response(
                     '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">'
                     . "<title>{$title}</title>"
                     . "<meta property=\"og:title\" content=\"{$title}\">"
-                    . '<meta property="og:description" content="ثمن – فرص رقمية">'
+                    . '<meta property="og:description" content="اضغط هنا لفتح الرابط في المتصفح">'
                     . "<meta property=\"og:image\" content=\"{$image}\">"
                     . '<meta property="og:type" content="website">'
                     . '</head><body></body></html>',

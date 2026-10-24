@@ -39,7 +39,12 @@ class ShortLink extends Model
                 'expires_at' => $expiresAt,
             ]);
 
-            return route('short.link', ['code' => $code]);
+            $baseUrl = config('app.url');
+            if (empty($baseUrl) || str_contains($baseUrl, 'localhost') || str_contains($baseUrl, '127.0.0.1')) {
+                $baseUrl = 'https://thmmn.net';
+            }
+
+            return rtrim($baseUrl, '/') . '/l/' . $code;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('ShortLink creation failed: ' . $e->getMessage());
             return $url;
