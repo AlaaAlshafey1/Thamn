@@ -258,12 +258,18 @@ PROMPT;
             );
         }
 
-        // ── إرسال الطلب لجميع الخبراء لطلب المصادقة (إذا كان الطلب ai ولم يحدد له خبير بعد) ──
+        // ── إرسال الطلب لخبراء نفس القسم فقط لطلب المصادقة (إذا كان الطلب ai ولم يحدد له خبير بعد) ──
         if ($order->evaluation_type === 'ai' && !$order->expert_id) {
             $whatsapp = app(\App\Services\WhatsAppService::class);
-            $experts = \App\Models\User::role('expert')->get();
+            $expertsQuery = \App\Models\User::role('expert');
+            if ($order->category_id) {
+                $expertsQuery->where('category_id', $order->category_id);
+            }
+            $experts = $expertsQuery->get();
             
-            $msg = "ياهلا خبير التثمين\nوصلك طلب تثمين ذكي رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر وفق رؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
+            $categoryName = $order->category->name_ar ?? $order->category->name_en ?? '';
+            $categoryText = $categoryName ? " بقسم [{$categoryName}]" : "";
+            $msg = "ياهلا خبير التثمين\nوصلك طلب تثمين ذكي{$categoryText} رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر وفق رؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
 
             foreach ($experts as $expert) {
                 // رابط دخول تلقائي آمن للخبير للداشبورد مباشرة
@@ -440,8 +446,16 @@ PROMPT;
 
         $whatsapp = app(\App\Services\WhatsAppService::class);
 
-        // Notify ALL Experts via Email, WhatsApp, and DB Notification
-        $experts = \App\Models\User::role('expert')->get();
+        // Notify Experts of the same category via Email, WhatsApp, and DB Notification
+        $expertsQuery = \App\Models\User::role('expert');
+        if ($order->category_id) {
+            $expertsQuery->where('category_id', $order->category_id);
+        }
+        $experts = $expertsQuery->get();
+
+        $categoryName = $order->category->name_ar ?? $order->category->name_en ?? '';
+        $categoryText = $categoryName ? " بقسم [{$categoryName}]" : "";
+
         foreach ($experts as $expert) {
             $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
                 'expert.auto-login',
@@ -451,7 +465,7 @@ PROMPT;
 
             // Send WhatsApp
             if ($expert->phone) {
-                $expertMsg = "هلا بك خبير ثمن .. وصل طلب تثمين احترافي جديد رقم {$order->id} وهو متاح الآن في منصة الخبراء .. نرجو منك الدخول وتقييم الطلب في أسرع وقت";
+                $expertMsg = "هلا بك خبير ثمن .. وصل طلب تثمين احترافي جديد{$categoryText} رقم {$order->id} وهو متاح الآن في منصة الخبراء .. نرجو منك الدخول وتقييم الطلب في أسرع وقت";
                 $expertMsg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
                 $whatsapp->sendMessage($expert->phone, $expertMsg);
             }

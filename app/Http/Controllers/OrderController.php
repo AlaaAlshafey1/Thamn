@@ -84,6 +84,12 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if (auth()->user()->hasRole('expert')) {
+            // منع الخبير من فتح أو تقييم طلب تابع لقسم آخر
+            if (auth()->user()->category_id && $order->category_id && auth()->user()->category_id != $order->category_id) {
+                return redirect()->route('orders.index')
+                    ->with('error', 'هذا الطلب يتبع لقسم آخر غير تخصصك كخبير.');
+            }
+
             // نحدد من يُسمح له بالدخول:
             $isAssignedExpert = $order->expert_id === auth()->id();
             $isOpenAiOrder = $order->expert_id === null

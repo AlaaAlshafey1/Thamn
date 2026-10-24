@@ -517,7 +517,11 @@ class PaymentController extends Controller
             'expert_evaluated' => 0,
         ]);
 
-        $experts = \App\Models\User::role('expert')->get();
+        $expertsQuery = \App\Models\User::role('expert');
+        if ($order->category_id) {
+            $expertsQuery->where('category_id', $order->category_id);
+        }
+        $experts = $expertsQuery->get();
         foreach ($experts as $expert) {
             $expert->notify(new OrderReadyForExpertsNotification($order));
 

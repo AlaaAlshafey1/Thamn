@@ -1370,7 +1370,11 @@ class OrderController extends Controller
             'expert_evaluated' => 0, // لم يتم تقييمه بعد
         ]);
 
-        $expert = \App\Models\User::role('expert')->first();
+        $expertQuery = \App\Models\User::role('expert');
+        if ($order->category_id) {
+            $expertQuery->where('category_id', $order->category_id);
+        }
+        $expert = $expertQuery->first();
         if ($expert) {
             $order->update([
                 'expert_id' => $expert->id,
