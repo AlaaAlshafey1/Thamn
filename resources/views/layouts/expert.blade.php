@@ -757,7 +757,7 @@
                 class="menu-item {{ request()->routeIs('withdrawals.my') ? 'active' : '' }}">
                 <div class="menu-item-content">
                     <i class='bx bx-wallet'></i>
-                    <span>سحوباتي</span>
+                    <span>محفظتى</span>
                 </div>
             </a>
 
