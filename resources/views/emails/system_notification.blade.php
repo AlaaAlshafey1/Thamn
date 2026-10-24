@@ -38,9 +38,9 @@
           $foundEvalType = $kw;
           $titleTop = trim(mb_substr($cleanTitle, 0, $pos));
           $titleBottom = trim(mb_substr($cleanTitle, $pos + mb_strlen($kw)));
-          // إزالة أي فواصل أو نقط عالقة
-          $titleTop = trim($titleTop, " \t\n\r\0\x0B:-،,.");
-          $titleBottom = trim($titleBottom, " \t\n\r\0\x0B:-،,.");
+          // إزالة أي فواصل أو علامات عالقة بشكل آمن مع UTF-8 لمنع تشويه الحروف العربية
+          $titleTop = preg_replace('/^[\s:\-،,.]+|[\s:\-،,.]+$/u', '', $titleTop);
+          $titleBottom = preg_replace('/^[\s:\-،,.]+|[\s:\-،,.]+$/u', '', $titleBottom);
           break;
       }
   }

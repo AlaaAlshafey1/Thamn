@@ -7,14 +7,14 @@
   
   if ($evalType === 'ai') {
       $packageTitle = 'باقة التثمين الذكي';
-      $instructionText = 'يرجى إبداء رأيك كخبير في السعر الاسترشادي وفق النتيجة المسبقة للتثمين الذكي وذلك بالاختيار من التالي:';
+      $instructionText = 'يرجى إبداء رأيك كخبير في السعر الاسترشادي وفق النتيجة المسبقة للتثمين الذكي وذلك بالاختيار من التالي';
   } elseif ($evalType === 'thamn' || $evalType === 'best') {
       $packageTitle = 'باقة التثمين الاحترافي';
-      $instructionText = 'يرجى إدخال السعر التقديري وفق التقرير المرفق ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي:';
+      $instructionText = 'يرجى إدخال السعر التقديري وفق التقرير المرفق ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي';
   } else {
       // Default to Expert / Arbitrator
       $packageTitle = 'باقة التثمين المحكم';
-      $instructionText = 'يرجى إدخال السعر التقديري المعتمد ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي:';
+      $instructionText = 'يرجى إدخال السعر التقديري المعتمد ثم إبداء رأيك كخبير في نتيجة التثمين وذلك بالاختيار من التالي';
   }
 
   $emailTitle = $isRtl ? 'مطلوب المصادقة على طلب تثمين' : 'Valuation Authentication Required';
@@ -41,12 +41,12 @@
 
   <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.85;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     @if($isRtl)
-      <strong>للأهمية</strong> رقم الطلب <strong style="color:#C1953E;">( {{ $order->id ?? '' }} )</strong><br><br>
+      <strong>للأهمية</strong> رقم الطلب <strong style="color:#C1953E;">{{ $order->id ?? '' }}</strong><br><br>
       وصلك طلب تقييم استرشادي لسلعة<br>
       هناك عميل بانتظارك<br><br>
       {{ $instructionText }}
     @else
-      <strong>Urgent:</strong> Order <strong style="color:#C1953E;">( {{ $order->id ?? '' }} )</strong><br><br>
+      <strong>Urgent:</strong> Order <strong style="color:#C1953E;">{{ $order->id ?? '' }}</strong><br><br>
       You have received a new valuation request<br>
       A client is waiting for you<br><br>
       {{ $instructionText }}
