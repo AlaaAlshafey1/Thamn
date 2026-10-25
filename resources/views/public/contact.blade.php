@@ -238,15 +238,17 @@
                         <i class="fas fa-share-nodes"></i>
                     </div>
                     <h4>{{ lang('تابعنا', 'Follow Us', request()) }}</h4>
-                    <div class="social-links">
-                        @forelse($socialMedia as $social)
-                            <a href="{{ $social['url'] }}" title="{{ $social['name'] }}" target="_blank">
-                                <i class="{{ $social['icon'] }}"></i>
-                            </a>
-                        @empty
-                            <!-- This case is handled by controller providing defaults -->
-                        @endforelse
-                    </div>
+                    @if(!empty($socialMedia) && count($socialMedia) > 0)
+                        <div class="social-links">
+                            @foreach($socialMedia as $social)
+                                @if(!empty($social['url']) && trim($social['url']) !== '#' && trim($social['url']) !== '')
+                                    <a href="{{ $social['url'] }}" title="{{ $social['name'] ?? '' }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="{{ $social['icon'] ?? 'fas fa-link' }}"></i>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

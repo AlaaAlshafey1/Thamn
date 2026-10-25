@@ -17,8 +17,65 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
+        /* Reliable animations - Content is ALWAYS visible by default so page is NEVER blank */
+        [data-aos] {
+            opacity: 1;
+            transform: none;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Hero Entrance Keyframes - Appears instantly and smoothly on first render */
+        .hero-text {
+            animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .hero-visual {
+            animation: heroZoomIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        @keyframes heroFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Smooth scroll reveal for sections below the fold when JS is active */
+        .js-scroll-ready [data-aos]:not(#hero [data-aos]) {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        .js-scroll-ready [data-aos="zoom-in"]:not(#hero [data-aos]),
+        .js-scroll-ready [data-aos="zoom-out"] {
+            transform: scale(0.94);
+        }
+
+        .js-scroll-ready [data-aos="fade-right"] {
+            transform: translateX(25px);
+        }
+
+        .js-scroll-ready [data-aos].aos-animate {
+            opacity: 1 !important;
+            transform: translate(0) scale(1) !important;
+        }
+
         *,
         *::before,
         *::after {
@@ -1297,15 +1354,16 @@
                             style="direction: ltr; display: inline-block;">{{ $contactInfo->phone }}</span></p>
                 @endif
                 <ul>
-                    @if(!empty($socialMedia))
+                    @if(!empty($socialMedia) && count($socialMedia) > 0)
                         @foreach($socialMedia as $social)
-                            <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><i
-                                        class="{{ $social['icon'] }}"></i> {{ $social['name'] }}</a></li>
+                            @if(!empty($social['url']) && trim($social['url']) !== '#' && trim($social['url']) !== '')
+                                <li>
+                                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="{{ $social['icon'] ?? 'fas fa-link' }}"></i> {{ $social['name'] ?? '' }}
+                                    </a>
+                                </li>
+                            @endif
                         @endforeach
-                    <!-- @else
-                        <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>
-                        <li><a href="#"><i class="fab fa-instagram"></i> انستجرام</a></li>
-                        <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li> -->
                     @endif
                 </ul>
             </div>
@@ -1315,50 +1373,85 @@
         </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-        /* Init Animations */
-        AOS.init({ duration: 800, once: true });
+        /* Smooth Scroll & Animations */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enable scroll animations
+            document.body.classList.add('js-scroll-ready');
 
-        /* Navbar Scroll */
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
-        });
-
-        /* Counter Animation */
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counters = entry.target.querySelectorAll('h3');
-                    counters.forEach(c => {
-                        const target = +c.getAttribute('data-count');
-                        let count = 0;
-                        const speed = target / 50;
-                        const update = () => {
-                            count += speed;
-                            if (count < target) {
-                                c.innerText = Math.floor(count);
-                                requestAnimationFrame(update);
-                            } else { c.innerText = target; }
+            // Native IntersectionObserver for scroll animations
+            if ('IntersectionObserver' in window) {
+                const aosObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('aos-animate');
+                            aosObserver.unobserve(entry.target);
                         }
-                        update();
                     });
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
-        observer.observe(document.querySelector('.hero-stats'));
+                }, {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -40px 0px'
+                });
 
-        /* FAQ Toggle */
-        document.querySelectorAll('.faq-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                item.classList.toggle('active');
-                const icon = header.querySelector('i');
-                icon.classList.toggle('fa-plus');
-                icon.classList.toggle('fa-minus');
+                document.querySelectorAll('[data-aos]').forEach(el => {
+                    if (!el.closest('#hero')) {
+                        aosObserver.observe(el);
+                    }
+                });
+
+                /* Counter Animation */
+                const statsEl = document.querySelector('.hero-stats');
+                if (statsEl) {
+                    const statsObserver = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const counters = entry.target.querySelectorAll('h3');
+                                counters.forEach(c => {
+                                    const target = +c.getAttribute('data-count');
+                                    let count = 0;
+                                    const speed = Math.max(1, target / 50);
+                                    const update = () => {
+                                        count += speed;
+                                        if (count < target) {
+                                            c.innerText = Math.floor(count);
+                                            requestAnimationFrame(update);
+                                        } else { c.innerText = target; }
+                                    };
+                                    update();
+                                });
+                                statsObserver.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.3 });
+                    statsObserver.observe(statsEl);
+                }
+            } else {
+                // Fallback for older browsers: show all immediately
+                document.querySelectorAll('[data-aos]').forEach(el => el.classList.add('aos-animate'));
+            }
+
+            /* Navbar Scroll */
+            const nav = document.getElementById('navbar');
+            if (nav) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) nav.classList.add('scrolled');
+                    else nav.classList.remove('scrolled');
+                });
+            }
+
+            /* FAQ Toggle */
+            document.querySelectorAll('.faq-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const item = header.parentElement;
+                    if (item) {
+                        item.classList.toggle('active');
+                        const icon = header.querySelector('i');
+                        if (icon) {
+                            icon.classList.toggle('fa-plus');
+                            icon.classList.toggle('fa-minus');
+                        }
+                    }
+                });
             });
         });
 

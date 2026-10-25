@@ -46,35 +46,7 @@ class PublicPageController extends Controller
 
         // 5. Contact Info & Social Media
         $contactInfo = Contact::first();
-        $socialMedia = [];
-        if ($contactInfo && $contactInfo->social_media) {
-            $socials = is_string($contactInfo->social_media)
-                ? json_decode($contactInfo->social_media, true)
-                : $contactInfo->social_media;
-
-            if (is_array($socials) && count($socials) > 0) {
-                $socialMedia = collect($socials)->filter(function ($item) {
-                    return !empty($item['url']) || !empty($item['name']);
-                })->map(function ($item) {
-                    $name = $item['name'] ?? '';
-                    $icon = $item['icon'] ?? '';
-                    if (empty($icon) && !empty($name)) {
-                        $icon = $this->getDefaultIcon($name);
-                    }
-                    if (empty($icon)) {
-                        $icon = 'fas fa-link';
-                    }
-                    return [
-                        'name' => $name,
-                        'icon' => $icon,
-                        'url' => $item['url'] ?? '#'
-                    ];
-                });
-            }
-        }
-        if (empty($socialMedia)) {
-            $socialMedia = $this->getDefaultSocialMedia();
-        }
+        $socialMedia = $this->getFilteredSocialMedia($contactInfo);
 
         // 6. Statistics
         $expertsCount = max(User::role('expert')->count(), 45);
@@ -124,40 +96,7 @@ class PublicPageController extends Controller
         $contactInfo = Contact::first();
         $title = $lang === 'ar' ? 'اتصل بنا' : 'Contact Us';
 
-        // Process social media like the API method
-        $socialMedia = [];
-        if ($contactInfo && $contactInfo->social_media) {
-            $socials = is_string($contactInfo->social_media)
-                ? json_decode($contactInfo->social_media, true)
-                : $contactInfo->social_media;
-
-            if (is_array($socials) && count($socials) > 0) {
-                $socialMedia = collect($socials)->filter(function ($item) {
-                    return !empty($item['url']) || !empty($item['name']);
-                })->map(function ($item) {
-                    $name = $item['name'] ?? '';
-                    $icon = $item['icon'] ?? '';
-
-                    if (empty($icon) && !empty($name)) {
-                        $icon = $this->getDefaultIcon($name);
-                    }
-
-                    if (empty($icon)) {
-                        $icon = 'fas fa-link';
-                    }
-
-                    return [
-                        'name' => $name,
-                        'icon' => $icon,
-                        'url' => $item['url'] ?? '#'
-                    ];
-                });
-            }
-        }
-
-        if (empty($socialMedia)) {
-            $socialMedia = $this->getDefaultSocialMedia();
-        }
+        $socialMedia = $this->getFilteredSocialMedia($contactInfo);
 
         return view('public.contact', compact('contactInfo', 'title', 'socialMedia'));
     }
@@ -182,13 +121,41 @@ class PublicPageController extends Controller
         return 'fas fa-link';
     }
 
-    private function getDefaultSocialMedia()
+    private function getFilteredSocialMedia($contactInfo)
     {
-        return [
-            ['name' => 'X', 'icon' => 'fab fa-x-twitter', 'url' => '#'],
-            ['name' => 'Instagram', 'icon' => 'fab fa-instagram', 'url' => '#'],
-            ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin-in', 'url' => '#'],
-        ];
+        if (!$contactInfo || !$contactInfo->social_media) {
+            return collect();
+        }
+
+        $socials = is_string($contactInfo->social_media)
+            ? json_decode($contactInfo->social_media, true)
+            : $contactInfo->social_media;
+
+        if (!is_array($socials) || empty($socials)) {
+            return collect();
+        }
+
+        return collect($socials)->filter(function ($item) {
+            $url = trim($item['url'] ?? '');
+            return !empty($url) && $url !== '#';
+        })->map(function ($item) {
+            $name = trim($item['name'] ?? '');
+            $icon = trim($item['icon'] ?? '');
+
+            if (empty($icon) && !empty($name)) {
+                $icon = $this->getDefaultIcon($name);
+            }
+
+            if (empty($icon)) {
+                $icon = 'fas fa-link';
+            }
+
+            return [
+                'name' => $name ?: 'رابط',
+                'icon' => $icon,
+                'url' => trim($item['url'])
+            ];
+        })->values();
     }
 
     public function submitContact(Request $request)
