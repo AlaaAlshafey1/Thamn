@@ -132,7 +132,7 @@
             ويمثلها في توقيع هذه الاتفاقية: المشرف العام ويشار إليها لاحقًا بـ «المنصة» أو «الطرف الأول» .</p>
 
         <div class="party-title">الطرف الثاني:</div>
-        <p>الخبير: <strong>{{ $declaration->full_name }}</strong> ، رقم الهوية (إن وجد):
+        <p>الخبير: <strong>{{ $declaration->full_name }}</strong> ، الجنسية: {{ $declaration->nationality ?? ($user->nationality ?? 'سعودي') }} ، رقم الهوية (إن وجد):
             {{ $declaration->national_id !== 'من التسجيل' ? $declaration->national_id : '___________' }} ، رقم الجوال:
             {{ $declaration->phone }} ، البريد الإلكتروني: {{ $declaration->email }}</p>
         <p>ويشار إليه لاحقًا بـ «الخبير» أو «الطرف الثاني ».</p>

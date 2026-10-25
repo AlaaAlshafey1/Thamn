@@ -515,6 +515,7 @@
             color: white;
             position: relative;
             overflow: hidden;
+            scroll-margin-top: 100px;
         }
 
         .app-section h2 {
@@ -1055,7 +1056,7 @@
                     @endif
                 </p>
                 <div class="btn-group">
-                    <a href="#how-it-works" class="btn-primary">ابدأ التقييم الآن</a>
+                    <a href="#download-app" class="btn-primary">ابدأ التقييم الآن</a>
                     <a href="#how-it-works" class="btn-secondary">
                         <i class="fas fa-play-circle"></i>
                         شاهد كيف يعمل
@@ -1254,14 +1255,16 @@
     </section>
 
     <!-- APP SECTION -->
-    <div class="app-section" data-aos="zoom-out">
+    <div class="app-section" id="download-app" data-aos="zoom-out">
         <h2>ابدأ رحلتك مع ثمن</h2>
         <p>انضم إلى آلاف المستخدمين الذين يثقون بنا لمعرفة قيمة أصولهم. حمل التطبيق الآن واستمتع بالدقة.</p>
         <div class="app-btns">
-            <a href="#"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-                    alt="App Store"></a>
-            <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                    alt="Play Store"></a>
+            <a href="https://apps.apple.com/eg/app/thmmn-%D8%AB%D9%85%D9%86/id6758052199" target="_blank" rel="noopener noreferrer">
+                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on App Store">
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.thamin.thamin" target="_blank" rel="noopener noreferrer">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play">
+            </a>
         </div>
     </div>
 
@@ -1299,10 +1302,10 @@
                             <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><i
                                         class="{{ $social['icon'] }}"></i> {{ $social['name'] }}</a></li>
                         @endforeach
-                    @else
+                    <!-- @else
                         <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>
                         <li><a href="#"><i class="fab fa-instagram"></i> انستجرام</a></li>
-                        <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li>
+                        <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li> -->
                     @endif
                 </ul>
             </div>

@@ -15,12 +15,13 @@ class SetLocaleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $request->header('Accept-Language', '');
-        $lang = 'en'; // default
+        $lang = 'ar'; // default
         
         if ($request->has('lang') && in_array($request->lang, ['ar', 'en'])) {
             $lang = $request->lang;
-        } elseif (strpos(strtolower($locale), 'ar') !== false) {
+        } elseif ($request->hasSession() && $request->session()->has('locale') && in_array($request->session()->get('locale'), ['ar', 'en'])) {
+            $lang = $request->session()->get('locale');
+        } elseif ($request->header('Accept-Language') && strpos(strtolower($request->header('Accept-Language')), 'ar') !== false) {
             $lang = 'ar';
         }
         

@@ -61,6 +61,7 @@ class ExpertRegistrationController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20',
+            'nationality' => 'required|string|max:100',
             'bank_name' => 'nullable|string|max:255',
             'iban' => 'nullable|string|max:34',
             'experience' => 'nullable|string',
@@ -76,6 +77,7 @@ class ExpertRegistrationController extends Controller
             'email.email' => 'يرجى إدخال بريد إلكتروني صحيح',
             'email.unique' => 'البريد الإلكتروني مُسجل مسبقاً',
             'phone.required' => 'رقم الجوال مطلوب',
+            'nationality.required' => 'يرجى اختيار الجنسية',
         ]);
 
         if ($validator->fails()) {
@@ -142,6 +144,7 @@ class ExpertRegistrationController extends Controller
                     'national_id' => 'من التسجيل',
                     'phone' => $user->phone,
                     'email' => $user->email,
+                    'nationality' => $user->nationality,
                     'expertise' => $user->expertise,
                     'signature' => null,
                     'signed_at' => now(),

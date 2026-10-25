@@ -22,8 +22,9 @@ class Banner extends Model
     /**
      * Get localized title
      */
-    public function getTitle($lang = 'en')
+    public function getTitle($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->title_ar : $this->title_en;
+        $val = $lang === 'ar' ? $this->title_ar : $this->title_en;
+        return !empty($val) ? $val : $this->title_ar;
     }
 }

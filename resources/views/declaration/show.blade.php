@@ -673,6 +673,7 @@
                             <div class="field-cell">
                                 <span class="field-lbl">الجنسية /</span>
                                 <input type="text" name="nationality" id="nationality" class="field-inp"
+                                    value="{{ old('nationality', $declaration->nationality ?? ($user->nationality ?? 'سعودي')) }}"
                                     placeholder="سعودي">
                             </div>
                             <div class="field-cell">

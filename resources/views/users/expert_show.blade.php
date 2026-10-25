@@ -389,6 +389,7 @@
             <div class="invoice-info">
                 <div>
                     <p><strong>اسم الخبير:</strong> {{ $user->first_name }} {{ $user->last_name }}</p>
+                    <p><strong>الجنسية:</strong> {{ $user->nationality ?? ($declaration->nationality ?? '-') }}</p>
                     <p><strong>البريد:</strong> {{ $user->email }}</p>
                     <p><strong>الهاتف:</strong> {{ $user->phone ?? '-' }}</p>
                 </div>

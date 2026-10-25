@@ -20,6 +20,7 @@ class UserRequest extends FormRequest
             'last_name' => 'required|string|max:50',
             'email' => 'required|email|unique:users,email,' . $userId,
             'phone' => 'nullable|string|max:20',
+            'nationality' => 'nullable|string|max:100',
             'password' => $this->isMethod('post') ? 'required|min:6' : 'nullable|min:6',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',

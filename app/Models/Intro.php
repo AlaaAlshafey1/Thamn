@@ -26,24 +26,27 @@ class Intro extends Model
     /**
      * Get localized title
      */
-    public function getTitle($lang = 'en')
+    public function getTitle($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->title_ar : $this->title_en;
+        $val = $lang === 'ar' ? $this->title_ar : $this->title_en;
+        return !empty($val) ? $val : $this->title_ar;
     }
 
     /**
      * Get localized subtitle
      */
-    public function getSubTitle($lang = 'en')
+    public function getSubTitle($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
+        $val = $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
+        return !empty($val) ? $val : $this->sub_title_ar;
     }
 
     /**
      * Get localized description
      */
-    public function getDescription($lang = 'en')
+    public function getDescription($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->description_ar : $this->description_en;
+        $val = $lang === 'ar' ? $this->description_ar : $this->description_en;
+        return !empty($val) ? $val : $this->description_ar;
     }
 }

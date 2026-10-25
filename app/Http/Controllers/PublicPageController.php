@@ -18,10 +18,11 @@ class PublicPageController extends Controller
 {
     protected function setupLocale(Request $request): string
     {
-        $lang = $request->get('lang', session('locale', 'ar'));
+        $lang = $request->get('lang', 'ar');
         if (!in_array($lang, ['ar', 'en'])) {
             $lang = 'ar';
         }
+        session(['locale' => $lang]);
         app()->setLocale($lang);
         return $lang;
     }

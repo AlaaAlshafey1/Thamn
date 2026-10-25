@@ -11,12 +11,14 @@ class Faq extends Model
 
     protected $fillable = ['question_ar','question_en','answer_ar','answer_en','category'];
 
-    public function getQuestionByLang($lang = 'en') {
-        return $lang === 'ar' ? $this->question_ar : $this->question_en;
+    public function getQuestionByLang($lang = 'ar') {
+        $val = $lang === 'ar' ? $this->question_ar : $this->question_en;
+        return !empty($val) ? $val : $this->question_ar;
     }
 
-    public function getAnswerByLang($lang = 'en') {
-        return $lang === 'ar' ? $this->answer_ar : $this->answer_en;
+    public function getAnswerByLang($lang = 'ar') {
+        $val = $lang === 'ar' ? $this->answer_ar : $this->answer_en;
+        return !empty($val) ? $val : $this->answer_ar;
     }
 }
 

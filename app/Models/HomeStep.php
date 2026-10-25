@@ -27,41 +27,54 @@ class HomeStep extends Model
     /**
      * Get localized title
      */
-    public function getTitle($lang = 'en')
+    public function getTitle($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->title_ar : $this->title_en;
+        $val = $lang === 'ar' ? $this->title_ar : $this->title_en;
+        return !empty($val) ? $val : $this->title_ar;
     }
 
     /**
      * Get localized subtitle
      */
-    public function getSubTitle($lang = 'en')
+    public function getSubTitle($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
+        $val = $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
+        return !empty($val) ? $val : $this->sub_title_ar;
     }
 
     /**
      * Get localized description
      */
-    public function getDesc($lang = 'en')
+    public function getDesc($lang = 'ar')
     {
-        return $lang === 'ar' ? $this->desc_ar : $this->desc_en;
+        $val = $lang === 'ar' ? $this->desc_ar : $this->desc_en;
+        return !empty($val) ? $val : $this->desc_ar;
     }
 
     /**
      * Get localized items
      */
-    public function getLocalizedItems($lang = 'en')
+    public function getLocalizedItems($lang = 'ar')
     {
         if (!$this->items) {
             return [];
         }
 
         return array_map(function ($item) use ($lang) {
-            // Support both simple and multi-language item formats
+            // Support both simple and multi-language item formats with Arabic fallback
+            $label = $item['label_' . $lang] ?? ($lang === 'ar' ? ($item['label_ar'] ?? $item['label'] ?? '') : ($item['label_en'] ?? $item['label'] ?? ''));
+            if (empty($label)) {
+                $label = $item['label_ar'] ?? $item['label'] ?? '';
+            }
+
+            $value = $item['value_' . $lang] ?? ($lang === 'ar' ? ($item['value_ar'] ?? $item['value'] ?? '') : ($item['value_en'] ?? $item['value'] ?? ''));
+            if (empty($value)) {
+                $value = $item['value_ar'] ?? $item['value'] ?? '';
+            }
+
             return [
-                'label' => $item['label_' . $lang] ?? $item['label'] ?? '',
-                'value' => $item['value_' . $lang] ?? $item['value'] ?? '',
+                'label' => $label,
+                'value' => $value,
                 'image' => $item['image'] ?? null,
             ];
         }, $this->items);

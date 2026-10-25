@@ -88,7 +88,53 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">رقم الهاتف</label>
-                    <input type="text" name="phone" class="form-control" placeholder="مثال: 01012345678">
+                    <input type="text" name="phone" class="form-control" placeholder="مثال: 0501234567">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الجنسية</label>
+                    <select name="nationality" class="form-select wide-select">
+                        <option value="" disabled selected>اختر الجنسية</option>
+                        <optgroup label="دول الخليج العربي">
+                            <option value="سعودي" selected>سعودي</option>
+                            <option value="إماراتي">إماراتي</option>
+                            <option value="كويتي">كويتي</option>
+                            <option value="بحريني">بحريني</option>
+                            <option value="عماني">عماني</option>
+                            <option value="قطري">قطري</option>
+                        </optgroup>
+                        <optgroup label="الدول العربية">
+                            <option value="مصري">مصري</option>
+                            <option value="أردني">أردني</option>
+                            <option value="سوري">سوري</option>
+                            <option value="لبناني">لبناني</option>
+                            <option value="فلسطيني">فلسطيني</option>
+                            <option value="يمني">يمني</option>
+                            <option value="سوداني">سوداني</option>
+                            <option value="عراقي">عراقي</option>
+                            <option value="مغربي">مغربي</option>
+                            <option value="جزائري">جزائري</option>
+                            <option value="تونسي">تونسي</option>
+                            <option value="ليبي">ليبي</option>
+                            <option value="موريتاني">موريتاني</option>
+                            <option value="صومالي">صومالي</option>
+                        </optgroup>
+                        <optgroup label="جنسيات أخرى">
+                            <option value="تركي">تركي</option>
+                            <option value="باكستاني">باكستاني</option>
+                            <option value="هندي">هندي</option>
+                            <option value="بنغلاديشي">بنغلاديشي</option>
+                            <option value="فلبيني">فلبيني</option>
+                            <option value="ماليزي">ماليزي</option>
+                            <option value="إندونيسي">إندونيسي</option>
+                            <option value="بريطاني">بريطاني</option>
+                            <option value="أمريكي">أمريكي</option>
+                            <option value="كندي">كندي</option>
+                            <option value="فرنسي">فرنسي</option>
+                            <option value="ألماني">ألماني</option>
+                            <option value="إيطالي">إيطالي</option>
+                            <option value="أخرى">أخرى</option>
+                        </optgroup>
+                    </select>
                 </div>
             </div>
         </div>

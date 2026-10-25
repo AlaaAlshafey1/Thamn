@@ -91,6 +91,53 @@
                     <label class="form-label">رقم الهاتف</label>
                     <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">الجنسية</label>
+                    @php $currentNat = old('nationality', $user->nationality ?? 'سعودي'); @endphp
+                    <select name="nationality" class="form-select wide-select">
+                        <option value="" disabled {{ empty($currentNat) ? 'selected' : '' }}>اختر الجنسية</option>
+                        <optgroup label="دول الخليج العربي">
+                            <option value="سعودي" {{ $currentNat == 'سعودي' ? 'selected' : '' }}>سعودي</option>
+                            <option value="إماراتي" {{ $currentNat == 'إماراتي' ? 'selected' : '' }}>إماراتي</option>
+                            <option value="كويتي" {{ $currentNat == 'كويتي' ? 'selected' : '' }}>كويتي</option>
+                            <option value="بحريني" {{ $currentNat == 'بحريني' ? 'selected' : '' }}>بحريني</option>
+                            <option value="عماني" {{ $currentNat == 'عماني' ? 'selected' : '' }}>عماني</option>
+                            <option value="قطري" {{ $currentNat == 'قطري' ? 'selected' : '' }}>قطري</option>
+                        </optgroup>
+                        <optgroup label="الدول العربية">
+                            <option value="مصري" {{ $currentNat == 'مصري' ? 'selected' : '' }}>مصري</option>
+                            <option value="أردني" {{ $currentNat == 'أردني' ? 'selected' : '' }}>أردني</option>
+                            <option value="سوري" {{ $currentNat == 'سوري' ? 'selected' : '' }}>سوري</option>
+                            <option value="لبناني" {{ $currentNat == 'لبناني' ? 'selected' : '' }}>لبناني</option>
+                            <option value="فلسطيني" {{ $currentNat == 'فلسطيني' ? 'selected' : '' }}>فلسطيني</option>
+                            <option value="يمني" {{ $currentNat == 'يمني' ? 'selected' : '' }}>يمني</option>
+                            <option value="سوداني" {{ $currentNat == 'سوداني' ? 'selected' : '' }}>سوداني</option>
+                            <option value="عراقي" {{ $currentNat == 'عراقي' ? 'selected' : '' }}>عراقي</option>
+                            <option value="مغربي" {{ $currentNat == 'مغربي' ? 'selected' : '' }}>مغربي</option>
+                            <option value="جزائري" {{ $currentNat == 'جزائري' ? 'selected' : '' }}>جزائري</option>
+                            <option value="تونسي" {{ $currentNat == 'تونسي' ? 'selected' : '' }}>تونسي</option>
+                            <option value="ليبي" {{ $currentNat == 'ليبي' ? 'selected' : '' }}>ليبي</option>
+                            <option value="موريتاني" {{ $currentNat == 'موريتاني' ? 'selected' : '' }}>موريتاني</option>
+                            <option value="صومالي" {{ $currentNat == 'صومالي' ? 'selected' : '' }}>صومالي</option>
+                        </optgroup>
+                        <optgroup label="جنسيات أخرى">
+                            <option value="تركي" {{ $currentNat == 'تركي' ? 'selected' : '' }}>تركي</option>
+                            <option value="باكستاني" {{ $currentNat == 'باكستاني' ? 'selected' : '' }}>باكستاني</option>
+                            <option value="هندي" {{ $currentNat == 'هندي' ? 'selected' : '' }}>هندي</option>
+                            <option value="بنغلاديشي" {{ $currentNat == 'بنغلاديشي' ? 'selected' : '' }}>بنغلاديشي</option>
+                            <option value="فلبيني" {{ $currentNat == 'فلبيني' ? 'selected' : '' }}>فلبيني</option>
+                            <option value="ماليزي" {{ $currentNat == 'ماليزي' ? 'selected' : '' }}>ماليزي</option>
+                            <option value="إندونيسي" {{ $currentNat == 'إندونيسي' ? 'selected' : '' }}>إندونيسي</option>
+                            <option value="بريطاني" {{ $currentNat == 'بريطاني' ? 'selected' : '' }}>بريطاني</option>
+                            <option value="أمريكي" {{ $currentNat == 'أمريكي' ? 'selected' : '' }}>أمريكي</option>
+                            <option value="كندي" {{ $currentNat == 'كندي' ? 'selected' : '' }}>كندي</option>
+                            <option value="فرنسي" {{ $currentNat == 'فرنسي' ? 'selected' : '' }}>فرنسي</option>
+                            <option value="ألماني" {{ $currentNat == 'ألماني' ? 'selected' : '' }}>ألماني</option>
+                            <option value="إيطالي" {{ $currentNat == 'إيطالي' ? 'selected' : '' }}>إيطالي</option>
+                            <option value="أخرى" {{ $currentNat == 'أخرى' ? 'selected' : '' }}>أخرى</option>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
         </div>
 
