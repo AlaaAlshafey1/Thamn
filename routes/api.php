@@ -77,6 +77,9 @@ Route::get('marketplace/products/{productId}', [MarketplaceController::class, 's
 
 // ------------------ SETTINGS ENDPOINTS ------------------
 Route::prefix('settings')->group(function () {
+    Route::get('/', [SettingsController::class, 'index']);
+    Route::get('objection-reasons', [SettingsController::class, 'objectionReasons']);
+    Route::get('re-evaluation-reasons', [SettingsController::class, 'objectionReasons']);
     Route::get('colors', [SettingsController::class, 'colors']);
     Route::get('intro', [SettingsController::class, 'intro']);
     Route::get('home-steps', [SettingsController::class, 'homeSteps']);
@@ -135,6 +138,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('valuation-orders/{orderId}/cancel', [OrderController::class, 'cancel']);
     Route::get('valuation-orders/{orderId}/result', [OrderController::class, 'result']);
     Route::post('valuation-orders/{orderId}/re-evaluate', [OrderController::class, 'reEvaluate']);
+    Route::post('valuation-orders/{orderId}/objection', [OrderController::class, 'submitObjection']);
+    Route::post('valuation-orders/objection', [OrderController::class, 'submitObjection']);
+    Route::post('orders/objection', [OrderController::class, 'submitObjection']);
     Route::post('valuation-orders/{orderId}/resend', [OrderController::class, 'resendOrder']);
     Route::post('valuation-orders/{orderId}/send-to-market', [OrderController::class, 'sendToMarket']);
 

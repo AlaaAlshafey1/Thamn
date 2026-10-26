@@ -71,11 +71,27 @@ class ThamnEvaluationService
             ? "ملاحظة للنظام: هذا طلب إعادة تقييم. راجع كافة المعطيات من جديد وأعط السعر الأدق — لا تذكر ذلك في الـ reasoning."
             : "";
 
+        $objectionSection = "";
+        if (!empty($order->objection_reason)) {
+            $objectionSection = <<<OBJECTION
+
+━━━ تنبيه عاجل وإلزامي: اعتراض العميل على التقييم السابق (إعادة تثمين) ━━━
+العميل قام بتقديم اعتراض رسمي على التقييم السابق بالسبب التالي:
+"{$order->objection_reason}"
+
+التعليمات الإلزامية للذكاء الاصطناعي:
+1. اقرأ سبب اعتراض العميل بعناية فائقة وقم بدراسة ملاحظته ومقارنتها بحالة السلعة والمواصفات المرفقة وأسعار السوق السعودي الفعلي اليوم.
+2. قم بإعادة تقييم السلعة وتعديل السعر العادل (recommended_price و min_price و max_price) ليكون عادلاً ودقيقاً ومراعياً لسبب الاعتراض بصورة واقعية ومنصفة.
+3. اشرح في التقرير (reasoning) بلباقة وموضوعية القيمة السوقية العادلة للسلعة بناءً على المعطيات والأسعار السائدة دون ذكر كلمة اعتراض.
+OBJECTION;
+        }
+
         $prompt = <<<PROMPT
 {$ctx->getRole()}
 تاريخ التقييم: {$today}
 {$ctx->getMarketReferences()}
 {$reEvaluationNote}
+{$objectionSection}
 
 ━━━ بيانات السلعة ━━━
 الفئة: {$categoryAr}
@@ -207,10 +223,21 @@ PROMPT;
         $reasoningText = $aiResult['reasoning'] ?? '';
         $fullReasoningHtml = $this->buildInfographicHtml($cards, $reasoningText);
 
+        $isAiObjection = $order->evaluation_type === 'ai' && !empty($order->objection_reason);
+
+        $newStatus = $order->status;
+        $isExpertEvaluated = $order->expert_evaluated ? 1 : 0;
+
+        if ($isAiObjection) {
+            $newStatus = 'reEstimated';
+            $isExpertEvaluated = 1;
+        } elseif (!in_array($order->status, ['estimated', 'reEstimated', 'completed'])) {
+            $newStatus = $order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated';
+        }
+
         $order->update([
-            // التعديل الجديد: جميع التقييمات بما فيها الـ ai تذهب للخبير للمصادقة والتثمين النهائي
-            'status' => in_array($order->status, ['estimated', 'reEstimated', 'completed']) ? $order->status : ($order->status === 'beingReEstimated' ? 'beingReEstimated' : 'beingEstimated'),
-            'expert_evaluated' => $order->expert_evaluated ? 1 : 0, // لضمان ظهوره في لوحة تحكم الخبير إلا إذا تم تقييمه بالفعل
+            'status' => $newStatus,
+            'expert_evaluated' => $isExpertEvaluated,
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,
             'ai_price' => $aiResult['recommended_price'] ?? null,
@@ -218,7 +245,7 @@ PROMPT;
             'ai_confidence' => $aiResult['confidence'] ?? null,
             'ai_reasoning' => $fullReasoningHtml,
             'ai_features' => !empty($cards) ? $cards : null, // للداشبورد
-            'evaluated_at' => $order->evaluated_at ?? now(),
+            'evaluated_at' => now(),
         ]);
 
         // Generate Virtual Image if no images exist and prompt provided
@@ -244,22 +271,24 @@ PROMPT;
             }
         } // end if (!$hasImages)
 
-        // ── إشعار العميل بالانتظار (الجميع الآن ينتظر تصديق الخبير/الأدمن) ──
-        $tokens = $order->user->getFcmTokens();
-        if (!empty($tokens)) {
-            $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
-            $this->notifyByFirebase(
-                $isAr ? 'أوشكنا على النهاية' : 'Almost done',
-                $isAr 
-                    ? 'أوشكنا على النهاية.. طلبك الآن في المراجعة النهائية' 
-                    : 'We are almost done.. Your order is now in final review',
-                $tokens,
-                ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
-            );
+        // ── إشعار العميل بالانتظار (في التقييم العادي فقط، أما اعتراض الـ AI فالسعر جاهز فوراً) ──
+        if (!$isAiObjection) {
+            $tokens = $order->user->getFcmTokens();
+            if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
+                $this->notifyByFirebase(
+                    $isAr ? 'أوشكنا على النهاية' : 'Almost done',
+                    $isAr 
+                        ? 'أوشكنا على النهاية.. طلبك الآن في المراجعة النهائية' 
+                        : 'We are almost done.. Your order is now in final review',
+                    $tokens,
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_waiting_admin']]
+                );
+            }
         }
 
-        // ── إرسال الطلب لخبراء نفس القسم فقط لطلب المصادقة (إذا كان الطلب ai ولم يحدد له خبير بعد) ──
-        if ($order->evaluation_type === 'ai' && !$order->expert_id) {
+        // ── إرسال الطلب لخبراء نفس القسم فقط لطلب المصادقة (إذا كان الطلب ai ولم يحدد له خبير بعد ولم يكن اعتراضاً معدلاً) ──
+        if ($order->evaluation_type === 'ai' && !$order->expert_id && !$isAiObjection) {
             $whatsapp = app(\App\Services\WhatsAppService::class);
             $expertsQuery = \App\Models\User::role('expert');
             if ($order->category_id) {

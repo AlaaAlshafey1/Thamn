@@ -72,13 +72,31 @@
                                 'pending' => 'bg-warning-transparent text-warning',
                                 'orderReceived' => 'bg-info-transparent text-info',
                                 'beingEstimated' => 'bg-primary-transparent text-primary',
+                                'beingReEstimated' => 'bg-danger-transparent text-danger border border-danger',
                                 'evaluated' => 'bg-success-transparent text-success',
                                 'finished' => 'bg-success-transparent text-success',
                                 'cancelled' => 'bg-danger-transparent text-danger',
                             ];
+                            $statusLabels = [
+                                'pending' => 'قيد الانتظار',
+                                'orderReceived' => 'تم استلام الطلب',
+                                'beingEstimated' => 'قيد التقييم',
+                                'beingReEstimated' => 'إعادة التقييم',
+                                'evaluated' => 'تم التقييم',
+                                'finished' => 'مكتمل',
+                                'cancelled' => 'ملغي',
+                            ];
                             $statusClass = $statusClasses[$order->status] ?? 'bg-secondary-transparent text-secondary';
+                            $statusLabel = $statusLabels[$order->status] ?? $order->status;
                         @endphp
-                        <span class="badge {{ $statusClass }} py-2 px-3">{{ $order->status }}</span>
+                        <span class="badge {{ $statusClass }} py-2 px-3">{{ $statusLabel }}</span>
+                        @if($order->objection_reason)
+                            <div class="mt-1">
+                                <span class="badge bg-danger text-white py-1 px-2" style="font-size: 11px; cursor: pointer;" title="سبب الاعتراض: {{ $order->objection_reason }}">
+                                    <i class="fas fa-exclamation-triangle ml-1"></i> اعتراض عميل
+                                </span>
+                            </div>
+                        @endif
                     </td>
                     <td>
                         @if(!in_array($order->status, ['pending', 'failed', 'waitingPayment', 'notPaid']))

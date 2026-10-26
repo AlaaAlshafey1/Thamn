@@ -40,6 +40,11 @@ class Order extends Model
         'accepted_at',
         'evaluated_at',
         're_evaluation_count',
+        'objection_reason',
+        'objection_reason_id',
+        'objected_at',
+        'objection_admin_reply',
+        'objection_replied_at',
         'ai_features',
         'evaluation_tracking',
         'is_ai_evaluated',
@@ -53,7 +58,14 @@ class Order extends Model
         'evaluated_at' => 'datetime',
         'accepted_at' => 'datetime',
         'thamn_at' => 'datetime',
+        'objected_at' => 'datetime',
+        'objection_replied_at' => 'datetime',
     ];
+
+    public function objectionReason()
+    {
+        return $this->belongsTo(ObjectionReason::class, 'objection_reason_id');
+    }
 
     public function details()
     {

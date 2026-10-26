@@ -242,6 +242,18 @@
                             <span class="side-menu__label">جميع الطلبات</span>
                         </a>
                     </li>
+                    @php
+                        $pendingObjectionsCount = \App\Models\Order::whereNotNull('objection_reason')->count();
+                    @endphp
+                    <li class="slide">
+                        <a class="side-menu__item {{ request('filter') === 'objections' ? 'active' : '' }}" href="{{ route('orders.index', ['filter' => 'objections']) }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            <span class="side-menu__label">طلبات الاعتراضات</span>
+                            @if($pendingObjectionsCount > 0)
+                                <span class="badge badge-danger side-badge" style="border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0 4px;">{{ $pendingObjectionsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
                 @endif
                 @endcan
                  @can('payments_view')

@@ -65,10 +65,16 @@ class OrderController extends Controller
 
             return view('orders.expert_index', compact('activeOrders', 'completedOrders'));
         } else {
-            $orders = Order::with('user')
-                ->latest()
-                ->paginate(20);
-            return view('orders.index', compact('orders'));
+            $query = Order::with('user')->latest();
+
+            if (request('filter') === 'objections') {
+                $query->whereNotNull('objection_reason');
+            }
+
+            $orders = $query->paginate(20)->withQueryString();
+            $objectionsCount = Order::whereNotNull('objection_reason')->count();
+
+            return view('orders.index', compact('orders', 'objectionsCount'));
         }
     }
 
@@ -248,11 +254,16 @@ class OrderController extends Controller
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
+                $fcmTitle = $order->objection_reason
+                    ? ($isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on objection')
+                    : ($isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved');
+                $fcmBody = $order->objection_reason
+                    ? ($isAr ? "تم اعتماد التقييم النهائي المعدل لمنتجك رقم {$order->id} بقيمة " . number_format($thamnPrice, 0) . " ريال بناءً على اعتراضك." : "Final hybrid evaluation for order #{$order->id} adjusted to " . number_format($thamnPrice, 0) . " SAR based on objection.")
+                    : ($isAr ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.");
+
                 $this->notifyByFirebase(
-                    $isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved',
-                    $isAr 
-                        ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" 
-                        : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.",
+                    $fcmTitle,
+                    $fcmBody,
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
                 );
@@ -262,9 +273,22 @@ class OrderController extends Controller
             try {
                 if ($order->user->phone) {
                     $whatsapp = app(\App\Services\WhatsAppService::class);
-                    $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
                     $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
-                    $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
+
+                    if ($order->objection_reason) {
+                        $customerName = $order->user->first_name ?: 'عميلنا العزيز';
+                        $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم #{$order->id} 🔄\n\n"
+                            . "بناءً على ملاحظتك واعتراضك، تمت مراجعة السلعة واعتماد السعر الهجين النهائي المعدل:\n"
+                            . "💰 *السعر المعتمد الجديد: " . number_format($thamnPrice, 0) . " ريال*\n\n"
+                            . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والسعر الجديد المحدث الآن.\n\n"
+                            . "- فريق ثمن";
+                    } else {
+                        $customerName = $order->user->first_name ?: 'عميلنا العزيز';
+                        $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                            . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
+                            . "- فريق ثمن";
+                    }
+
                     $whatsapp->sendMessage($order->user->phone, $msg);
                 }
             } catch (\Throwable $e) {
@@ -299,11 +323,20 @@ class OrderController extends Controller
             // Notify Customer via WhatsApp & Email with Invoice/Report
             try {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
-                $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
 
-                // إضافة الفاتورة / شهادة التثمين
-                $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
-                $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
+                if ($order->objection_reason) {
+                    $customerName = $order->user->first_name ?: 'عميلنا العزيز';
+                    $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم #{$order->id} من قبل الخبير المختص 🔄\n\n"
+                        . "بناءً على ملاحظتك واعتراضك، قام الخبير بمراجعة السلعة وتعديل السعر المعتمد ليصبح:\n"
+                        . "💰 *السعر الجديد: " . number_format($expertPrice, 0) . " ريال*\n\n"
+                        . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والسعر الجديد المحدث الآن.\n\n"
+                        . "- فريق ثمن";
+                } else {
+                    $customerName = $order->user->first_name ?: 'عميلنا العزيز';
+                    $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                        . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
+                        . "- فريق ثمن";
+                }
 
                 $whatsapp->sendMessage($order->user->phone, $msg);
 
@@ -319,11 +352,16 @@ class OrderController extends Controller
             $tokens = $order->user->getFcmTokens();
             if (!empty($tokens)) {
                 $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
+                $fcmTitle = $order->objection_reason
+                    ? ($isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on objection')
+                    : ($isAr ? 'تم تقييم سلعتك بنجاح' : 'Your item has been successfully evaluated');
+                $fcmBody = $order->objection_reason
+                    ? ($isAr ? "قام الخبير بمراجعة اعتراضك وتعديل السعر لطلبك رقم {$order->id} ليصبح " . number_format($expertPrice, 0) . " ريال. تفضل بالاطلاع على التفاصيل." : "The expert reviewed your objection and adjusted the price for order #{$order->id} to " . number_format($expertPrice, 0) . " SAR.")
+                    : ($isAr ? "تم تقييم طلبك رقم {$order->id} وإرسال التقرير/ الفاتورة بنجاح. تفضل اطلع عليه الآن" : "Your order #{$order->id} has been evaluated and the report/invoice sent successfully. Please check it now.");
+
                 $this->notifyByFirebase(
-                    $isAr ? 'تم تقييم سلعتك بنجاح' : 'Your item has been successfully evaluated',
-                    $isAr 
-                        ? "تم تقييم طلبك رقم {$order->id} وإرسال التقرير/ الفاتورة بنجاح. تفضل اطلع عليه الآن" 
-                        : "Your order #{$order->id} has been evaluated and the report/invoice sent successfully. Please check it now.",
+                    $fcmTitle,
+                    $fcmBody,
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_expert']]
                 );
@@ -401,9 +439,10 @@ class OrderController extends Controller
         try {
             if ($order->user->phone) {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
-                $msg = \App\Services\WhatsAppService::getTemplate('order_ready_customer', ['id' => $order->id]);
-                $invoiceLink = \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]);
-                $msg .= \App\Services\WhatsAppService::formatActionLink('اعرض الفاتورة', $invoiceLink, '📄');
+                $customerName = $order->user->first_name ?: 'عميلنا العزيز';
+                $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                    . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
+                    . "- فريق ثمن";
                 $whatsapp->sendMessage($order->user->phone, $msg);
             }
         } catch (\Throwable $e) {
@@ -626,4 +665,76 @@ class OrderController extends Controller
             return back()->with('error', 'حدث خطأ أثناء توليد الصورة: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Send organized WhatsApp & Email reply to customer regarding their objection
+     */
+    public function replyObjection(Request $request, Order $order)
+    {
+        $request->validate([
+            'reply_message' => 'required|string|max:3000',
+        ]);
+
+        $replyText = $request->reply_message;
+
+        // Save reply in database
+        $order->update([
+            'objection_admin_reply' => $replyText,
+            'objection_replied_at' => now(),
+        ]);
+
+        $customer = $order->user;
+        $sentWhatsapp = false;
+        $sentEmail = false;
+
+        // 1. Send WhatsApp message to Customer
+        if ($customer && $customer->phone) {
+            try {
+                $sentWhatsapp = app(\App\Services\WhatsAppService::class)->sendMessage($customer->phone, $replyText);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Admin Objection Reply WhatsApp Failed: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Send Email to Customer
+        if ($customer && $customer->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($customer->email)->send(new \App\Mail\SystemNotificationMail(
+                    "رد إدارة ثمن بخصوص احتجاجك على الطلب #{$order->id} ⚖️",
+                    $replyText,
+                    route('orders.show', $order->id),
+                    'عرض تفاصيل الطلب'
+                ));
+                $sentEmail = true;
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Admin Objection Reply Email Failed: ' . $e->getMessage());
+            }
+        }
+
+        // 3. Send FCM Notification to Customer
+        if ($customer) {
+            $tokens = $customer->getFcmTokens();
+            if (!empty($tokens)) {
+                $isAr = ($customer->preferred_language ?? 'ar') === 'ar';
+                $this->notifyByFirebase(
+                    $isAr ? 'رد جديد على احتجاجك' : 'New reply to your objection',
+                    $isAr ? "قامت إدارة ثمن بالرد على احتجاجك للطلب رقم {$order->id}" : "Thamn management has replied to your objection for order #{$order->id}",
+                    $tokens,
+                    ['data' => ['order_id' => $order->id, 'type' => 'objection_replied']]
+                );
+            }
+        }
+
+        $notice = 'تم تسجيل الرد بنجاح';
+        if ($sentWhatsapp && $sentEmail) {
+            $notice .= ' وإرساله للعميل عبر واتساب والبريد الإلكتروني 🚀';
+        } elseif ($sentWhatsapp) {
+            $notice .= ' وإرساله للعميل عبر واتساب 🚀';
+        } elseif ($sentEmail) {
+            $notice .= ' وإرساله للعميل عبر البريد الإلكتروني 🚀';
+        }
+
+        return redirect()->back()->with('success', $notice);
+    }
 }
+

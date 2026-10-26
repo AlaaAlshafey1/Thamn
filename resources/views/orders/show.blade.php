@@ -1885,6 +1885,21 @@
 
                     @else
                         <!-- Not Evaluated State (Form) -->
+                        @if($order->objection_reason)
+                            <div class="alert alert-warning mb-4 shadow-sm" style="border-radius: 12px; border-right: 5px solid #f39c12; background: #fffdf5;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bx bx-error-circle" style="font-size: 24px; color: #f39c12;"></i>
+                                    <h6 class="font-weight-bold mb-0 text-dark" style="font-size: 1.05rem;">تنبيه: هذا الطلب معروض نتيجة تقديم العميل لاحتجاج على التقييم السابق</h6>
+                                </div>
+                                <div class="p-2 rounded bg-white border" style="font-size: 0.95rem; color: #333;">
+                                    <strong>سبب الاحتجاج:</strong> {{ $order->objection_reason }}
+                                    @if($order->objected_at)
+                                        <div class="text-muted small mt-1"><i class="bx bx-time"></i> تاريخ الاحتجاج: {{ $order->objected_at->format('Y-m-d H:i') }} ({{ $order->objected_at->diffForHumans() }})</div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="success-title mb-4 text-primary" style="font-size:1.3rem;">اعتماد تقييم الطلب</div>
                         <form method="POST" action="{{ route('orders.expert.evaluate', $order->id) }}"
                             id="expertEvaluationForm"
@@ -2285,6 +2300,43 @@
                     <h5><i class="bx bx-bar-chart-alt-2 text-warning"></i> نتائج التقييم</h5>
                 </div>
                 <div class="card-body">
+                    {{-- تنبيه الاحتجاج للعميل أو الأدمن --}}
+                    @if($order->objection_reason)
+                        <div class="alert alert-warning border-0 shadow-sm mb-4" style="background: #fff8e1; border-right: 4px solid #f39c12 !important;">
+                            <div class="d-flex align-items-center gap-2 mb-2 font-weight-bold text-dark">
+                                <i class="bx bx-error-circle text-warning font-size-18"></i>
+                                <span>احتجاج على التقييم من العميل</span>
+                                @if($order->re_evaluation_count > 0)
+                                    <span class="badge bg-warning text-dark">{{ $order->re_evaluation_count }}x</span>
+                                @endif
+                            </div>
+                            <div class="p-2 rounded bg-white border small text-dark">
+                                <strong>سبب الاحتجاج:</strong> {{ $order->objection_reason }}
+                                @if($order->objected_at)
+                                    <div class="text-muted mt-1" style="font-size: 0.75rem;"><i class="bx bx-time"></i> {{ $order->objected_at->format('Y-m-d H:i') }} ({{ $order->objected_at->diffForHumans() }})</div>
+                                @endif
+                            </div>
+
+                            @if($order->objection_admin_reply)
+                                <div class="mt-2 p-2 rounded small text-dark" style="background: rgba(40, 167, 69, 0.08); border: 1px solid rgba(40, 167, 69, 0.3);">
+                                    <div class="font-weight-bold text-success mb-1">
+                                        <i class="bx bx-check-double"></i> تم الرد على العميل {{ $order->objection_replied_at ? '(' . $order->objection_replied_at->diffForHumans() . ')' : '' }}:
+                                    </div>
+                                    <div style="white-space: pre-line; line-height: 1.5;">{{ $order->objection_admin_reply }}</div>
+                                </div>
+                            @endif
+
+                            @hasanyrole('admin|superadmin')
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-sm btn-success btn-block font-weight-bold d-flex align-items-center justify-content-center gap-1 shadow-sm" data-toggle="modal" data-target="#replyObjectionModal">
+                                        <i class="bx bxl-whatsapp font-size-18"></i>
+                                        <span>{{ $order->objection_admin_reply ? 'تعديل أو إرسال رد إضافي للعميل' : 'الرد على العميل برسالة واتساب منظمة' }}</span>
+                                    </button>
+                                </div>
+                            @endhasanyrole
+                        </div>
+                    @endif
+
                     {{-- Refund Section --}}
                     @if($order->status == 'expired' && $order->user_id == auth()->id())
                         @if(!$order->refundRequest)
@@ -2765,4 +2817,110 @@
             }
         });
     </script>
+
+    @if($order->objection_reason)
+        @hasanyrole('admin|superadmin')
+        @php
+            $rawPhone = $order->user?->phone ?? '';
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            if (str_starts_with($cleanPhone, '05')) {
+                $cleanPhone = '966' . substr($cleanPhone, 1);
+            }
+            $customerName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميلنا العزيز';
+            
+            $defaultMsg = "يا هلا بك يا {$customerName} .. بخصوص طلبك رقم #{$order->id} واحتجاجك المسجل لدينا ⚖️\n\n"
+                        . "📌 سبب الاحتجاج: {$order->objection_reason}\n\n"
+                        . "تمت مراجعة الطلب وتدقيق تفاصيل التثمين والسلعة من قبل الإدارة والخبير المعتمد بعناية فائقة.\n"
+                        . "نود إفادتك بأنه: [اكتب تفاصيل الرد والتوضيح هنا]\n\n"
+                        . "شاكرين ومقدرين ثقتك الدائمة في منصة ثمن 🤝\n"
+                        . "- إدارة تطبيق ثمن";
+        @endphp
+        <div class="modal fade" id="replyObjectionModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content text-right" dir="rtl">
+                    <form action="{{ route('orders.objection.reply', $order->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title font-weight-bold d-flex align-items-center gap-2">
+                                <i class="bx bxl-whatsapp" style="font-size: 24px;"></i>
+                                <span>الرد على احتجاج العميل عبر واتساب والبريد الإلكتروني</span>
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <!-- بيانات العميل والطلب -->
+                            <div class="bg-light p-3 rounded mb-3 border">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <span class="text-muted small d-block">العميل:</span>
+                                        <strong class="text-dark">{{ $customerName }}</strong>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <span class="text-muted small d-block">رقم الجوال:</span>
+                                        <strong class="text-dark" dir="ltr">{{ $order->user?->phone ?: 'غير متوفر' }}</strong>
+                                    </div>
+                                    <div class="col-12 mt-1">
+                                        <span class="text-muted small d-block">سبب احتجاج العميل:</span>
+                                        <span class="badge bg-warning text-dark p-2 text-wrap text-right font-size-13" style="line-height: 1.5;">
+                                            {{ $order->objection_reason }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold d-flex justify-content-between align-items-center">
+                                    <span>نص الرسالة المنظمة للعميل:</span>
+                                    <small class="text-muted">يمكنك تعديل وصياغة الرد كما تشاء</small>
+                                </label>
+                                <textarea name="reply_message" id="objectionReplyTextarea" class="form-control" rows="8" style="line-height: 1.7; font-size: 0.95rem;" required>{{ $order->objection_admin_reply ?: $defaultMsg }}</textarea>
+                            </div>
+
+                            <div class="alert alert-info py-2 px-3 small mb-0">
+                                <i class="bx bx-info-circle ml-1"></i> عند الضغط على "إرسال الرد الرسمي"، سيقوم النظام تلقائياً بإرسال الرسالة إلى رقم واتساب العميل وإرسال نسخة عبر البريد الإلكتروني مع حفظ الرد في سجل الطلب.
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-between">
+                            <div>
+                                @if($cleanPhone)
+                                    <a href="#" id="directWhatsAppBtn" target="_blank" class="btn btn-outline-success font-weight-bold">
+                                        <i class="bx bxl-whatsapp"></i> فتح محادثة واتساب مباشرة
+                                    </a>
+                                @endif
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                                <button type="submit" class="btn btn-success font-weight-bold">
+                                    <i class="bx bx-paper-plane ml-1"></i> إرسال الرد الرسمي للعميل
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var textarea = document.getElementById('objectionReplyTextarea');
+                var directBtn = document.getElementById('directWhatsAppBtn');
+                var phone = '{{ $cleanPhone }}';
+
+                function updateWaLink() {
+                    if (directBtn && textarea && phone) {
+                        var text = encodeURIComponent(textarea.value);
+                        directBtn.href = 'https://wa.me/' + phone + '?text=' + text;
+                    }
+                }
+
+                if (textarea && directBtn) {
+                    textarea.addEventListener('input', updateWaLink);
+                    updateWaLink();
+                }
+            });
+        </script>
+        @endhasanyrole
+    @endif
 @endsection

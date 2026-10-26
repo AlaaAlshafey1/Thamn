@@ -111,14 +111,39 @@
     @else
     <!-- Standard View for Admins -->
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="card-title mb-0 fw-bold">قائمة جميع الطلبات</h5>
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="card-title mb-0 fw-bold">
+                @if(request('filter') === 'objections')
+                    <span class="text-danger"><i class="fas fa-exclamation-triangle ml-1"></i> الطلبات المعترض عليها</span>
+                @else
+                    <span>قائمة جميع الطلبات</span>
+                @endif
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('orders.index') }}" class="btn btn-sm {{ request('filter') !== 'objections' ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-3">
+                    <i class="bx bx-list-ul ml-1"></i> جميع الطلبات
+                </a>
+                <a href="{{ route('orders.index', ['filter' => 'objections']) }}" class="btn btn-sm {{ request('filter') === 'objections' ? 'btn-danger' : 'btn-outline-danger' }} rounded-pill px-3 position-relative">
+                    <i class="fas fa-exclamation-triangle ml-1"></i> طلبات بها اعتراض
+                    @if(isset($objectionsCount) && $objectionsCount > 0)
+                        <span class="badge bg-danger text-white ms-1 fw-bold">{{ $objectionsCount }}</span>
+                    @endif
+                </a>
+            </div>
         </div>
         <div class="card-body">
             @if(session('success'))
                 <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
             @endif
-            @include('orders.partials.table', ['orders' => $orders, 'tableId' => 'ordersTable'])
+            @if(request('filter') === 'objections' && $orders->isEmpty())
+                <div class="alert alert-info border-0 text-center py-4">
+                    <i class="bx bx-check-shield fs-40 text-info mb-2 d-block"></i>
+                    <h6 class="fw-bold mb-1">لا توجد طلبات معترض عليها حالياً</h6>
+                    <p class="text-muted small mb-0">جميع التقييمات مقبولة أو لا توجد اعتراضات جديدة معلقة.</p>
+                </div>
+            @else
+                @include('orders.partials.table', ['orders' => $orders, 'tableId' => 'ordersTable'])
+            @endif
         </div>
     </div>
     @endif

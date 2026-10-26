@@ -40,7 +40,9 @@ class ShortLink extends Model
             ]);
 
             $baseUrl = config('app.url');
-            if (empty($baseUrl) || str_contains($baseUrl, 'localhost') || str_contains($baseUrl, '127.0.0.1')) {
+            if (request() && request()->hasHeader('host')) {
+                $baseUrl = request()->getSchemeAndHttpHost();
+            } elseif (empty($baseUrl)) {
                 $baseUrl = 'https://thmmn.net';
             }
 

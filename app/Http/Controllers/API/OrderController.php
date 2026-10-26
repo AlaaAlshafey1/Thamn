@@ -947,6 +947,12 @@ class OrderController extends Controller
             'created_at' => $order->created_at,
             'is_re_evaluated' => $order->re_evaluation_count > 0,
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
+            'objection_reasons' => \App\Models\ObjectionReason::active()->get()->map(fn($r) => [
+                'id' => $r->id,
+                'title' => $r->getTitle($lang),
+            ]),
+            'objection_reason' => $order->objection_reason,
+            'objected_at' => $order->objected_at,
             // مسمى / عنوان رأي الخبير المعتمد المخصص لكل فئة
             'expert_opinion_label' => $expertOpinionLabel,
             'expert_opinion_label_ar' => $order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد',
@@ -1207,20 +1213,67 @@ class OrderController extends Controller
 
 
 
-    public function reEvaluate(Request $request, $orderId)
+    public function reEvaluate(Request $request, $orderId = null)
     {
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
+        $orderId = $orderId ?? $request->input('order_id') ?? $request->input('orderId');
+
+        if (!$orderId) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'رقم الطلب مطلوب' : 'Order ID is required.',
+            ], 422);
+        }
+
         $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user', 'expert'])
-            ->findOrFail($orderId);
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'الطلب غير موجود' : 'Order not found.',
+            ], 404);
+        }
+
+        // ─── التحقق من ملكية الطلب ───
+        if (auth()->check() && !auth()->user()->hasAnyRole(['admin', 'superadmin']) && $order->user_id !== auth()->id()) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'غير مصرح لك بتقديم احتجاج على هذا الطلب'
+                    : 'You are not authorized to object to this order.',
+            ], 403);
+        }
+
+        // ─── تجهيز والتحقق من سبب الاحتجاج ───
+        $reasonText = $request->input('reason') ?? $request->input('objection_reason') ?? $request->input('notes');
+        $reasonId = $request->input('reason_id') ?? $request->input('objection_reason_id');
+        $predefinedReason = $reasonId ? \App\Models\ObjectionReason::find($reasonId) : null;
+
+        $finalReason = null;
+        if ($predefinedReason && !empty($reasonText)) {
+            $finalReason = $predefinedReason->getTitle($lang) . ' - ' . $reasonText;
+        } elseif ($predefinedReason) {
+            $finalReason = $predefinedReason->getTitle($lang);
+        } elseif (!empty($reasonText)) {
+            $finalReason = $reasonText;
+        }
+
+        if (empty($finalReason)) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'يرجى كتابة أو اختيار سبب الاحتجاج' : 'Please provide or select an objection reason.',
+            ], 422);
+        }
 
         // ─── التحقق: إعادة التثمين مرة واحدة فقط ───
         if ($order->re_evaluation_count >= 1) {
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar'
-                    ? 'لقد استنفذت فرصة إعادة التثمين المتاحة'
+                    ? 'لقد استنفذت فرصة الاحتجاج وإعادة التثمين المتاحة'
                     : 'You have already used your re-evaluation opportunity.',
             ], 400);
         }
@@ -1230,7 +1283,7 @@ class OrderController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar'
-                    ? 'انتهت مهلة إعادة التثمين (24 ساعة)'
+                    ? 'انتهت مهلة الاحتجاج وإعادة التثمين (24 ساعة)'
                     : 'Re-evaluation window has expired (24 hours).',
             ], 400);
         }
@@ -1240,17 +1293,145 @@ class OrderController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => $lang === 'ar'
-                    ? 'لا يمكن إعادة التثمين لطلب لم يتم تقييمه بعد'
+                    ? 'لا يمكن تقديم احتجاج لطلب لم يتم تقييمه بعد'
                     : 'Cannot re-evaluate an order that has not been evaluated yet.',
             ], 400);
         }
 
         $originalExpertId = $order->expert_id;
         $originalExpert = $order->expert;
+        $previousPrice = $order->total_price ?: ($order->ai_price ?: $order->expert_price);
 
-        // Reset previous evaluation details but keep expert_id for re-evaluation
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
+            ->first();
+
+        $evaluationType = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value ?? $order->evaluation_type;
+
+        // ══════════════════════════════════════════════════════════════════════
+        // 1. مسار باقة الذكاء الاصطناعي (AI): إعادة التسعير الفوري والإشعار
+        // ══════════════════════════════════════════════════════════════════════
+        if ($evaluationType === 'ai') {
+            // حفظ سبب الاحتجاج وزيادة عداد إعادة التقييم
+            $order->update([
+                'status' => 'beingReEstimated',
+                'objection_reason' => $finalReason,
+                'objection_reason_id' => $predefinedReason?->id,
+                'objected_at' => now(),
+                'ai_min_price' => null,
+                'ai_max_price' => null,
+                'ai_price' => null,
+                'ai_confidence' => null,
+                'ai_reasoning' => null,
+            ]);
+            $order->increment('re_evaluation_count');
+            $order->refresh();
+
+            // تشغيل الـ AI مع تمرير سبب الاعتراض لتعديل السعر فوراً
+            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+            $order->refresh();
+
+            $newPrice = $order->ai_price ?? $order->total_price;
+            $newPriceFormatted = number_format((float) $newPrice, 0);
+            $customerFirstName = $order->user?->first_name ?: 'عميلنا العزيز';
+            $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
+
+            // إرسال رسالة واتساب للعميل بالسعر الجديد وتوجيهه للدخول للتطبيق مباشرة
+            if ($order->user && $order->user->phone) {
+                try {
+                    $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم #{$order->id} بنجاح 🔄\n\n"
+                        . "بناءً على اعتراضك، قام نظام الذكاء الاصطناعي بتدقيق التقييم وتعديل السعر العادل ليصبح:\n"
+                        . "💰 *السعر الجديد المعتمد: {$newPriceFormatted} ريال*" . ($previousPrice ? " (السعر السابق: " . number_format((float)$previousPrice, 0) . " ريال)\n\n" : "\n\n")
+                        . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
+                        . "- فريق ثمن";
+
+                    app(\App\Services\WhatsAppService::class)->sendMessage($order->user->phone, $customerWhatsappMsg);
+                } catch (\Exception $e) {
+                    Log::error('Customer AI Objection WhatsApp Notification Failed: ' . $e->getMessage());
+                }
+            }
+
+            // إرسال إيميل للعميل بالنتيجة والشهادة المحدثة
+            if ($order->user && $order->user->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($order->user->email)->send(new \App\Mail\ValuationResultMail($order, 'ai'));
+                } catch (\Throwable $e) {
+                    Log::error('Customer AI Objection Email Notification Failed: ' . $e->getMessage());
+                }
+            }
+
+            // إرسال FCM Notification لتطبيق الموبايل
+            $tokens = $order->user?->getFcmTokens() ?? [];
+            if (!empty($tokens)) {
+                $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
+                $this->notifyByFirebase(
+                    $isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on your objection',
+                    $isAr
+                        ? "قام الذكاء الاصطناعي بمراجعة اعتراضك وتعديل السعر لطلبك رقم {$order->id} ليصبح {$newPriceFormatted} ريال. تفضل بالاطلاع على التفاصيل الآن."
+                        : "AI reviewed your objection and adjusted the price for order #{$order->id} to {$newPriceFormatted} SAR. Check it now.",
+                    $tokens,
+                    ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_ai']]
+                );
+            }
+
+            // إرسال تنبيه لصاحب المشروع والإدارة عبر واتساب وإيميل
+            try {
+                $adminOrderLink = route('orders.show', $order->id);
+                $ownerPhone = '966503955098';
+
+                $adminWhatsAppMsg = "⚡ *تنبيه: تم تعديل السعر آلياً للطلب #{$order->id} (باقة الذكاء الاصطناعي)*\n\n"
+                    . "قام العميل *{$customerFullName}* بتقديم اعتراض، وتولى الذكاء الاصطناعي مراجعة السلعة وتعديل التقييم فوراً 🔄\n\n"
+                    . "📌 *سبب اعتراض العميل:*\n{$finalReason}\n\n"
+                    . "💰 *السعر السابق:* " . ($previousPrice ? number_format((float)$previousPrice, 0) . ' ريال' : 'غير محدد') . "\n"
+                    . "✨ *السعر الجديد بعد التعديل:* {$newPriceFormatted} ريال\n\n"
+                    . "تم إبلاغ العميل بالسعر الجديد وإرسال التقرير المحدث له بنجاح:";
+                $adminWhatsAppMsg .= \App\Services\WhatsAppService::formatActionLink('عرض تفاصيل الطلب', $adminOrderLink, '🔍');
+
+                app(\App\Services\WhatsAppService::class)->sendMessage($ownerPhone, $adminWhatsAppMsg);
+
+                $adminEmails = \App\Models\User::role('superadmin')->pluck('email')->filter()->toArray();
+                $defaultAdminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
+                if (!in_array($defaultAdminEmail, $adminEmails)) {
+                    $adminEmails[] = $defaultAdminEmail;
+                }
+                foreach ($adminEmails as $aEmail) {
+                    \Illuminate\Support\Facades\Mail::to($aEmail)->send(new \App\Mail\SystemNotificationMail(
+                        "⚡ تعديل السعر آلياً للطلب #{$order->id} بناءً على اعتراض العميل",
+                        "مشرفنا الغالي .. قام العميل {$customerFullName} بتقديم اعتراض على الطلب #{$order->id}.\nسبب الاعتراض: {$finalReason}\nقام الذكاء الاصطناعي بإعادة التقييم وتعديل السعر إلى {$newPriceFormatted} ريال وإرسال النتيجة المحدثة للعميل فوراً.",
+                        $adminOrderLink,
+                        'عرض الطلب بالداشبورد'
+                    ));
+                }
+            } catch (\Exception $e) {
+                Log::error('Admin AI Objection Notification Failed: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => $lang === 'ar' ? 'تمت إعادة تقييم الطلب وتعديل السعر بنجاح بناءً على اعتراضك' : 'Order re-evaluated and price adjusted successfully based on objection',
+                'data' => [
+                    'order_id' => $order->id,
+                    'new_status' => $order->fresh()->status,
+                    'new_price' => (float) $newPrice,
+                    'ai_min_price' => (float) $order->ai_min_price,
+                    'ai_max_price' => (float) $order->ai_max_price,
+                    'objection_reason' => $order->objection_reason,
+                    'objected_at' => $order->objected_at,
+                ],
+                'order_id' => $order->id,
+                'new_status' => $order->fresh()->status,
+                'new_price' => (float) $newPrice,
+            ]);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // 2. مسار باقة الخبير (Expert) والتثمين الاحترافي الهجين (Best)
+        // ══════════════════════════════════════════════════════════════════════
         $order->update([
             'status' => 'beingReEstimated',
+            'objection_reason' => $finalReason,
+            'objection_reason_id' => $predefinedReason?->id,
+            'objected_at' => now(),
             'ai_min_price' => null,
             'ai_max_price' => null,
             'ai_price' => null,
@@ -1264,79 +1445,168 @@ class OrderController extends Controller
             'thamn_at' => null,
         ]);
 
-        // زيادة عداد إعادة التثمين
         $order->increment('re_evaluation_count');
-
-        // Refresh the model so the relations reflect the latest DB state
         $order->refresh();
 
-        $rateTypeAnswer = $order->details()
-            ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
-            ->first();
-
-        $evaluationType = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value;
-
-        switch ($evaluationType) {
-            case 'ai':
-                // Use ThamnEvaluationService which correctly attaches images to the AI prompt
-                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
-                break;
-
-            case 'expert':
-                if ($originalExpertId) {
-                    $order->update([
-                        'expert_id' => $originalExpertId,
-                        'status' => 'beingReEstimated',
-                        'expert_evaluated' => 0,
-                    ]);
-                } else {
-                    $this->sendToExperts($order);
-                }
-                break;
-
-            case 'best':
-                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
-                if ($originalExpertId) {
-                    $order->update([
-                        'expert_id' => $originalExpertId,
-                        'status' => 'beingReEstimated',
-                        'expert_evaluated' => 0,
-                    ]);
-                } else {
-                    app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
-                }
-                break;
-
-            default:
-                Log::warning('Unknown evaluation type on re-evaluate', [
-                    'order_id' => $order->id,
-                    'evaluation_type' => $evaluationType,
+        if ($evaluationType === 'best') {
+            // إعادة التقييم بواسطة الـ AI أولاً مع تضمين سبب الاعتراض لتزويد الخبير بمقترح محدث
+            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+            if ($originalExpertId) {
+                $order->update([
+                    'expert_id' => $originalExpertId,
+                    'status' => 'beingReEstimated',
+                    'expert_evaluated' => 0,
                 ]);
+            } else {
+                app(\App\Services\ThamnEvaluationService::class)->sendBestOrderToExperts($order);
+            }
+        } else {
+            // باقة الخبير (expert)
+            if ($originalExpertId) {
+                $order->update([
+                    'expert_id' => $originalExpertId,
+                    'status' => 'beingReEstimated',
+                    'expert_evaluated' => 0,
+                ]);
+            } else {
+                $this->sendToExperts($order);
+            }
         }
 
-        // Notify Expert about re-evaluation request via Email
+        // ─── إرسال إيميل وواتساب للخبير لتنبيهه بوجود احتجاج ───
         if ($originalExpert && $originalExpert->email) {
             try {
-                $customerName = $order->user->first_name . ' ' . $order->user->last_name;
+                $customerName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'العميل';
+                $emailBody = "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}.\n";
+                if ($finalReason) {
+                    $emailBody .= "سبب الاحتجاج: {$finalReason}\n";
+                }
+                $emailBody .= "يرجى الدخول وتدقيق السعر والتقييم مرة أخرى من خلال الرابط التالي.";
+
                 \Illuminate\Support\Facades\Mail::to($originalExpert->email)->send(new \App\Mail\SystemNotificationMail(
-                    'يا هلا بك.. طلب إعادة تقييم لمنتج! 🔄',
-                    "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}.\nيرجى الدخول وتدقيق السعر والتقييم مرة أخرى من خلال الرابط التالي.",
-                    route('orders.show', $order->id)
+                    'يا هلا بك.. طلب إعادة تقييم لمنتج (احتجاج)! 🔄',
+                    $emailBody,
+                    route('orders.show', $order->id),
+                    'مراجعة الطلب الآن'
                 ));
             } catch (\Exception $e) {
                 Log::error('Re-evaluation Expert Notification Mail Failed: ' . $e->getMessage());
             }
         }
 
+        if ($originalExpert && $originalExpert->phone) {
+            try {
+                $expertWhatsappMsg = "يا هلا بخبيرنا الغالي .. العميل قدم احتجاج وطلب إعادة تقييم لطلبه رقم #{$order->id} 🔄\n";
+                if ($finalReason) {
+                    $expertWhatsappMsg .= "سبب الاحتجاج: {$finalReason}\n";
+                }
+                $expertWhatsappMsg .= "تكفى ادخل ودقق السعر والتقييم مرة ثانية.";
+                $expertLink = route('orders.show', $order->id);
+                $expertWhatsappMsg .= \App\Services\WhatsAppService::formatActionLink('مراجعة الطلب الآن', $expertLink, '🔍');
+
+                app(\App\Services\WhatsAppService::class)->sendMessage($originalExpert->phone, $expertWhatsappMsg);
+            } catch (\Exception $e) {
+                Log::error('Expert Objection WhatsApp Notification Failed: ' . $e->getMessage());
+            }
+        }
+
+        // ─── إرسال رسالة واتساب للعميل لتأكيد استلام الاحتجاج ───
+        if ($order->user && $order->user->phone) {
+            try {
+                $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
+                $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا احتجاجك على تقييم طلبك رقم #{$order->id} بنجاح 🔄\n\n"
+                    . "ولا تشيل هم .. فريقنا والخبير المختص بيراجعون السعر وتفاصيل السلعة بدقة، ونبشرك بالنتيجة بأقرب وقت بإذن الله 🤝\n\n"
+                    . "📱 تقدر تتابع حالة طلبك وتفاصيل التقييم أولاً بأول من داخل تطبيق ثمن.\n\n"
+                    . "- فريق ثمن";
+
+                app(\App\Services\WhatsAppService::class)->sendMessage($order->user->phone, $customerWhatsappMsg);
+            } catch (\Exception $e) {
+                Log::error('Customer Objection WhatsApp Notification Failed: ' . $e->getMessage());
+            }
+        }
+
+        // ─── إرسال إيميل للعميل لتأكيد استلام الاحتجاج ───
+        if ($order->user && $order->user->email) {
+            try {
+                $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
+                $emailSubject = "تم استلام طلب الاحتجاج وإعادة التقييم لطلبك #{$order->id} 🔄";
+                $emailContent = "يا هلا بك يا {$customerFirstName}،\n\n"
+                    . "تم استلام احتجاجك وطلب إعادة التقييم لطلبك رقم #{$order->id} بنجاح.\n\n"
+                    . "سبب الاحتجاج المسجل:\n{$finalReason}\n\n"
+                    . "طلبك الآن قيد التدقيق والمراجعة بعناية من قبل فريق الإدارة والخبير المختص لضمان دقة التثمين، وسيتم إشعارك فور اكتمال التقييم.\n\n"
+                    . "شاكرين ومقدرين ثقتك بنا.";
+
+                \Illuminate\Support\Facades\Mail::to($order->user->email)->send(new \App\Mail\SystemNotificationMail(
+                    $emailSubject,
+                    $emailContent,
+                    route('orders.show', $order->id),
+                    'عرض تفاصيل الطلب'
+                ));
+            } catch (\Exception $e) {
+                Log::error('Customer Objection Email Notification Failed: ' . $e->getMessage());
+            }
+        }
+
+        // ─── إرسال واتساب وإيميل لصاحب المشروع والإدارة فور ورود الاحتجاج ───
+        try {
+            $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
+            $customerPhone = $order->user?->phone ?: 'غير متوفر';
+            $categoryName = $order->category?->name_ar ?: 'غير محدد';
+            $adminOrderLink = route('orders.show', $order->id);
+
+            // 1. إرسال واتساب لصاحب المشروع على الرقم المحدد: +966 50 395 5098
+            $ownerPhone = '966503955098';
+            $adminWhatsAppMsg = "⚠️ *تنبيه: احتجاج جديد على التقييم في منصة ثمن*\n\n"
+                . "مشرفنا الغالي .. العميل *{$customerFullName}* قدّم احتجاجاً وطلب إعادة تقييم لطلبه رقم *#{$order->id}* 🔄\n\n"
+                . "📌 *سبب الاحتجاج:*\n{$finalReason}\n\n"
+                . "📁 *القسم:* {$categoryName}\n"
+                . "👤 *جوال العميل:* {$customerPhone}\n\n"
+                . "تفضل بالدخول للوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل مباشرة:";
+
+            $adminWhatsAppMsg .= \App\Services\WhatsAppService::formatActionLink('عرض الاحتجاج والرد عليه', $adminOrderLink, '⚖️');
+
+            app(\App\Services\WhatsAppService::class)->sendMessage($ownerPhone, $adminWhatsAppMsg);
+
+            // 2. إرسال إيميل للأدمن مع رابط الدخول المباشر
+            $adminEmails = \App\Models\User::role('superadmin')->pluck('email')->filter()->toArray();
+            $defaultAdminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
+            if (!in_array($defaultAdminEmail, $adminEmails)) {
+                $adminEmails[] = $defaultAdminEmail;
+            }
+
+            $adminEmailSubject = "⚠️ تنبيه عاجل: احتجاج جديد على التقييم للطلب #{$order->id} من العميل {$customerFullName}";
+            $adminEmailContent = "مشرفنا الغالي،\n\n"
+                . "تم تقديم احتجاج رسمي وطلب إعادة تثمين لطلب في المنصة بالبيانات التالية:\n\n"
+                . "• رقم الطلب: #{$order->id}\n"
+                . "• اسم العميل: {$customerFullName}\n"
+                . "• جوال العميل: {$customerPhone}\n"
+                . "• قسم السلعة: {$categoryName}\n"
+                . "• تاريخ الاحتجاج: " . now()->format('Y-m-d H:i') . "\n\n"
+                . "📌 سبب الاحتجاج المرفوع من العميل:\n"
+                . "{$finalReason}\n\n"
+                . "يرجى الدخول إلى لوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل برسالة واتساب منظمة عبر النظام.";
+
+            foreach ($adminEmails as $aEmail) {
+                \Illuminate\Support\Facades\Mail::to($aEmail)->send(new \App\Mail\SystemNotificationMail(
+                    $adminEmailSubject,
+                    $adminEmailContent,
+                    $adminOrderLink,
+                    'عرض الاحتجاج والرد عليه'
+                ));
+            }
+        } catch (\Exception $e) {
+            Log::error('Admin Objection Notification (WhatsApp/Email) Failed: ' . $e->getMessage());
+        }
+
         // FCM Notification لإعادة التقييم (Saudi Phrasing)
-        $tokens = $order->user->getFcmTokens();
+        $tokens = $order->user?->getFcmTokens() ?? [];
         if (!empty($tokens)) {
             $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
             $this->notifyByFirebase(
-                $isAr ? 'ولايهمك .. تم استلام طلب إعادة التقييم' : 'Re-evaluation request received',
+                $isAr ? 'ولايهمك .. تم استلام طلب الاحتجاج وإعادة التقييم' : 'Objection & re-evaluation request received',
                 $isAr
-                ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} بدينا مرحلة المراجعة فورا"
-                : "We received your re-evaluation request for product #{$order->id} and started the review process immediately.",
+                ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} وبدأنا مرحلة المراجعة فوراً"
+                : "We received your objection & re-evaluation request for product #{$order->id} and started the review process immediately.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
@@ -1344,10 +1614,27 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => $lang === 'ar' ? 'تم طلب إعادة التقييم بنجاح' : 'Order re-evaluation requested successfully',
+            'message' => $lang === 'ar' ? 'تم تقديم الاحتجاج وطلب إعادة التقييم بنجاح' : 'Objection and re-evaluation requested successfully',
+            'data' => [
+                'order_id' => $order->id,
+                'new_status' => $order->fresh()->status,
+                'objection_reason' => $order->fresh()->objection_reason,
+                'objected_at' => $order->fresh()->objected_at,
+            ],
             'order_id' => $order->id,
             'new_status' => $order->fresh()->status,
         ]);
+    }
+
+    /**
+     * Dedicated objection endpoint alias for clarity
+     * POST /valuation-orders/{orderId}/objection
+     * POST /valuation-orders/objection
+     * POST /orders/objection
+     */
+    public function submitObjection(Request $request, $orderId = null)
+    {
+        return $this->reEvaluate($request, $orderId);
     }
 
     /**

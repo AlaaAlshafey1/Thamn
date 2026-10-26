@@ -230,6 +230,10 @@ Route::middleware('auth')->group(function () {
         [OrderController::class, 'thamnEvaluate']
     )->name('orders.thamn.evaluate');
 
+    // الرد على احتجاج العميل عبر واتساب وإيميل
+    Route::post('/orders/{order}/objection-reply', [OrderController::class, 'replyObjection'])
+        ->name('orders.objection.reply');
+
     // WhatsApp Settings
     Route::get('/whatsapp', [\App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('admin.whatsapp.index');
     Route::post('/whatsapp/logout', [\App\Http\Controllers\Admin\WhatsAppController::class, 'logout'])->name('admin.whatsapp.logout');
@@ -244,6 +248,12 @@ Route::middleware('auth')->group(function () {
     // General Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('admin.settings.store');
+
+    // Objection Reasons Management (أسباب الاحتجاج)
+    Route::post('/settings/objection-reasons', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'store'])->name('admin.objection-reasons.store');
+    Route::put('/settings/objection-reasons/{id}', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'update'])->name('admin.objection-reasons.update');
+    Route::delete('/settings/objection-reasons/{id}', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'destroy'])->name('admin.objection-reasons.destroy');
+    Route::post('/settings/objection-reasons/{id}/toggle', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'toggle'])->name('admin.objection-reasons.toggle');
 
     // AI Valuation Ratings
     Route::resource('ai-valuation-ratings', \App\Http\Controllers\Admin\AiValuationRatingController::class, ['as' => 'admin']);

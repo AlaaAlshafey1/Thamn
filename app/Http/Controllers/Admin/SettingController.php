@@ -14,7 +14,8 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::pluck('value', 'key')->toArray();
-        return view('admin.settings.index', compact('settings'));
+        $objectionReasons = \App\Models\ObjectionReason::orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
+        return view('admin.settings.index', compact('settings', 'objectionReasons'));
     }
 
     public function store(Request $request)

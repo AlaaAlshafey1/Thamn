@@ -12,8 +12,8 @@ class ShortLinkController extends Controller
         $link = ShortLink::where('code', $code)->first();
 
         if (!$link || ($link->expires_at && $link->expires_at->isPast())) {
-            return redirect()->route('expert.login')
-                ->withErrors(['identifier' => 'الرابط غير صالح أو منتهي الصلاحية']);
+            return redirect('/')
+                ->with('error', 'الرابط غير صالح أو منتهي الصلاحية');
         }
 
         // WhatsApp / social crawlers: return only a preview card (title + logo)

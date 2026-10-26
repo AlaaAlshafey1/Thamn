@@ -471,4 +471,54 @@ class SettingsController extends Controller
 
         return InvoiceResource::collection($payments);
     }
+
+    /**
+     * Get objection / re-evaluation predefined reasons
+     * GET /settings/objection-reasons
+     */
+    public function objectionReasons(Request $request)
+    {
+        $lang = strtolower($request->header('Accept-Language', 'ar'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
+
+        $reasons = \App\Models\ObjectionReason::active()->get();
+
+        $data = $reasons->map(function ($reason) use ($lang) {
+            return [
+                'id' => $reason->id,
+                'title' => $reason->getTitle($lang),
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => $lang === 'ar' ? 'تم جلب أسباب الاحتجاج بنجاح' : 'Objection reasons fetched successfully',
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * General settings index
+     * GET /settings
+     */
+    public function index(Request $request)
+    {
+        $lang = strtolower($request->header('Accept-Language', 'ar'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
+
+        $reasons = \App\Models\ObjectionReason::active()->get()->map(function ($reason) use ($lang) {
+            return [
+                'id' => $reason->id,
+                'title' => $reason->getTitle($lang),
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'objection_reasons' => $reasons,
+            ],
+        ]);
+    }
 }
+
