@@ -168,6 +168,7 @@
                                 'finished'       =>['b-done','مكتمل'],
                                 'completed'      =>['b-done','مكتمل'],
                                 'beingReEstimated'=>['b-prog','إعادة التقييم'],
+                                'reEstimated'    =>['b-done','تمت إعادة التقييم'],
                             ];
                             [$sc,$sl] = $sm[$order->status] ?? ['b-def',$order->status];
                             @endphp
@@ -247,6 +248,7 @@
                                 'estimated'      =>['b-done','تم التقييم'],
                                 'finished'       =>['b-done','مكتمل'],
                                 'completed'      =>['b-done','مكتمل'],
+                                'reEstimated'    =>['b-done','تمت إعادة التقييم'],
                             ];
                             [$sc,$sl] = $sm[$order->status] ?? ['b-def',$order->status];
                             @endphp

@@ -53,7 +53,7 @@ class OrderController extends Controller
             // الطلبات السابقة: اللي هو خلصها
             $completedOrders = Order::where('expert_id', Auth::id())
                 ->where(function ($q) {
-                    $q->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed'])
+                    $q->whereIn('status', ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated'])
                         ->orWhere(function ($sub) {
                             $sub->whereIn('status', ['beingEstimated', 'beingReEstimated'])
                                 ->where('expert_evaluated', 1);
@@ -161,7 +161,7 @@ class OrderController extends Controller
         }
 
         // منع الخبير من تقييم الأوردر مرة أخرى إذا تم تقييمه بالفعل وليس في وضع إعادة التقييم
-        if (in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated') {
+        if (in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated') {
             return back()->with('error', 'لقد قمت بتقييم هذا الطلب بالفعل ولا يمكن تعديله.');
         }
 

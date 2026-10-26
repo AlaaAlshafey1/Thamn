@@ -1745,7 +1745,7 @@
                 <!-- TAB: Evaluate -->
                 <div class="ex-main-card expert-tab-panel" id="tab-evaluate">
 
-                    @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed']) && $order->status !== 'beingReEstimated')
+                    @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated')
                         <!-- Evaluated State -->
                         <div class="success-badge">
                             <i class='bx bxs-badge-check'
@@ -1893,6 +1893,12 @@
                                 </div>
                                 <div class="p-2 rounded bg-white border" style="font-size: 0.95rem; color: #333;">
                                     <strong>سبب الاحتجاج:</strong> {{ $order->objection_reason }}
+                                    @if($order->total_price)
+                                        <div class="mt-2 pt-2 border-top">
+                                            <strong>السعر السابق المعترض عليه:</strong>
+                                            <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.95rem; font-weight: bold;">{{ number_format($order->total_price, 0) }} ريال</span>
+                                        </div>
+                                    @endif
                                     @if($order->objected_at)
                                         <div class="text-muted small mt-1"><i class="bx bx-time"></i> تاريخ الاحتجاج: {{ $order->objected_at->format('Y-m-d H:i') }} ({{ $order->objected_at->diffForHumans() }})</div>
                                     @endif
@@ -2012,21 +2018,21 @@
                                                 class="text-danger">*</span></label>
                                         <input type="number" name="expert_min_price" class="form-control"
                                             style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required
-                                            value="{{ old('expert_min_price', $order->ai_min_price ?? round(($order->total_price ?: 50000) * 0.8)) }}">
+                                            value="{{ old('expert_min_price', $order->expert_min_price ?? $order->ai_min_price ?? round(($order->total_price ?: 50000) * 0.8)) }}">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="font-weight-bold text-success" style="color:#009688 !important;">السعر المعتمد
                                             <span class="text-danger">*</span></label>
                                         <input type="number" name="expert_price" class="form-control"
                                             style="border-radius:12px; padding:12px; border:2px solid #009688; font-weight:bold; font-size:1.1rem; color:#009688;"
-                                            required value="{{ old('expert_price', $order->ai_price ?? $order->total_price) }}">
+                                            required value="{{ old('expert_price', $order->expert_price ?? $order->ai_price ?? $order->total_price) }}">
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="font-weight-bold" style="color:#555;">الحد الأعلى <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" name="expert_max_price" class="form-control"
                                             style="border-radius:12px; padding:12px; border: 1px solid #ccc;" required
-                                            value="{{ old('expert_max_price', $order->ai_max_price ?? round(($order->total_price ?: 50000) * 1.2)) }}">
+                                            value="{{ old('expert_max_price', $order->expert_max_price ?? $order->ai_max_price ?? round(($order->total_price ?: 50000) * 1.2)) }}">
                                     </div>
                                 </div>
                             @else
