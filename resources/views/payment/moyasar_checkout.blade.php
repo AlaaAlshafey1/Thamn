@@ -419,7 +419,7 @@
             applePayConfig = {
                 country: 'SA',
                 currency: 'SAR',
-                label: 'Thamn',
+                label: 'Thmmn',
                 validate_merchant_url: 'https://api.moyasar.com/v1/applepay/initiate'
             };
         }
