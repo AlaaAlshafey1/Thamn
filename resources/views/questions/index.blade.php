@@ -34,6 +34,49 @@ body { background-color: #f0f2f5; }
 }
 .btn-add:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(49,54,63,0.35); color: #F8B400; }
 
+.btn-dup-section {
+    background: linear-gradient(135deg, #F8B400 0%, #d49a00 100%);
+    color: #1a1d23;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(248,180,0,0.3);
+    text-decoration: none;
+}
+.btn-dup-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(248,180,0,0.4);
+    color: #1a1d23;
+}
+
+.btn-cat-duplicate {
+    background: rgba(248, 180, 0, 0.15);
+    color: #F8B400;
+    border: 1px solid rgba(248, 180, 0, 0.3);
+    padding: 5px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-cat-duplicate:hover {
+    background: #F8B400;
+    color: #1a1d23;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(248, 180, 0, 0.3);
+}
+
 /* ── Filter Card ── */
 .filter-card {
     background: #fff;
@@ -374,9 +417,14 @@ body { background-color: #f0f2f5; }
             <h3 class="page-title">إدارة الأسئلة والمراحل</h3>
             <p class="page-subtitle">اسحب وأفلت الأسئلة لإعادة ترتيبها، أو استخدم أزرار ↑↓</p>
         </div>
-        <a href="{{ route('questions.create', ['flow' => request('flow')]) }}" class="btn-add">
-            <i class="bx bx-plus fs-5"></i> سؤال جديد
-        </a>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button type="button" class="btn-dup-section open-dup-section-modal" id="openDupSectionModalBtn">
+                <i class="bx bx-duplicate fs-5"></i> نسخ قسم كامل
+            </button>
+            <a href="{{ route('questions.create', ['flow' => request('flow')]) }}" class="btn-add">
+                <i class="bx bx-plus fs-5"></i> سؤال جديد
+            </a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -436,7 +484,17 @@ body { background-color: #f0f2f5; }
                         <h4 class="category-title">{{ $category->name_ar }}</h4>
                         <span class="cat-count">{{ $totalQ }} سؤال</span>
                     </div>
-                    <i class="bx bx-chevron-up cat-chevron"></i>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn-cat-duplicate open-dup-section-modal"
+                                data-category-id="{{ $category->id }}"
+                                data-category-name="{{ $category->name_ar }}"
+                                onclick="event.stopPropagation();"
+                                title="نسخ جميع أسئلة هذا القسم وخياراتها إلى فئة أخرى">
+                            <i class="bx bx-duplicate"></i>
+                            <span>نسخ هذا القسم</span>
+                        </button>
+                        <i class="bx bx-chevron-up cat-chevron"></i>
+                    </div>
                 </div>
 
                 <div id="category-collapse-{{ $category->id }}" style="display: {{ $index == 0 ? 'block' : 'none' }};">
@@ -863,4 +921,6 @@ function showToast(msg, type) {
     setTimeout(() => { t.removeClass('show'); setTimeout(() => t.remove(), 400); }, 3000);
 }
 </script>
+
+@include('questions.partials.duplicate-section-modal')
 @endsection

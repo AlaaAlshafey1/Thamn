@@ -41,6 +41,23 @@ input.form-control, select.form-select, textarea.form-control {
 
 @section('content')
 <div class="form-card">
+
+{{-- ── Quick Banner: Duplicate Whole Section / Category ── --}}
+<div class="d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 border flex-wrap gap-3" style="background: linear-gradient(135deg, #1f232b 0%, #2e333d 100%); color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+    <div class="d-flex align-items-center gap-3">
+        <div style="width:44px; height:44px; border-radius:12px; background:rgba(248,180,0,0.15); border:1px solid rgba(248,180,0,0.3); color:#F8B400; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+            <i class="bx bx-duplicate"></i>
+        </div>
+        <div>
+            <div class="fw-bold" style="color:#F8B400; font-size:1.02rem;">هل تريد نسخ قسم كامل بأسئلته؟</div>
+            <div style="color:#c5c9d2; font-size:0.84rem;">بدلاً من إضافة الأسئلة يدوياً، يمكنك نسخ قسم كامل بجميع أسئلته وخياراته الرئيسية والفرعية ووضعها تحت الفئة المختارة فوراً.</div>
+        </div>
+    </div>
+    <button type="button" class="btn fw-bold px-3 py-2 shadow-sm open-dup-section-modal" id="btnOpenDupSectionModal" style="background:#F8B400; color:#1a1d23; border-radius:10px; font-size:0.92rem; border:none;">
+        <i class="bx bx-duplicate me-1"></i> نسخ قسم كامل الآن
+    </button>
+</div>
+
 <form action="{{ route('questions.store') }}" method="POST" enctype="multipart/form-data">
 @csrf
 
@@ -49,7 +66,12 @@ input.form-control, select.form-select, textarea.form-control {
 <div class="row g-3">
 
     <div class="col-6">
-        <label class="form-label">الفئة</label>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0">الفئة</label>
+            <a href="javascript:void(0)" class="text-primary small fw-bold text-decoration-none open-dup-section-modal" title="نسخ أسئلة قسم كامل هنا">
+                <i class="bx bx-duplicate"></i> نسخ أسئلة قسم كامل هنا
+            </a>
+        </div>
         <select name="category_id" class="form-select" required>
             <option value="">اختر</option>
             @foreach($categories as $category)
@@ -262,4 +284,6 @@ function addSubOption(btn) {
     container.insertAdjacentHTML('beforeend', html);
 }
 </script>
+
+@include('questions.partials.duplicate-section-modal')
 @endsection

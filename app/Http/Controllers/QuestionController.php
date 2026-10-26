@@ -9,6 +9,7 @@ use App\Models\QuestionOption;
 use App\Models\QuestionStep;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class QuestionController extends Controller
 {
@@ -24,7 +25,7 @@ class QuestionController extends Controller
             }
             // Order questions by order ASC, then by created_at ASC
             $query->orderBy('order', 'asc')->orderBy('created_at', 'asc');
-        }])->orderBy('created_at', 'asc')->get();
+        }])->withCount('questions')->orderBy('created_at', 'asc')->get();
 
         $uncategorizedQuestions = Question::whereNull('category_id')->where(function($query) use ($request) {
             if ($request->filled('flow')) {
@@ -49,7 +50,7 @@ class QuestionController extends Controller
 
     public function create(Request $request)
     {
-        $categories = Category::where('is_active', 1)->get();
+        $categories = Category::where('is_active', 1)->withCount('questions')->get();
 
         $steps = QuestionStep::where('is_active', 1)
             ->orderBy('sort_order')
@@ -496,13 +497,22 @@ class QuestionController extends Controller
         $newQuestion->save();
 
         // نسخ الخيارات الرئيسية مع الـ sub-options
-        $question->load('options');
-        foreach ($question->options->whereNull('parent_option_id') as $option) {
+        $parentOptions = QuestionOption::where('question_id', $question->id)
+            ->whereNull('parent_option_id')
+            ->orderBy('order', 'asc')
+            ->get();
+
+        foreach ($parentOptions as $option) {
             $newOption = $option->replicate();
             $newOption->question_id = $newQuestion->id;
             $newOption->save();
 
-            foreach ($question->options->where('parent_option_id', $option->id) as $subOption) {
+            $subOptions = QuestionOption::where('question_id', $question->id)
+                ->where('parent_option_id', $option->id)
+                ->orderBy('order', 'asc')
+                ->get();
+
+            foreach ($subOptions as $subOption) {
                 $newSub = $subOption->replicate();
                 $newSub->question_id = $newQuestion->id;
                 $newSub->parent_option_id = $newOption->id;
@@ -515,5 +525,138 @@ class QuestionController extends Controller
         return redirect()
             ->route('questions.index', ['flow' => $targetFlow])
             ->with('success', 'تم نسخ السؤال "' . $question->question_ar . '" بنجاح ✓');
+    }
+
+    /**
+     * نسخ قسم كامل (فئة) بكل أسئلتها وخياراتها والخيارات الفرعية
+     */
+    public function duplicateSection(Request $request)
+    {
+        $request->validate([
+            'source_category_id' => 'required|exists:categories,id',
+            'target_category_id' => 'required|exists:categories,id',
+            'source_step_id'     => 'nullable',
+            'target_step_id'     => 'nullable',
+            'flow'               => 'nullable|in:valuation,market,both,same',
+            'naming_mode'        => 'nullable|in:keep,prefix_copy',
+        ]);
+
+        $sourceCategory = Category::findOrFail($request->source_category_id);
+        $targetCategory = Category::findOrFail($request->target_category_id);
+
+        $query = Question::where('category_id', $sourceCategory->id);
+
+        // فلترة بالمرحلة المصدر إذا حُددت
+        if ($request->filled('source_step_id') && $request->source_step_id !== 'all') {
+            if ($request->source_step_id === 'unstaged') {
+                $query->whereNull('stageing');
+            } else {
+                $query->where('stageing', $request->source_step_id);
+            }
+        }
+
+        // فلترة بالـ flow إذا أُرسل
+        if ($request->filled('source_flow') && in_array($request->source_flow, ['valuation', 'market'])) {
+            $query->whereIn('flow', [$request->source_flow, 'both']);
+        }
+
+        $questions = $query->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
+
+        if ($questions->isEmpty()) {
+            return back()->with('error', 'لا توجد أسئلة في القسم المحدد لتنفيذ النسخ.');
+        }
+
+        $clonedCount = 0;
+        $optionsCount = 0;
+        $subOptionsCount = 0;
+
+        DB::transaction(function () use (
+            $request,
+            $sourceCategory,
+            $targetCategory,
+            $questions,
+            &$clonedCount,
+            &$optionsCount,
+            &$subOptionsCount
+        ) {
+            $maxOrder = Question::where('category_id', $targetCategory->id)->max('order') ?? 0;
+
+            foreach ($questions as $question) {
+                $newQuestion = $question->replicate();
+                $newQuestion->category_id = $targetCategory->id;
+
+                // التسمية
+                if ($request->naming_mode === 'prefix_copy' || ($sourceCategory->id === $targetCategory->id && $request->naming_mode !== 'keep')) {
+                    $newQuestion->question_ar = $question->question_ar . ' (نسخة)';
+                    if ($question->question_en) {
+                        $newQuestion->question_en = $question->question_en . ' (Copy)';
+                    }
+                }
+
+                $maxOrder++;
+                $newQuestion->order = $maxOrder;
+
+                // نوع الاستخدام
+                if ($request->filled('flow') && in_array($request->flow, ['valuation', 'market', 'both'])) {
+                    $newQuestion->flow = $request->flow;
+                }
+
+                // المرحلة في الفئة الهدف
+                if ($request->filled('target_step_id')) {
+                    if ($request->target_step_id === 'unstaged') {
+                        $newQuestion->stageing = null;
+                    } elseif ($request->target_step_id !== 'keep') {
+                        $newQuestion->stageing = $request->target_step_id;
+                    }
+                    // إذا كان 'keep' يبقى stageing كما هو في السؤال الأصلي
+                }
+
+                $newQuestion->save();
+                $clonedCount++;
+
+                // نسخ الخيارات والخيارات الفرعية
+                $parentOptions = QuestionOption::where('question_id', $question->id)
+                    ->whereNull('parent_option_id')
+                    ->orderBy('order', 'asc')
+                    ->get();
+
+                foreach ($parentOptions as $parentOption) {
+                    $newParent = $parentOption->replicate();
+                    $newParent->question_id = $newQuestion->id;
+                    $newParent->save();
+                    $optionsCount++;
+
+                    $subOptions = QuestionOption::where('question_id', $question->id)
+                        ->where('parent_option_id', $parentOption->id)
+                        ->orderBy('order', 'asc')
+                        ->get();
+
+                    foreach ($subOptions as $subOption) {
+                        $newSub = $subOption->replicate();
+                        $newSub->question_id = $newQuestion->id;
+                        $newSub->parent_option_id = $newParent->id;
+                        $newSub->save();
+                        $subOptionsCount++;
+                    }
+                }
+            }
+        });
+
+        $message = "تم بنجاح نسخ قسم \"{$sourceCategory->name_ar}\" إلى \"{$targetCategory->name_ar}\": تم نسخ {$clonedCount} سؤال، و{$optionsCount} خيار، و{$subOptionsCount} خيار فرعي بنجاح ✓";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'count'   => $clonedCount,
+                'target_category_id' => $targetCategory->id,
+            ]);
+        }
+
+        $targetFlow = $request->current_flow ?? ($request->filled('flow') && $request->flow !== 'same' ? $request->flow : request('flow'));
+
+        return redirect()
+            ->route('questions.index', ['flow' => $targetFlow])
+            ->with('success', $message);
     }
 }

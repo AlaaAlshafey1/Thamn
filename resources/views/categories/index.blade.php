@@ -96,6 +96,9 @@
         <button type="button" id="saveOrderBtn" class="btn btn-sm align-items-center gap-1">
             <i class="bx bx-save fs-5"></i> <span>حفظ الترتيب</span>
         </button>
+        <button type="button" class="btn btn-dark btn-sm d-flex align-items-center gap-1 open-dup-section-modal" id="openDupSectionModalBtn">
+            <i class="bx bx-duplicate fs-5"></i> <span>نسخ أسئلة قسم</span>
+        </button>
         <a href="{{ route('categories.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1" style="background-color:#c1953e; border-color:#c1953e;">
             <i class="bx bx-plus-circle fs-5"></i> <span>إضافة فئة جديدة</span>
         </a>
@@ -156,14 +159,17 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-outline-warning btn-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-sm open-dup-section-modal" data-category-id="{{ $category->id }}" title="نسخ أسئلة هذا القسم إلى قسم آخر">
+                                        <i class="bx bx-duplicate"></i>
+                                    </button>
+                                    <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-outline-warning btn-sm" title="تعديل">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
 
                                     <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="حذف">
                                             <i class="bx bx-trash"></i>
                                         </button>
                                     </form>
@@ -270,4 +276,6 @@ $(document).ready(function() {
     });
 });
 </script>
+
+@include('questions.partials.duplicate-section-modal')
 @endsection

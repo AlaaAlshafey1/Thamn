@@ -9,8 +9,9 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::orderBy('sort_order')->paginate(100);
-        return view('categories.index', compact('categories'));
+        $categories = Category::withCount('questions')->orderBy('sort_order')->paginate(100);
+        $steps = \App\Models\QuestionStep::where('is_active', 1)->orderBy('sort_order')->get();
+        return view('categories.index', compact('categories', 'steps'));
     }
 
     public function create()

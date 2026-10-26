@@ -1,0 +1,350 @@
+{
+	"info": {
+		"_postman_id": "4f726cc3-thamn-objection-api",
+		"name": "Thamn - Objection & Re-evaluation API (منظومة الاحتجاج)",
+		"description": "مجموعة طلبات Postman الخاصة بـ API الاحتجاج وإعادة التثمين وأسباب الاحتجاج الجاهزة في تطبيق ثمن.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_SANCTUM_TOKEN_HERE",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "93",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Settings API (أسباب الاحتجاج الجاهزة)",
+			"item": [
+				{
+					"name": "جلب أسباب الاحتجاج (عربي)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/settings/objection-reasons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"objection-reasons"
+							]
+						},
+						"description": "ترجع قائمة الأسباب الجاهزة بحقلي id و title فقط باللغة العربية."
+					},
+					"response": []
+				},
+				{
+					"name": "جلب أسباب الاحتجاج (English)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/settings/objection-reasons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"objection-reasons"
+							]
+						},
+						"description": "ترجع قائمة الأسباب الجاهزة بحقلي id و title باللغة الإنجليزية."
+					},
+					"response": []
+				},
+				{
+					"name": "إعدادات النظام العامة (تشمل أسباب الاحتجاج)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/settings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings"
+							]
+						},
+						"description": "مسار عام لجلب الإعدادات العامة ومن ضمنها objection_reasons."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Submit Objection (تقديم الاحتجاج)",
+			"item": [
+				{
+					"name": "تقديم احتجاج - باختيار سبب جاهز + ملاحظة إضافية",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason_id\": 1,\n  \"notes\": \"السلعة تم شراؤها حديثاً بفاتورة أصلية ولم تُستخدم نهائياً\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/objection",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"objection"
+							]
+						},
+						"description": "تقديم احتجاج باختيار رقم السبب الجاهز reason_id مع إضافة ملاحظة توضيحية اختيارية."
+					},
+					"response": []
+				},
+				{
+					"name": "تقديم احتجاج - بكتابة سبب مخصص نصي فقط",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason\": \"السعر المقدر أقل بكثير من القيمة الحقيقية للسلعة في السوق حالياً\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/objection",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"objection"
+							]
+						},
+						"description": "تقديم احتجاج بكتابة سبب نصي مباشرة دون اختيار رقم السبب الجاهز."
+					},
+					"response": []
+				},
+				{
+					"name": "تقديم احتجاج - مسار بديل بالـ URL (valuation-orders/:id/objection)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason_id\": 2,\n  \"reason\": \"أرى أن التثمين لم يراعِ النظافة والمرفقات الأصلية\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/objection",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"valuation-orders",
+								"{{orderId}}",
+								"objection"
+							]
+						},
+						"description": "تقديم احتجاج مع تمرير رقم الطلب في الرابط كـ Parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "إعادة التقييم (المسار السابق المحدث re-evaluate)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason_id\": 3,\n  \"notes\": \"أرجو إعادة النظر في السعر بناءً على المرفقات\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/re-evaluate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"valuation-orders",
+								"{{orderId}}",
+								"re-evaluate"
+							]
+						},
+						"description": "المسار الأصلي القديم لإعادة التقييم تم تحديثه ليدعم استقبال وحفظ سبب الاحتجاج وإرسال الواتساب والإيميل."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Order Result (نتيجة التقييم)",
+			"item": [
+				{
+					"name": "عرض نتيجة التقييم وأسباب الاحتجاج المتاحة",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/result",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"valuation-orders",
+								"{{orderId}}",
+								"result"
+							]
+						},
+						"description": "تعرض تفاصيل ونتيجة التقييم، وتتضمن حقل objection_reasons بقائمة الأسباب الجاهزة وحقل objection_reason إذا كان الطلب عليه احتجاج حالي."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

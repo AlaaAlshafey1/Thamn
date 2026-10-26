@@ -142,6 +142,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
     Route::resource('categories', CategoryController::class);
+    Route::post('questions/duplicate-section', [QuestionController::class, 'duplicateSection'])->name('questions.duplicateSection');
     Route::resource('questions', QuestionController::class);
     Route::post('questions/reorder', [QuestionController::class, 'reorder'])->name('questions.reorder');
     Route::post('questions/toggle-active', [QuestionController::class, 'toggleActive'])->name('questions.toggleActive');
