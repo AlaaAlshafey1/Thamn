@@ -481,19 +481,8 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'ar'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
 
-        $reasons = \App\Models\ObjectionReason::active()->get();
-
-        $data = $reasons->map(function ($reason) use ($lang) {
-            return [
-                'id' => $reason->id,
-                'title' => $reason->getTitle($lang),
-            ];
-        });
-
         return response()->json([
-            'status' => true,
-            'message' => $lang === 'ar' ? 'تم جلب أسباب الاحتجاج بنجاح' : 'Objection reasons fetched successfully',
-            'data' => $data,
+            'data' => \App\Models\ObjectionReason::getFormattedData($lang),
         ]);
     }
 
@@ -506,17 +495,10 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'ar'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
 
-        $reasons = \App\Models\ObjectionReason::active()->get()->map(function ($reason) use ($lang) {
-            return [
-                'id' => $reason->id,
-                'title' => $reason->getTitle($lang),
-            ];
-        });
-
         return response()->json([
             'status' => true,
             'data' => [
-                'objection_reasons' => $reasons,
+                'objection_reasons' => \App\Models\ObjectionReason::getFormattedData($lang),
             ],
         ]);
     }

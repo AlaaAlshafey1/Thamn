@@ -931,9 +931,22 @@ class OrderController extends Controller
             ? ($order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد')
             : ($order->category?->expert_opinion_label_en ?: 'Certified Expert Opinion');
 
+        $rawAnswers = $order->details->map(function ($d) {
+            return [
+                'question_id' => $d->question_id,
+                'option_id' => $d->option_id,
+                'sub_option_id' => $d->sub_option_id,
+                'value' => $d->value,
+                'price' => $d->price,
+                'status' => $d->status,
+                'stageing' => $d->stageing,
+            ];
+        })->values();
+
         /* ===================== RESPONSE ===================== */
         return response()->json([
             'id' => $order->id,
+            'category_id' => $order->category_id,
             'category' => $category,
             'status' => $mappedStatus,
             'description' => $description,
@@ -943,14 +956,12 @@ class OrderController extends Controller
             'reasoning' => $reasoning,
             'prices' => $prices,
             'details' => $details,
+            'answers' => $rawAnswers,
             'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
             'is_re_evaluated' => $order->re_evaluation_count > 0,
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
-            'objection_reasons' => \App\Models\ObjectionReason::active()->get()->map(fn($r) => [
-                'id' => $r->id,
-                'title' => $r->getTitle($lang),
-            ]),
+            'objection_reasons' => \App\Models\ObjectionReason::getFormattedData($lang),
             'objection_reason' => $order->objection_reason,
             'objected_at' => $order->objected_at,
             // مسمى / عنوان رأي الخبير المعتمد المخصص لكل فئة
@@ -1215,6 +1226,11 @@ class OrderController extends Controller
 
     public function reEvaluate(Request $request, $orderId = null)
     {
+        // إذا تم إرسال مصفوفة المدخلات المعدلة (answers) مباشرة ضمن طلب الاحتجاج، نحولها لمسار تعديل المدخلات وإعادة التقييم بدون دفع
+        if ($request->has('answers') && is_array($request->input('answers'))) {
+            return $this->modifyInputsAndReEvaluate($request, $orderId);
+        }
+
         $lang = strtolower($request->header('Accept-Language', 'en'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
 
@@ -1247,16 +1263,20 @@ class OrderController extends Controller
             ], 403);
         }
 
-        // ─── تجهيز والتحقق من سبب الاحتجاج ───
+        // ─── تجهيز والتحقق من سبب الاحتجاج (يدعم الـ ID الرئيسي أو الـ Option ID الفرعي مثل 1001، 1002) ───
         $reasonText = $request->input('reason') ?? $request->input('objection_reason') ?? $request->input('notes');
-        $reasonId = $request->input('reason_id') ?? $request->input('objection_reason_id');
-        $predefinedReason = $reasonId ? \App\Models\ObjectionReason::find($reasonId) : null;
+        $reasonId = $request->input('reason_id') ?? $request->input('objection_reason_id') ?? $request->input('type_id');
+        $optionId = $request->input('option_id') ?? $request->input('sub_reason_id') ?? $request->input('sub_option_id');
+
+        $resolved = \App\Models\ObjectionReason::resolveSelection($reasonId, $optionId, $lang);
+        $predefinedReason = $resolved['model'];
+        $resolvedText = $resolved['text'];
 
         $finalReason = null;
-        if ($predefinedReason && !empty($reasonText)) {
-            $finalReason = $predefinedReason->getTitle($lang) . ' - ' . $reasonText;
-        } elseif ($predefinedReason) {
-            $finalReason = $predefinedReason->getTitle($lang);
+        if (!empty($resolvedText) && !empty($reasonText)) {
+            $finalReason = $resolvedText . ' - ' . $reasonText;
+        } elseif (!empty($resolvedText)) {
+            $finalReason = $resolvedText;
         } elseif (!empty($reasonText)) {
             $finalReason = $reasonText;
         }
@@ -1298,6 +1318,247 @@ class OrderController extends Controller
             ], 400);
         }
 
+        return $this->executeReEvaluationFlow($order, $finalReason, $predefinedReason?->id, $lang);
+    }
+
+    /**
+     * تعديل مدخلات الطلب وإعادة تقييمه فوراً بدون دفع (عند اختيار input_modification في الاحتجاج)
+     * POST /valuation-orders/{orderId}/modify-inputs
+     * POST /valuation-orders/{orderId}/input-modification
+     * POST /orders/modify-inputs
+     */
+    public function modifyInputsAndReEvaluate(Request $request, $orderId = null)
+    {
+        $lang = strtolower($request->header('Accept-Language', 'en'));
+        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+
+        $orderId = $orderId ?? $request->input('order_id') ?? $request->input('orderId');
+
+        if (!$orderId) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'رقم الطلب مطلوب' : 'Order ID is required.',
+            ], 422);
+        }
+
+        $order = Order::with(['details.question', 'details.option', 'files', 'category', 'user', 'expert'])
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar' ? 'الطلب غير موجود' : 'Order not found.',
+            ], 404);
+        }
+
+        // ─── التحقق من ملكية الطلب ───
+        if (auth()->check() && !auth()->user()->hasAnyRole(['admin', 'superadmin']) && $order->user_id !== auth()->id()) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'غير مصرح لك بتعديل هذا الطلب'
+                    : 'You are not authorized to modify this order.',
+            ], 403);
+        }
+
+        // ─── التحقق: إعادة التثمين مرة واحدة فقط ───
+        if ($order->re_evaluation_count >= 1) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'لقد استنفذت فرصة الاحتجاج وتعديل المدخلات المتاحة'
+                    : 'You have already used your re-evaluation opportunity.',
+            ], 400);
+        }
+
+        // ─── التحقق: خلال 24 ساعة من التقييم الأصلي ───
+        if ($order->evaluated_at && $order->evaluated_at->diffInHours(now()) > 24) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'انتهت مهلة الاحتجاج وتعديل المدخلات (24 ساعة)'
+                    : 'Input modification & re-evaluation window has expired (24 hours).',
+            ], 400);
+        }
+
+        // ─── التحقق: لازم يكون متقيم أصلاً ───
+        if (!$order->evaluated_at) {
+            return response()->json([
+                'status' => false,
+                'message' => $lang === 'ar'
+                    ? 'لا يمكن تقديم احتجاج أو تعديل مدخلات بدون دفع لطلب لم يتم تقييمه بعد'
+                    : 'Cannot re-evaluate an order that has not been evaluated yet.',
+            ], 400);
+        }
+
+        $request->validate([
+            'answers' => 'required|array',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.option_id' => 'nullable',
+            'answers.*.sub_option_id' => 'nullable',
+            'answers.*.value' => 'nullable|string',
+            'answers.*.price' => 'nullable|numeric',
+            'answers.*.status' => 'nullable|integer',
+            'answers.*.stageing' => 'nullable|integer',
+            'oldImages' => 'nullable|array',
+            'oldFiles' => 'nullable|array',
+            'notes' => 'nullable|string|max:2000',
+            'reason' => 'nullable|string|max:2000',
+        ]);
+
+        // ─── الاحتفاظ بباقة التقييم المدفوعة مسبقاً (rateTypeSelection) ───
+        $originalRateTypeDetail = $order->details()
+            ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
+            ->first();
+
+        $originalRateTypeData = $originalRateTypeDetail ? [
+            'question_id' => $originalRateTypeDetail->question_id,
+            'option_id' => $originalRateTypeDetail->option_id,
+            'sub_option_id' => $originalRateTypeDetail->sub_option_id,
+            'value' => $originalRateTypeDetail->value,
+            'price' => $originalRateTypeDetail->price,
+            'status' => $originalRateTypeDetail->status ?? 1,
+            'stageing' => $originalRateTypeDetail->stageing,
+        ] : null;
+
+        // ─── تحديث الصور والملفات إذا تم إرسالها ───
+        if ($request->has('oldImages')) {
+            $oldImageIds = (array) $request->get('oldImages', []);
+            $imagesToDelete = OrderFiles::where('order_id', $order->id)
+                ->where('type', 'image')
+                ->whereNotIn('id', $oldImageIds)
+                ->get();
+            foreach ($imagesToDelete as $file) {
+                Storage::disk('public')->delete($file->file_path);
+                $file->delete();
+            }
+        }
+
+        if ($request->has('oldFiles')) {
+            $oldFileIds = (array) $request->get('oldFiles', []);
+            $filesToDelete = OrderFiles::where('order_id', $order->id)
+                ->where('type', 'file')
+                ->whereNotIn('id', $oldFileIds)
+                ->get();
+            foreach ($filesToDelete as $file) {
+                Storage::disk('public')->delete($file->file_path);
+                $file->delete();
+            }
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('orders/' . $order->id . '/images', 'public');
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'image',
+                ]);
+            }
+        }
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('orders/' . $order->id . '/files', 'public');
+                OrderFiles::create([
+                    'order_id' => $order->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $path,
+                    'type' => 'file',
+                ]);
+            }
+        }
+
+        // ─── استبدال الإجابات بالمدخلات المعدلة ───
+        OrderDetails::where('order_id', $order->id)->delete();
+
+        $allOptionIds = [];
+        foreach ($request->answers as $answer) {
+            $opt = $answer['option_id'] ?? null;
+            if (is_array($opt)) {
+                $allOptionIds = array_merge($allOptionIds, $opt);
+            } elseif ($opt !== null) {
+                $allOptionIds[] = $opt;
+            }
+            $subOpt = $answer['sub_option_id'] ?? null;
+            if ($subOpt !== null) {
+                $allOptionIds[] = $subOpt;
+            }
+        }
+        $validOptionIds = \App\Models\QuestionOption::whereIn('id', $allOptionIds)->pluck('id')->toArray();
+
+        $hasRateTypeInNewAnswers = false;
+        foreach ($request->answers as $answer) {
+            if ($originalRateTypeData && (int) $answer['question_id'] === (int) $originalRateTypeData['question_id']) {
+                $hasRateTypeInNewAnswers = true;
+            }
+
+            $optionIds = is_array($answer['option_id'] ?? null)
+                ? $answer['option_id']
+                : [$answer['option_id'] ?? null];
+
+            if (empty(array_filter($optionIds))) {
+                OrderDetails::create([
+                    'order_id' => $order->id,
+                    'question_id' => $answer['question_id'],
+                    'option_id' => null,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
+                    'value' => $answer['value'] ?? null,
+                    'price' => $answer['price'] ?? null,
+                    'status' => $answer['status'] ?? 1,
+                    'stageing' => $answer['stageing'] ?? null,
+                ]);
+                continue;
+            }
+
+            foreach ($optionIds as $optionId) {
+                if ($optionId === null || !in_array($optionId, $validOptionIds)) {
+                    continue;
+                }
+
+                OrderDetails::create([
+                    'order_id' => $order->id,
+                    'question_id' => $answer['question_id'],
+                    'option_id' => $optionId,
+                    'sub_option_id' => (isset($answer['sub_option_id']) && in_array($answer['sub_option_id'], $validOptionIds)) ? $answer['sub_option_id'] : null,
+                    'value' => $answer['value'] ?? null,
+                    'price' => $answer['price'] ?? null,
+                    'status' => $answer['status'] ?? 1,
+                    'stageing' => $answer['stageing'] ?? null,
+                ]);
+            }
+        }
+
+        // إذا لم يرسل الموبايل سؤال الباقة ضمن المدخلات المعدلة، نعيد إرفاق الباقة المدفوعة تلقائياً
+        if (!$hasRateTypeInNewAnswers && $originalRateTypeData) {
+            OrderDetails::create(array_merge(['order_id' => $order->id], $originalRateTypeData));
+        }
+
+        $order->update([
+            'payload' => json_encode($request->answers),
+        ]);
+
+        // ─── تحديد سبب الاحتجاج كـ "تعديل المدخلات" (input_modification) ───
+        $inputModReason = \App\Models\ObjectionReason::where('type', 'input_modification')->first();
+        $baseReasonTitle = $inputModReason
+            ? $inputModReason->getTitle($lang)
+            : ($lang === 'ar' ? 'تعديل المدخلات' : 'Input Modification');
+
+        $extraNote = $request->input('notes') ?? $request->input('reason') ?? $request->input('objection_reason');
+        $finalReason = !empty($extraNote) ? ($baseReasonTitle . ' - ' . $extraNote) : $baseReasonTitle;
+
+        // إعادة تحميل العلاقات بعد تعديل المدخلات والصور
+        $order->load(['details.question', 'details.option', 'files', 'category', 'user', 'expert']);
+
+        return $this->executeReEvaluationFlow($order, $finalReason, $inputModReason?->id, $lang, true);
+    }
+
+    /**
+     * تنفيذ مسار إعادة التثمين وإرسال الإشعارات (بدون دفع)
+     */
+    private function executeReEvaluationFlow(Order $order, string $finalReason, ?int $reasonModelId, string $lang, bool $isInputModified = false)
+    {
         $originalExpertId = $order->expert_id;
         $originalExpert = $order->expert;
         $previousPrice = $order->total_price ?: ($order->ai_price ?: $order->expert_price);
@@ -1316,7 +1577,7 @@ class OrderController extends Controller
             $order->update([
                 'status' => 'beingReEstimated',
                 'objection_reason' => $finalReason,
-                'objection_reason_id' => $predefinedReason?->id,
+                'objection_reason_id' => $reasonModelId,
                 'objected_at' => now(),
                 'ai_min_price' => null,
                 'ai_max_price' => null,
@@ -1326,8 +1587,9 @@ class OrderController extends Controller
             ]);
             $order->increment('re_evaluation_count');
             $order->refresh();
+            $order->load(['details.question', 'details.option', 'files', 'category', 'user', 'expert']);
 
-            // تشغيل الـ AI مع تمرير سبب الاعتراض لتعديل السعر فوراً
+            // تشغيل الـ AI مع تمرير سبب الاعتراض والمدخلات المحدثة لتعديل السعر فوراً
             app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
             $order->refresh();
 
@@ -1340,7 +1602,7 @@ class OrderController extends Controller
             if ($order->user && $order->user->phone) {
                 try {
                     $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم #{$order->id} بنجاح 🔄\n\n"
-                        . "بناءً على اعتراضك، قام نظام الذكاء الاصطناعي بتدقيق التقييم وتعديل السعر العادل ليصبح:\n"
+                        . "بناءً على " . ($isInputModified ? "تعديل المدخلات" : "اعتراضك") . "، قام نظام الذكاء الاصطناعي بتدقيق التقييم وتعديل السعر العادل ليصبح:\n"
                         . "💰 *السعر الجديد المعتمد: {$newPriceFormatted} ريال*" . ($previousPrice ? " (السعر السابق: " . number_format((float)$previousPrice, 0) . " ريال)\n\n" : "\n\n")
                         . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
                         . "- فريق ثمن";
@@ -1365,10 +1627,10 @@ class OrderController extends Controller
             if (!empty($tokens)) {
                 $isAr = ($order->user->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
-                    $isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on your objection',
+                    $isAr ? 'تم تعديل السعر بناءً على طلبك 🎯' : 'Price adjusted based on your request',
                     $isAr
-                        ? "قام الذكاء الاصطناعي بمراجعة اعتراضك وتعديل السعر لطلبك رقم {$order->id} ليصبح {$newPriceFormatted} ريال. تفضل بالاطلاع على التفاصيل الآن."
-                        : "AI reviewed your objection and adjusted the price for order #{$order->id} to {$newPriceFormatted} SAR. Check it now.",
+                        ? "قام الذكاء الاصطناعي بمراجعة طلبك وتعديل السعر للطلب رقم {$order->id} ليصبح {$newPriceFormatted} ريال. تفضل بالاطلاع على التفاصيل الآن."
+                        : "AI reviewed your request and adjusted the price for order #{$order->id} to {$newPriceFormatted} SAR. Check it now.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_ai']]
                 );
@@ -1380,8 +1642,8 @@ class OrderController extends Controller
                 $ownerPhone = '966503955098';
 
                 $adminWhatsAppMsg = "⚡ *تنبيه: تم تعديل السعر آلياً للطلب #{$order->id} (باقة الذكاء الاصطناعي)*\n\n"
-                    . "قام العميل *{$customerFullName}* بتقديم اعتراض، وتولى الذكاء الاصطناعي مراجعة السلعة وتعديل التقييم فوراً 🔄\n\n"
-                    . "📌 *سبب اعتراض العميل:*\n{$finalReason}\n\n"
+                    . "قام العميل *{$customerFullName}* بتقديم " . ($isInputModified ? "طلب تعديل مدخلات وإعادة تقييم" : "اعتراض") . "، وتولى الذكاء الاصطناعي مراجعة السلعة وتعديل التقييم فوراً 🔄\n\n"
+                    . "📌 *سبب الاحتجاج:*\n{$finalReason}\n\n"
                     . "💰 *السعر السابق:* " . ($previousPrice ? number_format((float)$previousPrice, 0) . ' ريال' : 'غير محدد') . "\n"
                     . "✨ *السعر الجديد بعد التعديل:* {$newPriceFormatted} ريال\n\n"
                     . "تم إبلاغ العميل بالسعر الجديد وإرسال التقرير المحدث له بنجاح:";
@@ -1408,7 +1670,9 @@ class OrderController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => $lang === 'ar' ? 'تمت إعادة تقييم الطلب وتعديل السعر بنجاح بناءً على اعتراضك' : 'Order re-evaluated and price adjusted successfully based on objection',
+                'message' => $lang === 'ar'
+                    ? ($isInputModified ? 'تم تعديل المدخلات وإعادة تقييم الطلب بنجاح' : 'تمت إعادة تقييم الطلب وتعديل السعر بنجاح بناءً على اعتراضك')
+                    : ($isInputModified ? 'Inputs modified and order re-evaluated successfully' : 'Order re-evaluated and price adjusted successfully based on objection'),
                 'data' => [
                     'order_id' => $order->id,
                     'new_status' => $order->fresh()->status,
@@ -1430,7 +1694,7 @@ class OrderController extends Controller
         $order->update([
             'status' => 'beingReEstimated',
             'objection_reason' => $finalReason,
-            'objection_reason_id' => $predefinedReason?->id,
+            'objection_reason_id' => $reasonModelId,
             'objected_at' => now(),
             'ai_min_price' => null,
             'ai_max_price' => null,
@@ -1447,6 +1711,7 @@ class OrderController extends Controller
 
         $order->increment('re_evaluation_count');
         $order->refresh();
+        $order->load(['details.question', 'details.option', 'files', 'category', 'user', 'expert']);
 
         if ($evaluationType === 'best') {
             // إعادة التقييم بواسطة الـ AI أولاً مع تضمين سبب الاعتراض لتزويد الخبير بمقترح محدث
@@ -1473,11 +1738,11 @@ class OrderController extends Controller
             }
         }
 
-        // ─── إرسال إيميل وواتساب للخبير لتنبيهه بوجود احتجاج ───
+        // ─── إرسال إيميل وواتساب للخبير لتنبيهه بوجود احتجاج / تعديل مدخلات ───
         if ($originalExpert && $originalExpert->email) {
             try {
                 $customerName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'العميل';
-                $emailBody = "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}.\n";
+                $emailBody = "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}" . ($isInputModified ? " بعد تعديل المدخلات.\n" : ".\n");
                 if ($finalReason) {
                     $emailBody .= "سبب الاحتجاج: {$finalReason}\n";
                 }
@@ -1496,7 +1761,7 @@ class OrderController extends Controller
 
         if ($originalExpert && $originalExpert->phone) {
             try {
-                $expertWhatsappMsg = "يا هلا بخبيرنا الغالي .. العميل قدم احتجاج وطلب إعادة تقييم لطلبه رقم #{$order->id} 🔄\n";
+                $expertWhatsappMsg = "يا هلا بخبيرنا الغالي .. العميل قدم احتجاج وطلب إعادة تقييم لطلبه رقم #{$order->id}" . ($isInputModified ? " (مع تعديل المدخلات)" : "") . " 🔄\n";
                 if ($finalReason) {
                     $expertWhatsappMsg .= "سبب الاحتجاج: {$finalReason}\n";
                 }
@@ -1514,7 +1779,7 @@ class OrderController extends Controller
         if ($order->user && $order->user->phone) {
             try {
                 $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
-                $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا احتجاجك على تقييم طلبك رقم #{$order->id} بنجاح 🔄\n\n"
+                $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا " . ($isInputModified ? "تعديلاتك وطلب إعادة التقييم" : "احتجاجك على تقييم") . " طلبك رقم #{$order->id} بنجاح 🔄\n\n"
                     . "ولا تشيل هم .. فريقنا والخبير المختص بيراجعون السعر وتفاصيل السلعة بدقة، ونبشرك بالنتيجة بأقرب وقت بإذن الله 🤝\n\n"
                     . "📱 تقدر تتابع حالة طلبك وتفاصيل التقييم أولاً بأول من داخل تطبيق ثمن.\n\n"
                     . "- فريق ثمن";
@@ -1554,7 +1819,6 @@ class OrderController extends Controller
             $categoryName = $order->category?->name_ar ?: 'غير محدد';
             $adminOrderLink = route('orders.show', $order->id);
 
-            // 1. إرسال واتساب لصاحب المشروع على الرقم المحدد: +966 50 395 5098
             $ownerPhone = '966503955098';
             $adminWhatsAppMsg = "⚠️ *تنبيه: احتجاج جديد على التقييم في منصة ثمن*\n\n"
                 . "مشرفنا الغالي .. العميل *{$customerFullName}* قدّم احتجاجاً وطلب إعادة تقييم لطلبه رقم *#{$order->id}* 🔄\n\n"
@@ -1567,7 +1831,6 @@ class OrderController extends Controller
 
             app(\App\Services\WhatsAppService::class)->sendMessage($ownerPhone, $adminWhatsAppMsg);
 
-            // 2. إرسال إيميل للأدمن مع رابط الدخول المباشر
             $adminEmails = \App\Models\User::role('superadmin')->pluck('email')->filter()->toArray();
             $defaultAdminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
             if (!in_array($defaultAdminEmail, $adminEmails)) {
@@ -1614,7 +1877,9 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => $lang === 'ar' ? 'تم تقديم الاحتجاج وطلب إعادة التقييم بنجاح' : 'Objection and re-evaluation requested successfully',
+            'message' => $lang === 'ar'
+                ? ($isInputModified ? 'تم تعديل المدخلات وطلب إعادة التقييم بنجاح بدون رسوم إضافية' : 'تم تقديم الاحتجاج وطلب إعادة التقييم بنجاح')
+                : ($isInputModified ? 'Inputs modified and re-evaluation requested successfully without extra fees' : 'Objection and re-evaluation requested successfully'),
             'data' => [
                 'order_id' => $order->id,
                 'new_status' => $order->fresh()->status,

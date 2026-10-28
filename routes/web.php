@@ -251,6 +251,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('admin.settings.store');
 
     // Objection Reasons Management (أسباب الاحتجاج)
+    Route::post('/settings/objection-reasons/form-title', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'updateFormTitle'])->name('admin.objection-reasons.form-title');
     Route::post('/settings/objection-reasons', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'store'])->name('admin.objection-reasons.store');
     Route::put('/settings/objection-reasons/{id}', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'update'])->name('admin.objection-reasons.update');
     Route::delete('/settings/objection-reasons/{id}', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'destroy'])->name('admin.objection-reasons.destroy');

@@ -2,51 +2,86 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\ObjectionReason;
+use App\Models\Setting;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ObjectionReasonSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
+        // حفظ عنوان نافذة الاحتجاج (formTitle) في جدول الإعدادات
+        Setting::updateOrCreate(
+            ['key' => 'objection_form_title_ar'],
+            ['value' => 'اختر سبب عدم رضاك عن التثمين']
+        );
+
+        Setting::updateOrCreate(
+            ['key' => 'objection_form_title_en'],
+            ['value' => 'Select the reason for your dissatisfaction with the valuation']
+        );
+
+        // تفريغ الجدول وإعادة ضبط الأسباب بالمعرفات (IDs) المطلوبة من تطبيق الموبايل
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        ObjectionReason::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $reasons = [
             [
-                'title_ar' => 'السعر المقدر أقل بكثير من القيمة السوقية الحالية للسلعة',
-                'title_en' => 'Estimated price is much lower than the current market value of the item',
+                'id' => 1,
+                'type' => 'cat_with_sub_cat',
+                'title_ar' => 'تقدير السعر',
+                'title_en' => 'Price Estimation',
+                'subtitle_ar' => 'السعر أعلى أو أقل من المتوقع',
+                'subtitle_en' => 'Price is higher or lower than expected',
+                'icon' => 'price_estimation',
+                'options' => [
+                    [
+                        'id' => 1001,
+                        'title_ar' => 'السعر أعلى من المتوقع',
+                        'title_en' => 'Price is higher than expected',
+                    ],
+                    [
+                        'id' => 1002,
+                        'title_ar' => 'السعر أقل من المتوقع',
+                        'title_en' => 'Price is lower than expected',
+                    ],
+                ],
                 'is_active' => true,
                 'sort_order' => 1,
             ],
             [
-                'title_ar' => 'السعر المقدر أعلى من القيمة الواقعية للسلعة',
-                'title_en' => 'Estimated price is higher than the realistic value of the item',
+                'id' => 2,
+                'type' => 'input_modification',
+                'title_ar' => 'تعديل المدخلات',
+                'title_en' => 'Input Modification',
+                'subtitle_ar' => 'طلب تعديل المدخلات الخاصة بالتثمين',
+                'subtitle_en' => 'Request to modify valuation inputs',
+                'icon' => 'input_modification',
+                'options' => null,
                 'is_active' => true,
                 'sort_order' => 2,
             ],
             [
-                'title_ar' => 'لم يتم مراعاة حالة السلعة والمواصفات المرفقة بدقة',
-                'title_en' => 'Item condition and attached specifications were not accurately considered',
+                'id' => 3,
+                'type' => 'other_reason',
+                'title_ar' => 'سبب آخر',
+                'title_en' => 'Other Reason',
+                'subtitle_ar' => 'اختر سبب آخر غير المذكور',
+                'subtitle_en' => 'Choose another unlisted reason',
+                'icon' => 'other_reason',
+                'options' => null,
                 'is_active' => true,
                 'sort_order' => 3,
-            ],
-            [
-                'title_ar' => 'تم تجاهل ملحقات أو إضافات مميزة تؤثر إيجاباً على التثمين',
-                'title_en' => 'Accessories or special add-ons positively affecting valuation were overlooked',
-                'is_active' => true,
-                'sort_order' => 4,
-            ],
-            [
-                'title_ar' => 'سبب آخر (سأقوم بكتابة التفاصيل في الملاحظات)',
-                'title_en' => 'Other reason (I will provide details in the notes)',
-                'is_active' => true,
-                'sort_order' => 5,
             ],
         ];
 
         foreach ($reasons as $reason) {
-            ObjectionReason::firstOrCreate(
-                ['title_ar' => $reason['title_ar']],
-                $reason
-            );
+            ObjectionReason::updateOrCreate(['id' => $reason['id']], $reason);
         }
     }
 }

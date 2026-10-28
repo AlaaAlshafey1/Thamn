@@ -30,15 +30,19 @@ class IntroController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'page' => 'required|in:welcome,login,signup,verify|unique:intros,page',
+            'page' => 'required|string|max:100|unique:intros,page',
             'title_ar' => 'required|string|max:255',
-            'title_en' => 'required|string|max:255',
+            'title_en' => 'nullable|string|max:255',
             'sub_title_ar' => 'nullable|string|max:255',
             'sub_title_en' => 'nullable|string|max:255',
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'sort_order' => 'nullable|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        $validated['title_en'] = $request->filled('title_en') ? $request->title_en : $request->title_ar;
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -47,12 +51,13 @@ class IntroController extends Controller
             $validated['image'] = asset('storage/' . $imagePath);
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
+        $validated['sort_order'] = $request->sort_order ?? 0;
 
         Intro::create($validated);
 
         return redirect()->route('intros.index')
-            ->with('success', 'Intro page created successfully.');
+            ->with('success', 'تم إنشاء صفحة المقدمة بنجاح.');
     }
 
     /**
@@ -77,15 +82,18 @@ class IntroController extends Controller
     public function update(Request $request, Intro $intro)
     {
         $validated = $request->validate([
-            'page' => 'required|in:welcome,login,signup,verify|unique:intros,page,' . $intro->id,
+            'page' => 'required|string|max:100|unique:intros,page,' . $intro->id,
             'title_ar' => 'required|string|max:255',
-            'title_en' => 'required|string|max:255',
+            'title_en' => 'nullable|string|max:255',
             'sub_title_ar' => 'nullable|string|max:255',
             'sub_title_en' => 'nullable|string|max:255',
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'sort_order' => 'nullable|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        $validated['title_en'] = $request->filled('title_en') ? $request->title_en : $request->title_ar;
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -95,12 +103,13 @@ class IntroController extends Controller
             $validated['image'] = asset('storage/' . $imagePath);
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $request->has('is_active') ? (bool) $request->is_active : false;
+        $validated['sort_order'] = $request->sort_order ?? 0;
 
         $intro->update($validated);
 
         return redirect()->route('intros.index')
-            ->with('success', 'Intro page updated successfully.');
+            ->with('success', 'تم تحديث صفحة المقدمة بنجاح.');
     }
 
     /**
@@ -111,6 +120,6 @@ class IntroController extends Controller
         $intro->delete();
 
         return redirect()->route('intros.index')
-            ->with('success', 'Intro page deleted successfully.');
+            ->with('success', 'تم حذف صفحة المقدمة بنجاح.');
     }
 }

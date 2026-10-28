@@ -141,6 +141,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('valuation-orders/{orderId}/objection', [OrderController::class, 'submitObjection']);
     Route::post('valuation-orders/objection', [OrderController::class, 'submitObjection']);
     Route::post('orders/objection', [OrderController::class, 'submitObjection']);
+
+    // تعديل مدخلات الطلب وإعادة تقييمه بدون دفع (عند اختيار input_modification)
+    Route::post('valuation-orders/{orderId}/modify-inputs', [OrderController::class, 'modifyInputsAndReEvaluate']);
+    Route::post('valuation-orders/{orderId}/input-modification', [OrderController::class, 'modifyInputsAndReEvaluate']);
+    Route::post('valuation-orders/modify-inputs', [OrderController::class, 'modifyInputsAndReEvaluate']);
+    Route::post('orders/{orderId}/modify-inputs', [OrderController::class, 'modifyInputsAndReEvaluate']);
+    Route::post('orders/modify-inputs', [OrderController::class, 'modifyInputsAndReEvaluate']);
     Route::post('valuation-orders/{orderId}/resend', [OrderController::class, 'resendOrder']);
     Route::post('valuation-orders/{orderId}/send-to-market', [OrderController::class, 'sendToMarket']);
 
