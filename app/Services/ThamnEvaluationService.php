@@ -341,11 +341,11 @@ PROMPT;
             return '';
         }
 
-        $html = '<div style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;background:#f5f0e8;border-radius:16px;padding:14px;">';
+        $html = '<div class="ai-infographic-report-box" style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;background:#f5f0e8;border-radius:16px;padding:14px;width:100%;max-width:100%;margin:0 auto;box-sizing:border-box;">';
 
         // ── قسم الـ Cards ───────────────────────────────────────────────────
         if (!empty($cards)) {
-            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">';
+            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100% !important;max-width:100% !important;margin:0 auto 12px auto !important;table-layout:fixed !important;border-collapse:separate !important;">';
 
             $pairs = array_chunk($cards, 2);
             foreach ($pairs as $pairIndex => $pair) {

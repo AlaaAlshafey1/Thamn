@@ -1224,23 +1224,23 @@
                     margin-top: 15px;
                 }
 
-                /* Responsive Specs Table inside Tab */
-                #tab-specs table,
-                #tab-specs thead,
-                #tab-specs tbody,
-                #tab-specs th,
-                #tab-specs td,
-                #tab-specs tr {
+                /* Responsive Specs Table inside Tab (تفاصيل ومدخلات السلعة فقط دون لمس كروت التقرير) */
+                #specsDetailsWrapper table,
+                #specsDetailsWrapper thead,
+                #specsDetailsWrapper tbody,
+                #specsDetailsWrapper th,
+                #specsDetailsWrapper td,
+                #specsDetailsWrapper tr {
                     display: block;
                     width: 100%;
                     text-align: right;
                 }
 
-                #tab-specs thead {
+                #specsDetailsWrapper thead {
                     display: none;
                 }
 
-                #tab-specs tr {
+                #specsDetailsWrapper tr {
                     border: 1px solid #eee;
                     border-radius: 16px;
                     margin-bottom: 12px;
@@ -1249,25 +1249,25 @@
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
                 }
 
-                #tab-specs td:nth-child(1) {
+                #specsDetailsWrapper td:nth-child(1) {
                     display: none;
                 }
 
                 /* hide ID */
-                #tab-specs td:nth-child(2) {
+                #specsDetailsWrapper td:nth-child(2) {
                     font-size: 1.05rem !important;
                     padding: 0 0 10px 0 !important;
                     border-bottom: 1px dashed #eee;
                     color: #111 !important;
                 }
 
-                #tab-specs td:nth-child(3) {
+                #specsDetailsWrapper td:nth-child(3) {
                     padding: 10px 0 0 0 !important;
                     font-size: 1rem !important;
                     color: #009688 !important;
                 }
 
-                #tab-specs td:nth-child(3) span {
+                #specsDetailsWrapper td:nth-child(3) span {
                     padding: 6px 14px !important;
                     font-size: 0.9rem !important;
                 }
@@ -1553,35 +1553,203 @@
                 from { transform: scale(0); opacity: 0; }
                 to { transform: scale(1); opacity: 1; }
             }
+            /* =========================================================
+               AI Report Presentation Centering & Responsive Fix
+               ========================================================= */
+            .ai-report-presentation,
+            .ai-infographic-report-box {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto 20px auto !important;
+                box-sizing: border-box !important;
+                direction: rtl !important;
+            }
+
+            .ai-report-presentation table,
+            .ai-infographic-report-box table {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                table-layout: fixed !important;
+                border-collapse: separate !important;
+                border-spacing: 0 !important;
+                box-sizing: border-box !important;
+                display: table !important;
+            }
+
+            .ai-report-presentation tbody,
+            .ai-infographic-report-box tbody {
+                display: table-row-group !important;
+            }
+
+            .ai-report-presentation tr,
+            .ai-infographic-report-box tr {
+                display: table-row !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .ai-report-presentation td,
+            .ai-infographic-report-box td {
+                display: table-cell !important;
+                box-sizing: border-box !important;
+                padding: 5px !important;
+                vertical-align: top !important;
+            }
+
+            .ai-report-presentation table table,
+            .ai-infographic-report-box table table {
+                table-layout: auto !important;
+            }
+
+            /* =========================================================
+               2. EVALUATE SUBMIT BUTTON (مطابق تماماً للصورة 4)
+               ========================================================= */
             .btn-evaluate-submit {
-                border-radius: 50px;
-                padding: 16px 42px;
-                font-weight: 800;
-                font-size: 1.15rem;
-                background: linear-gradient(135deg, #009688 0%, #00796b 100%);
-                border: none;
-                color: #fff;
-                width: 100%;
-                max-width: 320px;
-                margin: 0 auto;
-                display: block;
-                box-shadow: 0 6px 20px rgba(0, 150, 136, 0.35);
-                transition: all 0.3s ease;
                 position: relative;
+                overflow: hidden;
+                width: 100%;
+                max-width: 460px;
+                height: 74px;
+                margin: 26px auto 14px auto;
+                border-radius: 60px;
+                background: linear-gradient(90deg, #028960 0%, #006644 100%);
+                border: none;
+                box-shadow: 0 10px 28px rgba(0, 102, 68, 0.4), 0 4px 10px rgba(0, 0, 0, 0.08);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 22px;
+                padding: 8px 24px;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                text-decoration: none;
             }
+
             .btn-evaluate-submit:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 28px rgba(0, 150, 136, 0.45);
+                transform: translateY(-3px) scale(1.01);
+                box-shadow: 0 14px 36px rgba(0, 102, 68, 0.5), 0 6px 14px rgba(0, 0, 0, 0.12);
+                background: linear-gradient(90deg, #02996b 0%, #00734e 100%);
                 color: #fff;
             }
+
             .btn-evaluate-submit:active {
-                transform: scale(0.98);
+                transform: translateY(1px) scale(0.99);
+                box-shadow: 0 6px 16px rgba(0, 102, 68, 0.3);
             }
-            .btn-evaluate-submit.submitting {
-                opacity: 0.92;
+
+            /* المثلث/الطرف البرتقالي المنحني على اليسار مطابق للصورة 4 */
+            .btn-evaluate-submit .btn-orange-accent {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 48px;
+                height: 100%;
+                background: linear-gradient(135deg, #ff8c00 0%, #e65100 100%);
+                clip-path: ellipse(75% 100% at 0% 50%);
                 pointer-events: none;
-                background: #00796b !important;
-                box-shadow: 0 0 0 5px rgba(0, 150, 136, 0.35) !important;
+                z-index: 1;
+            }
+
+            /* نص اعتماد التقييم العريض */
+            .btn-evaluate-submit .btn-evaluate-text {
+                position: relative;
+                z-index: 2;
+                color: #ffffff;
+                font-size: 1.65rem;
+                font-weight: 900;
+                letter-spacing: -0.5px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+                line-height: 1;
+            }
+
+            /* حاوية الأيقونة الدائرية المتوهجة باليمين */
+            .btn-evaluate-submit .btn-check-badge {
+                position: relative;
+                z-index: 2;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* حلقة التوهج الخارجية */
+            .btn-evaluate-submit .badge-glow-ring {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                border: 2.5px solid rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.15);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+                transition: transform 0.3s ease;
+            }
+
+            .btn-evaluate-submit:hover .badge-glow-ring {
+                transform: scale(1.06);
+                border-color: rgba(255, 255, 255, 0.9);
+            }
+
+            /* القرص الأبيض الداخلي */
+            .btn-evaluate-submit .badge-inner-circle {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            /* علامة الصح البرتقالية العريضة */
+            .btn-evaluate-submit .badge-inner-circle i {
+                color: #ff7a00;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            /* حالة الجاري إرسالها / التحميل */
+            .btn-evaluate-submit.submitting {
+                opacity: 0.95;
+                pointer-events: none;
+                background: linear-gradient(90deg, #00734e 0%, #005537 100%) !important;
+            }
+
+            .btn-evaluate-submit.submitting .btn-orange-accent {
+                display: none;
+            }
+
+            .btn-evaluate-submit.submitting .btn-evaluate-text {
+                font-size: 1.35rem;
+            }
+
+            @media (max-width: 768px) {
+                .btn-evaluate-submit {
+                    height: 68px;
+                    max-width: 100%;
+                    padding: 6px 18px;
+                    gap: 16px;
+                }
+                .btn-evaluate-submit .btn-evaluate-text {
+                    font-size: 1.35rem;
+                }
+                .btn-evaluate-submit .badge-glow-ring {
+                    width: 46px;
+                    height: 46px;
+                }
+                .btn-evaluate-submit .badge-inner-circle {
+                    width: 34px;
+                    height: 34px;
+                }
+                .btn-evaluate-submit .badge-inner-circle i {
+                    font-size: 22px;
+                }
             }
 
             /* =========================================================
@@ -2141,40 +2309,20 @@
                                 <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
                             @endif
 
-                            <!-- تقرير التقييم الذكي: شكل متهندل وأنيق دون حاجة لـ CKEditor أو كتابة نصوص -->
-                            <div class="text-right mb-4" style="direction:rtl;">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <label class="font-weight-bold mb-0" style="color:#2c3e50; font-size:0.95rem;">
-                                        <i class="bx bx-file text-warning ml-1"></i> تقرير التقييم الذكي:
-                                    </label>
-                                    <span class="badge"
-                                        style="background: rgba(0, 150, 136, 0.1); color: #009688; border-radius: 20px; font-weight: 700; padding: 4px 10px; font-size: 0.75rem;">
-                                        <i class="bx bx-bot"></i> تقرير AI المعتمد
-                                    </span>
-                                </div>
+                            <input type="hidden" name="expert_reasoning"
+                                value="{{ $order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.' }}">
 
-                                <div class="p-3 p-md-4 rounded-3 border"
-                                    style="background:#fcfdfd; border-color:#e8ebef !important; max-height:350px; overflow-y:auto; line-height:1.85; color:#374151; font-size:0.92rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);">
-                                    @if(!empty($order->ai_reasoning))
-                                        @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
-                                            {!! \Illuminate\Support\Str::markdown((string) $order->ai_reasoning) !!}
-                                        @else
-                                            {!! $order->ai_reasoning !!}
-                                        @endif
-                                    @else
-                                        <div class="text-muted text-center py-3">
-                                            <i class="bx bx-info-circle fs-4 text-warning mb-1 d-block"></i>
-                                            تم إعداد التقييم بناءً على خوارزميات الذكاء الاصطناعي ومؤشرات أسعار السوق.
-                                        </div>
-                                    @endif
-                                </div>
-                                <input type="hidden" name="expert_reasoning"
-                                    value="{{ $order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.' }}">
-                            </div>
-
+                            <!-- زر اعتماد التقييم (مطابق للصورة 4 تماماً) -->
                             <button type="submit" id="btnEvaluateSubmit" class="btn btn-evaluate-submit">
-                                <i class="bx bx-check-circle" id="btnEvaluateIcon" style="font-size:1.35rem; vertical-align:middle; margin-left:6px;"></i>
-                                <span id="btnEvaluateText">اعتماد التقييم</span>
+                                <span class="btn-orange-accent"></span>
+                                <span class="btn-evaluate-text" id="btnEvaluateText">اعتماد التقييم</span>
+                                <span class="btn-check-badge" id="btnCheckBadge">
+                                    <span class="badge-glow-ring">
+                                        <span class="badge-inner-circle">
+                                            <i class="bx bx-check" id="btnEvaluateIcon"></i>
+                                        </span>
+                                    </span>
+                                </span>
                             </button>
                         </form>
                     @endif
@@ -2683,6 +2831,14 @@
             if (targetStep) {
                 targetStep.classList.add('active');
             }
+
+            // Hiding a tall panel shrinks the page, so the browser clamps the scroll
+            // to the bottom (blank screen). Re-anchor the view on the new panel.
+            if (panel) {
+                var headerOffset = 90;
+                var top = panel.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: Math.max(top, 0), behavior: 'auto' });
+            }
         }
 
         // ─── Toggle Specs Details (الانسدال عند الرغبة في المزيد) ───────────────
@@ -2907,7 +3063,11 @@
                         submitBtn.classList.add('submitting');
                         var icon = document.getElementById('btnEvaluateIcon');
                         var text = document.getElementById('btnEvaluateText');
-                        if (icon) icon.className = 'bx bx-loader-alt bx-spin';
+                        if (icon) {
+                            icon.className = 'bx bx-loader-alt bx-spin';
+                            icon.style.color = '#ff7a00';
+                            icon.style.fontSize = '24px';
+                        }
                         if (text) text.innerText = 'جاري اعتماد التقييم...';
                     }
                 });
