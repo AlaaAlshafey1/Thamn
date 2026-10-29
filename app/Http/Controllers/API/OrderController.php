@@ -519,6 +519,31 @@ class OrderController extends Controller
             ];
         }
 
+        $isReEvaluated = $order->re_evaluation_count > 0 || !empty($order->objected_at);
+        $isReEvaluating = (
+            $order->status === 'beingReEstimated'
+            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed']))
+        );
+        $isWithin24Hours = $order->evaluated_at ? ($order->evaluated_at->diffInHours(now()) <= 24) : false;
+        $canReEvaluate = (
+            !$isReEvaluating
+            && $order->re_evaluation_count == 0
+            && empty($order->objected_at)
+            && !empty($order->evaluated_at)
+            && $isWithin24Hours
+            && in_array($order->status, ['estimated', 'evaluated', 'completed'])
+        );
+        $reEvaluationStatus = 'not_allowed';
+        if ($isReEvaluating) {
+            $reEvaluationStatus = 'in_progress';
+        } elseif ($isReEvaluated) {
+            $reEvaluationStatus = 'completed';
+        } elseif ($canReEvaluate) {
+            $reEvaluationStatus = 'available';
+        } elseif (!empty($order->evaluated_at) && !$isWithin24Hours) {
+            $reEvaluationStatus = 'expired';
+        }
+
         return response()->json([
             'status' => true,
             'order' => [
@@ -529,6 +554,13 @@ class OrderController extends Controller
                 'isInMarket' => $isInMarket,
                 'images' => $images,
                 'details' => array_values($groups),
+                'is_re_evaluating' => (bool) $isReEvaluating,
+                'is_under_re_evaluation' => (bool) $isReEvaluating,
+                'is_reestimating' => (bool) $isReEvaluating,
+                'can_re_evaluate' => (bool) $canReEvaluate,
+                'can_object' => (bool) $canReEvaluate,
+                're_evaluation_status' => $reEvaluationStatus,
+                'is_re_evaluated' => (bool) $isReEvaluated,
             ]
         ]);
     }
@@ -918,12 +950,46 @@ class OrderController extends Controller
             }
         }
 
+        /* ===================== RE-EVALUATION / OBJECTION STATUS ===================== */
+        $isReEvaluated = $order->re_evaluation_count > 0 || !empty($order->objected_at);
+
+        // هل الطلب قيد إعادة التثمين حالياً؟ (جاري إعادة التثمين ولم ينتهِ بعد)
+        $isReEvaluating = (
+            $order->status === 'beingReEstimated'
+            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed']))
+        );
+
         $mappedStatus = $order->status;
-        if ($order->expert_evaluated) {
+        if ($isReEvaluating) {
+            $mappedStatus = 'beingReEstimated';
+        } elseif ($order->expert_evaluated) {
             if ($mappedStatus === 'beingEstimated')
                 $mappedStatus = 'estimated';
             if ($mappedStatus === 'beingReEstimated')
                 $mappedStatus = 'reEstimated';
+        }
+
+        $isWithin24Hours = $order->evaluated_at ? ($order->evaluated_at->diffInHours(now()) <= 24) : false;
+
+        // هل يتاح للعميل تقديم اعتراض / إعادة تثمين الآن؟
+        $canReEvaluate = (
+            !$isReEvaluating
+            && $order->re_evaluation_count == 0
+            && empty($order->objected_at)
+            && !empty($order->evaluated_at)
+            && $isWithin24Hours
+            && in_array($order->status, ['estimated', 'evaluated', 'completed'])
+        );
+
+        $reEvaluationStatus = 'not_allowed';
+        if ($isReEvaluating) {
+            $reEvaluationStatus = 'in_progress';
+        } elseif ($isReEvaluated) {
+            $reEvaluationStatus = 'completed';
+        } elseif ($canReEvaluate) {
+            $reEvaluationStatus = 'available';
+        } elseif (!empty($order->evaluated_at) && !$isWithin24Hours) {
+            $reEvaluationStatus = 'expired';
         }
 
         /* ===================== EXPERT OPINION LABEL ===================== */
@@ -959,7 +1025,18 @@ class OrderController extends Controller
             'answers' => $rawAnswers,
             'qrCode' => \Illuminate\Support\Facades\URL::signedRoute('valuation-order.pdf', ['order' => $order->id]),
             'created_at' => $order->created_at,
-            'is_re_evaluated' => $order->re_evaluation_count > 0,
+            // ─── مفاتيح إعادة التثمين والاعتراض لتطبيق الموبايل ───
+            // 1. مفتاح يحدد هل الطلب حالياً قيد إعادة التثمين (In Progress)
+            'is_re_evaluating' => (bool) $isReEvaluating,
+            'is_under_re_evaluation' => (bool) $isReEvaluating,
+            'is_reestimating' => (bool) $isReEvaluating,
+            // 2. مفتاح يحدد هل يظهر زر إعادة التثمين / الاعتراض للعميل
+            'can_re_evaluate' => (bool) $canReEvaluate,
+            'can_object' => (bool) $canReEvaluate,
+            // 3. حالة إعادة التثمين التفصيلية
+            're_evaluation_status' => $reEvaluationStatus,
+            // 4. هل تم/سبق إعادة تثمينه
+            'is_re_evaluated' => (bool) $isReEvaluated,
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
             'objection_reasons' => \App\Models\ObjectionReason::getFormattedData($lang),
             'objection_reason' => $order->objection_reason,
@@ -1579,6 +1656,7 @@ class OrderController extends Controller
                 'objection_reason' => $finalReason,
                 'objection_reason_id' => $reasonModelId,
                 'objected_at' => now(),
+                'expert_evaluated' => 0,
                 'ai_min_price' => null,
                 'ai_max_price' => null,
                 'ai_price' => null,
