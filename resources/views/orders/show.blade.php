@@ -2867,7 +2867,10 @@
 
         // ─── Evaluation Form Validation & Submitting Animation ───────────
         document.addEventListener('DOMContentLoaded', function () {
-            var isEvaluated = @json(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated');
+            @php
+                $isOrderEvaluated = in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated';
+            @endphp
+            var isEvaluated = {{ $isOrderEvaluated ? 'true' : 'false' }};
             if (isEvaluated) {
                 var evalStep = document.getElementById('step-evaluate');
                 if (evalStep) {
