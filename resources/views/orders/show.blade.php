@@ -1662,55 +1662,101 @@
                     </div>
                 </div>
 
-                <!-- TAB: Specifications -->
+                <!-- TAB: Specifications (الخطوة رقم ١) -->
                 <div class="ex-main-card expert-tab-panel" id="tab-specs" style="display:none; text-align:right;">
-                    <div
-                        style="font-weight:900;font-size:1.1rem;color:#111;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
-                        <i class="bx bx-list-check" style="color:#f39c12;"></i> مواصفات السلعة
+                    
+                    <!-- Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div style="font-weight:900;font-size:1.15rem;color:#111;display:flex;align-items:center;gap:10px;">
+                            <i class="bx bx-file text-warning" style="font-size:1.45rem;"></i> تقرير مواصفات السلعة والتقييم الذكي
+                        </div>
+                        <span class="badge" style="background: rgba(0, 150, 136, 0.1); color: #009688; border-radius: 20px; font-weight: 700; padding: 6px 14px; font-size: 0.8rem;">
+                            <i class="bx bx-bot"></i> تقرير AI المعتمد
+                        </span>
                     </div>
-                    <div class="table-responsive">
-                        <table style="width:100%;border-collapse:collapse;">
-                            <thead>
-                                <tr style="background:#f9f9f9;border-bottom:2px solid #eee;">
-                                    <th
-                                        style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">
-                                        #</th>
-                                    <th
-                                        style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">
-                                        السؤال</th>
-                                    <th
-                                        style="padding:12px 16px;color:#888;font-size:0.8rem;font-weight:800;text-align:right;">
-                                        الإجابة</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($order->details as $index => $detail)
-                                    <tr style="border-bottom:1px solid #f5f5f5;">
-                                        <td style="padding:12px 16px;color:#aaa;font-size:0.85rem;font-weight:700;">
-                                            {{ $index + 1 }}</td>
-                                        <td style="padding:12px 16px;font-weight:700;color:#333;font-size:0.9rem;">
-                                            {{ $detail->question->question_ar ?? '-' }}</td>
-                                        <td style="padding:12px 16px;font-weight:600;color:#555;font-size:0.9rem;">
-                                            @if($detail->option)
-                                                <span
-                                                    style="background:rgba(243,156,18,0.1);color:#e67e22;padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:800;">{{ $detail->option->option_ar ?? $detail->value }}</span>
-                                            @elseif($detail->value)
-                                                {{ $detail->value }}
-                                            @else
-                                                <span style="color:#ccc;">-</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" style="text-align:center;padding:40px;color:#aaa;"><i
-                                                class="bx bx-info-circle"
-                                                style="font-size:2rem;display:block;margin-bottom:8px;"></i> لا توجد مواصفات
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+
+                    <!-- تقرير التقييم الذكي (البطاقات الانفوجرافيك والتحليل) -->
+                    @if(!empty($order->ai_reasoning))
+                        <div class="ai-report-presentation mb-4" style="border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.03);">
+                            @if(!preg_match('/<[a-z][\s\S]*>/i', $order->ai_reasoning))
+                                {!! \Illuminate\Support\Str::markdown((string) $order->ai_reasoning) !!}
+                            @else
+                                {!! $order->ai_reasoning !!}
+                            @endif
+                        </div>
+                    @else
+                        <div class="p-4 text-center rounded-3 mb-4" style="background: #fbfbfb; border: 1.5px dashed #d1d5db; color: #6b7280;">
+                            <i class="bx bx-info-circle fs-3 text-warning mb-2 d-block"></i>
+                            لا يتوفر تقرير ذكي تم توليده مسبقاً لهذه السلعة، يرجى مراجعة تفاصيل ومدخلات السلعة بالأسفل.
+                        </div>
+                    @endif
+
+                    <!-- تفاصيل ومدخلات السلعة الكاملة (عند الرغبة في المزيد يعمل له انسدال) -->
+                    <div class="specs-accordion-wrapper mt-3 pt-2">
+                        <div class="d-flex align-items-center justify-content-between p-3" 
+                             onclick="toggleSpecsDetails()" 
+                             role="button" 
+                             id="btnToggleSpecsDetails"
+                             tabindex="0"
+                             style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bx bx-list-ul text-primary" style="font-size:1.3rem;"></i>
+                                <span style="font-weight: 800; color: #334155; font-size: 0.95rem;">
+                                    عرض كافة تفاصيل ومدخلات السلعة (الأسئلة والإجابات التفصيلية)
+                                </span>
+                                <span class="badge" style="background: #e2e8f0; color: #475569; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                                    {{ $order->details->count() }} بند
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.85rem; font-weight: 700;">
+                                <span id="toggleSpecsText">انقر لعرض المزيد</span>
+                                <i class="bx bx-chevron-down" id="toggleSpecsChevron" style="font-size:1.25rem; transition: transform 0.3s ease;"></i>
+                            </div>
+                        </div>
+
+                        <div id="specsDetailsWrapper" style="display: {{ empty($order->ai_reasoning) ? 'block' : 'none' }}; margin-top: 14px;">
+                            <div class="table-responsive" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                                <table style="width:100%;border-collapse:collapse;">
+                                    <thead>
+                                        <tr style="background:#f1f5f9;border-bottom:2px solid #e2e8f0;">
+                                            <th style="padding:12px 16px;color:#475569;font-size:0.82rem;font-weight:800;text-align:right;">#</th>
+                                            <th style="padding:12px 16px;color:#475569;font-size:0.82rem;font-weight:800;text-align:right;">السؤال</th>
+                                            <th style="padding:12px 16px;color:#475569;font-size:0.82rem;font-weight:800;text-align:right;">الإجابة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($order->details as $index => $detail)
+                                            <tr style="border-bottom:1px solid #f1f5f9; background: {{ $index % 2 == 0 ? '#ffffff' : '#fafafa' }};">
+                                                <td style="padding:12px 16px;color:#94a3b8;font-size:0.85rem;font-weight:700;">{{ $index + 1 }}</td>
+                                                <td style="padding:12px 16px;font-weight:700;color:#1e293b;font-size:0.9rem;">{{ $detail->question->question_ar ?? '-' }}</td>
+                                                <td style="padding:12px 16px;font-weight:600;color:#475569;font-size:0.9rem;">
+                                                    @if($detail->option)
+                                                        <span style="background:rgba(243,156,18,0.12);color:#d97706;padding:4px 10px;border-radius:50px;font-size:0.82rem;font-weight:800;">{{ $detail->option->option_ar ?? $detail->value }}</span>
+                                                    @elseif($detail->value)
+                                                        {{ $detail->value }}
+                                                    @else
+                                                        <span style="color:#cbd5e1;">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" style="text-align:center;padding:40px;color:#94a3b8;">
+                                                    <i class="bx bx-info-circle" style="font-size:2rem;display:block;margin-bottom:8px;"></i> لا توجد مواصفات
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- التنقل إلى الخطوة التالية -->
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-warning px-4 py-2" onclick="switchTab('photos', document.getElementById('step-photos'))" style="border-radius: 12px; font-weight: 800; color: #fff; background: #f39c12; border: none; box-shadow: 0 4px 12px rgba(243,156,18,0.25); font-size: 0.95rem;">
+                            الخطوة التالية: صور السلعة <i class="bx bx-left-arrow-alt align-middle ms-1" style="font-size: 1.15rem;"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -1740,6 +1786,16 @@
                             </div>
                         @endforelse
                     </div>
+
+                    <!-- أزرار التنقل للصور -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary px-3 py-2" onclick="switchTab('specs', document.getElementById('step-specs'))" style="border-radius: 12px; font-weight: 700; font-size: 0.9rem;">
+                            <i class="bx bx-right-arrow-alt align-middle me-1" style="font-size: 1.15rem;"></i> مواصفات السلعة
+                        </button>
+                        <button type="button" class="btn btn-warning px-4 py-2" onclick="switchTab('evaluate', document.getElementById('step-evaluate'))" style="border-radius: 12px; font-weight: 800; color: #fff; background: #f39c12; border: none; box-shadow: 0 4px 12px rgba(243,156,18,0.25); font-size: 0.95rem;">
+                            الخطوة التالية: السعر التقديري <i class="bx bx-left-arrow-alt align-middle ms-1" style="font-size: 1.15rem;"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- TAB: Evaluate -->
@@ -1754,25 +1810,31 @@
                         <div class="success-title">تم اعتماد التقييم بنجاح</div>
                         <div class="success-subtitle">تم اعتماد تثمين المنتج ، وسيتم اشعار العميل بحالة التثمين</div>
 
-                        <!-- Alert: Wallet Balance Added -->
-                        <div class="wallet-credit-alert d-flex align-items-center gap-3 p-3 mb-4 shadow-sm"
-                            style="border-radius: 16px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1.5px solid #81c784; color: #1b5e20; text-align: right; max-width: 620px; margin-left: auto; margin-right: auto;">
-                            <div
-                                style="width: 48px; height: 48px; border-radius: 14px; background: #2e7d32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(46,125,50,0.25);">
-                                <i class="bx bx-wallet"></i>
-                            </div>
-                            <div style="flex-grow: 1;">
-                                <div style="font-weight: 800; font-size: 1.05rem; color: #1b5e20; margin-bottom: 2px;">
-                                    راجع محفظتك تم إضافة رصيدك بنجاح
+                        <!-- Alert: Wallet Balance Added (Responsive & Well-arranged) -->
+                        <div class="wallet-credit-alert mb-4 shadow-sm"
+                            style="border-radius: 16px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1.5px solid #81c784; color: #1b5e20; text-align: right; max-width: 620px; margin-left: auto; margin-right: auto; padding: 16px 20px;">
+                            <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                                <div class="d-flex align-items-start gap-3 flex-grow-1">
+                                    <div
+                                        style="width: 46px; height: 46px; border-radius: 12px; background: #2e7d32; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(46,125,50,0.25);">
+                                        <i class="bx bx-wallet"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 800; font-size: 1.05rem; color: #1b5e20; margin-bottom: 4px; line-height: 1.4;">
+                                            راجع محفظتك تم إضافة رصيدك بنجاح
+                                        </div>
+                                        <div style="font-size: 0.84rem; color: #2e7d32; font-weight: 600; line-height: 1.5;">
+                                            تم إيداع أتعاب التقييم في محفظتك بنجاح، يمكنك متابعة رصيدك وسحب أرباحك في أي وقت.
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.82rem; color: #2e7d32; font-weight: 600;">
-                                    تم إيداع أتعاب التقييم في محفظتك بنجاح، يمكنك متابعة رصيدك وسحب أرباحك في أي وقت.
+                                <div class="pt-1 pt-sm-0 text-center text-sm-start flex-shrink-0">
+                                    <a href="{{ route('withdrawals.my') }}" class="btn btn-success w-100 w-sm-auto"
+                                        style="border-radius: 10px; font-weight: 800; white-space: nowrap; background: #2e7d32; border: none; padding: 9px 20px; box-shadow: 0 2px 6px rgba(46,125,50,0.3); font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <i class="bx bx-wallet"></i> المحفظة
+                                    </a>
                                 </div>
                             </div>
-                            <a href="{{ route('withdrawals.my') }}" class="btn btn-success btn-sm"
-                                style="border-radius: 10px; font-weight: 800; white-space: nowrap; background: #2e7d32; border: none; padding: 8px 16px; box-shadow: 0 2px 6px rgba(46,125,50,0.3); font-size: 0.85rem;">
-                                <i class="bx bx-wallet me-1"></i> المحفظة
-                            </a>
                         </div>
 
                         <!-- Podium Pricing -->
@@ -2617,8 +2679,26 @@
             });
             var panel = document.getElementById('tab-' + tabName);
             if (panel) { panel.style.display = 'block'; }
-            if (clickedEl) {
-                clickedEl.classList.add('active');
+            var targetStep = clickedEl || document.getElementById('step-' + tabName);
+            if (targetStep) {
+                targetStep.classList.add('active');
+            }
+        }
+
+        // ─── Toggle Specs Details (الانسدال عند الرغبة في المزيد) ───────────────
+        function toggleSpecsDetails() {
+            var wrapper = document.getElementById('specsDetailsWrapper');
+            var chevron = document.getElementById('toggleSpecsChevron');
+            var text = document.getElementById('toggleSpecsText');
+            if (!wrapper) return;
+            if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+                wrapper.style.display = 'block';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                if (text) text.innerText = 'إخفاء التفاصيل';
+            } else {
+                wrapper.style.display = 'none';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                if (text) text.innerText = 'انقر لعرض المزيد';
             }
         }
 
@@ -2787,9 +2867,17 @@
 
         // ─── Evaluation Form Validation & Submitting Animation ───────────
         document.addEventListener('DOMContentLoaded', function () {
-            var evalStep = document.getElementById('step-evaluate');
-            if (evalStep) {
-                switchTab('evaluate', evalStep);
+            var isEvaluated = @json(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated');
+            if (isEvaluated) {
+                var evalStep = document.getElementById('step-evaluate');
+                if (evalStep) {
+                    switchTab('evaluate', evalStep);
+                }
+            } else {
+                var specsStep = document.getElementById('step-specs');
+                if (specsStep) {
+                    switchTab('specs', specsStep);
+                }
             }
 
             var evalForm = document.getElementById('expertEvaluationForm');

@@ -184,6 +184,34 @@
             color: var(--gold)
         }
 
+        .nav-btns {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-expert-login {
+            padding: 0.65rem 1.35rem;
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--gold);
+            font-size: 0.88rem;
+            font-weight: 700;
+            border-radius: 100px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .nav-expert-login:hover {
+            background: var(--gold);
+            color: #FFF;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(193, 149, 62, 0.25);
+        }
+
         .nav-cta {
             padding: 0.75rem 1.8rem;
             background: var(--primary);
@@ -781,6 +809,20 @@
                 display: none;
             }
 
+            .nav-btns {
+                gap: 0.35rem;
+            }
+
+            .nav-expert-login {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.78rem;
+            }
+
+            .nav-cta {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.78rem;
+            }
+
             #hero {
                 padding: 100px 5% 40px;
                 min-height: auto;
@@ -1083,6 +1125,9 @@
             <li><a href="#faq">الأسئلة الشائعة</a></li>
         </ul>
         <div class="nav-btns">
+            <a href="{{ route('expert.login') }}" class="nav-expert-login">
+                <i class="fas fa-sign-in-alt"></i> دخول الخبراء
+            </a>
             <a href="{{ route('experts.register') }}" class="nav-cta">انضم كخبير</a>
         </div>
     </nav>
@@ -1338,6 +1383,8 @@
                     <li><a href="{{ route('public.about') }}">عن المنصة</a></li>
                     <li><a href="{{ route('public.privacy') }}">سياسة الخصوصية</a></li>
                     <li><a href="{{ route('public.terms') }}">الشروط والأحكام</a></li>
+                    <li><a href="{{ route('expert.login') }}"><i class="fas fa-sign-in-alt" style="color: var(--gold); margin-left: 0.35rem;"></i> دخول الخبراء</a></li>
+                    <li><a href="{{ route('experts.register') }}">انضم كخبير</a></li>
                     <li><a href="{{ route('public.contact') }}">تواصل معنا</a></li>
                 </ul>
             </div>

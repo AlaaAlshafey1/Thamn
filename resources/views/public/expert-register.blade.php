@@ -351,7 +351,10 @@
             <li><a href="{{ route('home') }}#features">المميزات</a></li>
             <li><a href="{{ route('home') }}#how-it-works">كيف نعمل</a></li>
         </ul>
-        <a href="{{ route('home') }}" class="nav-cta">العودة للرئيسية</a>
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <a href="{{ route('expert.login') }}" class="nav-cta" style="background: transparent; border: 1.5px solid var(--gold); color: var(--primary);">دخول الخبراء</a>
+            <a href="{{ route('home') }}" class="nav-cta">العودة للرئيسية</a>
+        </div>
     </nav>
 
     <section class="reg-section">
@@ -508,6 +511,10 @@
                     </div>
                 </div>
                 <button type="submit" class="submit-btn" id="submitBtn">إرسال الطلب</button>
+                <div style="text-align: center; margin-top: 1.2rem; font-size: 0.95rem; color: #666;">
+                    لديك حساب خبير مسجل بالفعل؟
+                    <a href="{{ route('expert.login') }}" style="color: var(--gold); font-weight: 700; text-decoration: none;">تسجيل الدخول</a>
+                </div>
             </form>
         </div>
     </section>
