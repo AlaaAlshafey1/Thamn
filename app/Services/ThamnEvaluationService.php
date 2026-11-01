@@ -131,7 +131,7 @@ OBJECTION;
    - لا تعطِ العميل توجيهات أو نصائح للبيع — فقط الوصف والسعر.
    - الطول المثالي: فقرتان أو ثلاث جمل قصيرة كحد أقصى.
    - استخدم HTML بسيط: <b> للتمييز، <br> للفواصل إذا لزم. لا تستخدم ul/li في reasoning.
-8. إذا لم توجد صور للسلعة، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
+8. إذا لم توجد صور للسلعة، أو إذا طلب العميل توليد صورة بالذكاء الاصطناعي (create_image_ai)، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
 9. منهجية التسعير الصحيحة (أساسية وإلزامية جداً):
    - يجب عليك تقييم السلعة بناءً على المطابقة التامة للمواصفات المذكورة في الطلب (الماركة، الموديل، سنة الصنع، سعة التخزين، الحالة العامة، إلخ). لا تفترض مواصفات أقل أو أعلى.
    - قم بتحليل أسعار السوق السعودي لنفس المنتج المستعمل بذات المواصفات والحالة — بغض النظر عن اسم المنصة — واستخرج السعر العادل.
@@ -248,10 +248,14 @@ PROMPT;
             'evaluated_at' => now(),
         ]);
 
-        // Generate Virtual Image if no images exist and prompt provided
-        if (!$hasImages && !empty($aiResult['image_prompt'])) {
+        // Generate Virtual Image if no images exist OR if create_image_ai was requested
+        $wantsAiImage = (bool) ($order->create_image_ai ?? request('create_image_ai', false));
+        if ((!$hasImages || $wantsAiImage)) {
+            $imagePrompt = !empty($aiResult['image_prompt'])
+                ? $aiResult['image_prompt']
+                : "A realistic clean high-resolution studio photo of {$categoryAr}, centered, white background, professional product photography";
             try {
-                $imageUrl = app(ClaudeService::class)->generateImage($aiResult['image_prompt']);
+                $imageUrl = app(ClaudeService::class)->generateImage($imagePrompt);
                 if ($imageUrl) {
                     $imageContents = file_get_contents($imageUrl);
                     $filename = 'ai_generated_' . Str::random(10) . '.png';
@@ -341,11 +345,11 @@ PROMPT;
             return '';
         }
 
-        $html = '<div class="ai-infographic-report-box" style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;background:#f5f0e8;border-radius:16px;padding:14px;width:100%;max-width:100%;margin:0 auto;box-sizing:border-box;">';
+        $html = '<div style="font-family:\'Avenir Arabic\',\'SF Pro Text\',\'Segoe UI\',Arial,sans-serif;direction:rtl;text-align:right;color:#1a1a1a;background:#f5f0e8;border-radius:16px;padding:14px;">';
 
         // ── قسم الـ Cards ───────────────────────────────────────────────────
         if (!empty($cards)) {
-            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100% !important;max-width:100% !important;margin:0 auto 12px auto !important;table-layout:fixed !important;border-collapse:separate !important;">';
+            $html .= '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">';
 
             $pairs = array_chunk($cards, 2);
             foreach ($pairs as $pairIndex => $pair) {

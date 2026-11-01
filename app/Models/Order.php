@@ -50,10 +50,13 @@ class Order extends Model
         'is_ai_evaluated',
         'ai_confidence_score',
         'can_send_to_market',
+        'create_image_ai',
         'ai_valuation_rating_id',
     ];
 
     protected $casts = [
+        'create_image_ai' => 'boolean',
+        'can_send_to_market' => 'boolean',
         'ai_features' => 'array',
         'evaluated_at' => 'datetime',
         'accepted_at' => 'datetime',
