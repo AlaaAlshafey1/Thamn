@@ -19,7 +19,7 @@ class ThamnEvaluationService
     /**
      * Run AI Evaluation with Vision support
      */
-    public function runAiEvaluation(Order $order): array
+    public function runAiEvaluation(Order $order, ?float $previousPrice = null): array
     {
         // ─── بناء ملخص الأسئلة والأجوبة ───────────────────────────────────────
         $qaLines = [];
@@ -64,31 +64,109 @@ class ThamnEvaluationService
 5. confidence يجب أن يكون بين 0.4 و 0.65 كحد أقصى عند غياب الصور.
 6. لا تبالغ في التسعير — العميل يريد سعراً عادلاً يعكس الواقع السوقي." : "";
 
+        // ─── حسم وتوثيق السعر السابق قبل الاعتراض ──────────────────────────────
+        $resolvedPreviousPrice = $previousPrice ?: ($order->previous_price ?: (float) ($order->total_price ?: ($order->ai_price ?: 0)));
+        if ($resolvedPreviousPrice > 0 && empty($order->previous_price)) {
+            $order->update(['previous_price' => $resolvedPreviousPrice]);
+        }
+
+        // ─── المنهجية المرجعية المعتمدة لكبرى المنصات السعودية ─────────────────
+        $saudiMarketGuide = <<<SAUDI
+━━━ المنهجية المرجعية لأسواق ومنصات المملكة العربية السعودية ━━━
+أنت خبير معتمد في تثمين السلع في المملكة العربية السعودية (وفق معايير الهيئة السعودية للمقيّمين المعتمدين - تقييم).
+يعتمد تسعيرك حصراً على محاكاة واقع البيع والشراء والصفقات المنفذة في كبرى المنصات السعودية:
+1. منصة حراج (Haraj.com.sa) ومنصة مستعمل وجديد (Mstaml.com):
+   - المرجع الأكبر لأسعار السلع المستعملة في المدن السعودية (الرياض، جدة، مكة، المدينة، الشرقية، القصيم، إلخ).
+   - مبدأ "السوم الناجز vs الحد": المعلنون يضعون أسعار "حد" تفاوضية، لكن الصفقات تُبرم دائماً بأقل منها بنسبة 10% إلى 15% (سعر السوم الصامل). السعر العادل هو سعر التنفيذ الحقيقي لا أرقام العرض المبالغ فيها.
+2. منصات الأجهزة والإلكترونيات (مكتبة جرير Jarir، إكسترا eXtra، أمازون السعودية Amazon.sa، نون Noon.sa):
+   - تمثل السقف الأعلى (سعر السلعة جديدة ومغلفة مع الضمان الرسمي سنتين). لا يجوز أبداً أن يقترب سعر المستعمل من سعر الجديد.
+   - معدل الإهلاك التقني: تفقد السلعة 25% إلى 35% من قيمتها بمجرد فتح الكرتون، وتفقد 15% إلى 20% إضافية لكل سنة استخدام مع الأخذ بصحة البطارية ووجود الملحقات الأصلية.
+3. منصات ومعارض السيارات (تطبيق سيارة Syarah، تقارير موجز Mojaz، كارسويتش CarSwitch، حراج السيارات):
+   - استخراج متوسط الصفقات المتطابقة (الماركة، الموديل، سنة الصنع، الفئة، الكيلومترات بمتوسط 20-25 ألف كم/سنة).
+   - خصم واضح ومحدد لأي صدمات أو رش بالبودي أو فحص دوري منتهي أو استهلاك زائد.
+4. الساعات والمقتنيات الثمينة (أسواق الذهب والساعات في الرياض وجدة، والمنصات المعتمدة):
+   - التمييز الصارم بين الساعات السويسرية الفاخرة التي تحتفظ بقيمتها، وبين ساعات الموضة التي تفقد معظم قيمتها بعد الشراء.
+SAUDI;
+
         // ─── بناء الـ Prompt ────────────────────────────────────────────────────
         $today = now()->locale('ar')->translatedFormat('d F Y');
 
         $reEvaluationNote = $order->re_evaluation_count > 0
-            ? "ملاحظة للنظام: هذا طلب إعادة تقييم. راجع كافة المعطيات من جديد وأعط السعر الأدق — لا تذكر ذلك في الـ reasoning."
+            ? "ملاحظة للنظام: هذا طلب إعادة تقييم رسمي بعد مراجعة العميل. راجع كافة المعطيات من جديد وأعط السعر الأدق والمنصف — دون ذكر ذلك نصاً في reasoning."
             : "";
 
         $objectionSection = "";
         if (!empty($order->objection_reason)) {
+            $objectionReason = trim($order->objection_reason);
+            $reasonLower = mb_strtolower($objectionReason);
+
+            $isHigher = str_contains($reasonLower, 'أعلى من المتوقع') 
+                || str_contains($reasonLower, 'مرتفع') 
+                || str_contains($reasonLower, 'غالي') 
+                || str_contains($reasonLower, 'مبالغ')
+                || str_contains($reasonLower, 'overpriced')
+                || str_contains($reasonLower, 'higher');
+
+            $isLower = str_contains($reasonLower, 'أقل من المتوقع') 
+                || str_contains($reasonLower, 'منخفض') 
+                || str_contains($reasonLower, 'رخيص') 
+                || str_contains($reasonLower, 'بخس')
+                || str_contains($reasonLower, 'undervalued')
+                || str_contains($reasonLower, 'lower');
+
+            $isInputMod = str_contains($reasonLower, 'تعديل المدخلات') || str_contains($reasonLower, 'input_modification');
+
+            $previousPriceFormatted = $resolvedPreviousPrice > 0 ? number_format($resolvedPreviousPrice, 0) . ' ريال سعودي' : 'غير محدد';
+
+            if ($isHigher && $resolvedPreviousPrice > 0) {
+                $targetLow = round($resolvedPreviousPrice * 0.74);
+                $targetHigh = round($resolvedPreviousPrice * 0.86);
+                $objectionSpecifics = <<<SPEC
+• مغزى الاعتراض: العميل يعترض رسمياً بأن السعر السابق ({$previousPriceFormatted}) كان أعلى من المتوقع ومن أسعار السوق الواقعية (مبالغ فيه).
+• قاعدة تسعير إلزامية حاسمة لا تقبل النقاش:
+  1. يجب حتماً أن يكون السعر الجديد (recommended_price) أقل بوضوح من السعر السابق ({$previousPriceFormatted}). رفع السعر أو إبقاؤه كما هو خطأ جسيم ومرفوض كلياً.
+  2. النطاق العادل والمستهدف للتسعير الجديد: ما بين {$targetLow} و {$targetHigh} ريال تقريباً، بما يعكس متوسط صفقات البيع السريع ("السوم الناجز") والشريحة السعرية الدنيا المتداولة في حراج ومستعمل وجديد لنفس الحالة والمواصفات.
+  3. صياغة التقرير (reasoning): اكتب تقريراً تحليلياً موضوعياً يشرح بلباقة (دون ذكر كلمة "اعتراض") أنه بناءً على إعادة تدقيق حركة التداول والصفقات السريعة المنفذة في السوق السعودي وأثر الاستهلاك العادي، تم اعتماد السعر العادل المحدث.
+SPEC;
+            } elseif ($isLower && $resolvedPreviousPrice > 0) {
+                $targetLow = round($resolvedPreviousPrice * 1.12);
+                $targetHigh = round($resolvedPreviousPrice * 1.25);
+                $objectionSpecifics = <<<SPEC
+• مغزى الاعتراض: العميل يعترض رسمياً بأن السعر السابق ({$previousPriceFormatted}) أقل من القيمة الحقيقية للسلعة في السوق (بخس لقيمة السلعة).
+• قاعدة تسعير إلزامية حاسمة لا تقبل النقاش:
+  1. يجب حتماً أن يكون السعر الجديد (recommended_price) أعلى من السعر السابق ({$previousPriceFormatted}) لإنصاف العميل، مع مراعاة عدم تجاوز سقف سعر السلعة جديدة في جرير/أمازون.
+  2. النطاق العادل والمستهدف للتسعير الجديد: ما بين {$targetLow} و {$targetHigh} ريال تقريباً، بافتراض أفضلية النظافة واكتمال الملحقات وأسعار المعروض الممتاز في حراج ومستعمل.
+  3. تخفيض السعر هنا مرفوض تماماً ويُعد خطأ جسيماً.
+  4. صياغة التقرير (reasoning): اشرح بموضوعية واحترافية (دون ذكر كلمة "اعتراض") أنه بناءً على مراجعة حالة السلعة ونظافتها ومقارنتها بالمعروض عالي الجودة في السوق السعودي، تم تحسين التقدير ليعكس القيمة السوقية العادلة.
+SPEC;
+            } elseif ($isInputMod) {
+                $objectionSpecifics = <<<SPEC
+• مغزى الاعتراض: العميل قام بتعديل مواصفات أو مدخلات أو صور السلعة.
+• قاعدة التسعير: قيّم السلعة بدقة تامة بناءً على المدخلات الجديدة المرفقة وقارنها بأسعار السوق السعودي الحالي، واشرح أثر المواصفات المعدلة في تقرير الـ reasoning.
+SPEC;
+            } else {
+                $objectionSpecifics = <<<SPEC
+• نص وملاحظات العميل في الاعتراض: "{$objectionReason}"
+• قاعدة التسعير: ادرس ملاحظة العميل بعناية وقارنها بالسعر السابق ({$previousPriceFormatted}). إذا ذكر العميل عيوباً أو نقص ملحقات أو أعطالاً، اخفض السعر دون السعر السابق. وإذا ذكر مميزات وفواتير وضماناً ممتداً، ارفع السعر بما يعكس قيمتها الحقيقية.
+SPEC;
+            }
+
             $objectionSection = <<<OBJECTION
 
-━━━ تنبيه عاجل وإلزامي: اعتراض العميل على التقييم السابق (إعادة تثمين) ━━━
-العميل قام بتقديم اعتراض رسمي على التقييم السابق بالسبب التالي:
-"{$order->objection_reason}"
+━━━ توجيه إلزامي حاسم: إعادة التثمين بناءً على اعتراض العميل ━━━
+العميل قام بتقديم اعتراض رسمي على التقييم السابق:
+• السعر السابق الذي اعترض عليه العميل: {$previousPriceFormatted}
+• سبب الاعتراض المسجل: "{$objectionReason}"
 
-التعليمات الإلزامية للذكاء الاصطناعي:
-1. اقرأ سبب اعتراض العميل بعناية فائقة وقم بدراسة ملاحظته ومقارنتها بحالة السلعة والمواصفات المرفقة وأسعار السوق السعودي الفعلي اليوم.
-2. قم بإعادة تقييم السلعة وتعديل السعر العادل (recommended_price و min_price و max_price) ليكون عادلاً ودقيقاً ومراعياً لسبب الاعتراض بصورة واقعية ومنصفة.
-3. اشرح في التقرير (reasoning) بلباقة وموضوعية القيمة السوقية العادلة للسلعة بناءً على المعطيات والأسعار السائدة دون ذكر كلمة اعتراض.
+تعليمات المعالجة الإلزامية:
+{$objectionSpecifics}
 OBJECTION;
         }
 
         $prompt = <<<PROMPT
 {$ctx->getRole()}
 تاريخ التقييم: {$today}
+{$saudiMarketGuide}
 {$ctx->getMarketReferences()}
 {$reEvaluationNote}
 {$objectionSection}
@@ -176,6 +254,49 @@ PROMPT;
 
         $aiResult = app(ClaudeService::class)->evaluateProduct($prompt, $imagePaths);
 
+        // ─── كود الحماية الصارم للاعتراضات (Safety Guard for Objections) ───
+        if ($resolvedPreviousPrice > 0 && !empty($order->objection_reason)) {
+            $reasonLower = mb_strtolower($order->objection_reason);
+            $recommended = (float) ($aiResult['recommended_price'] ?? 0);
+
+            $isHigher = str_contains($reasonLower, 'أعلى من المتوقع') 
+                || str_contains($reasonLower, 'مرتفع') 
+                || str_contains($reasonLower, 'غالي') 
+                || str_contains($reasonLower, 'مبالغ')
+                || str_contains($reasonLower, 'overpriced')
+                || str_contains($reasonLower, 'higher');
+
+            $isLower = str_contains($reasonLower, 'أقل من المتوقع') 
+                || str_contains($reasonLower, 'منخفض') 
+                || str_contains($reasonLower, 'رخيص') 
+                || str_contains($reasonLower, 'بخس')
+                || str_contains($reasonLower, 'undervalued')
+                || str_contains($reasonLower, 'lower');
+
+            if ($isHigher && ($recommended >= $resolvedPreviousPrice || $recommended <= 0)) {
+                // منع رفع السعر في حالة اعتراض "أعلى من المتوقع": خفض السعر بنسبة عادلة 18%
+                $corrected = round($resolvedPreviousPrice * 0.82);
+                Log::warning("AI Objection Safety Guard: Customer objected price was too high (Previous: {$resolvedPreviousPrice}), but AI returned {$recommended}. Correcting downwards to {$corrected}.");
+                $aiResult['recommended_price'] = $corrected;
+                $aiResult['min_price'] = round($corrected * 0.93);
+                $aiResult['max_price'] = round($corrected * 1.07);
+            } elseif ($isLower && ($recommended <= $resolvedPreviousPrice || $recommended <= 0)) {
+                // منع خفض السعر في حالة اعتراض "أقل من المتوقع": رفع السعر بنسبة عادلة 16%
+                $corrected = round($resolvedPreviousPrice * 1.16);
+                Log::warning("AI Objection Safety Guard: Customer objected price was too low (Previous: {$resolvedPreviousPrice}), but AI returned {$recommended}. Correcting upwards to {$corrected}.");
+                $aiResult['recommended_price'] = $corrected;
+                $aiResult['min_price'] = round($corrected * 0.93);
+                $aiResult['max_price'] = round($corrected * 1.07);
+            }
+        }
+
+        // ─── ضبط الفجوة 14% تلقائياً لأي نتيجة لضمان سلامة الأرقام ───
+        if (!empty($aiResult['recommended_price'])) {
+            $rec = (float) $aiResult['recommended_price'];
+            $aiResult['min_price'] = round($rec * 0.93);
+            $aiResult['max_price'] = round($rec * 1.07);
+        }
+
         // ─── حارس السعر الأدنى (Safety Guard) ────────────────────────────────
         // Claude قد يُخطئ في التسعير — هذا الكود يُصحح تلقائياً إذا كان السعر أقل من الحد المنطقي
         if (!empty($aiResult['recommended_price'])) {
@@ -237,6 +358,7 @@ PROMPT;
 
         $order->update([
             'status' => $newStatus,
+            'previous_price' => $resolvedPreviousPrice > 0 ? $resolvedPreviousPrice : $order->previous_price,
             'expert_evaluated' => $isExpertEvaluated,
             'ai_min_price' => $aiResult['min_price'] ?? null,
             'ai_max_price' => $aiResult['max_price'] ?? null,

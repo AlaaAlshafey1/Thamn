@@ -2134,10 +2134,10 @@
                                 </div>
                                 <div class="p-2 rounded bg-white border" style="font-size: 0.95rem; color: #333;">
                                     <strong>سبب الاحتجاج:</strong> {{ $order->objection_reason }}
-                                    @if($order->total_price)
+                                    @if($order->previous_price ?: $order->total_price)
                                         <div class="mt-2 pt-2 border-top">
                                             <strong>السعر السابق المعترض عليه:</strong>
-                                            <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.95rem; font-weight: bold;">{{ number_format($order->total_price, 0) }} ريال</span>
+                                            <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.95rem; font-weight: bold;">{{ number_format($order->previous_price ?: $order->total_price, 0) }} ريال</span>
                                         </div>
                                     @endif
                                     @if($order->objected_at)

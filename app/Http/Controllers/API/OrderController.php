@@ -1638,7 +1638,7 @@ class OrderController extends Controller
     {
         $originalExpertId = $order->expert_id;
         $originalExpert = $order->expert;
-        $previousPrice = $order->total_price ?: ($order->ai_price ?: $order->expert_price);
+        $previousPrice = (float) ($order->total_price ?: ($order->ai_price ?: ($order->expert_price ?: 0)));
 
         $rateTypeAnswer = $order->details()
             ->whereHas('question', fn($q) => $q->where('type', 'rateTypeSelection'))
@@ -1650,9 +1650,10 @@ class OrderController extends Controller
         // 1. مسار باقة الذكاء الاصطناعي (AI): إعادة التسعير الفوري والإشعار
         // ══════════════════════════════════════════════════════════════════════
         if ($evaluationType === 'ai') {
-            // حفظ سبب الاحتجاج وزيادة عداد إعادة التقييم
+            // حفظ سبب الاحتجاج والسعر السابق وزيادة عداد إعادة التقييم
             $order->update([
                 'status' => 'beingReEstimated',
+                'previous_price' => $previousPrice > 0 ? $previousPrice : $order->previous_price,
                 'objection_reason' => $finalReason,
                 'objection_reason_id' => $reasonModelId,
                 'objected_at' => now(),
@@ -1667,12 +1668,13 @@ class OrderController extends Controller
             $order->refresh();
             $order->load(['details.question', 'details.option', 'files', 'category', 'user', 'expert']);
 
-            // تشغيل الـ AI مع تمرير سبب الاعتراض والمدخلات المحدثة لتعديل السعر فوراً
-            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+            // تشغيل الـ AI مع تمرير السعر السابق وسبب الاعتراض لإعادة التقييم الذكي المنصف
+            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order, $previousPrice);
             $order->refresh();
 
             $newPrice = $order->ai_price ?? $order->total_price;
             $newPriceFormatted = number_format((float) $newPrice, 0);
+            $previousPriceFormatted = $previousPrice ? number_format((float) $previousPrice, 0) . ' ريال' : null;
             $customerFirstName = $order->user?->first_name ?: 'عميلنا العزيز';
             $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
 
@@ -1680,8 +1682,8 @@ class OrderController extends Controller
             if ($order->user && $order->user->phone) {
                 try {
                     $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم {$order->id} بنجاح 🔄\n\n"
-                        . "بناءً على " . ($isInputModified ? "تعديل المدخلات" : "اعتراضك") . "، قام نظام الذكاء الاصطناعي بتدقيق التقييم وتعديل السعر العادل ليصبح:\n"
-                        . "💰 *السعر الجديد المعتمد: {$newPriceFormatted} ريال*" . ($previousPrice ? " (السعر السابق: " . number_format((float)$previousPrice, 0) . " ريال)\n\n" : "\n\n")
+                        . "بناءً على " . ($isInputModified ? "تعديلك للمدخلات" : "اعتراضك على التقييم السابق") . "، قام نظام الذكاء الاصطناعي بتدقيق المعطيات وتحديث السعر العادل وفق أسعار السوق:\n"
+                        . "💰 *السعر الجديد بعد المراجعة: {$newPriceFormatted} ريال*" . ($previousPriceFormatted ? " (السعر السابق: {$previousPriceFormatted})\n\n" : "\n\n")
                         . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
                         . "- فريق ثمن";
 
@@ -1771,6 +1773,7 @@ class OrderController extends Controller
         // ══════════════════════════════════════════════════════════════════════
         $order->update([
             'status' => 'beingReEstimated',
+            'previous_price' => $previousPrice > 0 ? $previousPrice : $order->previous_price,
             'objection_reason' => $finalReason,
             'objection_reason_id' => $reasonModelId,
             'objected_at' => now(),
@@ -1792,8 +1795,8 @@ class OrderController extends Controller
         $order->load(['details.question', 'details.option', 'files', 'category', 'user', 'expert']);
 
         if ($evaluationType === 'best') {
-            // إعادة التقييم بواسطة الـ AI أولاً مع تضمين سبب الاعتراض لتزويد الخبير بمقترح محدث
-            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+            // إعادة التقييم بواسطة الـ AI أولاً مع تضمين سبب الاعتراض والسعر السابق لتزويد الخبير بمقترح محدث
+            app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order, $previousPrice);
             if ($originalExpertId) {
                 $order->update([
                     'expert_id' => $originalExpertId,
