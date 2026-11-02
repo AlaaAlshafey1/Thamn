@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
         $this->call(ObjectionReasonSeeder::class);
         $this->call(IntroSeeder::class);
+        $this->call(AiValuationRatingSeeder::class);
+        $this->call(CategoryExpertOpinionSeeder::class);
         // User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',

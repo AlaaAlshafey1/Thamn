@@ -112,6 +112,14 @@
                                 <label class="form-label">مسمى رأي الخبير (إنجليزي)</label>
                                 <input type="text" name="expert_opinion_label_en" class="form-control" value="{{ old('expert_opinion_label_en', $category->expert_opinion_label_en ?? 'Certified Expert Opinion') }}" placeholder="Certified Expert Opinion">
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الوصف الفرعي لرأي الخبير (عربي - Subtitle)</label>
+                                <input type="text" name="expert_opinion_subtitle_ar" class="form-control" value="{{ old('expert_opinion_subtitle_ar', $category->expert_opinion_subtitle_ar ?? '') }}" placeholder="لدى الهيئة السعودية للمقيمين المعتمدين">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الوصف الفرعي لرأي الخبير (إنجليزي - Subtitle)</label>
+                                <input type="text" name="expert_opinion_subtitle_en" class="form-control" value="{{ old('expert_opinion_subtitle_en', $category->expert_opinion_subtitle_en ?? '') }}" placeholder="Accredited by the Saudi Authority for Accredited Valuers">
+                            </div>
                         </div>
                     </div>
                 </div>

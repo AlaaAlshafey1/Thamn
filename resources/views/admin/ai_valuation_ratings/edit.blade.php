@@ -30,6 +30,14 @@
                         <input type="text" name="name_en" class="form-control" value="{{ old('name_en', $aiValuationRating->name_en) }}">
                     </div>
                     <div class="col-md-6 mb-3">
+                        <label>الوصف الفرعي بالعربية (Subtitle AR)</label>
+                        <input type="text" name="subtitle_ar" class="form-control" value="{{ old('subtitle_ar', $aiValuationRating->subtitle_ar) }}" placeholder="مثال: سعر مناسب للسوق">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>الوصف الفرعي بالإنجليزية (Subtitle EN)</label>
+                        <input type="text" name="subtitle_en" class="form-control" value="{{ old('subtitle_en', $aiValuationRating->subtitle_en) }}" placeholder="e.g. Fair Market Price">
+                    </div>
+                    <div class="col-md-6 mb-3">
                         <label>اللون المميز (Hex Code)</label>
                         <input type="color" name="color" class="form-control" style="height:40px" value="{{ old('color', $aiValuationRating->color) }}">
                     </div>

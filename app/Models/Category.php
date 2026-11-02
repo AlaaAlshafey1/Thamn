@@ -16,6 +16,8 @@ class Category extends Model
         'description_en',
         'expert_opinion_label_ar',
         'expert_opinion_label_en',
+        'expert_opinion_subtitle_ar',
+        'expert_opinion_subtitle_en',
         'is_active',
         'image',
         'questions_image',

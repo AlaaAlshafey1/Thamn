@@ -26,9 +26,11 @@ class CategoryController extends Controller
             'name_en'                 => 'nullable|string|max:255',
             'description_ar'          => 'nullable|string',
             'description_en'          => 'nullable|string',
-            'expert_opinion_label_ar' => 'nullable|string|max:255',
-            'expert_opinion_label_en' => 'nullable|string|max:255',
-            'is_active'               => 'nullable|boolean',
+            'expert_opinion_label_ar'    => 'nullable|string|max:255',
+            'expert_opinion_label_en'    => 'nullable|string|max:255',
+            'expert_opinion_subtitle_ar' => 'nullable|string|max:255',
+            'expert_opinion_subtitle_en' => 'nullable|string|max:255',
+            'is_active'                  => 'nullable|boolean',
             'image'                   => 'nullable|image|max:5120',
             'questions_image'         => 'nullable|image|max:5120',
         ]);
@@ -36,6 +38,8 @@ class CategoryController extends Controller
         $data = $request->except(['image', 'questions_image']);
         $data['expert_opinion_label_ar'] = !empty($data['expert_opinion_label_ar']) ? $data['expert_opinion_label_ar'] : 'رأي الخبير المعتمد';
         $data['expert_opinion_label_en'] = !empty($data['expert_opinion_label_en']) ? $data['expert_opinion_label_en'] : 'Certified Expert Opinion';
+        $data['expert_opinion_subtitle_ar'] = !empty($data['expert_opinion_subtitle_ar']) ? $data['expert_opinion_subtitle_ar'] : 'لدى الهيئة السعودية للمقيمين المعتمدين';
+        $data['expert_opinion_subtitle_en'] = !empty($data['expert_opinion_subtitle_en']) ? $data['expert_opinion_subtitle_en'] : 'Accredited by the Saudi Authority for Accredited Valuers';
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');
@@ -65,9 +69,11 @@ class CategoryController extends Controller
             'name_en'                 => 'nullable|string|max:255',
             'description_ar'          => 'nullable|string',
             'description_en'          => 'nullable|string',
-            'expert_opinion_label_ar' => 'nullable|string|max:255',
-            'expert_opinion_label_en' => 'nullable|string|max:255',
-            'is_active'               => 'nullable|boolean',
+            'expert_opinion_label_ar'    => 'nullable|string|max:255',
+            'expert_opinion_label_en'    => 'nullable|string|max:255',
+            'expert_opinion_subtitle_ar' => 'nullable|string|max:255',
+            'expert_opinion_subtitle_en' => 'nullable|string|max:255',
+            'is_active'                  => 'nullable|boolean',
             'image'                   => 'nullable|image|max:5120',
             'questions_image'         => 'nullable|image|max:5120',
         ]);
@@ -75,6 +81,8 @@ class CategoryController extends Controller
         $data = $request->except(['image', 'questions_image']);
         $data['expert_opinion_label_ar'] = !empty($data['expert_opinion_label_ar']) ? $data['expert_opinion_label_ar'] : 'رأي الخبير المعتمد';
         $data['expert_opinion_label_en'] = !empty($data['expert_opinion_label_en']) ? $data['expert_opinion_label_en'] : 'Certified Expert Opinion';
+        $data['expert_opinion_subtitle_ar'] = !empty($data['expert_opinion_subtitle_ar']) ? $data['expert_opinion_subtitle_ar'] : 'لدى الهيئة السعودية للمقيمين المعتمدين';
+        $data['expert_opinion_subtitle_en'] = !empty($data['expert_opinion_subtitle_en']) ? $data['expert_opinion_subtitle_en'] : 'Accredited by the Saudi Authority for Accredited Valuers';
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('categories', 'public');

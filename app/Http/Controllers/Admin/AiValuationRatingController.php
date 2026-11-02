@@ -25,6 +25,8 @@ class AiValuationRatingController extends Controller
         $request->validate([
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
+            'subtitle_ar' => 'nullable|string|max:255',
+            'subtitle_en' => 'nullable|string|max:255',
             'color' => 'nullable|string|max:50',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_active' => 'boolean'
@@ -51,6 +53,8 @@ class AiValuationRatingController extends Controller
         $request->validate([
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
+            'subtitle_ar' => 'nullable|string|max:255',
+            'subtitle_en' => 'nullable|string|max:255',
             'color' => 'nullable|string|max:50',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_active' => 'boolean'

@@ -428,8 +428,8 @@ class OrderController extends Controller
 
     public function show(Request $request, $orderId)
     {
-        $lang = strtolower($request->header('Accept-Language', 'en'));
-        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+        $rawLang = strtolower($request->query('lang') ?? $request->header('Accept-Language', 'ar'));
+        $lang = str_starts_with($rawLang, 'en') ? 'en' : 'ar';
 
         $order = Order::with([
             'details.question.step',
@@ -790,8 +790,8 @@ class OrderController extends Controller
 
     public function result(Request $request, $orderId)
     {
-        $lang = strtolower($request->header('Accept-Language', 'en'));
-        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+        $rawLang = strtolower($request->query('lang') ?? $request->header('Accept-Language', 'ar'));
+        $lang = str_starts_with($rawLang, 'en') ? 'en' : 'ar';
 
         $order = Order::with([
             'details.question',
@@ -943,6 +943,9 @@ class OrderController extends Controller
                 $aiValuationRatings[] = [
                     'id' => $rating->id,
                     'name' => $lang === 'ar' ? $rating->name_ar : ($rating->name_en ?: $rating->name_ar),
+                    'subtitle' => $lang === 'ar' ? ($rating->subtitle_ar ?: '') : ($rating->subtitle_en ?: ($rating->subtitle_ar ?: '')),
+                    'subtitle_ar' => $rating->subtitle_ar,
+                    'subtitle_en' => $rating->subtitle_en,
                     'color' => $rating->color,
                     'icon' => $rating->icon ? full_url($rating->icon) : null,
                     'selectedByExpert' => $rating->id === $order->ai_valuation_rating_id ? 1 : 0,
@@ -993,9 +996,18 @@ class OrderController extends Controller
         }
 
         /* ===================== EXPERT OPINION LABEL ===================== */
+        $defaultLabelAr = 'رأي الخبير المعتمد';
+        $defaultLabelEn = 'Certified Expert Opinion';
+        $defaultSubtitleAr = 'لدى الهيئة السعودية للمقيمين المعتمدين';
+        $defaultSubtitleEn = 'Accredited by the Saudi Authority for Accredited Valuers';
+
         $expertOpinionLabel = $lang === 'ar'
-            ? ($order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد')
-            : ($order->category?->expert_opinion_label_en ?: 'Certified Expert Opinion');
+            ? ($order->category?->expert_opinion_label_ar ?: $defaultLabelAr)
+            : ($order->category?->expert_opinion_label_en ?: ($order->category?->expert_opinion_label_ar ?: $defaultLabelEn));
+
+        $expertOpinionSubtitle = $lang === 'ar'
+            ? ($order->category?->expert_opinion_subtitle_ar ?: $defaultSubtitleAr)
+            : ($order->category?->expert_opinion_subtitle_en ?: ($order->category?->expert_opinion_subtitle_ar ?: $defaultSubtitleEn));
 
         $rawAnswers = $order->details->map(function ($d) {
             return [
@@ -1045,6 +1057,9 @@ class OrderController extends Controller
             'expert_opinion_label' => $expertOpinionLabel,
             'expert_opinion_label_ar' => $order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد',
             'expert_opinion_label_en' => $order->category?->expert_opinion_label_en ?: 'Certified Expert Opinion',
+            'expert_opinion_subtitle' => $expertOpinionSubtitle,
+            'expert_opinion_subtitle_ar' => $order->category?->expert_opinion_subtitle_ar ?: $defaultSubtitleAr,
+            'expert_opinion_subtitle_en' => $order->category?->expert_opinion_subtitle_en ?: $defaultSubtitleEn,
             // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
             'expert_membership_number' => $order->expert?->membership_number ?? null,
             'ai_valuation_ratings' => $aiValuationRatings,

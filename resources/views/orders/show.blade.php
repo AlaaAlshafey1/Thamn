@@ -2097,6 +2097,16 @@
                                                     style="font-weight:800; font-size:0.88rem; color:{{ $isSelected ? '#0f172a' : '#64748b' }}; line-height:1.3;">
                                                     {{ $rating->name_ar }}
                                                 </div>
+                                                @if(!empty($rating->subtitle_ar))
+                                                    <div style="font-weight:500; font-size:0.75rem; color:{{ $isSelected ? '#0f766e' : '#94a3b8' }}; line-height:1.2; margin-top:3px;">
+                                                        {{ $rating->subtitle_ar }}
+                                                    </div>
+                                                @endif
+                                                @if(!empty($rating->subtitle_ar))
+                                                    <div style="font-weight:500; font-size:0.75rem; color:{{ $isSelected ? '#0f766e' : '#94a3b8' }}; line-height:1.2; margin-top:3px;">
+                                                        {{ $rating->subtitle_ar }}
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
                                     </div>
@@ -2235,6 +2245,11 @@
                                                     <div style="font-weight:800; font-size:0.92rem; color:#1e293b; line-height:1.3;">
                                                         {{ $rating->name_ar }}
                                                     </div>
+                                                    @if(!empty($rating->subtitle_ar))
+                                                        <div style="font-weight:500; font-size:0.75rem; color:#64748b; line-height:1.2; margin-top:3px;">
+                                                            {{ $rating->subtitle_ar }}
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>

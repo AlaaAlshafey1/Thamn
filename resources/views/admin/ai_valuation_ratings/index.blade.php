@@ -27,6 +27,7 @@
                         <tr>
                             <th>#</th>
                             <th>الاسم بالعربية</th>
+                            <th>الوصف الفرعي (Subtitle)</th>
                             <th>اللون</th>
                             <th>الأيقونة</th>
                             <th>الحالة</th>
@@ -37,7 +38,18 @@
                         @foreach($ratings as $rating)
                             <tr>
                                 <td>{{ $rating->id }}</td>
-                                <td>{{ $rating->name_ar }}</td>
+                                <td>
+                                    <strong>{{ $rating->name_ar }}</strong>
+                                    @if($rating->name_en)
+                                        <br><small class="text-muted">{{ $rating->name_en }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="badge badge-light text-dark font-weight-normal" style="font-size:0.85rem;">{{ $rating->subtitle_ar ?: '-' }}</span>
+                                    @if($rating->subtitle_en)
+                                        <br><small class="text-muted">{{ $rating->subtitle_en }}</small>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($rating->color)
                                         <span style="display:inline-block; width:20px; height:20px; background-color:{{ $rating->color }}; border-radius:50%;"></span>

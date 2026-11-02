@@ -12,6 +12,8 @@ class AiValuationRating extends Model
     protected $fillable = [
         'name_ar',
         'name_en',
+        'subtitle_ar',
+        'subtitle_en',
         'color',
         'icon',
         'is_active',
