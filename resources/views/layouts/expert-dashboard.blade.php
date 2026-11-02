@@ -112,8 +112,9 @@
         border-radius:10px; background:#111; color:#fff; font-size:0.8rem; font-weight:700; text-decoration:none; transition:all .25s;
     }
     .ex-act-btn:hover { background:#333; color:#fff; }
-    .ex-empty { padding:60px 20px; text-align:center; color:var(--ex-text-muted); }
-    .ex-empty i { font-size:3rem; opacity:.3; display:block; margin-bottom:12px; }
+    .ex-empty { padding:60px 20px; text-align:center; color:var(--ex-text-muted); display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:0 auto; }
+    .ex-empty i { font-size:3.5rem; opacity:.3; display:block; margin:0 auto 14px auto; color:var(--ex-text-muted); line-height:1; }
+    .ex-empty span { display:block; font-weight:700; font-size:1rem; color:var(--ex-text-muted); text-align:center; }
     .ex-price { font-weight:900; color:#009688; }
 
     /* Order Status Header & Badges (جديد / منجز / منتهي) */
@@ -462,7 +463,7 @@
                                     <div class="ord-hdr-row">
                                         <span class="ord-hdr-title">
                                             <span class="ord-lbl">طلب</span>
-                                            <span class="ex-ord-num">#{{ $order->id }}</span>
+                                            <span class="ex-ord-num">{{ $order->id }}</span>
                                         </span>
                                         @if($isNew)
                                             <span class="order-status-pill pill-new"><i class="bx bxs-star"></i> جديد</span>
@@ -508,11 +509,11 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr>
-                                <td colspan="6">
+                            <tr class="ex-empty-row">
+                                <td colspan="6" class="ex-empty-td">
                                     <div class="ex-empty">
                                         <i class="bx bx-folder-open"></i>
-                                        لا توجد طلبات مسندة إليك بعد
+                                        <span>لا توجد طلبات مسندة إليك بعد</span>
                                     </div>
                                 </td>
                             </tr>

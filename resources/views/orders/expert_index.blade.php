@@ -30,8 +30,9 @@
     .b-def  { background:rgba(158,158,158,0.15); color:#9e9e9e; }
     .ex-act-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 15px; border-radius:10px; background:#111; color:#fff; font-size:0.8rem; font-weight:700; text-decoration:none; transition:all .25s; }
     .ex-act-btn:hover { background:#333; color:#fff; }
-    .ex-empty { padding:60px 20px; text-align:center; color:var(--ex-muted); }
-    .ex-empty i { font-size:3rem; opacity:.3; display:block; margin-bottom:12px; }
+    .ex-empty { padding:60px 20px; text-align:center; color:var(--ex-muted); display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:0 auto; }
+    .ex-empty i { font-size:3.5rem; opacity:.3; display:block; margin:0 auto 14px auto; color:var(--ex-muted); line-height:1; }
+    .ex-empty span { display:block; font-weight:700; font-size:1rem; color:var(--ex-muted); text-align:center; }
     .ex-price { font-weight:900; color:#009688; }
 
     /* Order Status Header & Badges (جديد / منجز / منتهي) */
@@ -98,6 +99,27 @@
         .ex-tbl tbody td { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; text-align: left; }
         .ex-tbl tbody td:last-child { border-bottom: none; padding-bottom: 0; }
         .ex-tbl tbody td::before { content: attr(data-label); font-size: 0.8rem; font-weight: 800; color: #888; }
+        .ex-tbl tbody tr.ex-empty-row,
+        .ex-tbl tbody td.ex-empty-td {
+            display: block !important;
+            width: 100% !important;
+            padding: 0 !important;
+            border: none !important;
+            background: var(--ex-card) !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02) !important;
+            border-radius: 16px !important;
+            text-align: center !important;
+        }
+        .ex-tbl tbody td.ex-empty-td::before {
+            display: none !important;
+            content: none !important;
+        }
+        .ex-empty {
+            padding: 45px 16px !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
         .ex-tbl tbody td:nth-child(1)::before { display: none !important; }
         .ex-urow { flex-direction: row-reverse; }
     }
@@ -139,7 +161,7 @@
                             <div class="ord-hdr-row">
                                 <span class="ord-hdr-title">
                                     <span class="ord-lbl">طلب</span>
-                                    <span class="ex-ord-num">#{{ $order->id }}</span>
+                                    <span class="ex-ord-num">{{ $order->id }}</span>
                                 </span>
                                 <span class="order-status-pill pill-new"><i class="bx bxs-star"></i> جديد</span>
                             </div>
@@ -181,11 +203,11 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="6">
+                    <tr class="ex-empty-row">
+                        <td colspan="6" class="ex-empty-td">
                             <div class="ex-empty">
                                 <i class="bx bx-check-shield"></i>
-                                لا يوجد طلبات حالية بانتظار تقييمك
+                                <span>لا يوجد طلبات حالية بانتظار تقييمك</span>
                             </div>
                         </td>
                     </tr>
@@ -220,7 +242,7 @@
                             <div class="ord-hdr-row">
                                 <span class="ord-hdr-title">
                                     <span class="ord-lbl">طلب</span>
-                                    <span class="ex-ord-num">#{{ $order->id }}</span>
+                                    <span class="ex-ord-num">{{ $order->id }}</span>
                                 </span>
                                 <span class="order-status-pill pill-completed"><i class="bx bx-check-circle"></i> منجز</span>
                             </div>
@@ -261,11 +283,11 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="6">
+                    <tr class="ex-empty-row">
+                        <td colspan="6" class="ex-empty-td">
                             <div class="ex-empty">
                                 <i class="bx bx-folder-open"></i>
-                                لم تنجز أي طلبات بعد
+                                <span>لم تنجز أي طلبات بعد</span>
                             </div>
                         </td>
                     </tr>

@@ -722,7 +722,7 @@ class OrderController extends Controller
 
             $titleParts = array_merge($titleParts, $detailValues);
             if (empty($titleParts))
-                $titleParts[] = $lang === 'ar' ? "طلب #{$order->id}" : "Order #{$order->id}";
+                $titleParts[] = $lang === 'ar' ? "طلب {$order->id}" : "Order {$order->id}";
 
             $files = $order->files
                 ->where('type', 'file')
@@ -1679,7 +1679,7 @@ class OrderController extends Controller
             // إرسال رسالة واتساب للعميل بالسعر الجديد وتوجيهه للدخول للتطبيق مباشرة
             if ($order->user && $order->user->phone) {
                 try {
-                    $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم #{$order->id} بنجاح 🔄\n\n"
+                    $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم {$order->id} بنجاح 🔄\n\n"
                         . "بناءً على " . ($isInputModified ? "تعديل المدخلات" : "اعتراضك") . "، قام نظام الذكاء الاصطناعي بتدقيق التقييم وتعديل السعر العادل ليصبح:\n"
                         . "💰 *السعر الجديد المعتمد: {$newPriceFormatted} ريال*" . ($previousPrice ? " (السعر السابق: " . number_format((float)$previousPrice, 0) . " ريال)\n\n" : "\n\n")
                         . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
@@ -1708,7 +1708,7 @@ class OrderController extends Controller
                     $isAr ? 'تم تعديل السعر بناءً على طلبك 🎯' : 'Price adjusted based on your request',
                     $isAr
                         ? "قام الذكاء الاصطناعي بمراجعة طلبك وتعديل السعر للطلب رقم {$order->id} ليصبح {$newPriceFormatted} ريال. تفضل بالاطلاع على التفاصيل الآن."
-                        : "AI reviewed your request and adjusted the price for order #{$order->id} to {$newPriceFormatted} SAR. Check it now.",
+                        : "AI reviewed your request and adjusted the price for order {$order->id} to {$newPriceFormatted} SAR. Check it now.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_ai']]
                 );
@@ -1719,7 +1719,7 @@ class OrderController extends Controller
                 $adminOrderLink = route('orders.show', $order->id);
                 $ownerPhone = '966503955098';
 
-                $adminWhatsAppMsg = "⚡ *تنبيه: تم تعديل السعر آلياً للطلب #{$order->id} (باقة الذكاء الاصطناعي)*\n\n"
+                $adminWhatsAppMsg = "⚡ *تنبيه: تم تعديل السعر آلياً للطلب {$order->id} (باقة الذكاء الاصطناعي)*\n\n"
                     . "قام العميل *{$customerFullName}* بتقديم " . ($isInputModified ? "طلب تعديل مدخلات وإعادة تقييم" : "اعتراض") . "، وتولى الذكاء الاصطناعي مراجعة السلعة وتعديل التقييم فوراً 🔄\n\n"
                     . "📌 *سبب الاحتجاج:*\n{$finalReason}\n\n"
                     . "💰 *السعر السابق:* " . ($previousPrice ? number_format((float)$previousPrice, 0) . ' ريال' : 'غير محدد') . "\n"
@@ -1736,8 +1736,8 @@ class OrderController extends Controller
                 }
                 foreach ($adminEmails as $aEmail) {
                     \Illuminate\Support\Facades\Mail::to($aEmail)->send(new \App\Mail\SystemNotificationMail(
-                        "⚡ تعديل السعر آلياً للطلب #{$order->id} بناءً على اعتراض العميل",
-                        "مشرفنا الغالي .. قام العميل {$customerFullName} بتقديم اعتراض على الطلب #{$order->id}.\nسبب الاعتراض: {$finalReason}\nقام الذكاء الاصطناعي بإعادة التقييم وتعديل السعر إلى {$newPriceFormatted} ريال وإرسال النتيجة المحدثة للعميل فوراً.",
+                        "⚡ تعديل السعر آلياً للطلب {$order->id} بناءً على اعتراض العميل",
+                        "حبير .. قام العميل {$customerFullName} بتقديم اعتراض على الطلب {$order->id}.\nسبب الاعتراض: {$finalReason}\nقام الذكاء الاصطناعي بإعادة التقييم وتعديل السعر إلى {$newPriceFormatted} ريال وإرسال النتيجة المحدثة للعميل فوراً.",
                         $adminOrderLink,
                         'عرض الطلب بالداشبورد'
                     ));
@@ -1820,7 +1820,7 @@ class OrderController extends Controller
         if ($originalExpert && $originalExpert->email) {
             try {
                 $customerName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'العميل';
-                $emailBody = "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم #{$order->id}" . ($isInputModified ? " بعد تعديل المدخلات.\n" : ".\n");
+                $emailBody = "يا هلا بك يا خبيرنا الغالي! العميل {$customerName} طلب إعادة تقييم لمنتجه رقم {$order->id}" . ($isInputModified ? " بعد تعديل المدخلات.\n" : ".\n");
                 if ($finalReason) {
                     $emailBody .= "سبب الاحتجاج: {$finalReason}\n";
                 }
@@ -1839,7 +1839,7 @@ class OrderController extends Controller
 
         if ($originalExpert && $originalExpert->phone) {
             try {
-                $expertWhatsappMsg = "يا هلا بخبيرنا الغالي .. العميل قدم احتجاج وطلب إعادة تقييم لطلبه رقم #{$order->id}" . ($isInputModified ? " (مع تعديل المدخلات)" : "") . " 🔄\n";
+                $expertWhatsappMsg = "يا هلا بخبيرنا الغالي .. العميل قدم احتجاج وطلب إعادة تقييم لطلبه رقم {$order->id}" . ($isInputModified ? " (مع تعديل المدخلات)" : "") . " 🔄\n";
                 if ($finalReason) {
                     $expertWhatsappMsg .= "سبب الاحتجاج: {$finalReason}\n";
                 }
@@ -1857,7 +1857,7 @@ class OrderController extends Controller
         if ($order->user && $order->user->phone) {
             try {
                 $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
-                $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا " . ($isInputModified ? "تعديلاتك وطلب إعادة التقييم" : "احتجاجك على تقييم") . " طلبك رقم #{$order->id} بنجاح 🔄\n\n"
+                $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا " . ($isInputModified ? "تعديلاتك وطلب إعادة التقييم" : "احتجاجك على تقييم") . " طلبك رقم {$order->id} بنجاح 🔄\n\n"
                     . "ولا تشيل هم .. فريقنا والخبير المختص بيراجعون السعر وتفاصيل السلعة بدقة، ونبشرك بالنتيجة بأقرب وقت بإذن الله 🤝\n\n"
                     . "📱 تقدر تتابع حالة طلبك وتفاصيل التقييم أولاً بأول من داخل تطبيق ثمن.\n\n"
                     . "- فريق ثمن";
@@ -1872,9 +1872,9 @@ class OrderController extends Controller
         if ($order->user && $order->user->email) {
             try {
                 $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
-                $emailSubject = "تم استلام طلب الاحتجاج وإعادة التقييم لطلبك #{$order->id} 🔄";
+                $emailSubject = "تم استلام طلب الاحتجاج وإعادة التقييم لطلبك {$order->id} 🔄";
                 $emailContent = "يا هلا بك يا {$customerFirstName}،\n\n"
-                    . "تم استلام احتجاجك وطلب إعادة التقييم لطلبك رقم #{$order->id} بنجاح.\n\n"
+                    . "تم استلام احتجاجك وطلب إعادة التقييم لطلبك رقم {$order->id} بنجاح.\n\n"
                     . "سبب الاحتجاج المسجل:\n{$finalReason}\n\n"
                     . "طلبك الآن قيد التدقيق والمراجعة بعناية من قبل فريق الإدارة والخبير المختص لضمان دقة التثمين، وسيتم إشعارك فور اكتمال التقييم.\n\n"
                     . "شاكرين ومقدرين ثقتك بنا.";
@@ -1891,53 +1891,53 @@ class OrderController extends Controller
         }
 
         // ─── إرسال واتساب وإيميل لصاحب المشروع والإدارة فور ورود الاحتجاج ───
-        try {
-            $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
-            $customerPhone = $order->user?->phone ?: 'غير متوفر';
-            $categoryName = $order->category?->name_ar ?: 'غير محدد';
-            $adminOrderLink = route('orders.show', $order->id);
+        // try {
+        //     $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
+        //     $customerPhone = $order->user?->phone ?: 'غير متوفر';
+        //     $categoryName = $order->category?->name_ar ?: 'غير محدد';
+        //     $adminOrderLink = route('orders.show', $order->id);
 
-            $ownerPhone = '966503955098';
-            $adminWhatsAppMsg = "⚠️ *تنبيه: احتجاج جديد على التقييم في منصة ثمن*\n\n"
-                . "مشرفنا الغالي .. العميل *{$customerFullName}* قدّم احتجاجاً وطلب إعادة تقييم لطلبه رقم *#{$order->id}* 🔄\n\n"
-                . "📌 *سبب الاحتجاج:*\n{$finalReason}\n\n"
-                . "📁 *القسم:* {$categoryName}\n"
-                . "👤 *جوال العميل:* {$customerPhone}\n\n"
-                . "تفضل بالدخول للوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل مباشرة:";
+        //     $ownerPhone = '966503955098';
+        //     $adminWhatsAppMsg = "⚠️ *تنبيه: احتجاج جديد على التقييم في منصة ثمن*\n\n"
+        //         . "مشرفنا الغالي .. العميل *{$customerFullName}* قدّم احتجاجاً وطلب إعادة تقييم لطلبه رقم *{$order->id}* 🔄\n\n"
+        //         . "📌 *سبب الاحتجاج:*\n{$finalReason}\n\n"
+        //         . "📁 *القسم:* {$categoryName}\n"
+        //         . "👤 *جوال العميل:* {$customerPhone}\n\n"
+        //         . "تفضل بالدخول للوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل مباشرة:";
 
-            $adminWhatsAppMsg .= \App\Services\WhatsAppService::formatActionLink('عرض الاحتجاج والرد عليه', $adminOrderLink, '⚖️');
+        //     $adminWhatsAppMsg .= \App\Services\WhatsAppService::formatActionLink('عرض الاحتجاج والرد عليه', $adminOrderLink, '⚖️');
 
-            app(\App\Services\WhatsAppService::class)->sendMessage($ownerPhone, $adminWhatsAppMsg);
+        //     app(\App\Services\WhatsAppService::class)->sendMessage($ownerPhone, $adminWhatsAppMsg);
 
-            $adminEmails = \App\Models\User::role('superadmin')->pluck('email')->filter()->toArray();
-            $defaultAdminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
-            if (!in_array($defaultAdminEmail, $adminEmails)) {
-                $adminEmails[] = $defaultAdminEmail;
-            }
+        //     $adminEmails = \App\Models\User::role('superadmin')->pluck('email')->filter()->toArray();
+        //     $defaultAdminEmail = config('mail.admin_email', 'thmmnapplic@gmail.com');
+        //     if (!in_array($defaultAdminEmail, $adminEmails)) {
+        //         $adminEmails[] = $defaultAdminEmail;
+        //     }
 
-            $adminEmailSubject = "⚠️ تنبيه عاجل: احتجاج جديد على التقييم للطلب #{$order->id} من العميل {$customerFullName}";
-            $adminEmailContent = "مشرفنا الغالي،\n\n"
-                . "تم تقديم احتجاج رسمي وطلب إعادة تثمين لطلب في المنصة بالبيانات التالية:\n\n"
-                . "• رقم الطلب: #{$order->id}\n"
-                . "• اسم العميل: {$customerFullName}\n"
-                . "• جوال العميل: {$customerPhone}\n"
-                . "• قسم السلعة: {$categoryName}\n"
-                . "• تاريخ الاحتجاج: " . now()->format('Y-m-d H:i') . "\n\n"
-                . "📌 سبب الاحتجاج المرفوع من العميل:\n"
-                . "{$finalReason}\n\n"
-                . "يرجى الدخول إلى لوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل برسالة واتساب منظمة عبر النظام.";
+        //     $adminEmailSubject = "⚠️ تنبيه عاجل: احتجاج جديد على التقييم للطلب {$order->id} من العميل {$customerFullName}";
+        //     $adminEmailContent = "مشرفنا الغالي،\n\n"
+        //         . "تم تقديم احتجاج رسمي وطلب إعادة تثمين لطلب في المنصة بالبيانات التالية:\n\n"
+        //         . "• رقم الطلب: {$order->id}\n"
+        //         . "• اسم العميل: {$customerFullName}\n"
+        //         . "• جوال العميل: {$customerPhone}\n"
+        //         . "• قسم السلعة: {$categoryName}\n"
+        //         . "• تاريخ الاحتجاج: " . now()->format('Y-m-d H:i') . "\n\n"
+        //         . "📌 سبب الاحتجاج المرفوع من العميل:\n"
+        //         . "{$finalReason}\n\n"
+        //         . "يرجى الدخول إلى لوحة التحكم لمراجعة تفاصيل الاحتجاج والرد على العميل برسالة واتساب منظمة عبر النظام.";
 
-            foreach ($adminEmails as $aEmail) {
-                \Illuminate\Support\Facades\Mail::to($aEmail)->send(new \App\Mail\SystemNotificationMail(
-                    $adminEmailSubject,
-                    $adminEmailContent,
-                    $adminOrderLink,
-                    'عرض الاحتجاج والرد عليه'
-                ));
-            }
-        } catch (\Exception $e) {
-            Log::error('Admin Objection Notification (WhatsApp/Email) Failed: ' . $e->getMessage());
-        }
+        //     foreach ($adminEmails as $aEmail) {
+        //         \Illuminate\Support\Facades\Mail::to($aEmail)->send(new \App\Mail\SystemNotificationMail(
+        //             $adminEmailSubject,
+        //             $adminEmailContent,
+        //             $adminOrderLink,
+        //             'عرض الاحتجاج والرد عليه'
+        //         ));
+        //     }
+        // } catch (\Exception $e) {
+        //     Log::error('Admin Objection Notification (WhatsApp/Email) Failed: ' . $e->getMessage());
+        // }
 
         // FCM Notification لإعادة التقييم (Saudi Phrasing)
         $tokens = $order->user?->getFcmTokens() ?? [];
@@ -1947,7 +1947,7 @@ class OrderController extends Controller
                 $isAr ? 'ولايهمك .. تم استلام طلب الاحتجاج وإعادة التقييم' : 'Objection & re-evaluation request received',
                 $isAr
                 ? "استلمنا طلب إعادة التقييم لمنتجك رقم {$order->id} وبدأنا مرحلة المراجعة فوراً"
-                : "We received your objection & re-evaluation request for product #{$order->id} and started the review process immediately.",
+                : "We received your objection & re-evaluation request for product {$order->id} and started the review process immediately.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 're_evaluation_requested']]
             );
@@ -2024,7 +2024,7 @@ class OrderController extends Controller
         if (!empty($tokens)) {
             $this->notifyByFirebase(
                 lang('جارِ تقييم منتجك 🔍', 'Your product is being evaluated 🔍', request()),
-                lang("لقد استلم خبيرنا طلبك رقم #{$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.", "Our expert has received your order #{$order->id} and will notify you with the result shortly.", request()),
+                lang("لقد استلم خبيرنا طلبك رقم {$order->id}، وسيتم إخطارك بالنتيجة فور الانتهاء.", "Our expert has received your order {$order->id} and will notify you with the result shortly.", request()),
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_expert']]
             );
@@ -2137,7 +2137,7 @@ class OrderController extends Controller
                     $isAr ? 'منتجك في السوق الآن' : 'Your product is in the market now',
                     $isAr
                     ? "تم إدراج منتجك رقم {$order->id} في سوق ثمن بنجاح يمكن للمشترين رؤيته الآن"
-                    : "Your product #{$order->id} has been successfully listed in Thamn market. Buyers can now see it.",
+                    : "Your product {$order->id} has been successfully listed in Thamn market. Buyers can now see it.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'sent_to_market']]
                 );

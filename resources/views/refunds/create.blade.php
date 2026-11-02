@@ -15,7 +15,7 @@
             <div class="card-body p-4">
                 <div class="alert alert-info border-0 shadow-sm mb-4">
                     <i class="bx bx-info-circle ml-1"></i>
-                    سيتم استرداد مبلغ <strong>{{ number_format($order->total_price, 2) }} ريال</strong> للطلب رقم #{{ $order->id }}
+                    سيتم استرداد مبلغ <strong>{{ number_format($order->total_price, 2) }} ريال</strong> للطلب رقم {{ $order->id }}
                 </div>
 
                 <form action="{{ route('refunds.store') }}" method="POST">

@@ -64,7 +64,7 @@
                                 <div class="fw-bold text-dark">{{ $refund->user->first_name }} {{ $refund->user->last_name }}</div>
                                 <small class="text-muted">{{ $refund->user->phone }}</small>
                             </td>
-                            <td class="fw-bold text-dark">#{{ $refund->order_id }}</td>
+                            <td class="fw-bold text-dark">{{ $refund->order_id }}</td>
                             <td>
                                 <span class="fw-bold text-primary">{{ number_format($refund->amount, 2) }}</span>
                                 <small class="text-muted">SAR</small>

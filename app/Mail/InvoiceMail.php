@@ -20,7 +20,7 @@ class InvoiceMail extends Mailable
 
     public function build()
     {
-        return $this->subject('فاتورة طلب رقم #' . $this->order->id)
+        return $this->subject('فاتورة طلب رقم ' . $this->order->id)
             ->view('emails.invoice');
     }
 }

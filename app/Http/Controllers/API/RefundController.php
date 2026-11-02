@@ -100,7 +100,7 @@ class RefundController extends Controller
             $adminEmail = 'thmmnapplic@gmail.com';
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                 'طلب استرداد مبلغ جديد (من الموبايل)!',
-                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
+                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم {$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
                 route('refunds.index')
             ));
         } catch (\Exception $e) {

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>فاتورة طلب #{{ $order->id }}</title>
+    <title>فاتورة طلب {{ $order->id }}</title>
     <style>
         body {
             font-family: 'dejavusans', sans-serif;

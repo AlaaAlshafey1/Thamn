@@ -55,8 +55,7 @@
     <div class="page-header py-3 px-3 mt-3 mb-4 bg-white shadow-sm rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-3"
         style="direction: rtl;">
         <div class="d-flex flex-column">
-            <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-file"></i> تفاصيل طلب السحب رقم
-                #{{ $request->id }}</h4>
+            <h4 class="content-title mb-1 fw-bold text-primary"><i class="bx bx-file"></i> تفاصيل طلب السحب رقم {{ $request->id }}</h4>
             <small class="text-muted">مراجعة بيانات الخبير والطلبات التي قام بتقييمها</small>
         </div>
         <div>
@@ -253,7 +252,7 @@
                         <tbody>
                             @foreach($evaluatedOrders as $order)
                                 <tr>
-                                    <td class="fw-bold">#{{ $order->id }}</td>
+                                    <td class="fw-bold">{{ $order->id }}</td>
                                     <td>{{ $order->user->first_name ?? 'غير معروف' }}</td>
                                     <td class="text-muted" dir="ltr">
                                         {{ $order->accepted_at ? \Carbon\Carbon::parse($order->accepted_at)->format('Y-m-d') : '-' }}

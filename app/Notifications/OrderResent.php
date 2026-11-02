@@ -27,12 +27,12 @@ class OrderResent extends Notification
         return [
             'order_id' => $this->order->id,
             'title' => 'تم إعادة إرسال الطلب',
-            'message' => "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}"
+            'message' => "تم إعادة إرسال طلبك: طلب رقم {$this->order->id}"
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم {$this->order->id}";
     }
 }

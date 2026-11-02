@@ -384,7 +384,7 @@
                     <span>ر.س</span>
                 </div>
                 <div class="order-badge">
-                    طلب رقم #{{ $order->id }}
+                    طلب رقم {{ $order->id }}
                 </div>
             </div>
 
@@ -428,7 +428,7 @@
             element: '.moyasar-form',
             amount: {{ (int) round($order->total_price * 100) }},
             currency: 'SAR',
-            description: 'طلب تثمين رقم #{{ $order->id }}',
+            description: 'طلب تثمين رقم {{ $order->id }}',
             publishable_api_key: '{{ config("services.moyasar.publishable_key") }}',
             callback_url: '{{ $callbackUrl }}',
             methods: paymentMethods,

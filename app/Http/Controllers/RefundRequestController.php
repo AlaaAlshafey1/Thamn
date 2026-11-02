@@ -92,7 +92,7 @@ class RefundRequestController extends Controller
             $adminEmail = 'thmmnapplic@gmail.com';
             Mail::to($adminEmail)->send(new \App\Mail\SystemNotificationMail(
                 'طلب استرداد مبلغ جديد!',
-                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم #{$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
+                "العميل {$refund->user->first_name} قدم طلب استرداد لمبلغ: " . number_format($refund->amount, 2) . " ريال للطلب رقم {$refund->order_id}.\nبيانات البنك: {$refund->bank_name} - {$refund->iban}\nيرجى مراجعة الطلب في لوحة التحكم.",
                 route('refunds.index')
             ));
         } catch (\Exception $e) {
@@ -129,7 +129,7 @@ class RefundRequestController extends Controller
             try {
                 Mail::to($refund->user->email)->send(new SystemNotificationMail(
                     'تم استرداد مبلغ طلبك من ثمن',
-                    "عزيزي العميل، نعتذر منك بشدة عن عدم تمكننا من تقييم طلبك رقم #{$refund->order_id} في الوقت المحدد. نود إبلاغك بأنه تم تحويل مبلغ الاسترداد إلى حسابك البنكي بنجاح. شكراً لتفهمك.",
+                    "عزيزي العميل، نعتذر منك بشدة عن عدم تمكننا من تقييم طلبك رقم {$refund->order_id} في الوقت المحدد. نود إبلاغك بأنه تم تحويل مبلغ الاسترداد إلى حسابك البنكي بنجاح. شكراً لتفهمك.",
                     route('orders.show', $refund->order_id)
                 ));
             } catch (\Exception $e) {

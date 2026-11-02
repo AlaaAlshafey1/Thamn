@@ -28,7 +28,7 @@ class NewRefundRequestNotification extends Notification
             'refund_id' => $this->refund->id,
             'order_id' => $this->refund->order_id,
             'title' => 'طلب استرداد جديد',
-            'message' => "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم #{$this->refund->order_id}",
+            'message' => "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}",
         ];
     }
 

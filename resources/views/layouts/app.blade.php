@@ -529,7 +529,7 @@
 						<tbody>
 							@forelse($recentOrders as $order)
 								<tr style="transition: all 0.2s ease;">
-									<td class="align-middle font-weight-bold">#{{ $order->id }}</td>
+									<td class="align-middle font-weight-bold">{{ $order->id }}</td>
 									<td class="align-middle">
 										<div class="d-flex align-items-center">
 											<div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-2 ml-2"

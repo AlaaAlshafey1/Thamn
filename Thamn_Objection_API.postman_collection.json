@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "4f726cc3-thamn-objection-api",
 		"name": "Thamn - Objection & Re-evaluation API (منظومة الاحتجاج)",
-		"description": "مجموعة طلبات Postman الخاصة بـ API الاحتجاج وإعادة التثمين وأسباب الاحتجاج الجاهزة في تطبيق ثمن.",
+		"description": "مجموعة طلبات Postman الخاصة بـ API الاحتجاج وتعديل المدخلات وإعادة التثمين وأسباب الاحتجاج الجاهزة في تطبيق ثمن.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -50,7 +50,7 @@
 								"objection-reasons"
 							]
 						},
-						"description": "ترجع قائمة الأسباب الجاهزة بحقلي id و title فقط باللغة العربية."
+						"description": "ترجع هيكل أسباب الاحتجاج الجديد (formTitle + types + options) باللغة العربية."
 					},
 					"response": []
 				},
@@ -78,7 +78,7 @@
 								"objection-reasons"
 							]
 						},
-						"description": "ترجع قائمة الأسباب الجاهزة بحقلي id و title باللغة الإنجليزية."
+						"description": "ترجع هيكل أسباب الاحتجاج الجديد (formTitle + types + options) باللغة الإنجليزية."
 					},
 					"response": []
 				},
@@ -115,7 +115,7 @@
 			"name": "2. Submit Objection (تقديم الاحتجاج)",
 			"item": [
 				{
-					"name": "تقديم احتجاج - باختيار سبب جاهز + ملاحظة إضافية",
+					"name": "تقديم احتجاج - باختيار خيار فرعي (مثل 1001 أو 1002)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -144,7 +144,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason_id\": 1,\n  \"notes\": \"السلعة تم شراؤها حديثاً بفاتورة أصلية ولم تُستخدم نهائياً\"\n}"
+							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason_id\": 1,\n  \"option_id\": 1002,\n  \"notes\": \"السلعة تم شراؤها حديثاً بفاتورة أصلية ولم تُستخدم نهائياً\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/orders/objection",
@@ -156,12 +156,12 @@
 								"objection"
 							]
 						},
-						"description": "تقديم احتجاج باختيار رقم السبب الجاهز reason_id مع إضافة ملاحظة توضيحية اختيارية."
+						"description": "يدعم إرسال reason_id مع option_id (1001 أو 1002)، أو إرسال 1001/1002 مباشرة داخل reason_id."
 					},
 					"response": []
 				},
 				{
-					"name": "تقديم احتجاج - بكتابة سبب مخصص نصي فقط",
+					"name": "تقديم احتجاج - سبب آخر (other_reason = 3)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -190,7 +190,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason\": \"السعر المقدر أقل بكثير من القيمة الحقيقية للسلعة في السوق حالياً\"\n}"
+							"raw": "{\n  \"order_id\": {{orderId}},\n  \"reason_id\": 3,\n  \"reason\": \"السعر المقدر أقل بكثير من القيمة الحقيقية للسلعة في السوق حالياً\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/orders/objection",
@@ -202,12 +202,12 @@
 								"objection"
 							]
 						},
-						"description": "تقديم احتجاج بكتابة سبب نصي مباشرة دون اختيار رقم السبب الجاهز."
+						"description": "تقديم احتجاج عند اختيار سبب آخر (id: 3) مع كتابة نص السبب."
 					},
 					"response": []
 				},
 				{
-					"name": "تقديم احتجاج - مسار بديل بالـ URL (valuation-orders/:id/objection)",
+					"name": "تعديل المدخلات وإعادة التقييم بدون دفع (input_modification)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -236,67 +236,20 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"reason_id\": 2,\n  \"reason\": \"أرى أن التثمين لم يراعِ النظافة والمرفقات الأصلية\"\n}"
+							"raw": "{\n  \"answers\": [\n    {\n      \"question_id\": 1,\n      \"option_id\": 5,\n      \"sub_option_id\": null,\n      \"value\": null,\n      \"stageing\": 1\n    },\n    {\n      \"question_id\": 2,\n      \"option_id\": null,\n      \"sub_option_id\": null,\n      \"value\": \"2024\",\n      \"stageing\": 1\n    }\n  ],\n  \"notes\": \"قمت بتصحيح سنة الصنع وحالة السلعة\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/objection",
+							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/modify-inputs",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"valuation-orders",
 								"{{orderId}}",
-								"objection"
+								"modify-inputs"
 							]
 						},
-						"description": "تقديم احتجاج مع تمرير رقم الطلب في الرابط كـ Parameter."
-					},
-					"response": []
-				},
-				{
-					"name": "إعادة التقييم (المسار السابق المحدث re-evaluate)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Accept-Language",
-								"value": "ar"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"reason_id\": 3,\n  \"notes\": \"أرجو إعادة النظر في السعر بناءً على المرفقات\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/valuation-orders/{{orderId}}/re-evaluate",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"valuation-orders",
-								"{{orderId}}",
-								"re-evaluate"
-							]
-						},
-						"description": "المسار الأصلي القديم لإعادة التقييم تم تحديثه ليدعم استقبال وحفظ سبب الاحتجاج وإرسال الواتساب والإيميل."
+						"description": "عند اختيار (تعديل المدخلات - input_modification)، يتم إرسال الإجابات المعدلة (answers) والصور المحدثة (images / oldImages) لهذا الـ Endpoint ليتم تحديث الطلب وإعادة تقييمه فوراً بدون دفع."
 					},
 					"response": []
 				}
@@ -340,7 +293,7 @@
 								"result"
 							]
 						},
-						"description": "تعرض تفاصيل ونتيجة التقييم، وتتضمن حقل objection_reasons بقائمة الأسباب الجاهزة وحقل objection_reason إذا كان الطلب عليه احتجاج حالي."
+						"description": "تعرض تفاصيل ونتيجة التقييم، وتتضمن: objection_reasons بالهيكل الجديد، وحقل answers للإجابات الحالية، وحقول التحكم بظهور زر الاحتجاج: is_re_evaluating (هل الطلب قيد إعادة التثمين حالياً)، can_re_evaluate (هل يتاح تقديم اعتراض الآن)، re_evaluation_status (حالة إعادة التثمين: in_progress | completed | available | expired)."
 					},
 					"response": []
 				}

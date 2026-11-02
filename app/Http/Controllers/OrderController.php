@@ -258,8 +258,8 @@ class OrderController extends Controller
                     ? ($isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on objection')
                     : ($isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved');
                 $fcmBody = $order->objection_reason
-                    ? ($isAr ? "تم اعتماد التقييم النهائي المعدل لمنتجك رقم {$order->id} بقيمة " . number_format($thamnPrice, 0) . " ريال بناءً على اعتراضك." : "Final hybrid evaluation for order #{$order->id} adjusted to " . number_format($thamnPrice, 0) . " SAR based on objection.")
-                    : ($isAr ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.");
+                    ? ($isAr ? "تم اعتماد التقييم النهائي المعدل لمنتجك رقم {$order->id} بقيمة " . number_format($thamnPrice, 0) . " ريال بناءً على اعتراضك." : "Final hybrid evaluation for order {$order->id} adjusted to " . number_format($thamnPrice, 0) . " SAR based on objection.")
+                    : ($isAr ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" : "The final evaluation for your product {$order->id} has been approved successfully. Please check it now.");
 
                 $this->notifyByFirebase(
                     $fcmTitle,
@@ -277,14 +277,14 @@ class OrderController extends Controller
 
                     if ($order->objection_reason) {
                         $customerName = $order->user->first_name ?: 'عميلنا العزيز';
-                        $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم #{$order->id} 🔄\n\n"
+                        $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم {$order->id} 🔄\n\n"
                             . "بناءً على ملاحظتك واعتراضك، تمت مراجعة السلعة واعتماد السعر الهجين النهائي المعدل:\n"
                             . "💰 *السعر المعتمد الجديد: " . number_format($thamnPrice, 0) . " ريال*\n\n"
                             . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والسعر الجديد المحدث الآن.\n\n"
                             . "- فريق ثمن";
                     } else {
                         $customerName = $order->user->first_name ?: 'عميلنا العزيز';
-                        $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                        $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم {$order->id} صار جاهز الحين!\n\n"
                             . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
                             . "- فريق ثمن";
                     }
@@ -326,14 +326,14 @@ class OrderController extends Controller
 
                 if ($order->objection_reason) {
                     $customerName = $order->user->first_name ?: 'عميلنا العزيز';
-                    $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم #{$order->id} من قبل الخبير المختص 🔄\n\n"
+                    $msg = "يا هلا والله بك يا {$customerName} .. تم الانتهاء من مراجعة اعتراضك على تقييم طلبك رقم {$order->id} من قبل الخبير المختص 🔄\n\n"
                         . "بناءً على ملاحظتك واعتراضك، قام الخبير بمراجعة السلعة وتعديل السعر المعتمد ليصبح:\n"
                         . "💰 *السعر الجديد: " . number_format($expertPrice, 0) . " ريال*\n\n"
                         . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والسعر الجديد المحدث الآن.\n\n"
                         . "- فريق ثمن";
                 } else {
                     $customerName = $order->user->first_name ?: 'عميلنا العزيز';
-                    $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                    $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم {$order->id} صار جاهز الحين!\n\n"
                         . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
                         . "- فريق ثمن";
                 }
@@ -356,8 +356,8 @@ class OrderController extends Controller
                     ? ($isAr ? 'تم تعديل السعر بناءً على اعتراضك 🎯' : 'Price adjusted based on objection')
                     : ($isAr ? 'تم تقييم سلعتك بنجاح' : 'Your item has been successfully evaluated');
                 $fcmBody = $order->objection_reason
-                    ? ($isAr ? "قام الخبير بمراجعة اعتراضك وتعديل السعر لطلبك رقم {$order->id} ليصبح " . number_format($expertPrice, 0) . " ريال. تفضل بالاطلاع على التفاصيل." : "The expert reviewed your objection and adjusted the price for order #{$order->id} to " . number_format($expertPrice, 0) . " SAR.")
-                    : ($isAr ? "تم تقييم طلبك رقم {$order->id} وإرسال التقرير/ الفاتورة بنجاح. تفضل اطلع عليه الآن" : "Your order #{$order->id} has been evaluated and the report/invoice sent successfully. Please check it now.");
+                    ? ($isAr ? "قام الخبير بمراجعة اعتراضك وتعديل السعر لطلبك رقم {$order->id} ليصبح " . number_format($expertPrice, 0) . " ريال. تفضل بالاطلاع على التفاصيل." : "The expert reviewed your objection and adjusted the price for order {$order->id} to " . number_format($expertPrice, 0) . " SAR.")
+                    : ($isAr ? "تم تقييم طلبك رقم {$order->id} وإرسال التقرير/ الفاتورة بنجاح. تفضل اطلع عليه الآن" : "Your order {$order->id} has been evaluated and the report/invoice sent successfully. Please check it now.");
 
                 $this->notifyByFirebase(
                     $fcmTitle,
@@ -404,7 +404,7 @@ class OrderController extends Controller
         if (!empty($expertTokens)) {
             $this->notifyByFirebase(
                 lang('أحسنت! 🎉 تم إرسال التثمين للعميل', 'Well done! 🎉 Valuation sent to client', request()),
-                lang("أتممت تثمين الطلب رقم #{$order->id} بنجاح. شكراً على دقتك واحترافيتك.", "You've successfully completed evaluation for order #{$order->id}. Thank you for your professionalism.", request()),
+                lang("أتممت تثمين الطلب رقم {$order->id} بنجاح. شكراً على دقتك واحترافيتك.", "You've successfully completed evaluation for order {$order->id}. Thank you for your professionalism.", request()),
                 $expertTokens,
                 ['data' => ['user_id' => $user->id, 'order_id' => $order->id, 'type' => 'expert_evaluation_done']]
             );
@@ -440,7 +440,7 @@ class OrderController extends Controller
             if ($order->user->phone) {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
                 $customerName = $order->user->first_name ?: 'عميلنا العزيز';
-                $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم #{$order->id} صار جاهز الحين!\n\n"
+                $msg = "أبشر بالخير يا {$customerName} .. تقييم طلبك رقم {$order->id} صار جاهز الحين!\n\n"
                     . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
                     . "- فريق ثمن";
                 $whatsapp->sendMessage($order->user->phone, $msg);
@@ -485,7 +485,7 @@ class OrderController extends Controller
                 $isAr ? 'تم اعتماد التقييم النهائي' : 'Final evaluation approved',
                 $isAr 
                     ? "تم اعتماد التقييم النهائي لمنتجك رقم {$order->id} بنجاح. تفضل اطلع عليه الآن" 
-                    : "The final evaluation for your product #{$order->id} has been approved successfully. Please check it now.",
+                    : "The final evaluation for your product {$order->id} has been approved successfully. Please check it now.",
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_evaluated_thamn']]
             );
@@ -562,7 +562,7 @@ class OrderController extends Controller
                     $isAr ? 'جار تقييم سلعتك' : 'Your item is being evaluated',
                     $isAr 
                         ? "استلم خبيرنا طلبك رقم {$order->id} وراح تجيك النتيجة اقرب وقت" 
-                        : "Our expert has received your order #{$order->id}. You will receive the result as soon as possible.",
+                        : "Our expert has received your order {$order->id}. You will receive the result as soon as possible.",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_accepted_expert']]
                 );
@@ -700,7 +700,7 @@ class OrderController extends Controller
         if ($customer && $customer->email) {
             try {
                 \Illuminate\Support\Facades\Mail::to($customer->email)->send(new \App\Mail\SystemNotificationMail(
-                    "رد إدارة ثمن بخصوص احتجاجك على الطلب #{$order->id} ⚖️",
+                    "رد إدارة ثمن بخصوص احتجاجك على الطلب {$order->id} ⚖️",
                     $replyText,
                     route('orders.show', $order->id),
                     'عرض تفاصيل الطلب'
@@ -718,7 +718,7 @@ class OrderController extends Controller
                 $isAr = ($customer->preferred_language ?? 'ar') === 'ar';
                 $this->notifyByFirebase(
                     $isAr ? 'رد جديد على احتجاجك' : 'New reply to your objection',
-                    $isAr ? "قامت إدارة ثمن بالرد على احتجاجك للطلب رقم {$order->id}" : "Thamn management has replied to your objection for order #{$order->id}",
+                    $isAr ? "قامت إدارة ثمن بالرد على احتجاجك للطلب رقم {$order->id}" : "Thamn management has replied to your objection for order {$order->id}",
                     $tokens,
                     ['data' => ['order_id' => $order->id, 'type' => 'objection_replied']]
                 );

@@ -28,12 +28,12 @@ class OrderSentForExpertEvaluation extends Notification
         return [
             'order_id' => $this->order->id,
             'title' => 'بدأ تقييم الخبير',
-            'message' => "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم #{$this->order->id}",
+            'message' => "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم {$this->order->id}",
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "تم إرسال طلبك للتقييم بواسطة خبير موثوق: طلب رقم {$this->order->id}";
     }
 }

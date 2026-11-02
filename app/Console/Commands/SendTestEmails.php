@@ -74,7 +74,7 @@ class SendTestEmails extends Command
                 'data'    => ['user' => $fakeUser, 'password' => 'Secret@123'],
             ],
             'valuation_result' => [
-                'subject' => 'نتيجة تقييم طلبك #2456 — ثمن',
+                'subject' => 'نتيجة تقييم طلبك 2456 — ثمن',
                 'view'    => 'emails.valuation_result',
                 'data'    => [
                     'order'            => $fakeOrder,
@@ -108,7 +108,7 @@ class SendTestEmails extends Command
                 'data'    => ['order' => $fakeOrder, 'expert' => $fakeUser],
             ],
             'invoice' => [
-                'subject' => 'فاتورة طلب رقم #2456 - ثمن',
+                'subject' => 'فاتورة طلب رقم 2456 - ثمن',
                 'view'    => 'emails.invoice',
                 'data'    => ['order' => $fakeOrder],
             ],

@@ -27,12 +27,12 @@ class OrderAcceptedByExpertNotification extends Notification
         return [
             'order_id' => $this->order->id,
             'title' => 'جاري العمل على طلبك',
-            'message' => "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}",
+            'message' => "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم {$this->order->id}",
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "جارى العمل على الطلب بتاعكم وسوف يتم الرد ف حد اقصى 24 ساعة للطلب رقم {$this->order->id}";
     }
 }

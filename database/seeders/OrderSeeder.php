@@ -86,11 +86,11 @@ class OrderSeeder extends Seeder
             'status' => 'orderReceived' // تم الدفع
         ]);
 
-        $this->command->info("تم إنشاء الطلب #{$order->id} بنجاح. جاري إرسال تقييم الذكاء الاصطناعي للـ Queue...");
+        $this->command->info("تم إنشاء الطلب {$order->id} بنجاح. جاري إرسال تقييم الذكاء الاصطناعي للـ Queue...");
 
         // === تشغيل تقييم الـ AI في الـ Queue ===
         RunAiEvaluationJob::dispatch($order);
 
-        $this->command->info("✅ تم إرسال طلب التثمين #{$order->id} للـ Queue. شغّل: php artisan queue:work --once");
+        $this->command->info("✅ تم إرسال طلب التثمين {$order->id} للـ Queue. شغّل: php artisan queue:work --once");
     }
 }

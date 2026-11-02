@@ -29,7 +29,7 @@ class ExpertEvaluatedOrderAdminNotification extends Notification
     {
         return (new MailMessage)
             ->subject('خبير قام بتقييم طلب')
-            ->line("قام الخبير {$this->expert->first_name} بتقييم الطلب رقم #{$this->order->id}.")
+            ->line("قام الخبير {$this->expert->first_name} بتقييم الطلب رقم {$this->order->id}.")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
             ->line('يرجى الدخول إلى لوحة التحكم واعتماد التقييم النهائي.');
     }

@@ -164,7 +164,7 @@ class PaymentController extends Controller
                     lang('لم يتم الدفع', 'Payment Not Completed', $request),
                     lang(
                         'لم تكتمل عملية الدفع لطلبك رقم ' . $order->id . '. يمكنك المحاولة مرة أخرى.',
-                        'Payment for order #' . $order->id . ' was not completed. You can try again.',
+                        'Payment for order ' . $order->id . ' was not completed. You can try again.',
                         $request
                     ),
                     $tokens,
@@ -358,7 +358,7 @@ class PaymentController extends Controller
                 $isAr ? 'تم استلام طلبك ✅' : 'Order Received ✅',
                 $isAr
                     ? 'بدأنا العمل على طلب التقييم رقم ' . $order->id
-                    : 'We started working on evaluation order #' . $order->id,
+                    : 'We started working on evaluation order ' . $order->id,
                 $tokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_received']]
             );
@@ -529,7 +529,7 @@ class PaymentController extends Controller
             if (!empty($expertTokens)) {
                 $this->notifyByFirebase(
                     lang('هلا بك خبير ( التثمين ) 👋 - طلب تثمين احترافي جديد 🔔', 'Hello expert (Valuation) 👋 - New Professional Valuation Request 🔔', request()),
-                    lang('هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم ' . $order->id . ' وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.', 'Hello expert (Valuation) 👋 A new professional valuation request #' . $order->id . ' is now available. Please login and evaluate as soon as possible.', request()),
+                    lang('هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم ' . $order->id . ' وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.', 'Hello expert (Valuation) 👋 A new professional valuation request ' . $order->id . ' is now available. Please login and evaluate as soon as possible.', request()),
                     $expertTokens,
                     ['data' => ['user_id' => $expert->id, 'order_id' => $order->id, 'type' => 'new_expert_order']]
                 );
@@ -545,7 +545,7 @@ class PaymentController extends Controller
                 $isAr ? 'تم تحويل طلبك للخبراء 👨‍💼' : 'Order sent to experts 👨‍💼',
                 $isAr
                     ? 'طلبك رقم ' . $order->id . ' قيد المراجعة الآن من قبل خبرائنا، سنقوم بالرد عليك في أقرب وقت'
-                    : 'Your order #' . $order->id . ' is now being reviewed by our experts, we will get back to you as soon as possible',
+                    : 'Your order ' . $order->id . ' is now being reviewed by our experts, we will get back to you as soon as possible',
                 $userTokens,
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'expert_pending']]
             );

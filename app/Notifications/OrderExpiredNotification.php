@@ -27,12 +27,12 @@ class OrderExpiredNotification extends Notification
         return [
             'order_id' => $this->order->id,
             'title' => 'لم يتم قبول الطلب',
-            'message' => "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم #{$this->order->id}",
+            'message' => "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم {$this->order->id}",
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم #{$this->order->id}";
+        return "تطبيق ثمن 🔔\n" . "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم {$this->order->id}";
     }
 }

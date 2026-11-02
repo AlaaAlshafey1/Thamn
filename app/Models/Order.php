@@ -16,6 +16,7 @@ class Order extends Model
         "category_id",
         'status',
         'total_price',
+        'previous_price',
         'payload',
         'ai_min_price',
         'ai_max_price',

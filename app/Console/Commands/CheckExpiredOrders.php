@@ -73,7 +73,7 @@ class CheckExpiredOrders extends Command
                 $userLang === 'ar' ? 'انتهت مهلة تقييم منتجك' : 'Evaluation time expired',
                 $userLang === 'ar' 
                     ? "نعتذر لم يتم استقبال طلبك رقم {$order->id} من أي خبير خلال (24 ساعة) يمكنك طلب استرداد المبلغ" 
-                    : "We apologize, your order #{$order->id} was not accepted by any expert within (24 hours). You can request a refund.",
+                    : "We apologize, your order {$order->id} was not accepted by any expert within (24 hours). You can request a refund.",
                 [$fcmToken],
                 ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'order_expired']]
             );
@@ -85,7 +85,7 @@ class CheckExpiredOrders extends Command
                 $userLang === 'ar' ? 'لم يتم قبول طلبك من قبل الخبراء' : 'Your order was not accepted by experts',
                 $userLang === 'ar'
                     ? "نعتذر منك، طلبك رقم {$order->id} لم يتم قبوله من قبل أي خبير في الوقت المحدد (24 ساعة). يمكنك الآن طلب استرداد المبلغ."
-                    : "We're sorry, your order #{$order->id} was not accepted by any expert within 24 hours. You may now request a refund.",
+                    : "We're sorry, your order {$order->id} was not accepted by any expert within 24 hours. You may now request a refund.",
                 route('orders.show', $order->id)
             ));
         } catch (\Exception $e) {

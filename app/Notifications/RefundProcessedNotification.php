@@ -28,12 +28,12 @@ class RefundProcessedNotification extends Notification
             'refund_id' => $this->refund->id,
             'order_id' => $this->refund->order_id,
             'title' => 'تم استرداد المبلغ بنجاح',
-            'message' => "تم تحويل مبلغ الاسترداد الخاص بالطلب #{$this->refund->order_id} إلى حسابك البنكي بنجاح.",
+            'message' => "تم تحويل مبلغ الاسترداد الخاص بالطلب {$this->refund->order_id} إلى حسابك البنكي بنجاح.",
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم تحويل مبلغ الاسترداد الخاص بالطلب #{$this->refund->order_id} إلى حسابك البنكي بنجاح.";
+        return "تطبيق ثمن 🔔\n" . "تم تحويل مبلغ الاسترداد الخاص بالطلب {$this->refund->order_id} إلى حسابك البنكي بنجاح.";
     }
 }

@@ -1,5 +1,5 @@
 @extends(auth()->check() && auth()->user()->hasRole('expert') ? 'layouts.expert' : 'layouts.master')
-@section('title', 'تفاصيل الطلب #' . $order->id)
+@section('title', 'تفاصيل الطلب ' . $order->id)
 
 @section('css')
     <style>
@@ -1861,24 +1861,35 @@
 
                     <!-- تفاصيل ومدخلات السلعة الكاملة (عند الرغبة في المزيد يعمل له انسدال) -->
                     <div class="specs-accordion-wrapper mt-3 pt-2">
-                        <div class="d-flex align-items-center justify-content-between p-3" 
+                        <div class="p-3" 
                              onclick="toggleSpecsDetails()" 
                              role="button" 
                              id="btnToggleSpecsDetails"
                              tabindex="0"
-                             style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bx bx-list-ul text-primary" style="font-size:1.3rem;"></i>
-                                <span style="font-weight: 800; color: #334155; font-size: 0.95rem;">
-                                    عرض كافة تفاصيل ومدخلات السلعة (الأسئلة والإجابات التفصيلية)
-                                </span>
-                                <span class="badge" style="background: #e2e8f0; color: #475569; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
-                                    {{ $order->details->count() }} بند
-                                </span>
-                            </div>
-                            <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.85rem; font-weight: 700;">
-                                <span id="toggleSpecsText">انقر لعرض المزيد</span>
-                                <i class="bx bx-chevron-down" id="toggleSpecsChevron" style="font-size:1.25rem; transition: transform 0.3s ease;"></i>
+                             style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 14px; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(33, 150, 243, 0.1); color: #2196f3; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                        <i class="bx bx-list-ul"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 800; color: #1e293b; font-size: 0.95rem; line-height: 1.4;">
+                                            مدخلات ومواصفات السلعة التفصيلية
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">
+                                            (الأسئلة والإجابات المرفقة بالطلب)
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 me-auto" style="flex-shrink: 0;">
+                                    <span class="badge" style="background: #e2e8f0; color: #334155; font-size: 0.8rem; font-weight: 800; border-radius: 8px; padding: 6px 10px;">
+                                        {{ $order->details->count() }} بند
+                                    </span>
+                                    <div class="d-inline-flex align-items-center gap-1 text-primary" style="font-size: 0.82rem; font-weight: 800; background: #fff; padding: 5px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                        <span id="toggleSpecsText">انقر لعرض المزيد</span>
+                                        <i class="bx bx-chevron-down" id="toggleSpecsChevron" style="font-size: 1.15rem; transition: transform 0.3s ease;"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1992,7 +2003,7 @@
                                             راجع محفظتك تم إضافة رصيدك بنجاح
                                         </div>
                                         <div style="font-size: 0.84rem; color: #2e7d32; font-weight: 600; line-height: 1.5;">
-                                            تم إيداع أتعاب التقييم في محفظتك بنجاح، يمكنك متابعة رصيدك وسحب أرباحك في أي وقت.
+                                            تهانينا تم إيداع نسبتكم من قيمة التثمين في محفظتك ويمكنك السحب من رصيدك في أي وقت
                                         </div>
                                     </div>
                                 </div>
@@ -2183,10 +2194,15 @@
 
                                 <div class="row text-right mb-4" style="direction:rtl;">
                                     <div class="col-md-12">
-                                        <label class="font-weight-bold d-block mb-3" style="color:#2c3e50;font-size:1rem;">
-                                            <i class="bx bx-check-shield text-success"></i> رأي الخبير المعتمد حول التقييم الذكي <span class="text-danger">*</span>
-                                            <span style="font-size:0.82rem; font-weight:normal; color:#64748b; margin-right:6px;">(انقر على أي خيار لتحديده وتثبيته)</span>
-                                        </label>
+                                        <div class="mb-3 text-right" style="direction: rtl;">
+                                            <div style="font-weight: 900; font-size: 1.25rem; color: #1e293b; line-height: 1.4; display: flex; align-items: center; gap: 8px;">
+                                                <i class="bx bx-check-shield text-success" style="font-size: 1.45rem;"></i>
+                                                <span>عطنا رأيك عزيزي الخبير حول التقييم الذكي <span class="text-danger">*</span></span>
+                                            </div>
+                                            <div style="font-size: 0.88rem; font-weight: 600; color: #64748b; margin-top: 4px; margin-right: 32px;">
+                                                (انقر على أي خيار لتحديده وتثبيته)
+                                            </div>
+                                        </div>
 
                                         <!-- Hidden input to store chosen rating ID -->
                                         <input type="hidden" name="ai_valuation_rating_id" id="aiRatingSelectedInput" value="{{ old('ai_valuation_rating_id') }}" required>
@@ -2332,12 +2348,22 @@
 
             <!-- Left Sidebar (Customer Info) -->
             <div class="col-lg-3 order-lg-2">
-                <!-- Customer Card -->
-                <div class="ex-side-card">
-                    <div class="ex-side-header">
-                        <div><i class="bx bx-user" style="color:#888;"></i> معلومات العميل</div>
+                <!-- Customer Card (Collapsible by default) -->
+                <div class="ex-side-card" style="border-radius: 16px; overflow: hidden; border: 1px solid var(--ex-border); margin-bottom: 20px;">
+                    <div class="ex-side-header" 
+                         onclick="toggleCustomerInfo()" 
+                         role="button" 
+                         id="btnToggleCustomerInfo"
+                         style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fff; border-bottom: 1px solid #f1f5f9; user-select: none;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                            <i class="bx bx-user" style="color: #64748b; font-size: 1.2rem;"></i> معلومات العميل
+                        </div>
+                        <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.8rem; font-weight: 700;">
+                            <span id="customerInfoToggleText">انقر للعرض</span>
+                            <i class="bx bx-chevron-down" id="customerInfoChevron" style="font-size: 1.2rem; transition: transform 0.3s ease;"></i>
+                        </div>
                     </div>
-                    <div class="ex-side-body">
+                    <div class="ex-side-body" id="customerInfoBody" style="display: none; padding: 16px;">
                         <div class="ex-side-row" style="background:#fff;">
                             <span class="badge"
                                 style="background:#fdf2d0; color:#d4a017; border-radius:50px; padding:6px 12px;">
@@ -2354,7 +2380,7 @@
                         </div>
                         <div class="ex-side-row">
                             <span class="ex-side-lbl">رقم الطلب</span>
-                            <span class="ex-side-val">#{{ $order->id }}</span>
+                            <span class="ex-side-val">{{ $order->id }}</span>
                         </div>
                         <div class="ex-side-row">
                             <span class="ex-side-lbl">الفئة</span>
@@ -2820,6 +2846,24 @@
 @section('js')
     <script>
         // ─── Expert Tab Switching ───────────────────────────────────────
+        // ─── Toggle Customer Info (انسدال معلومات العميل) ───────────────────────
+        function toggleCustomerInfo() {
+            var body = document.getElementById('customerInfoBody');
+            var chevron = document.getElementById('customerInfoChevron');
+            var text = document.getElementById('customerInfoToggleText');
+            if (!body) return;
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'block';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                if (text) text.innerText = 'إخفاء التفاصيل';
+            } else {
+                body.style.display = 'none';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                if (text) text.innerText = 'انقر للعرض';
+            }
+        }
+
+        // ─── Switch Tab with Smooth Scroll to Stepper (منع القفز لأسفل الصفحة) ───
         function switchTab(tabName, clickedEl) {
             document.querySelectorAll('.expert-tab-panel').forEach(function (p) { p.style.display = 'none'; });
             document.querySelectorAll('.step-item').forEach(function (b) {
@@ -2832,13 +2876,19 @@
                 targetStep.classList.add('active');
             }
 
-            // Hiding a tall panel shrinks the page, so the browser clamps the scroll
-            // to the bottom (blank screen). Re-anchor the view on the new panel.
-            if (panel) {
-                var headerOffset = 90;
-                var top = panel.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: Math.max(top, 0), behavior: 'auto' });
-            }
+            // التمرير السلس إلى أعلى الخطوات دون القفز لأسفل الشاشة
+            setTimeout(function () {
+                var stepper = document.querySelector('.stepper-box');
+                if (stepper) {
+                    var headerOffset = 90;
+                    var targetTop = stepper.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+                } else if (panel) {
+                    var headerOffset = 90;
+                    var targetTop = panel.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+                }
+            }, 60);
         }
 
         // ─── Toggle Specs Details (الانسدال عند الرغبة في المزيد) ───────────────
@@ -3085,7 +3135,7 @@
             }
             $customerName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميلنا العزيز';
             
-            $defaultMsg = "يا هلا بك يا {$customerName} .. بخصوص طلبك رقم #{$order->id} واحتجاجك المسجل لدينا ⚖️\n\n"
+            $defaultMsg = "يا هلا بك يا {$customerName} .. بخصوص طلبك رقم {$order->id} واحتجاجك المسجل لدينا ⚖️\n\n"
                         . "📌 سبب الاحتجاج: {$order->objection_reason}\n\n"
                         . "تمت مراجعة الطلب وتدقيق تفاصيل التثمين والسلعة من قبل الإدارة والخبير المعتمد بعناية فائقة.\n"
                         . "نود إفادتك بأنه: [اكتب تفاصيل الرد والتوضيح هنا]\n\n"

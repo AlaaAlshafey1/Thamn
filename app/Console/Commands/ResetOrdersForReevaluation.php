@@ -71,7 +71,7 @@ class ResetOrdersForReevaluation extends Command
                 RunAiEvaluationJob::dispatch($order->fresh());
             }
 
-            $this->info("Order #{$order->id} reset" . ($this->option('no-ai') ? '' : ' and AI evaluation queued'));
+            $this->info("Order {$order->id} reset" . ($this->option('no-ai') ? '' : ' and AI evaluation queued'));
         }
 
         return self::SUCCESS;
