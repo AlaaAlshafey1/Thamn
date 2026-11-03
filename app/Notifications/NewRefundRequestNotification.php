@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\RefundRequest;
 
 class NewRefundRequestNotification extends Notification
@@ -19,7 +20,15 @@ class NewRefundRequestNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - طلب استرداد جديد')
+            ->line("قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}")
+            ->line('يرجى مراجعة لوحة التحكم لاتخاذ الإجراء المناسب.');
     }
 
     public function toDatabase($notifiable)
@@ -34,6 +43,6 @@ class NewRefundRequestNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ ";
+        return "تطبيق ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}";
     }
 }

@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\DatabaseMessage;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Order;
 
 class OrderAssignedToExpert extends Notification
@@ -20,7 +20,16 @@ class OrderAssignedToExpert extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - طلب تثمين احترافي جديد')
+            ->line("هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن.")
+            ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
+            ->line('نرجو منك الدخول وتقييم الطلب في أسرع وقت.');
     }
 
     public function toDatabase($notifiable)

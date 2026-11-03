@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\RefundRequest;
 
 class RefundProcessedNotification extends Notification
@@ -19,7 +20,15 @@ class RefundProcessedNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - تم استرداد المبلغ بنجاح')
+            ->line("تم تحويل مبلغ الاسترداد الخاص بالطلب {$this->refund->order_id} إلى حسابك البنكي بنجاح.")
+            ->line('شكراً لاستخدامك تطبيق ثمن');
     }
 
     public function toDatabase($notifiable)

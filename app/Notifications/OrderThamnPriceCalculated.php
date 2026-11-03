@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\DatabaseMessage;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Order;
 
 class OrderThamnPriceCalculated extends Notification
@@ -20,7 +20,16 @@ class OrderThamnPriceCalculated extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - تم تثمين منتجك')
+            ->line("تم تثمين ثمن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي")
+            ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
+            ->line('شكراً لاستخدامك تطبيق ثمن');
     }
 
     public function toDatabase($notifiable)

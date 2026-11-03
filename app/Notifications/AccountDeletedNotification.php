@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class AccountDeletedNotification extends Notification
 {
@@ -11,7 +12,15 @@ class AccountDeletedNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - تم حذف الحساب')
+            ->line('تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً')
+            ->line('شكراً لاستخدامك تطبيق ثمن');
     }
 
     public function toDatabase($notifiable)

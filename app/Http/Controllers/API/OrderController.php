@@ -2092,13 +2092,17 @@ class OrderController extends Controller
 
     public function resendOrder(Request $request, $orderId)
     {
-        $lang = strtolower($request->header('Accept-Language', 'en'));
-        $lang = in_array($lang, ['ar', 'en']) ? $lang : 'en';
+        $rawLang = strtolower($request->query('lang') ?? $request->header('Accept-Language', 'ar'));
+        $lang = str_starts_with($rawLang, 'en') ? 'en' : 'ar';
 
         $order = Order::findOrFail($orderId);
 
         // نرسل Notification للمستخدم بأن الطلب تم إعادة إرساله
-        $order->user->notify(new \App\Notifications\OrderResent($order));
+        try {
+            $order->user->notify(new \App\Notifications\OrderResent($order));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Resend order notification failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'status' => true,

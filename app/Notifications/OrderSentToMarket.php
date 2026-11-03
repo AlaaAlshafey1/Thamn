@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Order;
 
 class OrderSentToMarket extends Notification
@@ -19,7 +20,16 @@ class OrderSentToMarket extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail', \App\Channels\WhatsAppChannel::class];
+        return ['database', \App\Channels\WhatsAppChannel::class];
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+            ->subject('تطبيق ثمن - تم إرسال الطلب للسوق')
+            ->line("تم إرسال منتجك للسوق: طلب رقم {$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي")
+            ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
+            ->line('شكراً لاستخدامك تطبيق ثمن');
     }
 
     public function toDatabase($notifiable)
