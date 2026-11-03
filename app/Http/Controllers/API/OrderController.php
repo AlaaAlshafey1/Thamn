@@ -2097,17 +2097,72 @@ class OrderController extends Controller
 
         $order = Order::findOrFail($orderId);
 
-        // نرسل Notification للمستخدم بأن الطلب تم إعادة إرساله
+        // 1. تحديد نوع التقييم (AI أو Expert أو Best)
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
+
+        $evaluationType = $rateTypeAnswer?->option?->badge
+            ?? $rateTypeAnswer?->value
+            ?? $order->evaluation_type;
+
+        // 2. تحديث حالة الطلب إلى "قيد التثمين" (beingEstimated) وإعادة تعيين بيانات تقييم الخبير
+        $order->update([
+            'status'           => 'beingEstimated',
+            'expert_evaluated' => 0,
+            'expert_id'        => null,
+            'expert_price'     => null,
+            'expert_min_price' => null,
+            'expert_max_price' => null,
+            'expert_reasoning' => null,
+        ]);
+
+        // 3. توجيه الطلب بحسب نوع الباقة
+        if ($evaluationType === 'ai') {
+            try {
+                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
+                $order->refresh();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('AI re-evaluation failed on resend: ' . $e->getMessage());
+            }
+        } else {
+            // إشعار الخبراء في نفس الفئة بتوفر طلب تثمين جديد
+            try {
+                $expertsQuery = \App\Models\User::role('expert');
+                if ($order->category_id) {
+                    $expertsQuery->where('category_id', $order->category_id);
+                }
+                $experts = $expertsQuery->get();
+                foreach ($experts as $expert) {
+                    $expert->notify(new \App\Notifications\OrderReadyForExpertsNotification($order));
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Experts notification on resend failed: ' . $e->getMessage());
+            }
+        }
+
+        // 4. إرسال Notification للمستخدم بأن الطلب تم إعادة إرساله
         try {
             $order->user->notify(new \App\Notifications\OrderResent($order));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Resend order notification failed: ' . $e->getMessage());
         }
 
+        $order->refresh();
+
         return response()->json([
-            'status' => true,
-            'message' => $lang === 'ar' ? 'تم إعادة إرسال الطلب بنجاح' : 'Order request resent successfully',
-            'order_id' => $order->id,
+            'status'       => true,
+            'message'      => $lang === 'ar' ? 'تم إعادة إرسال الطلب بنجاح' : 'Order request resent successfully',
+            'order_id'     => $order->id,
+            'order_status' => $order->status,
+            'new_status'   => $order->status,
+            'order'        => [
+                'id'              => $order->id,
+                'status'          => $order->status,
+                'evaluation_type' => $order->evaluation_type,
+            ],
         ]);
     }
     public function sendToMarket(Request $request, $orderId)
