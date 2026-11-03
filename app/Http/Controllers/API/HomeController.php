@@ -68,10 +68,11 @@ class HomeController extends Controller
                     : null,
 
             'meta' => [
-                'image_generation_fee' => env('IMAGE_GENERATION_FEE', 5),
+                'image_generation_fee' => (float) env('IMAGE_GENERATION_FEE', 5),
+                'create_image_ai' => (bool) ($request->boolean('create_image_ai') || $request->input('create_image_ai') == 1),
                 'image_generation_message' => $locale == "ar"
-                    ? 'سيتم إضافة رسوم لتوليد صورة افتراضية بالذكاء الاصطناعي في حال عدم إرفاق صور.'
-                    : 'An extra fee will be added to generate a virtual AI image if no images are uploaded.',
+                    ? 'سيتم إضافة 5 ريال على كل باقة في حال اختيار توليد صورة بالذكاء الاصطناعي (أو عدم إرفاق صور).'
+                    : '5 SAR will be added to each package if AI image generation is requested (or no images uploaded).',
             ]
         ]);
     }

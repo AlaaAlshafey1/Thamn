@@ -49,8 +49,9 @@ class PaymentController extends Controller
         if ($rateTypeAnswer && $rateTypeAnswer->option) {
             $packagePrice = (float) $rateTypeAnswer->option->price;
 
-            // نضيف رسوم الصورة الافتراضية لو مفيش صورة مرفوعة
-            if ($order->files->where('type', 'image')->count() === 0) {
+            // نضيف رسوم الصورة (5 ريال) لو العميل طلب توليد صورة بالذكاء الاصطناعي (create_image_ai) أو مفيش صورة مرفوعة
+            $hasNoImages = $order->files->where('type', 'image')->count() === 0;
+            if ($order->create_image_ai || $hasNoImages) {
                 $packagePrice += (float) env('IMAGE_GENERATION_FEE', 5);
             }
         }
@@ -474,6 +475,15 @@ class PaymentController extends Controller
 
             $evaluationType = $rateTypeAnswer?->option?->badge
                 ?? $rateTypeAnswer?->value;
+
+            // توليد صورة بالذكاء الاصطناعي فوراً إذا طلب العميل (create_image_ai)
+            if ($order->create_image_ai) {
+                try {
+                    app(ThamnEvaluationService::class)->generateVirtualImageForOrder($order);
+                } catch (\Throwable $e) {
+                    Log::error('[Moyasar] AI image generation failed: ' . $e->getMessage());
+                }
+            }
 
             switch ($evaluationType) {
                 case 'ai':

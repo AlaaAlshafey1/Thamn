@@ -371,31 +371,7 @@ PROMPT;
         ]);
 
         // Generate Virtual Image if no images exist OR if create_image_ai was requested
-        $wantsAiImage = (bool) ($order->create_image_ai ?? request('create_image_ai', false));
-        if ((!$hasImages || $wantsAiImage)) {
-            $imagePrompt = !empty($aiResult['image_prompt'])
-                ? $aiResult['image_prompt']
-                : "A realistic clean high-resolution studio photo of {$categoryAr}, centered, white background, professional product photography";
-            try {
-                $imageUrl = app(ClaudeService::class)->generateImage($imagePrompt);
-                if ($imageUrl) {
-                    $imageContents = file_get_contents($imageUrl);
-                    $filename = 'ai_generated_' . Str::random(10) . '.png';
-                    $path = 'orders/images/' . $filename;
-
-                    Storage::disk('public')->put($path, $imageContents);
-
-                    OrderFiles::create([
-                        'order_id' => $order->id,
-                        'file_path' => $path,
-                        'file_name' => $filename,
-                        'type' => 'image',
-                    ]);
-                }
-            } catch (\Throwable $e) {
-                Log::error('Failed to generate virtual image via DALL-E', ['error' => $e->getMessage()]);
-            }
-        } // end if (!$hasImages)
+        $this->generateVirtualImageForOrder($order, $aiResult['image_prompt'] ?? null);
 
         // ── إشعار العميل بالانتظار (في التقييم العادي فقط، أما اعتراض الـ AI فالسعر جاهز فوراً) ──
         if (!$isAiObjection) {
@@ -638,5 +614,68 @@ PROMPT;
                 }
             }
         }
+    }
+
+    /**
+     * Generate Virtual AI Image for an order if needed or requested via create_image_ai
+     */
+    public function generateVirtualImageForOrder(Order $order, ?string $imagePrompt = null): ?OrderFiles
+    {
+        $order->refresh();
+        $hasImages = $order->files->where('type', 'image')->count() > 0;
+        $wantsAiImage = (bool) ($order->create_image_ai || request('create_image_ai', false));
+
+        // إذا لم توجد صور أو طلب العميل صورة بالذكاء الاصطناعي
+        if (!$hasImages || $wantsAiImage) {
+            $categoryAr = $order->category->name_ar ?? 'منتج';
+
+            if (empty($imagePrompt)) {
+                $detailsList = [];
+                foreach ($order->details as $d) {
+                    $q = $d->question?->question_en ?: $d->question?->question_ar;
+                    $v = $d->option?->option_en ?: $d->option?->option_ar ?: $d->value;
+                    if ($q && $v && $d->question?->type !== 'rateTypeSelection') {
+                        $detailsList[] = "{$q}: {$v}";
+                    }
+                }
+                $detailsText = implode(', ', array_slice($detailsList, 0, 8));
+                $imagePrompt = "A realistic clean high-resolution studio photo of {$categoryAr}"
+                    . ($detailsText ? " with specifications: {$detailsText}" : "")
+                    . ", centered, pure white background, professional commercial product photography, 4k";
+            }
+
+            try {
+                $imageUrl = app(ClaudeService::class)->generateImage($imagePrompt);
+                if ($imageUrl) {
+                    if (str_starts_with($imageUrl, 'data:image')) {
+                        $parts = explode(',', $imageUrl);
+                        $imageContents = base64_decode($parts[1] ?? '');
+                    } else {
+                        $imageContents = file_get_contents($imageUrl);
+                    }
+
+                    if ($imageContents) {
+                        $filename = 'ai_generated_' . Str::random(10) . '.png';
+                        $path = 'orders/' . $order->id . '/images/' . $filename;
+
+                        Storage::disk('public')->put($path, $imageContents);
+
+                        return OrderFiles::create([
+                            'order_id' => $order->id,
+                            'file_path' => $path,
+                            'file_name' => $filename,
+                            'type' => 'image',
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to generate virtual image via AI', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        return null;
     }
 }

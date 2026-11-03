@@ -34,8 +34,11 @@ class OrderController extends Controller
             'answers.*.status' => 'nullable|integer',
             'answers.*.stageing' => 'nullable|integer',
             'can_send_to_market' => 'nullable|boolean',
+            'create_image_ai' => 'nullable|boolean',
         ]);
 
+
+        $createImageAi = $request->boolean('create_image_ai') || $request->input('create_image_ai') == 1;
 
         $order = Order::create([
             'user_id' => $user->id,
@@ -43,6 +46,7 @@ class OrderController extends Controller
             'status' => $request->status ?? 0,
             'payload' => json_encode($request->answers),
             'can_send_to_market' => $request->can_send_to_market ? true : false,
+            'create_image_ai' => $createImageAi,
         ]);
 
         $totalPrice = 0;
@@ -106,13 +110,14 @@ class OrderController extends Controller
             ->first();
 
 
-        if ($rateTypeAnswer) {
-            $totalPrice = $rateTypeAnswer->option->price;
+        if ($rateTypeAnswer && $rateTypeAnswer->option) {
+            $totalPrice = (float) $rateTypeAnswer->option->price;
         }
 
-        // إضافة رسوم الصورة الافتراضية إذا لم يقم العميل برفع صورة
-        if (!$request->hasFile('images') || count($request->file('images')) === 0) {
-            $totalPrice += env('IMAGE_GENERATION_FEE', 5); // زيادة 5 ريال افتراضياً
+        // إذا طلب العميل توليد صورة بالذكاء الاصطناعي (create_image_ai) أو لم يقم برفع أي صورة، يضاف 5 ريال لسعر الباقة
+        $hasNoImages = !$request->hasFile('images') || count($request->file('images')) === 0;
+        if ($createImageAi || $hasNoImages) {
+            $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
         }
 
         $order->update(['total_price' => $totalPrice]);
@@ -224,15 +229,21 @@ class OrderController extends Controller
             'answers.*.stageing' => 'nullable|integer',
             'oldImages' => 'nullable|array',
             'oldFiles' => 'nullable|array',
+            'create_image_ai' => 'nullable|boolean',
         ]);
 
         $isUpdate = filter_var($request->isUpdate, FILTER_VALIDATE_BOOLEAN);
 
         if ($isUpdate) {
             $order = $originalOrder;
+            $createImageAi = $request->has('create_image_ai')
+                ? ($request->boolean('create_image_ai') || $request->input('create_image_ai') == 1)
+                : (bool) $order->create_image_ai;
+
             $order->update([
                 'status' => $request->status ?? $order->status,
                 'payload' => json_encode($request->answers),
+                'create_image_ai' => $createImageAi,
             ]);
 
             // Handle deleted files (those not in oldImages/oldFiles)
@@ -385,6 +396,23 @@ class OrderController extends Controller
                 ]);
             }
         }
+
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
+
+        if ($rateTypeAnswer && $rateTypeAnswer->option) {
+            $totalPrice = (float) $rateTypeAnswer->option->price;
+        }
+
+        $hasNoImages = OrderFiles::where('order_id', $order->id)->where('type', 'image')->count() === 0;
+        if ($createImageAi || $hasNoImages) {
+            $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
+        }
+
+        $order->update(['total_price' => $totalPrice]);
 
         $responseAnswers = collect($details)->map(function ($d) {
             return [
@@ -561,6 +589,7 @@ class OrderController extends Controller
                 'can_object' => (bool) $canReEvaluate,
                 're_evaluation_status' => $reEvaluationStatus,
                 'is_re_evaluated' => (bool) $isReEvaluated,
+                'create_image_ai' => (bool) $order->create_image_ai,
             ]
         ]);
     }
@@ -1061,6 +1090,7 @@ class OrderController extends Controller
             'expert_opinion_subtitle_ar' => $order->category?->expert_opinion_subtitle_ar ?: $defaultSubtitleAr,
             'expert_opinion_subtitle_en' => $order->category?->expert_opinion_subtitle_en ?: $defaultSubtitleEn,
             // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
+            'create_image_ai' => (bool) $order->create_image_ai,
             'expert_membership_number' => $order->expert?->membership_number ?? null,
             'ai_valuation_ratings' => $aiValuationRatings,
         ]);
@@ -1561,6 +1591,23 @@ class OrderController extends Controller
                 ]);
             }
         }
+
+        $rateTypeAnswer = $order->details()
+            ->whereHas('question', function ($q) {
+                $q->where('type', 'rateTypeSelection');
+            })
+            ->first();
+
+        if ($rateTypeAnswer && $rateTypeAnswer->option) {
+            $totalPrice = (float) $rateTypeAnswer->option->price;
+        }
+
+        $hasNoImages = OrderFiles::where('order_id', $order->id)->where('type', 'image')->count() === 0;
+        if ($createImageAi || $hasNoImages) {
+            $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
+        }
+
+        $order->update(['total_price' => $totalPrice]);
 
         // ─── استبدال الإجابات بالمدخلات المعدلة ───
         OrderDetails::where('order_id', $order->id)->delete();

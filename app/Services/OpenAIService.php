@@ -121,13 +121,14 @@ class OpenAIService
     public function generateImage(string $prompt, string $size = '1024x1024'): ?string
     {
         try {
+            $model = env('OPENAI_IMAGE_MODEL', 'dall-e-3');
             $res = $this->http->post($this->base . '/images/generations', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->key,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'gpt-image-2',
+                    'model' => $model,
                     'prompt' => $prompt,
                     'n' => 1,
                     'size' => $size,
