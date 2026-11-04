@@ -729,10 +729,23 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $orders = $query->latest()->get();
+        // ========================== Pagination ==========================
+        $perPage = (int) $request->get('per_page', $request->get('limit', 15));
+        $paginate = $request->boolean('paginate', true);
+        if ($request->has('all') && $request->boolean('all')) {
+            $paginate = false;
+        }
+
+        if ($paginate && $perPage > 0) {
+            $paginatedOrders = $query->latest()->paginate($perPage);
+            $items = $paginatedOrders->getCollection();
+        } else {
+            $paginatedOrders = null;
+            $items = $query->latest()->get();
+        }
 
         // ========================== Map response ==========================
-        $orders = $orders->map(function ($order) use ($lang) {
+        $mappedOrders = $items->map(function ($order) use ($lang) {
             $titleParts = [];
 
             $categoryName = $lang === 'ar'
@@ -825,10 +838,35 @@ class OrderController extends Controller
             ];
         });
 
-        return response()->json([
+        $response = [
             'status' => true,
-            'orders' => $orders
-        ]);
+            'orders' => $mappedOrders,
+            'data'   => $mappedOrders,
+        ];
+
+        if ($paginatedOrders) {
+            $response['pagination'] = [
+                'current_page' => $paginatedOrders->currentPage(),
+                'last_page'    => $paginatedOrders->lastPage(),
+                'per_page'     => $paginatedOrders->perPage(),
+                'total'        => $paginatedOrders->total(),
+                'has_more'     => $paginatedOrders->hasMorePages(),
+            ];
+            $response['meta'] = [
+                'current_page' => $paginatedOrders->currentPage(),
+                'last_page'    => $paginatedOrders->lastPage(),
+                'per_page'     => $paginatedOrders->perPage(),
+                'total'        => $paginatedOrders->total(),
+            ];
+            $response['links'] = [
+                'first' => $paginatedOrders->url(1),
+                'last'  => $paginatedOrders->url($paginatedOrders->lastPage()),
+                'prev'  => $paginatedOrders->previousPageUrl(),
+                'next'  => $paginatedOrders->nextPageUrl(),
+            ];
+        }
+
+        return response()->json($response);
     }
 
 
