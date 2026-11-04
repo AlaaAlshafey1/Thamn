@@ -40,10 +40,15 @@ class OrderController extends Controller
 
         $createImageAi = $request->boolean('create_image_ai') || $request->input('create_image_ai') == 1;
 
+        $initialStatus = $request->status ?? 'notPaid';
+        if (in_array($initialStatus, ['beingEstimated', 'beingReEstimated', 'estimated', 'reEstimated', '0', 0])) {
+            $initialStatus = 'notPaid';
+        }
+
         $order = Order::create([
             'user_id' => $user->id,
             'category_id' => $request->category_id ?? 1,
-            'status' => $request->status ?? 0,
+            'status' => $initialStatus,
             'payload' => json_encode($request->answers),
             'can_send_to_market' => $request->can_send_to_market ? true : false,
             'create_image_ai' => $createImageAi,
@@ -240,8 +245,17 @@ class OrderController extends Controller
                 ? ($request->boolean('create_image_ai') || $request->input('create_image_ai') == 1)
                 : (bool) $order->create_image_ai;
 
+            $newStatus = $request->has('status') ? $request->status : $order->status;
+            // حماية: منع نقل الطلب إلى 'قيد التثمين' قبل تأكيد الدفع الفعلي
+            if (in_array($newStatus, ['beingEstimated', 'beingReEstimated'])) {
+                $hasCompletedPayment = $order->payments()->where('status', 'orderReceived')->exists();
+                if (!$hasCompletedPayment) {
+                    $newStatus = 'notPaid';
+                }
+            }
+
             $order->update([
-                'status' => $request->status ?? $order->status,
+                'status' => $newStatus,
                 'payload' => json_encode($request->answers),
                 'create_image_ai' => $createImageAi,
             ]);
@@ -547,11 +561,12 @@ class OrderController extends Controller
             ];
         }
 
-        $isReEvaluated = $order->re_evaluation_count > 0 || !empty($order->objected_at);
+        $isUnpaidOrCancelled = in_array($order->status, ['notPaid', 'inComplete', 'cancelled', 'failed', '0']) || empty($order->status);
+        $isReEvaluated = ($order->re_evaluation_count > 0 || !empty($order->objected_at)) && !$isUnpaidOrCancelled;
         $isReEvaluating = (
             $order->status === 'beingReEstimated'
-            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed']))
-        );
+            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed', 'notPaid', 'inComplete', 'cancelled', 'failed', '0']))
+        ) && !$isUnpaidOrCancelled;
         $isWithin24Hours = $order->evaluated_at ? ($order->evaluated_at->diffInHours(now()) <= 24) : false;
         $canReEvaluate = (
             !$isReEvaluating
@@ -768,7 +783,7 @@ class OrderController extends Controller
                 ->values();
 
             $mappedStatus = $order->status;
-            if ($order->expert_evaluated) {
+            if ($order->expert_evaluated && !in_array($order->status, ['notPaid', 'inComplete', 'cancelled', 'failed', '0'])) {
                 if ($mappedStatus === 'beingEstimated')
                     $mappedStatus = 'estimated';
                 if ($mappedStatus === 'beingReEstimated')
@@ -983,16 +998,19 @@ class OrderController extends Controller
         }
 
         /* ===================== RE-EVALUATION / OBJECTION STATUS ===================== */
-        $isReEvaluated = $order->re_evaluation_count > 0 || !empty($order->objected_at);
+        $isUnpaidOrCancelled = in_array($order->status, ['notPaid', 'inComplete', 'cancelled', 'failed', '0']) || empty($order->status);
+        $isReEvaluated = ($order->re_evaluation_count > 0 || !empty($order->objected_at)) && !$isUnpaidOrCancelled;
 
         // هل الطلب قيد إعادة التثمين حالياً؟ (جاري إعادة التثمين ولم ينتهِ بعد)
         $isReEvaluating = (
             $order->status === 'beingReEstimated'
-            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed']))
-        );
+            || ($isReEvaluated && !$order->expert_evaluated && !in_array($order->status, ['reEstimated', 'completed', 'notPaid', 'inComplete', 'cancelled', 'failed', '0']))
+        ) && !$isUnpaidOrCancelled;
 
         $mappedStatus = $order->status;
-        if ($isReEvaluating) {
+        if ($isUnpaidOrCancelled) {
+            $mappedStatus = $order->status;
+        } elseif ($isReEvaluating) {
             $mappedStatus = 'beingReEstimated';
         } elseif ($order->expert_evaluated) {
             if ($mappedStatus === 'beingEstimated')
@@ -2155,42 +2173,44 @@ class OrderController extends Controller
             ?? $rateTypeAnswer?->value
             ?? $order->evaluation_type;
 
-        // 2. تحديث حالة الطلب إلى "قيد التثمين" (beingEstimated) وإعادة تعيين بيانات تقييم الخبير
+        // 2. تصفير نتائج التثمين السابقة وتعيين الحالة إلى غير مدفوع (notPaid) بانتظار إتمام الدفع
+        // تنبيه مهم: لا يتم وضع الطلب beingEstimated ولا تشغيل الذكاء الاصطناعي ولا إشعار الخبراء هنا
+        // لأن العميل لم يدفع بعد! يتم التوجيه والتقييم تلقائياً عبر PaymentController فقط بعد تأكيد الدفع
         $order->update([
-            'status'           => 'beingEstimated',
+            'status'           => 'notPaid',
             'expert_evaluated' => 0,
             'expert_id'        => null,
             'expert_price'     => null,
             'expert_min_price' => null,
             'expert_max_price' => null,
             'expert_reasoning' => null,
+            'ai_price'         => null,
+            'ai_min_price'     => null,
+            'ai_max_price'     => null,
+            'ai_confidence'    => null,
+            'ai_reasoning'     => null,
+            'thamn_price'      => null,
+            'thamn_by'         => null,
+            'thamn_at'         => null,
+            'evaluated_at'     => null,
         ]);
 
-        // 3. توجيه الطلب بحسب نوع الباقة
-        if ($evaluationType === 'ai') {
-            try {
-                app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order);
-                $order->refresh();
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('AI re-evaluation failed on resend: ' . $e->getMessage());
-            }
-        } else {
-            // إشعار الخبراء في نفس الفئة بتوفر طلب تثمين جديد
-            try {
-                $expertsQuery = \App\Models\User::role('expert');
-                if ($order->category_id) {
-                    $expertsQuery->where('category_id', $order->category_id);
-                }
-                $experts = $expertsQuery->get();
-                foreach ($experts as $expert) {
-                    $expert->notify(new \App\Notifications\OrderReadyForExpertsNotification($order));
-                }
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Experts notification on resend failed: ' . $e->getMessage());
-            }
+        // 3. إعادة حساب وتحديث سعر الباقة (مع رسوم توليد الصورة 5 ريال إذا اختارها)
+        $totalPrice = 0;
+        if ($rateTypeAnswer && $rateTypeAnswer->option) {
+            $totalPrice = (float) $rateTypeAnswer->option->price;
+        } elseif ($order->total_price > 0) {
+            $totalPrice = (float) $order->total_price;
+        }
+        $hasNoImages = $order->files->where('type', 'image')->count() === 0;
+        if ($order->create_image_ai || $hasNoImages) {
+            $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
+        }
+        if ($totalPrice > 0) {
+            $order->update(['total_price' => $totalPrice]);
         }
 
-        // 4. إرسال Notification للمستخدم بأن الطلب تم إعادة إرساله
+        // 4. إشعار العميل بأن الطلب تم تجهيزه للدفع
         try {
             $order->user->notify(new \App\Notifications\OrderResent($order));
         } catch (\Throwable $e) {
@@ -2201,14 +2221,15 @@ class OrderController extends Controller
 
         return response()->json([
             'status'       => true,
-            'message'      => $lang === 'ar' ? 'تم إعادة إرسال الطلب بنجاح' : 'Order request resent successfully',
+            'message'      => $lang === 'ar' ? 'تم تجهيز الطلب لإعادة التثمين، بانتظار إتمام الدفع' : 'Order prepared for re-evaluation, awaiting payment',
             'order_id'     => $order->id,
-            'order_status' => $order->status,
-            'new_status'   => $order->status,
+            'order_status' => 'notPaid',
+            'new_status'   => 'notPaid',
             'order'        => [
                 'id'              => $order->id,
-                'status'          => $order->status,
-                'evaluation_type' => $order->evaluation_type,
+                'status'          => 'notPaid',
+                'evaluation_type' => $evaluationType,
+                'total_price'     => $order->total_price,
             ],
         ]);
     }

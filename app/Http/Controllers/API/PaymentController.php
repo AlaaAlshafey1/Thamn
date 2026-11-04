@@ -67,8 +67,13 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        // نحدّث total_price بسعر الباقة الصحيح (وليس سعر الـ AI)
-        $order->update(['total_price' => $amount]);
+        // نحدّث total_price بسعر الباقة الصحيح، ونضمن أن حالة الطلب أثناء فتح الدفع وقبل إتمامه هي "notPaid"
+        // حتى إذا أغلق العميل نافذة الدفع دون دفع، لا يظهر الطلب كـ beingEstimated في قائمة طلباتي
+        $updateData = ['total_price' => $amount];
+        if (!in_array($order->status, ['estimated', 'reEstimated', 'completed'])) {
+            $updateData['status'] = 'notPaid';
+        }
+        $order->update($updateData);
 
         // ── إرجاع رابط مشفر ومحمي لصفحة الدفع ──
         // الرابط هيكون مؤمن بـ Signature وصالح لمدة 30 دقيقة فقط، محدش يقدر يفتحه غير اللي معاه الرابط بالضبط
