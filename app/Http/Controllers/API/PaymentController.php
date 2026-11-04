@@ -481,8 +481,9 @@ class PaymentController extends Controller
             $evaluationType = $rateTypeAnswer?->option?->badge
                 ?? $rateTypeAnswer?->value;
 
-            // توليد صورة بالذكاء الاصطناعي فوراً إذا طلب العميل (create_image_ai)
-            if ($order->create_image_ai) {
+            // توليد صورة بالذكاء الاصطناعي فوراً إذا طلب العميل (create_image_ai) أو إذا لم يرفق صوراً للسلعة
+            $hasNoImages = $order->files->where('type', 'image')->count() === 0;
+            if ($order->create_image_ai || $hasNoImages) {
                 try {
                     app(ThamnEvaluationService::class)->generateVirtualImageForOrder($order);
                 } catch (\Throwable $e) {
