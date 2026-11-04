@@ -644,6 +644,13 @@ PROMPT;
                     . ", centered, pure white background, professional commercial product photography, 4k";
             }
 
+            // إذا كان هناك صور سابقة مولدة بالذكاء الاصطناعي لنفس الطلب، نحذفها لنضع الصورة الجديدة المحدثة
+            $oldAiFiles = $order->files()->where('type', 'image')->where('file_name', 'like', 'ai_generated_%')->get();
+            foreach ($oldAiFiles as $oldFile) {
+                Storage::disk('public')->delete($oldFile->file_path);
+                $oldFile->delete();
+            }
+
             try {
                 $imageUrl = app(ClaudeService::class)->generateImage($imagePrompt);
                 if ($imageUrl) {
@@ -651,7 +658,7 @@ PROMPT;
                         $parts = explode(',', $imageUrl);
                         $imageContents = base64_decode($parts[1] ?? '');
                     } else {
-                        $imageContents = file_get_contents($imageUrl);
+                        $imageContents = \Illuminate\Support\Facades\Http::timeout(30)->get($imageUrl)->body();
                     }
 
                     if ($imageContents) {

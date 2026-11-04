@@ -2162,7 +2162,12 @@ class OrderController extends Controller
 
         $order = Order::findOrFail($orderId);
 
-        // 1. تحديد نوع التقييم (AI أو Expert أو Best)
+        // 1. قراءة خيار توليد الصورة بالذكاء الاصطناعي من الطلب (إذا أرسله العميل في الـ resend)
+        $createImageAi = $request->has('create_image_ai')
+            ? ($request->boolean('create_image_ai') || $request->input('create_image_ai') == 1 || $request->input('create_image_ai') === 'true')
+            : (bool) $order->create_image_ai;
+
+        // 2. تحديد نوع التقييم (AI أو Expert أو Best)
         $rateTypeAnswer = $order->details()
             ->whereHas('question', function ($q) {
                 $q->where('type', 'rateTypeSelection');
@@ -2173,11 +2178,12 @@ class OrderController extends Controller
             ?? $rateTypeAnswer?->value
             ?? $order->evaluation_type;
 
-        // 2. تصفير نتائج التثمين السابقة وتعيين الحالة إلى غير مدفوع (notPaid) بانتظار إتمام الدفع
+        // 3. تصفير نتائج التثمين السابقة وحفظ خيار create_image_ai وتعيين الحالة إلى notPaid
         // تنبيه مهم: لا يتم وضع الطلب beingEstimated ولا تشغيل الذكاء الاصطناعي ولا إشعار الخبراء هنا
         // لأن العميل لم يدفع بعد! يتم التوجيه والتقييم تلقائياً عبر PaymentController فقط بعد تأكيد الدفع
         $order->update([
             'status'           => 'notPaid',
+            'create_image_ai'  => $createImageAi,
             'expert_evaluated' => 0,
             'expert_id'        => null,
             'expert_price'     => null,
@@ -2195,7 +2201,7 @@ class OrderController extends Controller
             'evaluated_at'     => null,
         ]);
 
-        // 3. إعادة حساب وتحديث سعر الباقة (مع رسوم توليد الصورة 5 ريال إذا اختارها)
+        // 4. إعادة حساب وتحديث سعر الباقة (مع رسوم توليد الصورة 5 ريال إذا اختارها العميل أو مفيش صور)
         $totalPrice = 0;
         if ($rateTypeAnswer && $rateTypeAnswer->option) {
             $totalPrice = (float) $rateTypeAnswer->option->price;
@@ -2203,14 +2209,14 @@ class OrderController extends Controller
             $totalPrice = (float) $order->total_price;
         }
         $hasNoImages = $order->files->where('type', 'image')->count() === 0;
-        if ($order->create_image_ai || $hasNoImages) {
+        if ($createImageAi || $hasNoImages) {
             $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
         }
         if ($totalPrice > 0) {
             $order->update(['total_price' => $totalPrice]);
         }
 
-        // 4. إشعار العميل بأن الطلب تم تجهيزه للدفع
+        // 5. إشعار العميل بأن الطلب تم تجهيزه للدفع
         try {
             $order->user->notify(new \App\Notifications\OrderResent($order));
         } catch (\Throwable $e) {
@@ -2220,16 +2226,18 @@ class OrderController extends Controller
         $order->refresh();
 
         return response()->json([
-            'status'       => true,
-            'message'      => $lang === 'ar' ? 'تم تجهيز الطلب لإعادة التثمين، بانتظار إتمام الدفع' : 'Order prepared for re-evaluation, awaiting payment',
-            'order_id'     => $order->id,
-            'order_status' => 'notPaid',
-            'new_status'   => 'notPaid',
-            'order'        => [
+            'status'          => true,
+            'message'         => $lang === 'ar' ? 'تم تجهيز الطلب لإعادة التثمين، بانتظار إتمام الدفع' : 'Order prepared for re-evaluation, awaiting payment',
+            'order_id'        => $order->id,
+            'order_status'    => 'notPaid',
+            'new_status'      => 'notPaid',
+            'create_image_ai' => (bool) $createImageAi,
+            'order'           => [
                 'id'              => $order->id,
                 'status'          => 'notPaid',
                 'evaluation_type' => $evaluationType,
                 'total_price'     => $order->total_price,
+                'create_image_ai' => (bool) $createImageAi,
             ],
         ]);
     }

@@ -37,6 +37,12 @@ class PaymentController extends Controller
     public function payOrder(Request $request, $order_id)
     {
         $order = Order::with(['user', 'details.question', 'details.option', 'files'])->findOrFail($order_id);
+
+        if ($request->has('create_image_ai')) {
+            $createImageAi = $request->boolean('create_image_ai') || $request->input('create_image_ai') == 1 || $request->input('create_image_ai') === 'true';
+            $order->update(['create_image_ai' => $createImageAi]);
+            $order->refresh();
+        }
         // ─── نحسب السعر دائماً من الباقة المختارة (rateTypeSelection) ───────
         // هذا يمنع مشكلة ظهور سعر الـ AI (المُثمَّن) عوضاً عن سعر الباقة
         $rateTypeAnswer = $order->details()

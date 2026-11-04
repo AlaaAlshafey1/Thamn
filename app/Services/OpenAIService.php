@@ -120,38 +120,48 @@ class OpenAIService
      */
     public function generateImage(string $prompt, string $size = '1024x1024'): ?string
     {
-        try {
-            $model = env('OPENAI_IMAGE_MODEL', 'dall-e-3');
-            $res = $this->http->post($this->base . '/images/generations', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->key,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => $model,
+        $preferredModel = env('OPENAI_IMAGE_MODEL', 'chatgpt-image-latest');
+        $models = array_values(array_unique(array_filter([
+            $preferredModel,
+            'chatgpt-image-latest',
+            'gpt-image-1',
+            'dall-e-3',
+        ])));
+
+        foreach ($models as $model) {
+            try {
+                $payload = [
+                    'model'  => $model,
                     'prompt' => $prompt,
-                    'n' => 1,
-                    'size' => $size,
-                ],
-            ]);
+                    'n'      => 1,
+                ];
+                if (str_starts_with($model, 'dall-e')) {
+                    $payload['size'] = $size;
+                }
 
-            $json = json_decode((string) $res->getBody(), true);
+                $res = $this->http->post($this->base . '/images/generations', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $this->key,
+                        'Content-Type'  => 'application/json',
+                    ],
+                    'json'    => $payload,
+                    'timeout' => 45,
+                ]);
 
-            if (isset($json['data'][0]['url'])) {
-                return $json['data'][0]['url'];
-            } elseif (isset($json['data'][0]['b64_json'])) {
-                return 'data:image/png;base64,' . $json['data'][0]['b64_json'];
+                $json = json_decode((string) $res->getBody(), true);
+
+                if (isset($json['data'][0]['b64_json'])) {
+                    return 'data:image/png;base64,' . $json['data'][0]['b64_json'];
+                } elseif (isset($json['data'][0]['url'])) {
+                    return $json['data'][0]['url'];
+                }
+            } catch (\Throwable $e) {
+                Log::warning("OpenAI Image Generation model {$model} failed: " . $e->getMessage());
+                continue;
             }
-
-            return null;
-
-        } catch (\Throwable $e) {
-            Log::error('OpenAI Image Generation failed', [
-                'message' => $e->getMessage(),
-                'prompt' => $prompt,
-            ]);
-
-            return null;
         }
+
+        Log::error('OpenAI Image Generation failed across all models', ['prompt' => $prompt]);
+        return null;
     }
 }
