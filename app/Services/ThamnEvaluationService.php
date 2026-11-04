@@ -667,12 +667,17 @@ PROMPT;
 
                         Storage::disk('public')->put($path, $imageContents);
 
-                        return OrderFiles::create([
+                        $fileRecord = OrderFiles::create([
                             'order_id' => $order->id,
                             'file_path' => $path,
                             'file_name' => $filename,
                             'type' => 'image',
                         ]);
+
+                        $order->load('files');
+                        Log::info("Virtual image generated and attached to order #{$order->id}: {$path}");
+
+                        return $fileRecord;
                     }
                 }
             } catch (\Throwable $e) {

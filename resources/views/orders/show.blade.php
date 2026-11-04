@@ -2495,8 +2495,14 @@
 
             {{-- كرت صور المنتج --}}
             <div class="card order-card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="bx bx-images text-warning"></i> صور المنتج المرفقة</h5>
+                    <form action="{{ route('orders.generateImage', $order->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('هل تريد توليد صورة افتراضية جديدة للمنتج بواسطة الذكاء الاصطناعي؟');">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            <i class="bx bx-image-add"></i> توليد صورة بالذكاء الاصطناعي
+                        </button>
+                    </form>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">

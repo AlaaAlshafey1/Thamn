@@ -626,41 +626,13 @@ class OrderController extends Controller
 
     public function generateVirtualImage(Order $order)
     {
-        // بناء وصف مبسط للصورة بناءً على تفاصيل الطلب
-        $qaLines = [];
-        foreach ($order->details as $detail) {
-            $question = $detail->question->question_en ?? $detail->question->question_ar;
-            $answer = $detail->option->option_en ?? $detail->option->option_ar ?? $detail->value;
-            if ($question && $answer) {
-                $qaLines[] = "{$question}: {$answer}";
-            }
-        }
-        $qaText = implode(", ", $qaLines);
-        $category = $order->category->name_en ?? 'product';
-
-        // توجيه لإنشاء صورة بخلفية بيضاء
-        $prompt = "A highly realistic, professional studio photograph of a {$category} with the following specifications: {$qaText}. Pure white background, centered, well lit, high quality.";
-
         try {
-            $imageUrl = app(\App\Services\OpenAIService::class)->generateImage($prompt);
-            if ($imageUrl) {
-                $imageContents = file_get_contents($imageUrl);
-                $filename = 'ai_generated_manual_' . \Illuminate\Support\Str::random(10) . '.png';
-                $path = 'orders/images/' . $filename;
-
-                \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageContents);
-
-                \App\Models\OrderFiles::create([
-                    'order_id' => $order->id,
-                    'file_path' => $path,
-                    'file_name' => $filename,
-                    'type' => 'image',
-                ]);
-
-                return back()->with('success', 'تم توليد الصورة الافتراضية بنجاح وإرفاقها بالطلب.');
+            $file = app(\App\Services\ThamnEvaluationService::class)->generateVirtualImageForOrder($order);
+            if ($file) {
+                return back()->with('success', 'تم توليد الصورة الافتراضية بنجاح بواسطة الذكاء الاصطناعي وإرفاقها بالطلب.');
             }
 
-            return back()->with('error', 'تعذر توليد الصورة، حاول مرة أخرى.');
+            return back()->with('error', 'تعذر توليد الصورة من خادم الذكاء الاصطناعي، يرجى المحاولة مرة أخرى.');
         } catch (\Throwable $e) {
             return back()->with('error', 'حدث خطأ أثناء توليد الصورة: ' . $e->getMessage());
         }

@@ -15,13 +15,17 @@ class OpenAIService
     {
         $this->http = new Client(['timeout' => 120]);
 
-        // نفس الإعدادات اللي عندك
         $this->base = rtrim(
-            config('services.openai.base', env('OPENAI_API_BASE', 'https://api.openai.com/v1/')),
+            config('services.openai.base') ?: env('OPENAI_API_BASE', 'https://api.openai.com/v1/'),
             '/'
         );
 
-        $this->key = (string) env('OPENAI_API_KEY');
+        $this->key = (string) (
+            config('services.openai.key')
+            ?: config('services.openai.OPENAI_API_KEY')
+            ?: env('OPENAI_API_KEY')
+            ?: env('OPENAI_KEY')
+        );
     }
 
     /**
@@ -120,11 +124,16 @@ class OpenAIService
      */
     public function generateImage(string $prompt, string $size = '1024x1024'): ?string
     {
-        $preferredModel = env('OPENAI_IMAGE_MODEL', 'chatgpt-image-latest');
+        $preferredModel = config('services.openai.image_model') ?: env('OPENAI_IMAGE_MODEL', 'chatgpt-image-latest');
+        if (empty($preferredModel) || $preferredModel === 'dall-e-3') {
+            $preferredModel = 'chatgpt-image-latest';
+        }
+
         $models = array_values(array_unique(array_filter([
             $preferredModel,
             'chatgpt-image-latest',
             'gpt-image-1',
+            'gpt-image-2',
             'dall-e-3',
         ])));
 

@@ -46,7 +46,9 @@ return [
         'payout_source_id' => env('MOYASAR_PAYOUT_SOURCE_ID'),
     ],
     'openai' => [
-        'OPENAI_API_KEY' => env('OPENAI_KEY'),
+        'key' => env('OPENAI_API_KEY', env('OPENAI_KEY')),
+        'base' => env('OPENAI_API_BASE', 'https://api.openai.com/v1/'),
+        'image_model' => env('OPENAI_IMAGE_MODEL', 'chatgpt-image-latest'),
     ],
     'ultramsg' => [
         'token'    => env('ULTRAMSG_TOKEN'),
