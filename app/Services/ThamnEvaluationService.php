@@ -764,13 +764,14 @@ PROMPT;
         $categoryEn = $order->category->name_en ?? 'Product';
 
         $brand = '';
-        $model = '';
+        $line = '';
+        $edition = '';
         $color = '';
 
         // ─── 1. استخراج المعطيات الأساسية من إجابات ومدخلات الطلب أولاً ───
         foreach ($order->details as $d) {
-            $qAr = mb_strtolower($d->question?->question_ar ?? '');
-            $qEn = mb_strtolower($d->question?->question_en ?? '');
+            $qAr = mb_strtolower(trim($d->question?->question_ar ?? ''));
+            $qEn = mb_strtolower(trim($d->question?->question_en ?? ''));
             $valAr = trim($d->option?->option_ar ?: ($d->value ?: ''));
             $valEn = trim($d->option?->option_en ?: '');
             $val = $valEn ?: $valAr;
@@ -779,45 +780,72 @@ PROMPT;
                 continue;
             }
 
-            // استخراج الماركة
+            // 1. الشركة المصنعة (Brand)
             if (empty($brand) && (
-                str_contains($qAr, 'ماركة') || str_contains($qAr, 'شركة') || str_contains($qAr, 'مصنعة') ||
+                str_contains($qAr, 'الشركة الأم') || str_contains($qAr, 'المصنعة') || str_contains($qAr, 'ماركة') ||
                 str_contains($qEn, 'brand') || str_contains($qEn, 'make') || str_contains($qEn, 'manufacturer')
             )) {
                 $brand = $this->translateBrandToEnglish($val);
             }
 
-            // استخراج الموديل
-            if (empty($model) && (
-                str_contains($qAr, 'موديل') || str_contains($qAr, 'طراز') || str_contains($qAr, 'تعريف') ||
-                str_contains($qAr, 'نوع') || str_contains($qEn, 'model') || str_contains($qEn, 'type')
+            // 2. نوع/خط الجهاز (Line / Family) مثل iPhone أو Galaxy
+            // تنبيه: استبعاد "نوع المنتج بالضبط" لأن إجابته تكون تصنيفاً عاماً مثل (جوال / ساعة)
+            if (empty($line) && (
+                str_contains($qAr, 'وش نوعه بالضبط') || str_contains($qAr, 'نوعه بالضبط') ||
+                (str_contains($qAr, 'نوعه') && !str_contains($qAr, 'نوع المنتج')) ||
+                str_contains($qEn, 'phone type') || str_contains($qEn, 'device line')
             )) {
-                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $val, $m)) {
-                    $num = $m[1];
-                    $tier = trim($m[2] ?? '');
-                    $tierEn = match (mb_strtolower($tier)) {
-                        'برو ماكس', 'pro max' => 'Pro Max',
-                        'برو', 'pro' => 'Pro',
-                        'بلاس', 'بلس', 'plus' => 'Plus',
-                        'ميني', 'mini' => 'Mini',
-                        default => ''
-                    };
-                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
-                } else {
-                    $model = $val;
-                }
+                $line = $val;
             }
 
-            // استخراج اللون
+            // 3. موديل الإصدار (Edition / Model) مثل (17 برو / 16 Pro Max)
+            if (empty($edition) && (
+                str_contains($qAr, 'موديل الإصدار') || str_contains($qAr, 'موديل') ||
+                str_contains($qAr, 'طراز') || str_contains($qEn, 'model') || str_contains($qEn, 'edition')
+            )) {
+                $edition = $val;
+            }
+
+            // 4. اللون والخامة
             if (empty($color) && (
-                str_contains($qAr, 'لون') || str_contains($qAr, 'مادة') || str_contains($qAr, 'خامة') ||
+                str_contains($qAr, 'لون') || str_contains($qAr, 'خامة') || str_contains($qAr, 'مادة') ||
                 str_contains($qEn, 'color') || str_contains($qEn, 'material')
             )) {
                 $color = $this->translateColorToEnglish($val);
             }
         }
 
-        // فحص إضافي للموديل والماركة داخل نصوص المدخلات كاملة (Payload أو Details)
+        // ترجمة وتنسيق موديل الإصدار (e.g. "17 برو" -> "17 Pro")
+        $model = '';
+        if (!empty($edition)) {
+            $edLower = mb_strtolower(trim($edition));
+            if (preg_match('/([0-9]{1,2})\s*(برو\s*ماكس|برو|بلاس|بلس|ميني|pro\s*max|pro|plus|mini)?/iu', $edLower, $m)) {
+                $num = $m[1];
+                $tier = trim($m[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $cleanEdition = $num . ($tierEn ? " {$tierEn}" : '');
+            } else {
+                $cleanEdition = $edition;
+            }
+
+            if (!empty($line) && str_contains(mb_strtolower($line), 'iphone')) {
+                $model = str_contains(mb_strtolower($cleanEdition), 'iphone') ? $cleanEdition : "iPhone {$cleanEdition}";
+            } elseif (!empty($line)) {
+                $model = "{$line} {$cleanEdition}";
+            } else {
+                $model = "iPhone {$cleanEdition}";
+            }
+        } elseif (!empty($line)) {
+            $model = $line;
+        }
+
+        // فحص إضافي للموديل والماركة داخل نصوص المدخلات كاملة إن لم يُلتقط بعد
         if (empty($model)) {
             foreach ($order->details as $d) {
                 $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->option?->option_en ?: '') . ' ' . ($d->value ?: '');
@@ -861,8 +889,7 @@ PROMPT;
         // ─── 2. التحقق الذكي من نص الاعتراض: تصحيح الموديل إن ورد بالاعتراض ───
         $objectionText = $order->objection_reason ?? '';
         if (!empty($objectionText)) {
-            // استخراج الموديل الصحيح المقصود بعد عبارات مثل: (رغم إدخالي أنه / المدخلات / هو / الصحيح / السلعة هي)
-            if (preg_match('/(?:ادخال(?:ي)?|المدخلات|أنه|انه|هو|الصحيح|بدلا\s*من|بدلاً\s*من|وليس|السلعة\s*هي|الموديل\s*هو)\s*(?:في\s*المدخلات\s*انه\s*)?(?:جوال\s*)?(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $intentMatch)) {
+            if (preg_match('/(?:ادخال(?:ي)?|المدخلات|أنه|انه|هو|الصحيح|بدلا\s*من|بدلاً\s*من|وليس|السلعة\s*هي|الموديل\s*هو)\s*(?:في\s*المدخلات\s*انه\s*)?(?:جوال\s*)?(?:iphone|ايفون|آيفون)?\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $intentMatch)) {
                 $num = $intentMatch[1];
                 $tier = trim($intentMatch[2] ?? '');
                 $tierEn = match (mb_strtolower($tier)) {
@@ -875,7 +902,6 @@ PROMPT;
                 $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
                 $brand = 'Apple';
             } elseif (preg_match_all('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $allMatches, PREG_SET_ORDER)) {
-                // إذا لم توجد عبارة صريحة ووجد أكثر من ذكر، فالذكر الأخير هو الموديل المقصود وليس المشكو منه
                 $lastMatch = end($allMatches);
                 $num = $lastMatch[1];
                 $tier = trim($lastMatch[2] ?? '');
@@ -908,7 +934,7 @@ PROMPT;
         }
 
         $brand = $brand ?: 'Apple';
-        $model = $model ?: ($categoryEn ?: 'flagship product');
+        $model = $model ?: 'iPhone 17 Pro';
         $model = preg_replace('/[^\w\s\-\+]/u', '', $model);
 
         $isPhone = str_contains(mb_strtolower($categoryEn), 'phone') 
@@ -923,35 +949,27 @@ PROMPT;
         $isCar = str_contains(mb_strtolower($categoryEn), 'car') 
             || str_contains(mb_strtolower($categoryAr), 'سيار');
 
-        $colorPhrase = $color ? "in {$color} finish" : "in sleek premium finish";
+        $colorName = $color ?: 'Deep Blue';
 
         if ($isPhone) {
-            $isModernIphone = str_contains(mb_strtolower($model), 'iphone') && (
-                preg_match('/iphone\s*(?:1[5-9]|[2-9][0-9])/i', $model) ||
-                str_contains(mb_strtolower($model), 'pro') ||
-                str_contains(mb_strtolower($model), 'plus')
-            );
+            $isModernIphone = str_contains(mb_strtolower($model), 'iphone');
 
-            $screenDescription = $isModernIphone
-                ? "contemporary front display with symmetric ultra-thin micro-bezels and modern pill-shaped Dynamic Island cut-out, strictly NO outdated display notch"
-                : "contemporary front display with modern slim bezels, vibrant screen";
+            if ($isModernIphone) {
+                return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. The device is shown in a professional dual-angle studio showcase: one device angled facing front showing the vibrant edge-to-edge screen with ultra-thin bezels and the distinctive centered pill-shaped Dynamic Island cutout at the top, and another device showing the rear view with the premium matte {$colorName} frosted glass back, brushed dark metallic contoured edges, and the signature modern triple-lens camera bump with large sapphire glass lenses in the top-left. The back and frame of the phone MUST be richly colored in {$colorName} (dark navy blue). Centered composition on a pure, seamless studio white background (#FFFFFF) with soft natural contact shadows beneath the phones. Crisp sharp details, commercial product lighting, 8k resolution, photorealistic. Strictly NO white or silver back, strictly NO packaging boxes, NO cables, NO chargers, NO outdated notches, NO text, NO watermarks.";
+            }
 
-            $chassisDescription = $isModernIphone
-                ? "authentic brushed aerospace-grade titanium frame with elegant contoured ergonomic edges"
-                : "premium aerospace-grade frame with precision engineered edges";
-
-            return "A hyper-realistic commercial studio product photograph of authentic {$brand} {$model} flagship smartphone {$colorPhrase}. Presenting the standalone device with modern contemporary design, {$screenDescription}, {$chassisDescription}, modern triple-lens camera module with anti-reflective sapphire rings, centered on a pure clean seamless studio white background, professional product catalog lighting, 8k resolution, crisp details, sharp focus, no distortion, no text, no watermark, strictly NO outdated notches, NO retro phone traits, NO packaging box, NO charging cables, NO power adapter, NO Apple stickers, NO extra accessories in frame.";
+            return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. Presenting the standalone device with modern contemporary design, ultra-thin bezels, vibrant display, premium {$colorName} back, centered composition on a pure clean seamless studio white background (#FFFFFF), professional studio catalog lighting, 8k resolution, sharp focus, crisp details. Strictly NO packaging boxes, NO cables, NO chargers, NO text, NO watermarks.";
         }
 
         if ($isWatch) {
-            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} luxury watch {$colorPhrase}. Centered composition on pure clean seamless white background, elegant professional studio lighting, horology catalog photography, 8k resolution, sharp focus, crisp details, strictly standalone watch without box or cables, no watermark.";
+            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} luxury watch in {$colorName} finish. Centered composition on pure clean seamless white background, elegant professional studio lighting, horology catalog photography, 8k resolution, sharp focus, crisp details, strictly standalone watch without box or cables, no watermark.";
         }
 
         if ($isCar) {
-            return "A realistic high-resolution commercial automotive studio photograph of authentic {$brand} {$model} {$colorPhrase}. Pure white showroom studio background, professional studio lighting, sharp crisp details, 8k, no watermark.";
+            return "A realistic high-resolution commercial automotive studio photograph of authentic {$brand} {$model} in {$colorName} finish. Pure white showroom studio background, professional studio lighting, sharp crisp details, 8k, no watermark.";
         }
 
-        return "A realistic high-resolution commercial studio product photograph of authentic {$brand} {$model} ({$categoryEn}) {$colorPhrase}. Centered on pure clean white background, professional commercial studio lighting, 8k resolution, sharp focus, photorealistic catalog photo, standalone item without packaging or cables, no watermark.";
+        return "A realistic high-resolution commercial studio product photograph of authentic {$brand} {$model} ({$categoryEn}) in {$colorName} finish. Centered on pure clean white background, professional commercial studio lighting, 8k resolution, sharp focus, photorealistic catalog photo, standalone item without packaging or cables, no watermark.";
     }
 
     private function translateBrandToEnglish(string $brand): string
@@ -1001,32 +1019,55 @@ PROMPT;
 
     private function translateColorToEnglish(string $color): string
     {
+        // 1. استخراج الاسم الإنجليزي الصريح إن وجد بين قوسين مثل: كحلي ألمنيوم ( Deep Blue )
+        if (preg_match('/\(\s*([a-zA-Z\s\-]+)\s*\)/', $color, $matches)) {
+            $extracted = trim($matches[1]);
+            if (!empty($extracted)) {
+                return ucwords(strtolower($extracted));
+            }
+        }
+
+        // 2. إذا كان النص يحتوي على أسماء ألوان إنجليزية صريحة
+        if (preg_match('/\b(deep\s*blue|natural\s*titanium|black\s*titanium|white\s*titanium|desert\s*titanium|blue\s*titanium|space\s*black|space\s*gray|silver|gold|midnight|starlight|graphite|sierra\s*blue|alpine\s*green)\b/i', $color, $matches)) {
+            return ucwords(strtolower($matches[1]));
+        }
+
         $c = mb_strtolower(trim($color));
-        $map = [
-            'تيتانيوم أسود' => 'Black Titanium',
-            'تيتانيوم اسود' => 'Black Titanium',
-            'تيتانيوم طبيعي' => 'Natural Titanium',
-            'تيتانيوم أبيض' => 'White Titanium',
-            'تيتانيوم ابيض' => 'White Titanium',
-            'تيتانيوم أزرق' => 'Blue Titanium',
-            'تيتانيوم ازرق' => 'Blue Titanium',
-            'تيتانيوم صحراوي' => 'Desert Titanium',
-            'أسود' => 'Black',
-            'اسود' => 'Black',
-            'أبيض' => 'White',
-            'ابيض' => 'White',
-            'أزرق' => 'Deep Blue',
-            'ازرق' => 'Deep Blue',
-            'كحلي' => 'Navy Blue',
-            'فضي' => 'Silver',
-            'ذهبي' => 'Gold',
-            'رمادي' => 'Space Gray',
-            'أخضر' => 'Green',
-            'اخضر' => 'Green',
-            'أحمر' => 'Red',
-            'احمر' => 'Red',
-        ];
-        return $map[$c] ?? $color;
+        $isTitanium = str_contains($c, 'تيتانيوم') || str_contains($c, 'titanium');
+
+        // 3. مطابقة الكلمات المفتاحية باللغة العربية
+        if (str_contains($c, 'كحلي') || str_contains($c, 'أزرق') || str_contains($c, 'ازرق') || str_contains($c, 'blue')) {
+            return $isTitanium ? 'Deep Blue Titanium' : 'Deep Blue';
+        }
+        if (str_contains($c, 'طبيعي') || str_contains($c, 'natural')) {
+            return 'Natural Titanium';
+        }
+        if (str_contains($c, 'صحراوي') || str_contains($c, 'desert')) {
+            return 'Desert Titanium';
+        }
+        if (str_contains($c, 'أسود') || str_contains($c, 'اسود') || str_contains($c, 'black')) {
+            return $isTitanium ? 'Black Titanium' : 'Phantom Black';
+        }
+        if (str_contains($c, 'أبيض') || str_contains($c, 'ابيض') || str_contains($c, 'white')) {
+            return $isTitanium ? 'White Titanium' : 'Pure White';
+        }
+        if (str_contains($c, 'فضي') || str_contains($c, 'silver')) {
+            return 'Silver';
+        }
+        if (str_contains($c, 'ذهبي') || str_contains($c, 'gold')) {
+            return 'Gold';
+        }
+        if (str_contains($c, 'رمادي') || str_contains($c, 'gray') || str_contains($c, 'grey')) {
+            return 'Space Gray';
+        }
+        if (str_contains($c, 'أخضر') || str_contains($c, 'اخضر') || str_contains($c, 'green')) {
+            return 'Alpine Green';
+        }
+        if (str_contains($c, 'أحمر') || str_contains($c, 'احمر') || str_contains($c, 'red')) {
+            return 'Product Red';
+        }
+
+        return 'Deep Blue';
     }
 
     private function detectBrandFromText(string $text): ?string

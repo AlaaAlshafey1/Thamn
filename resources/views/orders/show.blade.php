@@ -2008,30 +2008,6 @@
                         $hasVirtualImage = $expertImages->contains(fn($f) => str_starts_with($f->file_name, 'ai_generated_'));
                     @endphp
 
-                    @if($hasVirtualImage || $order->create_image_ai || $expertImages->isEmpty() || !empty($order->objection_reason))
-                        <div class="mb-4 p-3 rounded d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1.5px solid #86efac;">
-                            <div class="d-flex align-items-center gap-2">
-                                <span style="width: 38px; height: 38px; border-radius: 10px; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-                                    <i class="bx bx-bot"></i>
-                                </span>
-                                <div>
-                                    <div style="font-weight: 800; font-size: 0.95rem; color: #166534;">
-                                        صورة افتراضية مطابقة بالذكاء الاصطناعي 🎨
-                                    </div>
-                                    <small style="color: #15803d; font-weight: 600;">
-                                        يمكنك إعادة توليد صورة السلعة بالمواصفات الدقيقة للموديل واللون في أي وقت
-                                    </small>
-                                </div>
-                            </div>
-                            <form action="{{ route('orders.generateImage', $order->id) }}" method="POST" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerHTML = '<i class=\'bx bx-loader-alt bx-spin\'></i> جاري التوليد...';">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-success px-3 py-2" style="border-radius: 10px; font-weight: 800; background: #16a34a; border: none; box-shadow: 0 2px 8px rgba(22,163,74,0.3); display: inline-flex; align-items: center; gap: 6px;">
-                                    <i class="bx bx-refresh" style="font-size: 1.15rem;"></i> إعادة توليد الصورة بالذكاء الاصطناعي 🔄
-                                </button>
-                            </form>
-                        </div>
-                    @endif
-
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;">
                         @forelse($expertImages as $imgIndex => $image)
                             <div class="expert-gallery-thumb position-relative" onclick="openAlbumLightbox({{ $imgIndex }})" role="button" tabindex="0" title="انقر لفتح الألبوم المكبر">
