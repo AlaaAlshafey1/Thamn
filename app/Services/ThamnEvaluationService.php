@@ -804,11 +804,12 @@ PROMPT;
         $model = '';
         if (!empty($edition)) {
             $edLower = mb_strtolower(trim($edition));
-            if (preg_match('/([0-9]{1,2})\s*(برو\s*ماكس|برو|بلاس|بلس|ميني|pro\s*max|pro|plus|mini)?/iu', $edLower, $m)) {
+            if (preg_match('/([0-9]{1,2})\s*(برو\s*ماكس|بروماكس|برو|ماكس|بلاس|بلس|ميني|pro\s*max|promax|pro|max|plus|mini)?/iu', $edLower, $m)) {
                 $num = $m[1];
                 $tier = trim($m[2] ?? '');
-                $tierEn = match (mb_strtolower($tier)) {
-                    'برو ماكس', 'pro max' => 'Pro Max',
+                $tierNormalized = strtolower(str_replace(' ', '', $tier));
+                $tierEn = match ($tierNormalized) {
+                    'بروماكس', 'promax', 'ماكس', 'max' => 'Pro Max',
                     'برو', 'pro' => 'Pro',
                     'بلاس', 'بلس', 'plus' => 'Plus',
                     'ميني', 'mini' => 'Mini',

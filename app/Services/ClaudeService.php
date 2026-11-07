@@ -92,64 +92,76 @@ class ClaudeService
 SYSTEM;
 
         // ── استدعاء Claude API ───────────────────────────────────────────────
-        try {
-            $response = $this->http->post(self::API_URL, [
-                'headers' => [
-                    'x-api-key'         => $this->key,
-                    'anthropic-version' => self::API_VERSION,
-                    'content-type'      => 'application/json',
-                ],
-                'json' => [
-                    'model'      => $this->model,
-                    'max_tokens' => 2048,
-                    'system'     => $systemPrompt,
-                    'messages'   => [
-                        [
-                            'role'    => 'user',
-                            'content' => $content,
-                        ]
-                    ],
-                ],
-            ]);
-
-            $body = json_decode((string) $response->getBody(), true);
-
-            // استخرج النص من الرد
-            $raw = $body['content'][0]['text'] ?? null;
-
-            if (!$raw) {
-                Log::error('Claude: empty response', ['body' => $body]);
-                return [];
-            }
-
-            // تنظيف الرد من أي code block لو Claude أضافها
-            $raw = preg_replace('/```json\s*/i', '', $raw);
-            $raw = preg_replace('/```\s*/i', '', $raw);
-            $raw = trim($raw);
-
-            $json = json_decode($raw, true);
-
-            if (!is_array($json)) {
-                Log::error('Claude: invalid JSON in response', ['raw' => $raw]);
-                return [];
-            }
-
-            Log::info('Claude evaluation success', [
-                'order_images' => count($imagePaths),
-                'recommended'  => $json['recommended_price'] ?? null,
-                'confidence'   => $json['confidence'] ?? null,
-            ]);
-
-            return $json;
-
-        } catch (\Throwable $e) {
-            Log::error('Claude API failed', [
-                'message' => $e->getMessage(),
-                'model'   => $this->model,
-            ]);
-
-            return [];
+        $preferredModel = env('ANTHROPIC_MODEL', 'claude-3-7-sonnet-20250219');
+        if ($preferredModel === 'claude-sonnet-4-5') {
+            $preferredModel = 'claude-3-7-sonnet-20250219';
         }
+
+        $models = array_values(array_unique(array_filter([
+            $preferredModel,
+            'claude-3-7-sonnet-20250219',
+            'claude-3-5-sonnet-latest',
+            'claude-3-5-sonnet-20241022',
+        ])));
+
+        foreach ($models as $currentModel) {
+            try {
+                $response = $this->http->post(self::API_URL, [
+                    'headers' => [
+                        'x-api-key'         => $this->key,
+                        'anthropic-version' => self::API_VERSION,
+                        'content-type'      => 'application/json',
+                    ],
+                    'json' => [
+                        'model'      => $currentModel,
+                        'max_tokens' => 2048,
+                        'system'     => $systemPrompt,
+                        'messages'   => [
+                            [
+                                'role'    => 'user',
+                                'content' => $content,
+                            ]
+                        ],
+                    ],
+                ]);
+
+                $body = json_decode((string) $response->getBody(), true);
+                $raw = $body['content'][0]['text'] ?? null;
+
+                if (!$raw) {
+                    Log::warning("Claude model {$currentModel} returned empty response");
+                    continue;
+                }
+
+                // تنظيف الرد من أي code block لو Claude أضافها
+                $raw = preg_replace('/```json\s*/i', '', $raw);
+                $raw = preg_replace('/```\s*/i', '', $raw);
+                $raw = trim($raw);
+
+                $json = json_decode($raw, true);
+
+                if (!is_array($json)) {
+                    Log::warning("Claude model {$currentModel} returned invalid JSON: {$raw}");
+                    continue;
+                }
+
+                Log::info('Claude evaluation success', [
+                    'model'        => $currentModel,
+                    'order_images' => count($imagePaths),
+                    'recommended'  => $json['recommended_price'] ?? null,
+                    'confidence'   => $json['confidence'] ?? null,
+                ]);
+
+                return $json;
+
+            } catch (\Throwable $e) {
+                Log::warning("Claude model {$currentModel} failed: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        Log::error('Claude API failed across all models');
+        return [];
     }
 
     /**
