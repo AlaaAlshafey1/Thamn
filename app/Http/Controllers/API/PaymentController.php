@@ -56,8 +56,9 @@ class PaymentController extends Controller
             $packagePrice = (float) $rateTypeAnswer->option->price;
 
             // نضيف رسوم الصورة (5 ريال) لو العميل طلب توليد صورة بالذكاء الاصطناعي (create_image_ai) أو مفيش صورة مرفوعة
-            $hasNoImages = $order->files->where('type', 'image')->count() === 0;
+            $hasNoImages = $order->files->where('type', 'image')->filter(fn($f) => !str_starts_with($f->file_name, 'ai_generated_'))->count() === 0;
             if ($order->create_image_ai || $hasNoImages) {
+                $order->update(['create_image_ai' => true]);
                 $packagePrice += (float) env('IMAGE_GENERATION_FEE', 5);
             }
         }
@@ -202,7 +203,8 @@ class PaymentController extends Controller
         $rateTypeAnswer  = $order->details()->whereHas('question', function ($q) { $q->where('type', 'rateTypeSelection'); })->first();
         $evaluationType  = $rateTypeAnswer?->option?->badge ?? $rateTypeAnswer?->value;
 
-        if ($evaluationType !== 'ai' && $order->files->where('type', 'image')->count() === 0) {
+        $hasNoRealImages = $order->files->where('type', 'image')->filter(fn($f) => !str_starts_with($f->file_name, 'ai_generated_'))->count() === 0;
+        if ($evaluationType !== 'ai' && ($order->create_image_ai || $hasNoRealImages)) {
             $this->generateAutoImage($order);
         }
 
@@ -459,12 +461,14 @@ class PaymentController extends Controller
             $evaluationType = $rateTypeAnswer?->option?->badge
                 ?? $rateTypeAnswer?->value;
 
-            // توليد صورة بالذكاء الاصطناعي للطلبات غير الـ AI إذا طلب العميل صورة أو لم يرفق صوراً
-            // ملاحظة: طلبات الـ AI يتم توليد الصورة لها داخل runAiEvaluation تلقائياً بناءً على image_prompt التقييم لمنع التكرار
-            $hasNoImages = $order->files->where('type', 'image')->count() === 0;
+            // توليد صورة بالذكاء الاصطناعي للطلبات غير الـ AI إذا طلب العميل صورة أو لم يرفق صوراً حقيقية
+            $hasNoImages = $order->files->where('type', 'image')->filter(fn($f) => !str_starts_with($f->file_name, 'ai_generated_'))->count() === 0;
+            if ($order->create_image_ai || $hasNoImages) {
+                $order->update(['create_image_ai' => true]);
+            }
             if ($evaluationType !== 'ai' && ($order->create_image_ai || $hasNoImages)) {
                 try {
-                    app(ThamnEvaluationService::class)->generateVirtualImageForOrder($order);
+                    app(ThamnEvaluationService::class)->generateVirtualImageForOrder($order, null, true);
                 } catch (\Throwable $e) {
                     Log::error('[Moyasar] AI image generation failed: ' . $e->getMessage());
                 }

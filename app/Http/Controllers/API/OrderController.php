@@ -1117,6 +1117,12 @@ class OrderController extends Controller
             ? ($lang === 'ar' ? "تمت إضافة {$imageFee} ريال مقابل توليد صورة افتراضية للسلعة بالذكاء الاصطناعي" : "Added {$imageFee} SAR for AI virtual product image generation")
             : null;
 
+        $prices['image_generation_fee'] = $imageFee;
+        $prices['image_generation_reason'] = $imageFeeReason;
+        $prices['image_fee_reason'] = $imageFeeReason;
+        $prices['create_image_ai'] = $isAiImageRequested;
+        $prices['has_ai_image'] = $hasAiImage;
+
         /* ===================== RESPONSE ===================== */
         return response()->json([
             'id' => $order->id,
@@ -1815,6 +1821,7 @@ class OrderController extends Controller
             $reasonMentionsImage = str_contains(mb_strtolower($finalReason), 'صورة') || str_contains(mb_strtolower($finalReason), 'صوره') || str_contains(mb_strtolower($finalReason), 'image') || str_contains(mb_strtolower($finalReason), 'photo');
 
             if ($order->create_image_ai || $hasAiImage || $hasNoUserImages || $reasonMentionsImage) {
+                $order->update(['create_image_ai' => true]);
                 app(\App\Services\ThamnEvaluationService::class)->generateVirtualImageForOrder($order, null, true);
                 $order->refresh();
             }
@@ -2229,10 +2236,24 @@ class OrderController extends Controller
 
         $order = Order::findOrFail($orderId);
 
-        // 1. قراءة خيار توليد الصورة بالذكاء الاصطناعي من الطلب (إذا أرسله العميل في الـ resend)
+        // 1. قراءة خيار توليد الصورة بالذكاء الاصطناعي من الطلب وحساب الصور الحقيقية المرفوعة
+        $hasNoImages = $order->files->where('type', 'image')->filter(fn($f) => !str_starts_with($f->file_name, 'ai_generated_'))->count() === 0;
         $createImageAi = $request->has('create_image_ai')
             ? ($request->boolean('create_image_ai') || $request->input('create_image_ai') == 1 || $request->input('create_image_ai') === 'true')
-            : (bool) $order->create_image_ai;
+            : (bool) ($order->create_image_ai || $hasNoImages);
+
+        if ($hasNoImages) {
+            $createImageAi = true;
+        }
+
+        // إذا كان الطلب يعتمد على صورة AI، نحذف الصورة السابقة ليتولى النظام توليد صورة محدثة ومطابقة بعد الدفع
+        if ($createImageAi) {
+            $oldAiFiles = $order->files()->where('type', 'image')->where('file_name', 'like', 'ai_generated_%')->get();
+            foreach ($oldAiFiles as $oldFile) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldFile->file_path);
+                $oldFile->delete();
+            }
+        }
 
         // 2. تحديد نوع التقييم (AI أو Expert أو Best)
         $rateTypeAnswer = $order->details()
@@ -2275,7 +2296,6 @@ class OrderController extends Controller
         } elseif ($order->total_price > 0) {
             $totalPrice = (float) $order->total_price;
         }
-        $hasNoImages = $order->files->where('type', 'image')->count() === 0;
         if ($createImageAi || $hasNoImages) {
             $totalPrice += (float) env('IMAGE_GENERATION_FEE', 5);
         }

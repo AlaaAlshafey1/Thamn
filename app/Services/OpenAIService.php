@@ -124,28 +124,26 @@ class OpenAIService
      */
     public function generateImage(string $prompt, string $size = '1024x1024'): ?string
     {
-        $preferredModel = config('services.openai.image_model') ?: env('OPENAI_IMAGE_MODEL', 'chatgpt-image-latest');
-        if (empty($preferredModel) || $preferredModel === 'dall-e-3') {
-            $preferredModel = 'chatgpt-image-latest';
-        }
+        $preferredModel = config('services.openai.image_model') ?: env('OPENAI_IMAGE_MODEL', 'dall-e-3');
 
         $models = array_values(array_unique(array_filter([
             $preferredModel,
-            'chatgpt-image-latest',
-            'gpt-image-1',
-            'gpt-image-2',
             'dall-e-3',
+            'dall-e-2',
         ])));
 
         foreach ($models as $model) {
             try {
                 $payload = [
-                    'model'  => $model,
-                    'prompt' => $prompt,
-                    'n'      => 1,
+                    'model'           => $model,
+                    'prompt'          => $prompt,
+                    'n'               => 1,
+                    'size'            => $size,
+                    'response_format' => 'b64_json',
                 ];
-                if (str_starts_with($model, 'dall-e')) {
-                    $payload['size'] = $size;
+
+                if ($model === 'dall-e-3') {
+                    $payload['quality'] = 'standard';
                 }
 
                 $res = $this->http->post($this->base . '/images/generations', [
@@ -154,18 +152,50 @@ class OpenAIService
                         'Content-Type'  => 'application/json',
                     ],
                     'json'    => $payload,
-                    'timeout' => 45,
+                    'timeout' => 60,
                 ]);
 
                 $json = json_decode((string) $res->getBody(), true);
 
-                if (isset($json['data'][0]['b64_json'])) {
+                if (!empty($json['data'][0]['b64_json'])) {
                     return 'data:image/png;base64,' . $json['data'][0]['b64_json'];
-                } elseif (isset($json['data'][0]['url'])) {
+                } elseif (!empty($json['data'][0]['url'])) {
                     return $json['data'][0]['url'];
                 }
             } catch (\Throwable $e) {
-                Log::warning("OpenAI Image Generation model {$model} failed: " . $e->getMessage());
+                Log::warning("OpenAI Image Generation model {$model} failed (b64_json): " . $e->getMessage());
+
+                // محاولة بديلة بدون response_format (لإرجاع URL مباشرة)
+                try {
+                    $fallbackPayload = [
+                        'model'  => $model,
+                        'prompt' => $prompt,
+                        'n'      => 1,
+                        'size'   => $size,
+                    ];
+                    if ($model === 'dall-e-3') {
+                        $fallbackPayload['quality'] = 'standard';
+                    }
+
+                    $res = $this->http->post($this->base . '/images/generations', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $this->key,
+                            'Content-Type'  => 'application/json',
+                        ],
+                        'json'    => $fallbackPayload,
+                        'timeout' => 60,
+                    ]);
+
+                    $json = json_decode((string) $res->getBody(), true);
+
+                    if (!empty($json['data'][0]['url'])) {
+                        return $json['data'][0]['url'];
+                    } elseif (!empty($json['data'][0]['b64_json'])) {
+                        return 'data:image/png;base64,' . $json['data'][0]['b64_json'];
+                    }
+                } catch (\Throwable $e2) {
+                    Log::warning("OpenAI Image Generation fallback for model {$model} failed: " . $e2->getMessage());
+                }
                 continue;
             }
         }

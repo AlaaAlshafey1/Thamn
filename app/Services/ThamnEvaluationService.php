@@ -71,6 +71,12 @@ class ThamnEvaluationService
             $order->update(['previous_price' => $resolvedPreviousPrice]);
         }
 
+        // ─── توثيق تاريخ الطلب وحصر البحث الزمني في يوم عمل الطلب وآخر 30 يوماً ───
+        $orderDate = $order->created_at ? $order->created_at->copy() : now();
+        $orderDateArabic = $orderDate->locale('ar')->translatedFormat('d F Y');
+        $orderDateIso = $orderDate->format('Y-m-d');
+        $thirtyDaysPriorIso = $orderDate->copy()->subDays(30)->format('Y-m-d');
+
         // ─── المنهجية المرجعية المعتمدة لكبرى المنصات السعودية ─────────────────
         $saudiMarketGuide = <<<SAUDI
 ━━━ المنهجية المرجعية لأسواق ومنصات المملكة العربية السعودية ━━━
@@ -87,10 +93,16 @@ class ThamnEvaluationService
    - خصم واضح ومحدد لأي صدمات أو رش بالبودي أو فحص دوري منتهي أو استهلاك زائد.
 4. الساعات والمقتنيات الثمينة (أسواق الذهب والساعات في الرياض وجدة، والمنصات المعتمدة):
    - التمييز الصارم بين الساعات السويسرية الفاخرة التي تحتفظ بقيمتها، وبين ساعات الموضة التي تفقد معظم قيمتها بعد الشراء.
+
+━━━ شرط إلزامي حاسم: حصر البحث في يوم عمل الطلب والصفقات المفلترة لآخر 30 يوماً ━━━
+• تاريخ عمل هذا الطلب المعتمد: {$orderDateArabic} (الموافق {$orderDateIso}).
+• قاعدة التصفية الزمنية الصارمة: استند حصراً ومباشرة إلى حركة التداول الفعلي وصفقات البيع المنجزة في كبرى المنصات السعودية المذكورة أعلاه المفلترة لآخر شهر فقط من تاريخ عمل الطلب (الفترة ما بين {$thirtyDaysPriorIso} و {$orderDateIso}).
+• استبعاد المعاملات القديمة: يُحظر نهائياً الاستناد إلى أي صفقات أو أسعار سابقة تعود لأكثر من شهر قبل تاريخ عمل الطلب. التقييم يجب أن يعكس متوسط صفقات "السوم الناجز" الحية المعاصرة لتاريخ الطلب.
+• مواكبة العصر والتطور التقني: السلعة المعروضة محددة الموديل بالمدخلات بدقة. واكب العصر في تقدير قيمتها السوقية ولا تخلط بينها وبين أجيال قديمة، واعتمد قيمتها كإصدار حديث معاصر في السوق السعودي.
 SAUDI;
 
         // ─── بناء الـ Prompt ────────────────────────────────────────────────────
-        $today = now()->locale('ar')->translatedFormat('d F Y');
+        $today = $orderDateArabic;
 
         $reEvaluationNote = $order->re_evaluation_count > 0
             ? "ملاحظة للنظام: هذا طلب إعادة تقييم رسمي بعد مراجعة العميل. راجع كافة المعطيات من جديد وأعط السعر الأدق والمنصف — دون ذكر ذلك نصاً في reasoning."
@@ -647,6 +659,9 @@ PROMPT;
     /**
      * Generate Virtual AI Image for an order if needed, requested via create_image_ai, or on objection
      */
+    /**
+     * Generate Virtual AI Image for an order if needed, requested via create_image_ai, or on objection
+     */
     public function generateVirtualImageForOrder(Order $order, ?string $imagePrompt = null, bool $forceRegenerate = false): ?OrderFiles
     {
         $order->refresh();
@@ -662,16 +677,17 @@ PROMPT;
         })->count() > 0;
 
         $wantsAiImage = (bool) ($order->create_image_ai || request('create_image_ai', false));
+        $hasObjection = !empty($order->objection_reason);
 
         // توليد/إعادة توليد الصورة إذا:
         // 1. تم الإجبار ($forceRegenerate)
         // 2. طلب العميل صورة بالذكاء الاصطناعي ($wantsAiImage)
         // 3. الطلب لا يحتوي على أي صور حقيقية من العميل (!$hasUserImages)
         // 4. الطلب كان يحتوي على صورة AI سابقة ويتم مراجعته ($hasExistingAiImage)
-        if ($forceRegenerate || !$hasUserImages || $wantsAiImage || $hasExistingAiImage) {
-            if (empty($imagePrompt)) {
-                $imagePrompt = $this->buildAccurateImagePrompt($order);
-            }
+        // 5. يوجد اعتراض نشط على الطلب ($hasObjection)
+        if ($forceRegenerate || !$hasUserImages || $wantsAiImage || $hasExistingAiImage || $hasObjection) {
+            // نعتمد دائماً على buildAccurateImagePrompt لضمان استخراج الموديل الصحيح وتطبيق المعايير العصرية
+            $accuratePrompt = $this->buildAccurateImagePrompt($order);
 
             // إذا كان هناك صور سابقة مولدة بالذكاء الاصطناعي لنفس الطلب، نحذفها لنضع الصورة الجديدة المحدثة
             $oldAiFiles = $order->files()->where('type', 'image')->where('file_name', 'like', 'ai_generated_%')->get();
@@ -680,9 +696,24 @@ PROMPT;
                 $oldFile->delete();
             }
 
+            // إذا كان هناك اعتراض صريح متعلق بالصورة (مثل خطأ في موديل الصورة) ولم يرفع العميل صوراً يدوية، نحذف الصورة القديمة الخاطئة
+            $reasonMentionsImage = $hasObjection && (
+                str_contains(mb_strtolower($order->objection_reason), 'صورة') ||
+                str_contains(mb_strtolower($order->objection_reason), 'صوره') ||
+                str_contains(mb_strtolower($order->objection_reason), 'image') ||
+                str_contains(mb_strtolower($order->objection_reason), 'photo')
+            );
+            if ($reasonMentionsImage && !$hasUserImages) {
+                $allImageFiles = $order->files()->where('type', 'image')->get();
+                foreach ($allImageFiles as $f) {
+                    Storage::disk('public')->delete($f->file_path);
+                    $f->delete();
+                }
+            }
+
             try {
-                Log::info("Generating virtual AI image for order #{$order->id} with prompt: {$imagePrompt}");
-                $imageUrl = app(ClaudeService::class)->generateImage($imagePrompt);
+                Log::info("Generating virtual AI image for order #{$order->id} with prompt: {$accuratePrompt}");
+                $imageUrl = app(ClaudeService::class)->generateImage($accuratePrompt);
                 if ($imageUrl) {
                     if (str_starts_with($imageUrl, 'data:image')) {
                         $parts = explode(',', $imageUrl);
@@ -704,6 +735,7 @@ PROMPT;
                             'type' => 'image',
                         ]);
 
+                        $order->update(['create_image_ai' => true]);
                         $order->load('files');
                         Log::info("Virtual image generated and attached to order #{$order->id}: {$path}");
 
@@ -726,10 +758,6 @@ PROMPT;
      */
     public function buildAccurateImagePrompt(Order $order, ?string $customPrompt = null): string
     {
-        if (!empty($customPrompt)) {
-            return $customPrompt;
-        }
-
         $order->loadMissing(['details.question', 'details.option', 'category']);
 
         $categoryAr = $order->category->name_ar ?? 'منتج';
@@ -739,23 +767,7 @@ PROMPT;
         $model = '';
         $color = '';
 
-        // استخراج الموديل من نص الاعتراض إن وجد (مثل اعتراض: ظهور صورة ايفون 13 وهو ايفون 17 برو)
-        $objectionText = $order->objection_reason ?? '';
-        if (preg_match('/(iphone\s*1[1-9]\s*(?:pro\s*max|pro|plus|mini)?)/i', $objectionText, $matches)) {
-            $model = $matches[1];
-        } elseif (preg_match('/(ايفون|آيفون)\s*([0-9]{1,2})\s*(برو\s*ماكس|برو|بلاس|ميني)?/u', $objectionText, $matches)) {
-            $num = $matches[2];
-            $tier = trim($matches[3] ?? '');
-            $tierEn = match ($tier) {
-                'برو ماكس' => 'Pro Max',
-                'برو' => 'Pro',
-                'بلاس', 'بلس' => 'Plus',
-                'ميني' => 'Mini',
-                default => ''
-            };
-            $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
-        }
-
+        // ─── 1. استخراج المعطيات الأساسية من إجابات ومدخلات الطلب أولاً ───
         foreach ($order->details as $d) {
             $qAr = mb_strtolower($d->question?->question_ar ?? '');
             $qEn = mb_strtolower($d->question?->question_en ?? '');
@@ -767,7 +779,7 @@ PROMPT;
                 continue;
             }
 
-            // فحص واستخراج الماركة
+            // استخراج الماركة
             if (empty($brand) && (
                 str_contains($qAr, 'ماركة') || str_contains($qAr, 'شركة') || str_contains($qAr, 'مصنعة') ||
                 str_contains($qEn, 'brand') || str_contains($qEn, 'make') || str_contains($qEn, 'manufacturer')
@@ -775,24 +787,28 @@ PROMPT;
                 $brand = $this->translateBrandToEnglish($val);
             }
 
-            // فحص واستخراج الموديل (إن لم يُستخرج من الاعتراض)
+            // استخراج الموديل
             if (empty($model) && (
                 str_contains($qAr, 'موديل') || str_contains($qAr, 'طراز') || str_contains($qAr, 'تعريف') ||
                 str_contains($qAr, 'نوع') || str_contains($qEn, 'model') || str_contains($qEn, 'type')
             )) {
-                if (preg_match('/(iphone\s*[0-9]{1,2}(?:\s*(?:pro\s*max|pro|plus|mini))?)/i', $val, $m)) {
-                    $model = $m[1];
-                } elseif (preg_match('/(ايفون|آيفون)\s*([0-9]{1,2})/u', $val, $m)) {
-                    $model = 'iPhone ' . $m[2];
-                    if (str_contains(mb_strtolower($val), 'برو ماكس')) $model .= ' Pro Max';
-                    elseif (str_contains(mb_strtolower($val), 'برو')) $model .= ' Pro';
-                    elseif (str_contains(mb_strtolower($val), 'بلس')) $model .= ' Plus';
+                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $val, $m)) {
+                    $num = $m[1];
+                    $tier = trim($m[2] ?? '');
+                    $tierEn = match (mb_strtolower($tier)) {
+                        'برو ماكس', 'pro max' => 'Pro Max',
+                        'برو', 'pro' => 'Pro',
+                        'بلاس', 'بلس', 'plus' => 'Plus',
+                        'ميني', 'mini' => 'Mini',
+                        default => ''
+                    };
+                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
                 } else {
                     $model = $val;
                 }
             }
 
-            // فحص واستخراج اللون
+            // استخراج اللون
             if (empty($color) && (
                 str_contains($qAr, 'لون') || str_contains($qAr, 'مادة') || str_contains($qAr, 'خامة') ||
                 str_contains($qEn, 'color') || str_contains($qEn, 'material')
@@ -801,24 +817,87 @@ PROMPT;
             }
         }
 
-        // فحص بديل لاستخراج الماركة إن لم تلتقط من الأسئلة
+        // فحص إضافي للموديل والماركة داخل نصوص المدخلات كاملة (Payload أو Details)
+        if (empty($model)) {
+            foreach ($order->details as $d) {
+                $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->option?->option_en ?: '') . ' ' . ($d->value ?: '');
+                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $txt, $m)) {
+                    $num = $m[1];
+                    $tier = trim($m[2] ?? '');
+                    $tierEn = match (mb_strtolower($tier)) {
+                        'برو ماكس', 'pro max' => 'Pro Max',
+                        'برو', 'pro' => 'Pro',
+                        'بلاس', 'بلس', 'plus' => 'Plus',
+                        'ميني', 'mini' => 'Mini',
+                        default => ''
+                    };
+                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                    $brand = 'Apple';
+                    break;
+                }
+            }
+        }
+
+        if (empty($model) && !empty($order->payload)) {
+            $payloadAnswers = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
+            if (is_array($payloadAnswers)) {
+                $payloadText = json_encode($payloadAnswers, JSON_UNESCAPED_UNICODE);
+                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $payloadText, $m)) {
+                    $num = $m[1];
+                    $tier = trim($m[2] ?? '');
+                    $tierEn = match (mb_strtolower($tier)) {
+                        'برو ماكس', 'pro max' => 'Pro Max',
+                        'برو', 'pro' => 'Pro',
+                        'بلاس', 'بلس', 'plus' => 'Plus',
+                        'ميني', 'mini' => 'Mini',
+                        default => ''
+                    };
+                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                    $brand = 'Apple';
+                }
+            }
+        }
+
+        // ─── 2. التحقق الذكي من نص الاعتراض: تصحيح الموديل إن ورد بالاعتراض ───
+        $objectionText = $order->objection_reason ?? '';
+        if (!empty($objectionText)) {
+            // استخراج الموديل الصحيح المقصود بعد عبارات مثل: (رغم إدخالي أنه / المدخلات / هو / الصحيح / السلعة هي)
+            if (preg_match('/(?:ادخال(?:ي)?|المدخلات|أنه|انه|هو|الصحيح|بدلا\s*من|بدلاً\s*من|وليس|السلعة\s*هي|الموديل\s*هو)\s*(?:في\s*المدخلات\s*انه\s*)?(?:جوال\s*)?(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $intentMatch)) {
+                $num = $intentMatch[1];
+                $tier = trim($intentMatch[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                $brand = 'Apple';
+            } elseif (preg_match_all('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $allMatches, PREG_SET_ORDER)) {
+                // إذا لم توجد عبارة صريحة ووجد أكثر من ذكر، فالذكر الأخير هو الموديل المقصود وليس المشكو منه
+                $lastMatch = end($allMatches);
+                $num = $lastMatch[1];
+                $tier = trim($lastMatch[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                $brand = 'Apple';
+            }
+        }
+
+        // فحص بديل لاستخراج الماركة إن لم تلتقط بعد
         if (empty($brand)) {
             foreach ($order->details as $d) {
                 $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->value ?: '');
                 $detected = $this->detectBrandFromText($txt);
                 if ($detected) {
                     $brand = $detected;
-                    break;
-                }
-            }
-        }
-
-        // فحص بديل للموديل
-        if (empty($model)) {
-            foreach ($order->details as $d) {
-                $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->value ?: '');
-                if (preg_match('/(iphone\s*[0-9]{1,2}(?:\s*(?:pro\s*max|pro|plus|mini))?)/i', $txt, $m)) {
-                    $model = $m[1];
                     break;
                 }
             }
@@ -847,18 +926,32 @@ PROMPT;
         $colorPhrase = $color ? "in {$color} finish" : "in sleek premium finish";
 
         if ($isPhone) {
-            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} flagship smartphone {$colorPhrase}. Showcasing the genuine modern device with ultra-thin bezels, dynamic screen, precision metal/titanium edges, and rear camera module, centered, pure clean seamless white background, professional studio lighting, product catalog photography, 8k resolution, crisp details, sharp focus, no distortion, no text, no watermark.";
+            $isModernIphone = str_contains(mb_strtolower($model), 'iphone') && (
+                preg_match('/iphone\s*(?:1[5-9]|[2-9][0-9])/i', $model) ||
+                str_contains(mb_strtolower($model), 'pro') ||
+                str_contains(mb_strtolower($model), 'plus')
+            );
+
+            $screenDescription = $isModernIphone
+                ? "contemporary front display with symmetric ultra-thin micro-bezels and modern pill-shaped Dynamic Island cut-out, strictly NO outdated display notch"
+                : "contemporary front display with modern slim bezels, vibrant screen";
+
+            $chassisDescription = $isModernIphone
+                ? "authentic brushed aerospace-grade titanium frame with elegant contoured ergonomic edges"
+                : "premium aerospace-grade frame with precision engineered edges";
+
+            return "A hyper-realistic commercial studio product photograph of authentic {$brand} {$model} flagship smartphone {$colorPhrase}. Presenting the standalone device with modern contemporary design, {$screenDescription}, {$chassisDescription}, modern triple-lens camera module with anti-reflective sapphire rings, centered on a pure clean seamless studio white background, professional product catalog lighting, 8k resolution, crisp details, sharp focus, no distortion, no text, no watermark, strictly NO outdated notches, NO retro phone traits, NO packaging box, NO charging cables, NO power adapter, NO Apple stickers, NO extra accessories in frame.";
         }
 
         if ($isWatch) {
-            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} luxury watch {$colorPhrase}. Centered composition on pure clean seamless white background, elegant professional studio lighting, horology catalog photography, 8k resolution, sharp focus, crisp details, no watermark.";
+            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} luxury watch {$colorPhrase}. Centered composition on pure clean seamless white background, elegant professional studio lighting, horology catalog photography, 8k resolution, sharp focus, crisp details, strictly standalone watch without box or cables, no watermark.";
         }
 
         if ($isCar) {
             return "A realistic high-resolution commercial automotive studio photograph of authentic {$brand} {$model} {$colorPhrase}. Pure white showroom studio background, professional studio lighting, sharp crisp details, 8k, no watermark.";
         }
 
-        return "A realistic high-resolution commercial studio product photograph of authentic {$brand} {$model} ({$categoryEn}) {$colorPhrase}. Centered on pure clean white background, professional commercial studio lighting, 8k resolution, sharp focus, photorealistic catalog photo, no watermark.";
+        return "A realistic high-resolution commercial studio product photograph of authentic {$brand} {$model} ({$categoryEn}) {$colorPhrase}. Centered on pure clean white background, professional commercial studio lighting, 8k resolution, sharp focus, photorealistic catalog photo, standalone item without packaging or cables, no watermark.";
     }
 
     private function translateBrandToEnglish(string $brand): string
