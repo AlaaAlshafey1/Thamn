@@ -689,26 +689,11 @@ PROMPT;
             // نعتمد دائماً على buildAccurateImagePrompt لضمان استخراج الموديل الصحيح وتطبيق المعايير العصرية
             $accuratePrompt = $this->buildAccurateImagePrompt($order);
 
-            // إذا كان هناك صور سابقة مولدة بالذكاء الاصطناعي لنفس الطلب، نحذفها لنضع الصورة الجديدة المحدثة
-            $oldAiFiles = $order->files()->where('type', 'image')->where('file_name', 'like', 'ai_generated_%')->get();
-            foreach ($oldAiFiles as $oldFile) {
+            // مسح كافة الصور السابقة للطلب بالكامل لضمان بقاء صورة افتراضية واحدة فقط مطابقة ومنع تكرار الصور القديمة التي تحتوي على كراتين وأسلاك
+            $allPreviousImages = $order->files()->where('type', 'image')->get();
+            foreach ($allPreviousImages as $oldFile) {
                 Storage::disk('public')->delete($oldFile->file_path);
                 $oldFile->delete();
-            }
-
-            // إذا كان هناك اعتراض صريح متعلق بالصورة (مثل خطأ في موديل الصورة) ولم يرفع العميل صوراً يدوية، نحذف الصورة القديمة الخاطئة
-            $reasonMentionsImage = $hasObjection && (
-                str_contains(mb_strtolower($order->objection_reason), 'صورة') ||
-                str_contains(mb_strtolower($order->objection_reason), 'صوره') ||
-                str_contains(mb_strtolower($order->objection_reason), 'image') ||
-                str_contains(mb_strtolower($order->objection_reason), 'photo')
-            );
-            if ($reasonMentionsImage && !$hasUserImages) {
-                $allImageFiles = $order->files()->where('type', 'image')->get();
-                foreach ($allImageFiles as $f) {
-                    Storage::disk('public')->delete($f->file_path);
-                    $f->delete();
-                }
             }
 
             try {
@@ -955,7 +940,7 @@ PROMPT;
             $isModernIphone = str_contains(mb_strtolower($model), 'iphone');
 
             if ($isModernIphone) {
-                return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. The device is shown in a professional dual-angle studio showcase: one device angled facing front showing the vibrant edge-to-edge screen with ultra-thin bezels and the distinctive centered pill-shaped Dynamic Island cutout at the top, and another device showing the rear view with the premium matte {$colorName} frosted glass back, brushed dark metallic contoured edges, and the signature modern triple-lens camera bump with large sapphire glass lenses in the top-left. The back and frame of the phone MUST be richly colored in {$colorName} (dark navy blue). Centered composition on a pure, seamless studio white background (#FFFFFF) with soft natural contact shadows beneath the phones. Crisp sharp details, commercial product lighting, 8k resolution, photorealistic. Strictly NO white or silver back, strictly NO packaging boxes, NO cables, NO chargers, NO outdated notches, NO text, NO watermarks.";
+                return "A high-end commercial studio product catalog photograph of the Apple {$model} flagship smartphone in rich {$colorName} finish. Dual-view product showcase on a pure seamless studio white background (#FFFFFF): Left device angled showing the edge-to-edge screen with ultra-thin uniform symmetric bezels, displaying an elegant iOS screen with the iconic wide horizontal black pill-shaped Dynamic Island capsule centered at the very top (strictly an elongated pill capsule, NOT a circular single-dot hole, NOT a notch). Right device angled showing the rear view with the premium frosted matte {$colorName} glass back, iconic glossy Apple logo centered, and the signature elevated rounded-square camera bump containing exactly THREE large circular camera lenses arranged in a distinct triangle formation (two stacked vertically on the left, one on the right, with sapphire lens rings and LiDAR sensor). Flat contoured aerospace-grade titanium frame in matching {$colorName}. Clean studio lighting with soft natural drop shadows beneath the devices, 8k resolution, photorealistic. Strictly NO circular dot punch-holes, strictly NO dual-camera layouts, strictly NO Android designs, strictly NO white or silver back, strictly NO packaging boxes, NO cables, NO adapters, NO text, NO watermarks.";
             }
 
             return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. Presenting the standalone device with modern contemporary design, ultra-thin bezels, vibrant display, premium {$colorName} back, centered composition on a pure clean seamless studio white background (#FFFFFF), professional studio catalog lighting, 8k resolution, sharp focus, crisp details. Strictly NO packaging boxes, NO cables, NO chargers, NO text, NO watermarks.";
