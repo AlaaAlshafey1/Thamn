@@ -1106,6 +1106,17 @@ class OrderController extends Controller
             ];
         })->values();
 
+        /* ===================== AI IMAGE & EXTRA FEE ===================== */
+        $hasAiImage = $order->files->where('type', 'image')->filter(fn($f) => str_starts_with($f->file_name, 'ai_generated_'))->isNotEmpty();
+        $isAiImageRequested = (bool) ($order->create_image_ai || $hasAiImage);
+        $imageFee = $isAiImageRequested ? (float) env('IMAGE_GENERATION_FEE', 5) : 0.0;
+        $imageFeeReason = $isAiImageRequested
+            ? ($lang === 'ar' ? 'رسوم خدمة توليد صورة افتراضية مطابقة للسلعة بواسطة الذكاء الاصطناعي' : 'Fee for generating virtual product image via AI')
+            : null;
+        $imageFeeMessage = $isAiImageRequested
+            ? ($lang === 'ar' ? "تمت إضافة {$imageFee} ريال مقابل توليد صورة افتراضية للسلعة بالذكاء الاصطناعي" : "Added {$imageFee} SAR for AI virtual product image generation")
+            : null;
+
         /* ===================== RESPONSE ===================== */
         return response()->json([
             'id' => $order->id,
@@ -1137,7 +1148,16 @@ class OrderController extends Controller
             're_evaluation_terms' => 'يتاح لك الاحتجاج وإعادة التثمين مرة واحدة فقط. الغاية من التثمين ليس الحكم النهائي للسلعة في البيع والشراء بل هو تصور تقديري فقط بناءً على المدخلات، ولا يبنى عليه أحكام بيع السلعة.',
             'objection_reasons' => \App\Models\ObjectionReason::getFormattedData($lang),
             'objection_reason' => $order->objection_reason,
+            'objection_admin_reply' => $order->objection_admin_reply,
+            'objection_replied_at' => $order->objection_replied_at,
             'objected_at' => $order->objected_at,
+            // ─── بيانات ورسوم صورة الذكاء الاصطناعي ───
+            'create_image_ai' => $isAiImageRequested,
+            'has_ai_image' => $hasAiImage,
+            'image_generation_fee' => $imageFee,
+            'image_generation_reason' => $imageFeeReason,
+            'image_generation_message' => $imageFeeMessage,
+            'image_fee_reason' => $imageFeeReason,
             // مسمى / عنوان رأي الخبير المعتمد المخصص لكل فئة
             'expert_opinion_label' => $expertOpinionLabel,
             'expert_opinion_label_ar' => $order->category?->expert_opinion_label_ar ?: 'رأي الخبير المعتمد',
@@ -1146,7 +1166,6 @@ class OrderController extends Controller
             'expert_opinion_subtitle_ar' => $order->category?->expert_opinion_subtitle_ar ?: $defaultSubtitleAr,
             'expert_opinion_subtitle_en' => $order->category?->expert_opinion_subtitle_en ?: $defaultSubtitleEn,
             // رقم عضوية الخبير الذي اعتمد التثمين أو أكّد الـ AI
-            'create_image_ai' => (bool) $order->create_image_ai,
             'expert_membership_number' => $order->expert?->membership_number ?? null,
             'ai_valuation_ratings' => $aiValuationRatings,
         ]);
@@ -1789,6 +1808,16 @@ class OrderController extends Controller
             // تشغيل الـ AI مع تمرير السعر السابق وسبب الاعتراض لإعادة التقييم الذكي المنصف
             app(\App\Services\ThamnEvaluationService::class)->runAiEvaluation($order, $previousPrice);
             $order->refresh();
+
+            // إعادة توليد الصورة الافتراضية إذا كان الطلب يعتمد على صورة AI أو كان الاعتراض متعلقاً بالصورة
+            $hasAiImage = $order->files->where('type', 'image')->filter(fn($f) => str_starts_with($f->file_name, 'ai_generated_'))->isNotEmpty();
+            $hasNoUserImages = $order->files->where('type', 'image')->filter(fn($f) => !str_starts_with($f->file_name, 'ai_generated_'))->isEmpty();
+            $reasonMentionsImage = str_contains(mb_strtolower($finalReason), 'صورة') || str_contains(mb_strtolower($finalReason), 'صوره') || str_contains(mb_strtolower($finalReason), 'image') || str_contains(mb_strtolower($finalReason), 'photo');
+
+            if ($order->create_image_ai || $hasAiImage || $hasNoUserImages || $reasonMentionsImage) {
+                app(\App\Services\ThamnEvaluationService::class)->generateVirtualImageForOrder($order, null, true);
+                $order->refresh();
+            }
 
             $newPrice = $order->ai_price ?? $order->total_price;
             $newPriceFormatted = number_format((float) $newPrice, 0);

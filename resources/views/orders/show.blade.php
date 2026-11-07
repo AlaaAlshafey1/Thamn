@@ -1805,6 +1805,63 @@
                     </div>
                 </div>
 
+                @if(!empty($order->objection_reason) || $order->objected_at)
+                    <!-- Top Objection Notification Banner (Visible across all steps) -->
+                    <div class="mb-4 shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 18px 22px; text-align: right; direction: rtl;">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom" style="border-color: #fde68a !important;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="width: 42px; height: 42px; border-radius: 12px; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
+                                    <i class="bx bx-error-alt"></i>
+                                </span>
+                                <div>
+                                    <h5 class="mb-0 font-weight-bold" style="color: #92400e; font-size: 1.15rem;">تنبيه هام: هذا الطلب عليه اعتراض/احتجاج رسمي من العميل</h5>
+                                    <small style="color: #b45309; font-weight: 600;">يرجى دراسة سبب الاعتراض بالأسفل، ويمكنك مراجعة السعر أو تعديله، أو تثبيت السعر السابق وإغلاق الطلب، وتوليد صورة جديدة</small>
+                                </div>
+                            </div>
+                            @if($order->objected_at)
+                                <span class="badge" style="background: #fde68a; color: #78350f; font-weight: 800; padding: 7px 14px; border-radius: 20px; font-size: 0.85rem;">
+                                    <i class="bx bx-time align-middle"></i> {{ $order->objected_at->format('Y-m-d H:i') }} ({{ $order->objected_at->diffForHumans() }})
+                                </span>
+                            @endif
+                        </div>
+
+                        <div class="row g-3 align-items-stretch">
+                            <div class="col-md-7">
+                                <div style="background: #ffffff; border-radius: 12px; padding: 14px 16px; border: 1.5px solid #fcd34d; height: 100%;">
+                                    <div style="font-size: 0.82rem; font-weight: 800; color: #92400e; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="bx bx-message-detail" style="font-size: 1.1rem;"></i>
+                                        <span>سبب الاعتراض وملاحظة العميل ({{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'العميل' }}):</span>
+                                    </div>
+                                    <div style="font-size: 1.05rem; font-weight: 900; color: #1e293b; line-height: 1.6; background: #fffdf5; padding: 10px 12px; border-radius: 8px; border: 1px dashed #f59e0b;">
+                                        {{ $order->objection_reason }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="d-flex flex-column justify-content-between gap-2" style="height: 100%;">
+                                    <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: #ffffff; border: 1.5px solid #fca5a5;">
+                                        <span style="font-size: 0.88rem; font-weight: 800; color: #991b1b;">السعر السابق المعترض عليه:</span>
+                                        <span style="font-size: 1.15rem; font-weight: 900; color: #dc2626;">{{ number_format($order->previous_price ?: ($order->total_price ?: 0), 0) }} ر.س</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: #ffffff; border: 1.5px solid #86efac;">
+                                        <span style="font-size: 0.88rem; font-weight: 800; color: #166534;">السعر الحالي / المعدل:</span>
+                                        <span style="font-size: 1.15rem; font-weight: 900; color: #16a34a;">{{ number_format($order->total_price ?: ($order->ai_price ?: 0), 0) }} ر.س</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(!empty($order->objection_admin_reply))
+                            <div class="mt-3 p-3 rounded" style="background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46;">
+                                <div style="font-weight: 800; font-size: 0.9rem; margin-bottom: 4px;">
+                                    <i class="bx bx-check-double"></i> رد الخبير / الإدارة المسجل:
+                                </div>
+                                <div style="font-size: 0.95rem; font-weight: 600; line-height: 1.6;">{{ $order->objection_admin_reply }}</div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Stepper with numbered stage circles ١ ٢ ٣ -->
                 <div class="ex-stepper">
                     <div class="step-item" onclick="switchTab('specs', this)" id="step-specs">
@@ -1948,11 +2005,42 @@
                     </div>
                     @php
                         $expertImages = $order->files->where('type', 'image')->values();
+                        $hasVirtualImage = $expertImages->contains(fn($f) => str_starts_with($f->file_name, 'ai_generated_'));
                     @endphp
+
+                    @if($hasVirtualImage || $order->create_image_ai || $expertImages->isEmpty() || !empty($order->objection_reason))
+                        <div class="mb-4 p-3 rounded d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1.5px solid #86efac;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="width: 38px; height: 38px; border-radius: 10px; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                    <i class="bx bx-bot"></i>
+                                </span>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.95rem; color: #166534;">
+                                        صورة افتراضية مطابقة بالذكاء الاصطناعي 🎨
+                                    </div>
+                                    <small style="color: #15803d; font-weight: 600;">
+                                        يمكنك إعادة توليد صورة السلعة بالمواصفات الدقيقة للموديل واللون في أي وقت
+                                    </small>
+                                </div>
+                            </div>
+                            <form action="{{ route('orders.generateImage', $order->id) }}" method="POST" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerHTML = '<i class=\'bx bx-loader-alt bx-spin\'></i> جاري التوليد...';">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success px-3 py-2" style="border-radius: 10px; font-weight: 800; background: #16a34a; border: none; box-shadow: 0 2px 8px rgba(22,163,74,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="bx bx-refresh" style="font-size: 1.15rem;"></i> إعادة توليد الصورة بالذكاء الاصطناعي 🔄
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;">
                         @forelse($expertImages as $imgIndex => $image)
-                            <div class="expert-gallery-thumb" onclick="openAlbumLightbox({{ $imgIndex }})" role="button" tabindex="0" title="انقر لفتح الألبوم المكبر">
+                            <div class="expert-gallery-thumb position-relative" onclick="openAlbumLightbox({{ $imgIndex }})" role="button" tabindex="0" title="انقر لفتح الألبوم المكبر">
                                 <img src="{{ asset('storage/' . $image->file_path) }}" alt="صورة السلعة {{ $imgIndex + 1 }}" style="width:100%;height:100%;object-fit:cover;">
+                                @if(str_starts_with($image->file_name, 'ai_generated_'))
+                                    <span class="badge position-absolute" style="top: 8px; right: 8px; background: rgba(22, 101, 52, 0.92); color: #fff; font-size: 0.72rem; font-weight: 800; border-radius: 6px; padding: 4px 8px; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                        <i class="bx bx-bot"></i> صورة AI
+                                    </span>
+                                @endif
                                 <div class="thumb-hover-overlay">
                                     <span><i class="bx bx-zoom-in"></i> تكبير الصورة</span>
                                 </div>
@@ -1980,7 +2068,12 @@
                 <!-- TAB: Evaluate -->
                 <div class="ex-main-card expert-tab-panel" id="tab-evaluate">
 
-                    @if(in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated')
+                    @php
+                        $hasActiveObjection = !empty($order->objection_reason);
+                        $isOrderEvaluated = in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated' && !$hasActiveObjection;
+                    @endphp
+
+                    @if($isOrderEvaluated)
                         <!-- Evaluated State -->
                         <div class="success-badge">
                             <i class='bx bxs-badge-check'
@@ -2215,13 +2308,13 @@
                                         </div>
 
                                         <!-- Hidden input to store chosen rating ID -->
-                                        <input type="hidden" name="ai_valuation_rating_id" id="aiRatingSelectedInput" value="{{ old('ai_valuation_rating_id') }}" required>
+                                        <input type="hidden" name="ai_valuation_rating_id" id="aiRatingSelectedInput" value="{{ old('ai_valuation_rating_id', $order->ai_valuation_rating_id) }}" {{ $hasActiveObjection ? '' : 'required' }}>
 
                                         <!-- Interactive Choice Cards with Active Highlight & Check Badge -->
                                         <div class="d-flex flex-wrap justify-content-center" style="gap:14px; margin-bottom:12px;">
                                             @foreach($aiRatings as $rating)
                                                 @php
-                                                    $isCardActive = old('ai_valuation_rating_id') == $rating->id;
+                                                    $isCardActive = old('ai_valuation_rating_id', $order->ai_valuation_rating_id) == $rating->id;
                                                 @endphp
                                                 <div class="rating-choice-card {{ $isCardActive ? 'active' : '' }}" 
                                                      onclick="selectExpertRating({{ $rating->id }}, '{{ addslashes($rating->name_ar) }}', this)"
@@ -2262,10 +2355,33 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Hide prices since we use AI prices -->
-                                <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? $order->total_price ?? 0 }}">
-                                <input type="hidden" name="expert_min_price" value="{{ $order->ai_min_price ?? 0 }}">
-                                <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
+                                @if($hasActiveObjection)
+                                    <!-- Editable Prices for Expert when reviewing Objection -->
+                                    <div class="row text-right mb-4" style="direction:rtl;">
+                                        <div class="col-md-12 mb-2">
+                                            <label class="font-weight-bold text-dark" style="font-size:0.95rem;">
+                                                <i class="bx bx-edit text-primary"></i> مراجعة وتعديل السعر المعتمد بواسطة الخبير (اختياري - يمكنك تركها كما هي لاعتماد مقترح الذكاء الاصطناعي):
+                                            </label>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold small text-muted">الحد الأدنى</label>
+                                            <input type="number" name="expert_min_price" class="form-control" style="border-radius:12px; padding:12px; border:1px solid #cbd5e1;" value="{{ old('expert_min_price', $order->expert_min_price ?? $order->ai_min_price ?? round(($order->total_price ?: 5000) * 0.93)) }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold small text-success">السعر المعتمد <span class="text-danger">*</span></label>
+                                            <input type="number" name="expert_price" class="form-control" style="border-radius:12px; padding:12px; border:2px solid #009688; font-weight:bold; font-size:1.15rem; color:#009688;" value="{{ old('expert_price', $order->expert_price ?? $order->ai_price ?? $order->total_price) }}" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="font-weight-bold small text-muted">الحد الأعلى</label>
+                                            <input type="number" name="expert_max_price" class="form-control" style="border-radius:12px; padding:12px; border:1px solid #cbd5e1;" value="{{ old('expert_max_price', $order->expert_max_price ?? $order->ai_max_price ?? round(($order->total_price ?: 5000) * 1.07)) }}">
+                                        </div>
+                                    </div>
+                                @else
+                                    <!-- Hide prices since we use AI prices -->
+                                    <input type="hidden" name="expert_price" value="{{ $order->ai_price ?? $order->total_price ?? 0 }}">
+                                    <input type="hidden" name="expert_min_price" value="{{ $order->ai_min_price ?? 0 }}">
+                                    <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
+                                @endif
                             @elseif($order->evaluation_type === 'expert')
                                 <!-- باقة الخبير: الخبير يغير السعر فقط بدون كتابة كلام -->
                                 <div class="row text-right mb-4" style="direction:rtl;">
@@ -2340,21 +2456,47 @@
                                 <input type="hidden" name="expert_max_price" value="{{ $order->ai_max_price ?? 0 }}">
                             @endif
 
-                            <input type="hidden" name="expert_reasoning"
-                                value="{{ $order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.' }}">
+                            @if($hasActiveObjection)
+                                <!-- حقل تعليق ورد الخبير على الاعتراض -->
+                                <div class="mb-4 text-right" style="direction: rtl;">
+                                    <label class="font-weight-bold" style="font-size: 0.95rem; color: #1e293b;">
+                                        <i class="bx bx-message-rounded-edit text-primary"></i> توضيح / رد الخبير للعميل على الاعتراض:
+                                    </label>
+                                    <textarea name="objection_reply" rows="3" class="form-control" style="border-radius: 12px; padding: 12px; border: 1.5px solid #cbd5e1; font-size: 0.95rem;" placeholder="اكتب هنا توضيحك أو تعليقك للعميل لشرح أسباب التقييم أو سبب تعديل/تثبيت السعر...">{{ old('objection_reply', $order->objection_admin_reply) }}</textarea>
+                                    <small class="text-muted d-block mt-1">يصل هذا التوضيح مباشرة إلى العميل عبر واتساب والبريد والتطبيق مع التقرير المحدث.</small>
+                                </div>
 
-                            <!-- زر اعتماد التقييم (مطابق للصورة 4 تماماً) -->
-                            <button type="submit" id="btnEvaluateSubmit" class="btn btn-evaluate-submit">
-                                <span class="btn-orange-accent"></span>
-                                <span class="btn-evaluate-text" id="btnEvaluateText">اعتماد التقييم</span>
-                                <span class="btn-check-badge" id="btnCheckBadge">
-                                    <span class="badge-glow-ring">
-                                        <span class="badge-inner-circle">
-                                            <i class="bx bx-check" id="btnEvaluateIcon"></i>
+                                <!-- أزرار اتخاذ القرار الخاصة بالاعتراض -->
+                                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center mt-4">
+                                    <!-- 1. اعتماد التعديل والسعر الجديد -->
+                                    <button type="submit" name="objection_action" value="approve_update" class="btn btn-success px-4 py-3" style="border-radius: 12px; font-weight: 800; font-size: 1rem; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25); display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; width: 100%;">
+                                        <i class="bx bx-check-circle fs-5"></i>
+                                        <span>اعتماد التعديل والسعر الجديد وإبلاغ العميل</span>
+                                    </button>
+
+                                    <!-- 2. تثبيت السعر السابق وإغلاق الاعتراض -->
+                                    <button type="submit" name="objection_action" value="keep_previous" class="btn btn-outline-danger px-4 py-3" style="border-radius: 12px; font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; border-width: 2px; width: 100%;">
+                                        <i class="bx bx-x-circle fs-5"></i>
+                                        <span>عدم اتخاذ إجراء (تثبيت السعر السابق {{ number_format($order->previous_price ?: ($order->total_price ?: 0), 0) }} ر.س) وإغلاق الاعتراض</span>
+                                    </button>
+                                </div>
+                            @else
+                                <input type="hidden" name="expert_reasoning"
+                                    value="{{ $order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.' }}">
+
+                                <!-- زر اعتماد التقييم (مطابق للصورة 4 تماماً) -->
+                                <button type="submit" id="btnEvaluateSubmit" class="btn btn-evaluate-submit">
+                                    <span class="btn-orange-accent"></span>
+                                    <span class="btn-evaluate-text" id="btnEvaluateText">اعتماد التقييم</span>
+                                    <span class="btn-check-badge" id="btnCheckBadge">
+                                        <span class="badge-glow-ring">
+                                            <span class="badge-inner-circle">
+                                                <i class="bx bx-check" id="btnEvaluateIcon"></i>
+                                            </span>
                                         </span>
                                     </span>
-                                </span>
-                            </button>
+                                </button>
+                            @endif
                         </form>
                     @endif
 
@@ -3095,10 +3237,12 @@
         // ─── Evaluation Form Validation & Submitting Animation ───────────
         document.addEventListener('DOMContentLoaded', function () {
             @php
-                $isOrderEvaluated = in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated';
+                $hasActiveObjection = !empty($order->objection_reason);
+                $isOrderEvaluated = in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated' && !$hasActiveObjection;
             @endphp
             var isEvaluated = {{ $isOrderEvaluated ? 'true' : 'false' }};
-            if (isEvaluated) {
+            var hasActiveObjection = {{ $hasActiveObjection ? 'true' : 'false' }};
+            if (hasActiveObjection || isEvaluated) {
                 var evalStep = document.getElementById('step-evaluate');
                 if (evalStep) {
                     switchTab('evaluate', evalStep);
@@ -3113,9 +3257,12 @@
             var evalForm = document.getElementById('expertEvaluationForm');
             if (evalForm) {
                 evalForm.addEventListener('submit', function(e) {
+                    var submitterBtn = e.submitter || document.activeElement;
+                    var isKeepPrevious = submitterBtn && submitterBtn.value === 'keep_previous';
+
                     var hiddenInput = document.getElementById('aiRatingSelectedInput');
                     var ratingCards = document.querySelectorAll('.rating-choice-card');
-                    if (hiddenInput && ratingCards.length > 0 && !hiddenInput.value) {
+                    if (!isKeepPrevious && hiddenInput && ratingCards.length > 0 && !hiddenInput.value) {
                         e.preventDefault();
                         var feedbackEl = document.getElementById('selectedRatingFeedback');
                         if (feedbackEl) {

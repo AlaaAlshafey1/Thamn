@@ -160,23 +160,64 @@ class OrderController extends Controller
             abort(403, 'غير مسموح لك بهذا الإجراء');
         }
 
-        // منع الخبير من تقييم الأوردر مرة أخرى إذا تم تقييمه بالفعل وليس في وضع إعادة التقييم
-        if (in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated') {
+        $isObjectionReview = !empty($order->objection_reason) || $request->filled('objection_action');
+        $objectionAction = $request->input('objection_action', 'approve_update');
+        $objectionReply = $request->input('objection_reply') ?: $request->input('expert_reasoning');
+
+        // منع الخبير من تقييم الأوردر مرة أخرى إذا تم تقييمه بالفعل وليس في وضع إعادة التقييم أو مراجعة اعتراض
+        if (!$isObjectionReview && in_array($order->status, ['estimated', 'evaluated', 'finished', 'completed', 'reEstimated']) && $order->status !== 'beingReEstimated') {
             return back()->with('error', 'لقد قمت بتقييم هذا الطلب بالفعل ولا يمكن تعديله.');
         }
 
-        // الاعتماد التلقائي على تقرير الذكاء الاصطناعي دون إلزام الخبير بكتابة نصوص
+        // مسار معالجة الاعتراض: تثبيت السعر السابق وعدم اتخاذ إجراء
+        if ($isObjectionReview && $objectionAction === 'keep_previous') {
+            $finalPrice = $order->previous_price > 0 ? (float) $order->previous_price : (float) ($order->total_price ?: $order->ai_price ?: 0);
+            $minPrice = round($finalPrice * 0.93);
+            $maxPrice = round($finalPrice * 1.07);
+
+            $order->update([
+                'expert_id' => $user->id,
+                'expert_price' => $finalPrice,
+                'expert_min_price' => $minPrice,
+                'expert_max_price' => $maxPrice,
+                'total_price' => $finalPrice,
+                'ai_price' => $finalPrice,
+                'ai_min_price' => $minPrice,
+                'ai_max_price' => $maxPrice,
+                'expert_reasoning' => $objectionReply ?: ($order->expert_reasoning ?: 'تم تثبيت السعر السابق بناءً على مراجعة الخبير وتدقيق معطيات السوق.'),
+                'objection_admin_reply' => $objectionReply ?: 'قام خبير التثمين بمراجعة السلعة والاعتراض، وتقرر تثبيت السعر السابق لعدم وجود مبرر لتعديله وفق أسعار السوق.',
+                'objection_replied_at' => now(),
+                'status' => 'reEstimated',
+                'expert_evaluated' => 1,
+                'evaluated_at' => now(),
+            ]);
+
+            $this->notifyCustomerObjectionResolution($order, 'keep_previous', $finalPrice, $objectionReply);
+
+            return back()->with('success', 'تم تثبيت السعر السابق بنجاح (' . number_format($finalPrice, 0) . ' ر.س) وإغلاق الاعتراض وإشعار العميل بقرار الخبير.');
+        }
+
+        // مسار الاعتماد أو تعديل السعر:
+        // الاعتماد التلقائي على تقرير الذكاء الاصطناعي دون إلزام الخبير بكتابة نصوص إن لم تكن مراجعة اعتراض
         $expertReasoning = $request->input('expert_reasoning') ?: ($order->ai_reasoning ?? 'تم اعتماد التقييم بناءً على تحليل الذكاء الاصطناعي ومؤشرات السوق.');
 
-        if ($order->evaluation_type === 'ai') {
-            $request->validate([
-                'ai_valuation_rating_id' => 'required|exists:ai_valuation_ratings,id',
-            ]);
+        if ($request->filled('expert_price') && is_numeric($request->expert_price)) {
+            // إذا أدخل الخبير سعراً محدداً (أو عدل السعر في شاشة مراجعة الاعتراض)
+            $expertPrice = (float) $request->expert_price;
+            $expertMinPrice = $request->filled('expert_min_price') ? (float) $request->expert_min_price : round($expertPrice * 0.93);
+            $expertMaxPrice = $request->filled('expert_max_price') ? (float) $request->expert_max_price : round($expertPrice * 1.07);
+            $aiValuationRatingId = $request->input('ai_valuation_rating_id', $order->ai_valuation_rating_id);
+        } elseif ($order->evaluation_type === 'ai') {
+            if (!$isObjectionReview) {
+                $request->validate([
+                    'ai_valuation_rating_id' => 'required|exists:ai_valuation_ratings,id',
+                ]);
+            }
             
             $expertPrice = $order->ai_price ?? $order->total_price;
             $expertMinPrice = $order->ai_min_price ?? $expertPrice * 0.8;
             $expertMaxPrice = $order->ai_max_price ?? $expertPrice * 1.2;
-            $aiValuationRatingId = $request->ai_valuation_rating_id;
+            $aiValuationRatingId = $request->ai_valuation_rating_id ?: $order->ai_valuation_rating_id;
         } elseif ($order->evaluation_type === 'expert') {
             // باقة الخبير فقط: الخبير يدخل أو يغير السعر المعتمد (بدون كتابة كلام)
             $request->validate([
@@ -203,13 +244,22 @@ class OrderController extends Controller
             'expert_price' => $expertPrice,
             'expert_min_price' => $expertMinPrice,
             'expert_max_price' => $expertMaxPrice,
-            'expert_reasoning' => $expertReasoning,
+            'expert_reasoning' => $objectionReply ?: $expertReasoning,
             'ai_valuation_rating_id' => $aiValuationRatingId,
             'expert_evaluated' => true,
             'total_price' => $expertPrice,
-            'status' => $order->status === 'beingReEstimated' ? 'reEstimated' : 'estimated',
+            'ai_price' => $expertPrice,
+            'ai_min_price' => $expertMinPrice,
+            'ai_max_price' => $expertMaxPrice,
+            'objection_admin_reply' => $objectionReply ?: ($order->objection_admin_reply ?: ($isObjectionReview ? 'تم اعتماد التقييم المحدث بعد مراجعة الاعتراض.' : null)),
+            'objection_replied_at' => $isObjectionReview ? now() : $order->objection_replied_at,
+            'status' => in_array($order->status, ['beingReEstimated', 'reEstimated']) || $isObjectionReview ? 'reEstimated' : 'estimated',
             'evaluated_at' => $order->evaluated_at ?? now(),
         ]);
+
+        if ($isObjectionReview) {
+            $this->notifyCustomerObjectionResolution($order, 'approve_update', $expertPrice, $objectionReply);
+        }
         $commissionType = \App\Models\Setting::where('key', 'expert_commission_type')->value('value') ?? 'fixed';
         $commissionValue = \App\Models\Setting::where('key', 'expert_commission_value')->value('value') ?? 10;
 
@@ -627,7 +677,8 @@ class OrderController extends Controller
     public function generateVirtualImage(Order $order)
     {
         try {
-            $file = app(\App\Services\ThamnEvaluationService::class)->generateVirtualImageForOrder($order);
+            $customPrompt = request('custom_prompt');
+            $file = app(\App\Services\ThamnEvaluationService::class)->generateVirtualImageForOrder($order, $customPrompt, true);
             if ($file) {
                 return back()->with('success', 'تم توليد الصورة الافتراضية بنجاح بواسطة الذكاء الاصطناعي وإرفاقها بالطلب.');
             }
@@ -707,6 +758,69 @@ class OrderController extends Controller
         }
 
         return redirect()->back()->with('success', $notice);
+    }
+
+    /**
+     * Send structured WhatsApp, Email and FCM to customer after expert resolves their objection
+     */
+    private function notifyCustomerObjectionResolution(Order $order, string $action, float $finalPrice, ?string $replyText): void
+    {
+        $customer = $order->user;
+        $priceFormatted = number_format($finalPrice, 0) . ' ريال';
+
+        // 1. WhatsApp
+        if ($customer && $customer->phone) {
+            $customerName = $customer->first_name ?: 'عميلنا العزيز';
+            if ($action === 'keep_previous') {
+                $msg = "يا هلا بك يا {$customerName} .. قام خبير منصة ثمن بمراجعة طلبك رقم {$order->id} واعتراضك المسجل 🔍\n\n"
+                    . "بعد التدقيق والمقارنة الدقيقة مع معطيات السوق، قرر الخبير *تثبيت التقييم السابق: {$priceFormatted}*\n\n"
+                    . ($replyText ? "📝 *توضيح الخبير:*\n{$replyText}\n\n" : "")
+                    . "📱 تفضل بالدخول للتطبيق للاطلاع على تفاصيل التقرير الكامل.\n\n- فريق ثمن";
+            } else {
+                $msg = "يا هلا بك يا {$customerName} .. تم اعتماد نتيجة مراجعة طلبك رقم {$order->id} من قِبل خبير ثمن المعتمد بنجاح 🎯\n\n"
+                    . "💰 *السعر المعتمد النهائي: {$priceFormatted}*\n\n"
+                    . ($replyText ? "📝 *ملاحظات وتوضيح الخبير:*\n{$replyText}\n\n" : "")
+                    . "📱 تفضل بالدخول للتطبيق للاطلاع على تفاصيل التقرير والشهادة المحدثة.\n\n- فريق ثمن";
+            }
+            try {
+                app(\App\Services\WhatsAppService::class)->sendMessage($customer->phone, $msg);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Expert Objection WhatsApp Failed: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Email
+        if ($customer && $customer->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($customer->email)->send(new \App\Mail\SystemNotificationMail(
+                    "نتيجة مراجعة اعتراضك على الطلب {$order->id} من خبير ثمن ⚖️",
+                    ($action === 'keep_previous' 
+                        ? "قام خبير ثمن بمراجعة اعتراضك وتقرر تثبيت السعر السابق ({$priceFormatted}).\n" . ($replyText ? "توضيح الخبير: {$replyText}" : "")
+                        : "تم اعتماد تعديل التقييم للطلب {$order->id} ليصبح ({$priceFormatted}).\n" . ($replyText ? "توضيح الخبير: {$replyText}" : "")
+                    ),
+                    route('orders.show', $order->id),
+                    'عرض تفاصيل الطلب'
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Expert Objection Email Failed: ' . $e->getMessage());
+            }
+        }
+
+        // 3. FCM
+        if ($customer) {
+            $tokens = $customer->getFcmTokens();
+            if (!empty($tokens)) {
+                $isAr = ($customer->preferred_language ?? 'ar') === 'ar';
+                $this->notifyByFirebase(
+                    $isAr ? 'تمت مراجعة اعتراضك من الخبير' : 'Your objection has been reviewed',
+                    $action === 'keep_previous'
+                        ? ($isAr ? "قام خبير ثمن بمراجعة طلبك وتثبيت التقييم على {$priceFormatted}" : "Expert reviewed your order and confirmed price at {$priceFormatted}")
+                        : ($isAr ? "قام خبير ثمن باعتماد السعر المحدث ليصبح {$priceFormatted}" : "Expert approved adjusted price at {$priceFormatted}"),
+                    $tokens,
+                    ['data' => ['order_id' => $order->id, 'type' => 'objection_resolved']]
+                );
+            }
+        }
     }
 }
 
