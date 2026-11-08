@@ -760,13 +760,31 @@ PROMPT;
         $categoryAr = $order->category->name_ar ?? 'منتج';
         $categoryEn = $order->category->name_en ?? 'Product';
 
-        // 2. تجميع كافة أسئلة وإجابات الطلب بأسلوب ديناميكي شامل
+        // 2. تجميع كافة أسئلة وإجابات الطلب بأسلوب ديناميكي شامل مع استخلاص اسم المنتج للأمان
         $answersLines = [];
+        $brandHint = '';
+        $modelHint = '';
+        $colorHint = '';
+
         foreach ($order->details as $d) {
+            $qAr = mb_strtolower(trim($d->question?->question_ar ?: ''));
+            $qEn = mb_strtolower(trim($d->question?->question_en ?: ''));
             $q = $d->question?->question_ar ?: ($d->question?->question_en ?: '');
-            $val = $d->option?->option_ar ?: ($d->option?->option_en ?: ($d->value ?: ''));
+            $val = trim($d->option?->option_ar ?: ($d->option?->option_en ?: ($d->value ?: '')));
+
             if (!empty($q) && !empty($val) && $d->question?->type !== 'rateTypeSelection') {
                 $answersLines[] = "- {$q}: {$val}";
+
+                // تجميع تلميحات أمان عامة في حال تعثر مزودي الـ AI أو نفاذ رصيد الحساب
+                if (empty($brandHint) && (str_contains($qAr, 'الشركة') || str_contains($qAr, 'ماركة') || str_contains($qEn, 'brand'))) {
+                    $brandHint = $val;
+                }
+                if (str_contains($qAr, 'نوعه بالضبط') || str_contains($qAr, 'موديل') || str_contains($qEn, 'model')) {
+                    $modelHint .= (empty($modelHint) ? '' : ' ') . $val;
+                }
+                if (empty($colorHint) && (str_contains($qAr, 'لون') || str_contains($qAr, 'خامة') || str_contains($qEn, 'color'))) {
+                    $colorHint = $val;
+                }
             }
         }
 
@@ -786,7 +804,7 @@ PROMPT;
             ? "Customer Objection / Correction Reason: {$order->objection_reason}" 
             : '';
 
-        // 3. استدعاء Claude AI لتحليل إجابات المستخدم بدقة متناهية وبناء برومبت DALL-E
+        // 3. استدعاء Claude AI لتحليل إجابات المستخدم بدقة متناهية وبناء برومبت الصورة
         try {
             $aiPrompt = app(ClaudeService::class)->generateImagePromptFromDetails(
                 $answersText, 
@@ -801,7 +819,13 @@ PROMPT;
             Log::error("Failed to generate dynamic image prompt via Claude for order #{$order->id}: " . $e->getMessage());
         }
 
-        // 4. Fallback عام أنيق في حال انقطاع الاتصال بـ Claude
-        return "A photorealistic commercial catalog studio photograph of {$categoryEn} on a pure seamless studio white background (#FFFFFF). Standalone single product centered, professional studio lighting, 8k resolution, crisp details, strictly NO packaging boxes, NO cables, NO adapters, NO text, NO watermarks.";
+        // 4. Fallback عام فائق الأمان في حال تعثر كافة خدمات الـ AI أو نفاذ رصيد الحساب
+        $productTitle = trim("{$brandHint} {$modelHint}");
+        if (empty($productTitle)) {
+            $productTitle = $categoryEn;
+        }
+        $colorPart = !empty($colorHint) ? " in {$colorHint} finish" : "";
+
+        return "A photorealistic commercial catalog studio photograph of the authentic {$productTitle}{$colorPart} on a pure seamless studio white background (#FFFFFF). Standalone single product centered, professional studio lighting, 8k resolution, crisp details, strictly NO packaging boxes, NO cables, NO adapters, NO text, NO watermarks.";
     }
 }

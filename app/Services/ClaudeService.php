@@ -160,8 +160,8 @@ SYSTEM;
             }
         }
 
-        Log::error('Claude API failed across all models');
-        return [];
+        Log::error('Claude API failed across all models, falling back to OpenAI GPT-4o');
+        return app(OpenAIService::class)->evaluateProduct($prompt, $imagePaths);
     }
 
     /**
@@ -227,10 +227,11 @@ PROMPT;
                 }
             }
         } catch (\Throwable $e) {
-            Log::error('generateImagePromptFromDetails failed: ' . $e->getMessage());
+            Log::error('Claude generateImagePromptFromDetails failed: ' . $e->getMessage());
         }
 
-        return '';
+        // في حال تعثر Claude أو عدم تفعيل الموديل بمفتاح Anthropic، الانتقال فوراً لـ OpenAI GPT-4o
+        return app(OpenAIService::class)->generateImagePromptFromDetails($answersText, $category, $objectionText);
     }
 
     /**
