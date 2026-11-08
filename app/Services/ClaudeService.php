@@ -165,6 +165,73 @@ SYSTEM;
     }
 
     /**
+     * توليد برومبت إنجليزي فائق الدقة للصورة بواسطة ذكاء Claude بناءً على كافة أسئلة وأجوبة الطلب
+     */
+    public function generateImagePromptFromDetails(string $answersText, string $category = '', string $objectionText = ''): string
+    {
+        $system = "You are an expert commercial product catalog art director. Your job is to analyze full product inspection answers and generate a single, highly detailed, photorealistic studio product photography prompt in English for DALL-E 3 image generation.";
+
+        $user = <<<PROMPT
+Category: {$category}
+Product Questionnaire & Inspection Details:
+{$answersText}
+{$objectionText}
+
+Based on the full inspection details above, generate a concise, highly specific commercial studio product photograph prompt in English for DALL-E 3:
+- Accurately determine the exact brand, specific model/edition, precise color finish, and modern design characteristics from the user's answers.
+- The item must be presented as a single clean, premium standalone product centered on a seamless, pure studio white background (#FFFFFF) with high-end commercial studio catalog lighting and soft subtle contact shadows. (Do NOT generate two different or mismatching phones side-by-side).
+- STRICTLY NO packaging boxes, NO cardboard boxes, NO charging cables, NO power adapters, NO accessories clutter, NO text, NO watermarks.
+- If it is an iPhone (e.g., iPhone 17 Pro / Pro Max): depict the authentic flagship Apple device in the exact color specified (e.g. Deep Blue, Natural Titanium, etc.), with ultra-thin uniform bezels, the iconic pill-shaped Dynamic Island capsule cutout on the display (STRICTLY NO Android circular single-dot punch holes!), the authentic frosted matte glass back with centered glossy Apple logo, and the signature elevated square camera plateau with the correct sapphire lens configuration.
+- If it is an Android phone: show the authentic flagship device corresponding to the brand and model with its genuine design aesthetics.
+- If it is a watch, jewelry, electronics, laptop, automobile, luxury bag, or any other category: show the single authentic item in pristine catalog studio quality.
+
+Output ONLY the raw English prompt string, with no quotes, no markdown, and no introductory or concluding remarks.
+PROMPT;
+
+        try {
+            $models = [
+                'claude-3-7-sonnet-20250219',
+                'claude-3-5-sonnet-latest',
+                'claude-3-5-sonnet-20241022',
+                'claude-3-5-haiku-latest',
+            ];
+
+            foreach ($models as $model) {
+                try {
+                    $response = $this->http->post(self::API_URL, [
+                        'headers' => [
+                            'x-api-key'         => $this->key,
+                            'anthropic-version' => self::API_VERSION,
+                            'content-type'      => 'application/json',
+                        ],
+                        'json' => [
+                            'model'      => $model,
+                            'max_tokens' => 500,
+                            'system'     => $system,
+                            'messages'   => [
+                                ['role' => 'user', 'content' => $user]
+                            ],
+                        ],
+                        'timeout' => 30,
+                    ]);
+
+                    $body = json_decode((string) $response->getBody(), true);
+                    $text = trim($body['content'][0]['text'] ?? '');
+                    if (!empty($text)) {
+                        return $text;
+                    }
+                } catch (\Throwable $e) {
+                    continue;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('generateImagePromptFromDetails failed: ' . $e->getMessage());
+        }
+
+        return '';
+    }
+
+    /**
      * توليد الصور — Claude لا يدعمها, نُفوّض لـ OpenAI DALL-E
      */
     public function generateImage(string $prompt, string $size = '1024x1024'): ?string
