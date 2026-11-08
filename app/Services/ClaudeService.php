@@ -177,14 +177,15 @@ Product Questionnaire & Inspection Details:
 {$answersText}
 {$objectionText}
 
-Based on the full inspection details above, generate a concise, highly specific commercial studio product photograph prompt in English for DALL-E 3:
-- Accurately determine the exact brand, specific model/edition, precise color finish, material, and authentic industrial design characteristics from the user's answers and contemporary design references.
-- The item must be presented as a single clean, premium standalone product centered on a seamless, pure studio white background (#FFFFFF) with high-end commercial studio catalog lighting and soft subtle contact shadows. (Do NOT generate two different or mismatching phones side-by-side).
-- STRICTLY NO packaging boxes, NO cardboard boxes, NO charging cables, NO power adapters, NO accessories clutter, NO text, NO watermarks.
-- Strictly adhere to the authentic design language and camera layout of the specific generation and model:
-  * If it is an iPhone 17 Pro / 17 Pro Max: It features Apple's radical redesign with a prominent full-width horizontal camera visor/bar spanning across the upper rear of the phone (housing the camera lenses, flash, and LiDAR horizontally), paired with a premium aluminum chassis and glass inlay in the exact specified color finish (e.g., Deep Blue aluminum, natural, or specified finish), with the centered Apple logo and the front display showing ultra-thin uniform bezels with the iconic pill-shaped Dynamic Island capsule cutout.
-  * If it is an iPhone 15 / 16 Pro: It features the traditional rounded-square camera plateau in the top corner with titanium frame.
-  * If it is any other smartphone, watch, laptop, automotive, or luxury item: Accurately depict the true, authentic hardware design, materials (e.g. aluminum vs titanium vs steel), and signature styling of that exact make, model, and year.
+Based STRICTLY on the user's inspection answers and objection details above, generate a concise, highly specific commercial studio product photograph prompt in English for DALL-E 3:
+1. Deeply analyze all answers to extract the exact product:
+   - Accurately determine the exact brand, line, specific model/edition, production year, and generation.
+   - Extract the exact manufacturing materials specified in the answers (e.g., aluminum, titanium, stainless steel, ceramic, glass, etc.).
+   - Extract the exact color, shade, and surface finish (e.g., Deep Blue, Matte, Glossy, etc.).
+   - Factor in all hardware details and user-specified features (e.g., number of camera lenses, camera layout, physical buttons, display style).
+2. Depict the authentic, genuine real-world industrial design and hardware architecture of this exact model and generation (including its authentic camera module arrangement, chassis shape, bezels, and design signature).
+3. The item must be presented as a single clean, premium standalone product centered on a seamless, pure studio white background (#FFFFFF) with high-end commercial catalog studio lighting and soft subtle contact shadows. (Do NOT generate two mismatching devices side-by-side).
+4. STRICTLY NO packaging boxes, NO cardboard boxes, NO charging cables, NO power adapters, NO accessories clutter, NO text, NO watermarks.
 
 Output ONLY the raw English prompt string, with no quotes, no markdown, and no introductory or concluding remarks.
 PROMPT;
