@@ -165,6 +165,82 @@ SYSTEM;
     }
 
     /**
+     * تحليل إجابات الأسئلة واستخراج بيانات البحث عن الصورة واسم المنتج والبرومبت لأي تصنيف ديناميكياً
+     * (جوالات، سيارات، مواشي، عقارات، ساعات، إلكترونيات، إلخ)
+     */
+    public function resolveProductImageDetails(string $answersText, string $category = '', string $objectionText = ''): array
+    {
+        $system = "You are an expert product identification and catalog specialist. Your job is to analyze product questionnaire answers across ANY category (smartphones, vehicles, livestock/animals, real estate, luxury watches, electronics, equipment, etc.) and return a structured JSON.";
+
+        $user = <<<PROMPT
+Category: {$category}
+Product Questionnaire & Inspection Details:
+{$answersText}
+{$objectionText}
+
+Analyze all the answers above. Output ONLY a valid JSON object with these exact keys:
+{
+  "product_title_en": "Precise make and model/breed/property name in English",
+  "product_title_ar": "الاسم الدقيق بالعربية",
+  "search_queries": [
+    "Most specific search query for an authentic photograph of this exact item",
+    "Secondary search query",
+    "Broader fallback search query"
+  ],
+  "color": "Color/finish in English (e.g. Silver, Black, Desert Titanium, White, etc.) or null",
+  "prompt": "High-end commercial catalog studio photograph prompt in English for DALL-E/FLUX fallback. Pure seamless studio white background (#FFFFFF) for objects/vehicles/phones/watches, or clean authentic setting for livestock/real estate. Strictly NO humans, NO women, NO faces, NO packaging boxes, NO cables, NO text, NO watermarks."
+}
+PROMPT;
+
+        try {
+            $models = [
+                'claude-3-7-sonnet-20250219',
+                'claude-3-5-sonnet-latest',
+                'claude-3-5-sonnet-20241022',
+                'claude-3-5-haiku-latest',
+            ];
+
+            foreach ($models as $model) {
+                try {
+                    $response = $this->http->post(self::API_URL, [
+                        'headers' => [
+                            'x-api-key'         => $this->key,
+                            'anthropic-version' => self::API_VERSION,
+                            'content-type'      => 'application/json',
+                        ],
+                        'json' => [
+                            'model'      => $model,
+                            'max_tokens' => 600,
+                            'system'     => $system,
+                            'messages'   => [
+                                ['role' => 'user', 'content' => $user]
+                            ],
+                        ],
+                        'timeout' => 20,
+                    ]);
+
+                    $body = json_decode((string) $response->getBody(), true);
+                    $text = trim($body['content'][0]['text'] ?? '');
+                    if (!empty($text)) {
+                        $clean = preg_replace('/```json\s*/i', '', $text);
+                        $clean = preg_replace('/```\s*/i', '', $clean);
+                        $data = json_decode(trim($clean), true);
+                        if (is_array($data) && !empty($data['search_queries'])) {
+                            return $data;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    continue;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Claude resolveProductImageDetails failed: ' . $e->getMessage());
+        }
+
+        return app(OpenAIService::class)->resolveProductImageDetails($answersText, $category, $objectionText);
+    }
+
+    /**
      * توليد برومبت إنجليزي فائق الدقة للصورة بواسطة ذكاء Claude بناءً على كافة أسئلة وأجوبة الطلب
      */
     public function generateImagePromptFromDetails(string $answersText, string $category = '', string $objectionText = ''): string
