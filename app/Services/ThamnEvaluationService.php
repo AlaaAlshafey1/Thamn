@@ -234,12 +234,7 @@ OBJECTION;
    - لا تعطِ العميل توجيهات أو نصائح للبيع — فقط الوصف والسعر.
    - الطول المثالي: فقرتان أو ثلاث جمل قصيرة كحد أقصى.
    - استخدم HTML بسيط: <b> للتمييز، <br> للفواصل إذا لزم. لا تستخدم ul/li في reasoning.
-8. توليد وصف الصورة بالذكاء الاصطناعي (image_prompt):
-   - قم دائماً بإنشاء وصف دقيق واحترافي باللغة الإنجليزية في حقل `image_prompt` لتوليد صورة كتالوج تجارية نقية للمنتج عبر DALL-E 3 بناءً على كافة أسئلة وإجابات الطلب.
-   - استخرج وحلل بدقة متناهية من إجابات العميل: الماركة الحقيقية، الموديل الفعلي المعاصر، سنة الصنع، خامة التصنيع الأساسية (ألومونيوم، تيتانيوم، فولاذ، سيراميك، جلد.. إلخ)، واللون العام بدقة، وعدد ومواضع الكاميرات والأزرار المذكورة في الإجابات.
-   - جسّد التصميم الهندسي والمعماري الواقعي الأصلي لهذا الموديل وسنة صنعه وخامته كما أصدرته أو صممته شركته المصنعة بدقة تامة.
-   - يجب أن يكون المنتج منفرداً في المنتصف على خلفية بيضاء نقية باستوديو احترافي (#FFFFFF) بإضاءة تجارية متوازنة، 8k، تفاصيل واضحة.
-   - ممنوع منعاً باتاً ظهور أي كراتين أو صناديق كرتونية أو أسلاك شواحن أو ملحقات مشتتة أو نصوص أو علامات مائية.
+8. إذا لم توجد صور للسلعة، أو إذا طلب العميل توليد صورة بالذكاء الاصطناعي (create_image_ai)، قم بإنشاء وصف دقيق (باللغة الإنجليزية) لصورة واقعية بخلفية بيضاء في حقل image_prompt.
 9. منهجية التسعير الصحيحة (أساسية وإلزامية جداً):
    - يجب عليك تقييم السلعة بناءً على المطابقة التامة للمواصفات المذكورة في الطلب (الماركة، الموديل، سنة الصنع، سعة التخزين، الحالة العامة، إلخ). لا تفترض مواصفات أقل أو أعلى.
    - قم بتحليل أسعار السوق السعودي لنفس المنتج المستعمل بذات المواصفات والحالة — بغض النظر عن اسم المنصة — واستخرج السعر العادل.
@@ -663,20 +658,22 @@ PROMPT;
 
     /**
      * Generate Virtual AI Image for an order if needed, requested via create_image_ai, or on objection
-     * يبحث أولاً عن صورة حقيقية واضحة للمنتج بالاسم من الويب، ثم يلجأ للتوليد بالذكاء الاصطناعي كبديل
+     */
+    /**
+     * Generate Virtual AI Image for an order if needed, requested via create_image_ai, or on objection
      */
     public function generateVirtualImageForOrder(Order $order, ?string $imagePrompt = null, bool $forceRegenerate = false): ?OrderFiles
     {
         $order->refresh();
         $order->loadMissing(['files', 'details.question', 'details.option', 'category']);
 
-        // فحص الصور المرفوعة فعلياً من العميل (استبعاد الصور الافتراضية السابقة)
+        // فحص الصور المرفوعة فعلياً من العميل (استبعاد الصور الافتراضية السابقة المولدة بالـ AI)
         $hasUserImages = $order->files->where('type', 'image')->filter(function ($f) {
-            return !str_starts_with($f->file_name, 'ai_generated_') && !str_starts_with($f->file_name, 'product_web_');
+            return !str_starts_with($f->file_name, 'ai_generated_');
         })->count() > 0;
 
         $hasExistingAiImage = $order->files->where('type', 'image')->filter(function ($f) {
-            return str_starts_with($f->file_name, 'ai_generated_') || str_starts_with($f->file_name, 'product_web_');
+            return str_starts_with($f->file_name, 'ai_generated_');
         })->count() > 0;
 
         $wantsAiImage = (bool) ($order->create_image_ai || request('create_image_ai', false));
@@ -686,53 +683,37 @@ PROMPT;
         // 1. تم الإجبار ($forceRegenerate)
         // 2. طلب العميل صورة بالذكاء الاصطناعي ($wantsAiImage)
         // 3. الطلب لا يحتوي على أي صور حقيقية من العميل (!$hasUserImages)
-        // 4. الطلب كان يحتوي على صورة سابقة ويتم مراجعته ($hasExistingAiImage)
+        // 4. الطلب كان يحتوي على صورة AI سابقة ويتم مراجعته ($hasExistingAiImage)
         // 5. يوجد اعتراض نشط على الطلب ($hasObjection)
         if ($forceRegenerate || !$hasUserImages || $wantsAiImage || $hasExistingAiImage || $hasObjection) {
-            // استخراج بيانات المنتج وكلمات البحث والبرومبت ديناميكياً لأي تصنيف
-            $productData = $this->resolveProductImageDetails($order, $imagePrompt);
+            // نعتمد دائماً على buildAccurateImagePrompt لضمان استخراج الموديل الصحيح وتطبيق المعايير العصرية
+            $accuratePrompt = $this->buildAccurateImagePrompt($order);
 
-            // مسح كافة الصور السابقة للطلب بالكامل لضمان بقاء صورة واحدة فقط مطابقة
-            $allPreviousImages = $order->files()->where('type', 'image')->get();
-            foreach ($allPreviousImages as $oldFile) {
+            // إذا كان هناك صور سابقة مولدة بالذكاء الاصطناعي لنفس الطلب، نحذفها لنضع الصورة الجديدة المحدثة
+            $oldAiFiles = $order->files()->where('type', 'image')->where('file_name', 'like', 'ai_generated_%')->get();
+            foreach ($oldAiFiles as $oldFile) {
                 Storage::disk('public')->delete($oldFile->file_path);
                 $oldFile->delete();
             }
 
-            // ── الخطوة 1: البحث عن صورة حقيقية عالية الجودة للمنتج بالاسم من مصادر الويب ──
-            $imageBinary = null;
-            $searchQueries = $productData['search_queries'] ?? [];
-            if (!empty($searchQueries)) {
-                Log::info("Searching web for real product image for order #{$order->id}", ['queries' => $searchQueries]);
-                $imageBinary = app(ProductImageSearchService::class)->searchImage($searchQueries, $productData['color'] ?? null);
+            // إذا كان هناك اعتراض صريح متعلق بالصورة (مثل خطأ في موديل الصورة) ولم يرفع العميل صوراً يدوية، نحذف الصورة القديمة الخاطئة
+            $reasonMentionsImage = $hasObjection && (
+                str_contains(mb_strtolower($order->objection_reason), 'صورة') ||
+                str_contains(mb_strtolower($order->objection_reason), 'صوره') ||
+                str_contains(mb_strtolower($order->objection_reason), 'image') ||
+                str_contains(mb_strtolower($order->objection_reason), 'photo')
+            );
+            if ($reasonMentionsImage && !$hasUserImages) {
+                $allImageFiles = $order->files()->where('type', 'image')->get();
+                foreach ($allImageFiles as $f) {
+                    Storage::disk('public')->delete($f->file_path);
+                    $f->delete();
+                }
             }
 
-            // إذا عثرنا على صورة حقيقية للمنتج، نقوم بحفظها فوراً وإرفاقها بالطلب
-            if ($imageBinary) {
-                $filename = 'product_web_' . Str::random(10) . '.jpg';
-                $path = 'orders/' . $order->id . '/images/' . $filename;
-
-                Storage::disk('public')->put($path, $imageBinary);
-
-                $fileRecord = OrderFiles::create([
-                    'order_id'  => $order->id,
-                    'file_path' => $path,
-                    'file_name' => $filename,
-                    'type'      => 'image',
-                ]);
-
-                $order->update(['create_image_ai' => true]);
-                $order->load('files');
-                Log::info("Real web product image found and attached to order #{$order->id}: {$path}");
-
-                return $fileRecord;
-            }
-
-            // ── الخطوة 2: في حال عدم العثور على صورة ويب، التوليد بالذكاء الاصطناعي ──
-            $prompt = $productData['prompt'] ?? $this->buildAccurateImagePrompt($order, $imagePrompt);
             try {
-                Log::info("Web image not found. Generating virtual AI studio image for order #{$order->id} with prompt: {$prompt}");
-                $imageUrl = app(ClaudeService::class)->generateImage($prompt);
+                Log::info("Generating virtual AI image for order #{$order->id} with prompt: {$accuratePrompt}");
+                $imageUrl = app(ClaudeService::class)->generateImage($accuratePrompt);
                 if ($imageUrl) {
                     if (str_starts_with($imageUrl, 'data:image')) {
                         $parts = explode(',', $imageUrl);
@@ -748,10 +729,10 @@ PROMPT;
                         Storage::disk('public')->put($path, $imageContents);
 
                         $fileRecord = OrderFiles::create([
-                            'order_id'  => $order->id,
+                            'order_id' => $order->id,
                             'file_path' => $path,
                             'file_name' => $filename,
-                            'type'      => 'image',
+                            'type' => 'image',
                         ]);
 
                         $order->update(['create_image_ai' => true]);
@@ -764,7 +745,7 @@ PROMPT;
             } catch (\Throwable $e) {
                 Log::error('Failed to generate virtual image via AI', [
                     'order_id' => $order->id,
-                    'error'    => $e->getMessage()
+                    'error' => $e->getMessage()
                 ]);
             }
         }
@@ -773,247 +754,331 @@ PROMPT;
     }
 
     /**
-     * استخراج بيانات الصورة وكلمات البحث واسم المنتج بالكامل بناءً على إجابات الأسئلة لأي تصنيف
-     * (جوالات، سيارات، مواشي، عقارات، ساعات، إلكترونيات، إلخ) دون أي قيود صلبة
-     */
-    public function resolveProductImageDetails(Order $order, ?string $customPrompt = null): array
-    {
-        $order->loadMissing(['details.question', 'details.option', 'category']);
-
-        $categoryAr = trim($order->category->name_ar ?? 'سلعة عامة');
-        $categoryEn = trim($order->category->name_en ?? 'General Item');
-
-        // 1. تجميع كافة أسئلة وإجابات الطلب
-        $answersLines = [];
-        $meaningfulValues = [];
-        $colorHint = '';
-
-        foreach ($order->details as $d) {
-            $q = trim($d->question?->question_ar ?: ($d->question?->question_en ?: ''));
-            $val = trim($d->option?->option_ar ?: ($d->option?->option_en ?: ($d->value ?: '')));
-
-            if (!empty($q) && !empty($val) && $d->question?->type !== 'rateTypeSelection') {
-                $valLower = mb_strtolower($val);
-                if (in_array($valLower, ['قيمة تجريبية', 'تجريبي', 'لا اعلم', 'لايوجد', 'لا يوجد', 'no_val', 'no_opt', 'empty'])) {
-                    continue;
-                }
-
-                $answersLines[] = "- {$q}: {$val}";
-                $meaningfulValues[] = $val;
-
-                $qLower = mb_strtolower($q);
-                if (str_contains($qLower, 'لون') || str_contains($qLower, 'color')) {
-                    $colorHint = $val;
-                }
-            }
-        }
-
-        if (!empty($order->payload)) {
-            $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
-            if (is_array($payload)) {
-                foreach ($payload as $k => $v) {
-                    if (is_scalar($v) && !empty($v)) {
-                        $answersLines[] = "- {$k}: {$v}";
-                        $meaningfulValues[] = (string)$v;
-                    }
-                }
-            }
-        }
-
-        $answersText = implode("\n", $answersLines);
-        $objectionText = !empty($order->objection_reason) 
-            ? "Customer Objection / Correction Reason: {$order->objection_reason}" 
-            : '';
-
-        // 2. إرسال الأسئلة والإجابات للذكاء الاصطناعي (Claude / OpenAI) لتحليل السلعة بدقة
-        try {
-            $aiData = app(ClaudeService::class)->resolveProductImageDetails(
-                $answersText,
-                "{$categoryAr} ({$categoryEn})",
-                $objectionText
-            );
-
-            if (!empty($aiData) && !empty($aiData['search_queries'])) {
-                if (!empty($customPrompt)) {
-                    $aiData['prompt'] = $customPrompt;
-                }
-                return $aiData;
-            }
-        } catch (\Throwable $e) {
-            Log::warning("AI resolveProductImageDetails failed for order #{$order->id}: " . $e->getMessage());
-        }
-
-        // 3. Fallback محلي ذكي وشامل لأي تصنيف في العالم في حال انقطاع الـ AI
-        return $this->buildLocalProductFallback($order, $meaningfulValues, $categoryAr, $categoryEn, $colorHint, $customPrompt);
-    }
-
-    /**
-     * Fallback محلي ديناميكي لاستخراج كلمات البحث وبرومبت الصورة لأي سلعة وتصنيف
-     */
-    private function buildLocalProductFallback(Order $order, array $values, string $categoryAr, string $categoryEn, string $colorHint, ?string $customPrompt): array
-    {
-        $brandMap = [
-            'هيونداي' => 'Hyundai',
-            'هيونداى' => 'Hyundai',
-            'تويوتا' => 'Toyota',
-            'مرسيدس' => 'Mercedes-Benz',
-            'مرسيدس بنز' => 'Mercedes-Benz',
-            'مرسيدي بنز' => 'Mercedes-Benz',
-            'بي ام دبل' => 'BMW',
-            'بي ام دبليو' => 'BMW',
-            'اودى' => 'Audi',
-            'اودي' => 'Audi',
-            'فورد' => 'Ford',
-            'كيا' => 'Kia',
-            'مازدا' => 'Mazda',
-            'نيسان' => 'Nissan',
-            'هوندا' => 'Honda',
-            'ميتسوبيشى' => 'Mitsubishi',
-            'ميتسوبيشي' => 'Mitsubishi',
-            'ام جى' => 'MG',
-            'جيلى' => 'Geely',
-            'جيلي' => 'Geely',
-            'جيب' => 'Jeep',
-            'شفروليه' => 'Chevrolet',
-            'شيفروليه' => 'Chevrolet',
-            'لكزس' => 'Lexus',
-            'أبل' => 'Apple',
-            'ابل' => 'Apple',
-            'سامسونج' => 'Samsung',
-            'سامسونغ' => 'Samsung',
-            'هواوي' => 'Huawei',
-            'شاومي' => 'Xiaomi',
-            'رولكس' => 'Rolex',
-            'سوني' => 'Sony',
-            'بلايستيشن' => 'PlayStation',
-            'نجدي' => 'Najdi sheep',
-            'نعيمي' => 'Awassi sheep',
-            'حري' => 'Harri sheep',
-            'مجاهيم' => 'Majaheem camel',
-            'وضح' => 'Wadhah camel',
-            'صفر' => 'Sofr camel',
-            'شعل' => 'Shoal camel',
-            'عربي أصيل' => 'Arabian horse',
-        ];
-
-        $brand = '';
-        $model = '';
-        $desc = '';
-        $year = '';
-        $color = $colorHint;
-
-        foreach ($order->details as $d) {
-            $q = mb_strtolower(trim($d->question?->question_ar ?: ($d->question?->question_en ?: '')));
-            $val = trim($d->option?->option_ar ?: ($d->option?->option_en ?: ($d->value ?: '')));
-
-            if (empty($q) || empty($val) || in_array(mb_strtolower($val), ['قيمة تجريبية', 'تجريبي', 'لا اعلم', 'لايوجد', 'لا يوجد', 'حالة ممتازة', 'الكل'])) {
-                continue;
-            }
-
-            // 1. الشركة / الماركة / السلالة
-            if (empty($brand) && (str_contains($q, 'مصنع') || str_contains($q, 'شركة') || str_contains($q, 'سلالة') || (str_contains($q, 'ماركة') && !str_contains($q, 'منافس')))) {
-                $brand = $val;
-            }
-
-            // 2. الموديل / النوع / الصنف / اسم السلعة
-            if (str_contains($q, 'موديل') || str_contains($q, 'نوع السيارة') || str_contains($q, 'نوع السلعة') || str_contains($q, 'الصنف') || str_contains($q, 'اسم السلعة')) {
-                $model .= (empty($model) ? '' : ' ') . $val;
-            }
-
-            // 3. الوصف
-            if (empty($desc) && (str_contains($q, 'صف سلعتك') || str_contains($q, 'وصف'))) {
-                $desc = $val;
-            }
-
-            // 4. سنة الصنع
-            if (empty($year) && str_contains($q, 'سنة')) {
-                if (preg_match('/(20[0-9]{2}|19[0-9]{2})/', $val, $ym)) {
-                    $year = $ym[1];
-                }
-            }
-
-            // 5. اللون
-            if (empty($color) && str_contains($q, 'لون')) {
-                $color = $val;
-            }
-        }
-
-        // استخراج اسم المنتج الإنجليزي من الوصف أو الموديل إن وُجد
-        $enTitle = '';
-        if (!empty($desc) && preg_match('/[a-zA-Z][a-zA-Z0-9\s\+\-\.]{3,40}/', $desc, $m)) {
-            $enTitle = trim($m[0]);
-        }
-        if (empty($enTitle) && !empty($model) && preg_match('/[a-zA-Z][a-zA-Z0-9\s\+\-\.]{3,40}/', $model, $m)) {
-            $enTitle = trim($m[0]);
-        }
-
-        // ترجمة اسم الماركة إلى الإنجليزية إن كانت معروفة
-        $brandEn = '';
-        foreach ($brandMap as $arB => $enB) {
-            if (str_contains(mb_strtolower($brand), mb_strtolower($arB))) {
-                $brandEn = $enB;
-                break;
-            }
-        }
-        if (empty($brandEn)) {
-            $brandEn = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $brand);
-        }
-
-        $queries = [];
-        if (!empty($brandEn) && !empty($enTitle)) {
-            $queries[] = trim("{$brandEn} {$enTitle}");
-        }
-        if (!empty($enTitle)) {
-            $queries[] = $enTitle;
-        }
-        if (!empty($brandEn) && !empty($model)) {
-            $queries[] = trim("{$brandEn} {$model}");
-        }
-        if (!empty($enTitle)) {
-            $queries[] = preg_replace('/(Apple|Samsung|Sony|Mercedes|Toyota)\s+/i', '', $enTitle);
-        }
-        if (!empty($brandEn)) {
-            $queries[] = trim($brandEn);
-        }
-        if (!empty($model)) {
-            $queries[] = trim($model);
-        }
-
-        $queries = array_values(array_unique(array_filter($queries)));
-        $title = !empty($enTitle) ? $enTitle : trim("{$brandEn} {$model}");
-        if (empty($title)) {
-            $title = $categoryEn ?: 'Commercial Product';
-        }
-
-        $catLower = mb_strtolower("{$categoryAr} {$categoryEn}");
-        $isAnimal = str_contains($catLower, 'مواش') || str_contains($catLower, 'ابل') || str_contains($catLower, 'إبل') || str_contains($catLower, 'خيل') || str_contains($catLower, 'غنم') || str_contains($catLower, 'animal') || str_contains($catLower, 'livestock') || str_contains($catLower, 'camel') || str_contains($catLower, 'horse');
-        $isProperty = str_contains($catLower, 'عقار') || str_contains($catLower, 'فيل') || str_contains($catLower, 'شقق') || str_contains($catLower, 'أراض') || str_contains($catLower, 'realestate') || str_contains($catLower, 'property') || str_contains($catLower, 'villa');
-
-        if (!empty($customPrompt)) {
-            $prompt = $customPrompt;
-        } elseif ($isAnimal) {
-            $prompt = "A photorealistic authentic documentary photograph of a champion {$title} in pristine clean Saudi natural daylight setting, majestic posture, razor-sharp details, strictly an animal, strictly NO humans, NO people, NO text, NO watermarks.";
-        } elseif ($isProperty) {
-            $prompt = "A photorealistic luxury architectural exterior photograph of an authentic {$title}, golden hour daylight, beautiful landscaping, modern architectural lines, strictly NO humans, NO text, NO watermarks.";
-        } else {
-            $prompt = "A photorealistic commercial product catalog studio photograph of the authentic {$title} on a pure seamless studio white background (#FFFFFF). Standalone item centered, professional high-end studio lighting, sharp 8k details. Strictly the item, strictly NO human beings, NO people, NO women, NO faces, NO hands, NO clothing, NO packaging boxes, NO cables, NO adapters, NO text, NO watermarks.";
-        }
-
-        return [
-            'product_title_en' => $title,
-            'product_title_ar' => $title,
-            'search_queries'   => $queries,
-            'color'            => $color ?: null,
-            'prompt'           => $prompt,
-        ];
-    }
-
-    /**
-     * بناء وصف إنجليزي فائق الدقة والاستوديو التجاري
+     * بناء وصف إنجليزي فائق الدقة والاستوديو التجاري الاحترافي لـ DALL-E / OpenAI
      */
     public function buildAccurateImagePrompt(Order $order, ?string $customPrompt = null): string
     {
-        $details = $this->resolveProductImageDetails($order, $customPrompt);
-        return $details['prompt'] ?? 'A photorealistic commercial product catalog studio photograph on a pure seamless studio white background (#FFFFFF). Strictly NO human beings, NO people, NO women, NO text, NO watermarks.';
+        $order->loadMissing(['details.question', 'details.option', 'category']);
+
+        $categoryAr = $order->category->name_ar ?? 'منتج';
+        $categoryEn = $order->category->name_en ?? 'Product';
+
+        $brand = '';
+        $line = '';
+        $edition = '';
+        $color = '';
+
+        // ─── 1. استخراج المعطيات الأساسية من إجابات ومدخلات الطلب أولاً ───
+        foreach ($order->details as $d) {
+            $qAr = mb_strtolower(trim($d->question?->question_ar ?? ''));
+            $qEn = mb_strtolower(trim($d->question?->question_en ?? ''));
+            $valAr = trim($d->option?->option_ar ?: ($d->value ?: ''));
+            $valEn = trim($d->option?->option_en ?: '');
+            $val = $valEn ?: $valAr;
+
+            if (empty($val) || $d->question?->type === 'rateTypeSelection') {
+                continue;
+            }
+
+            // 1. الشركة المصنعة (Brand)
+            if (empty($brand) && (
+                str_contains($qAr, 'الشركة الأم') || str_contains($qAr, 'المصنعة') || str_contains($qAr, 'ماركة') ||
+                str_contains($qEn, 'brand') || str_contains($qEn, 'make') || str_contains($qEn, 'manufacturer')
+            )) {
+                $brand = $this->translateBrandToEnglish($val);
+            }
+
+            // 2. نوع/خط الجهاز (Line / Family) مثل iPhone أو Galaxy
+            // تنبيه: استبعاد "نوع المنتج بالضبط" لأن إجابته تكون تصنيفاً عاماً مثل (جوال / ساعة)
+            if (empty($line) && (
+                str_contains($qAr, 'وش نوعه بالضبط') || str_contains($qAr, 'نوعه بالضبط') ||
+                (str_contains($qAr, 'نوعه') && !str_contains($qAr, 'نوع المنتج')) ||
+                str_contains($qEn, 'phone type') || str_contains($qEn, 'device line')
+            )) {
+                $line = $val;
+            }
+
+            // 3. موديل الإصدار (Edition / Model) مثل (17 برو / 16 Pro Max)
+            if (empty($edition) && (
+                str_contains($qAr, 'موديل الإصدار') || str_contains($qAr, 'موديل') ||
+                str_contains($qAr, 'طراز') || str_contains($qEn, 'model') || str_contains($qEn, 'edition')
+            )) {
+                $edition = $val;
+            }
+
+            // 4. اللون والخامة
+            if (empty($color) && (
+                str_contains($qAr, 'لون') || str_contains($qAr, 'خامة') || str_contains($qAr, 'مادة') ||
+                str_contains($qEn, 'color') || str_contains($qEn, 'material')
+            )) {
+                $color = $this->translateColorToEnglish($val);
+            }
+        }
+
+        // ترجمة وتنسيق موديل الإصدار (e.g. "17 برو" -> "17 Pro")
+        $model = '';
+        if (!empty($edition)) {
+            $edLower = mb_strtolower(trim($edition));
+            if (preg_match('/([0-9]{1,2})\s*(برو\s*ماكس|برو|بلاس|بلس|ميني|pro\s*max|pro|plus|mini)?/iu', $edLower, $m)) {
+                $num = $m[1];
+                $tier = trim($m[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $cleanEdition = $num . ($tierEn ? " {$tierEn}" : '');
+            } else {
+                $cleanEdition = $edition;
+            }
+
+            if (!empty($line) && str_contains(mb_strtolower($line), 'iphone')) {
+                $model = str_contains(mb_strtolower($cleanEdition), 'iphone') ? $cleanEdition : "iPhone {$cleanEdition}";
+            } elseif (!empty($line)) {
+                $model = "{$line} {$cleanEdition}";
+            } else {
+                $model = "iPhone {$cleanEdition}";
+            }
+        } elseif (!empty($line)) {
+            $model = $line;
+        }
+
+        // فحص إضافي للموديل والماركة داخل نصوص المدخلات كاملة إن لم يُلتقط بعد
+        if (empty($model)) {
+            foreach ($order->details as $d) {
+                $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->option?->option_en ?: '') . ' ' . ($d->value ?: '');
+                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $txt, $m)) {
+                    $num = $m[1];
+                    $tier = trim($m[2] ?? '');
+                    $tierEn = match (mb_strtolower($tier)) {
+                        'برو ماكس', 'pro max' => 'Pro Max',
+                        'برو', 'pro' => 'Pro',
+                        'بلاس', 'بلس', 'plus' => 'Plus',
+                        'ميني', 'mini' => 'Mini',
+                        default => ''
+                    };
+                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                    $brand = 'Apple';
+                    break;
+                }
+            }
+        }
+
+        if (empty($model) && !empty($order->payload)) {
+            $payloadAnswers = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
+            if (is_array($payloadAnswers)) {
+                $payloadText = json_encode($payloadAnswers, JSON_UNESCAPED_UNICODE);
+                if (preg_match('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $payloadText, $m)) {
+                    $num = $m[1];
+                    $tier = trim($m[2] ?? '');
+                    $tierEn = match (mb_strtolower($tier)) {
+                        'برو ماكس', 'pro max' => 'Pro Max',
+                        'برو', 'pro' => 'Pro',
+                        'بلاس', 'بلس', 'plus' => 'Plus',
+                        'ميني', 'mini' => 'Mini',
+                        default => ''
+                    };
+                    $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                    $brand = 'Apple';
+                }
+            }
+        }
+
+        // ─── 2. التحقق الذكي من نص الاعتراض: تصحيح الموديل إن ورد بالاعتراض ───
+        $objectionText = $order->objection_reason ?? '';
+        if (!empty($objectionText)) {
+            if (preg_match('/(?:ادخال(?:ي)?|المدخلات|أنه|انه|هو|الصحيح|بدلا\s*من|بدلاً\s*من|وليس|السلعة\s*هي|الموديل\s*هو)\s*(?:في\s*المدخلات\s*انه\s*)?(?:جوال\s*)?(?:iphone|ايفون|آيفون)?\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $intentMatch)) {
+                $num = $intentMatch[1];
+                $tier = trim($intentMatch[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                $brand = 'Apple';
+            } elseif (preg_match_all('/(?:iphone|ايفون|آيفون)\s*([0-9]{1,2})(?:\s*(pro\s*max|pro|plus|mini|برو\s*ماكس|برو|بلاس|بلس|ميني))?/iu', $objectionText, $allMatches, PREG_SET_ORDER)) {
+                $lastMatch = end($allMatches);
+                $num = $lastMatch[1];
+                $tier = trim($lastMatch[2] ?? '');
+                $tierEn = match (mb_strtolower($tier)) {
+                    'برو ماكس', 'pro max' => 'Pro Max',
+                    'برو', 'pro' => 'Pro',
+                    'بلاس', 'بلس', 'plus' => 'Plus',
+                    'ميني', 'mini' => 'Mini',
+                    default => ''
+                };
+                $model = "iPhone {$num}" . ($tierEn ? " {$tierEn}" : '');
+                $brand = 'Apple';
+            }
+        }
+
+        // فحص بديل لاستخراج الماركة إن لم تلتقط بعد
+        if (empty($brand)) {
+            foreach ($order->details as $d) {
+                $txt = ($d->option?->option_ar ?: '') . ' ' . ($d->value ?: '');
+                $detected = $this->detectBrandFromText($txt);
+                if ($detected) {
+                    $brand = $detected;
+                    break;
+                }
+            }
+        }
+
+        if (empty($brand) && !empty($model) && str_contains(mb_strtolower($model), 'iphone')) {
+            $brand = 'Apple';
+        }
+
+        $brand = $brand ?: 'Apple';
+        $model = $model ?: 'iPhone 17 Pro';
+        $model = preg_replace('/[^\w\s\-\+]/u', '', $model);
+
+        $isPhone = str_contains(mb_strtolower($categoryEn), 'phone') 
+            || str_contains(mb_strtolower($categoryAr), 'جوال') 
+            || str_contains(mb_strtolower($model), 'iphone')
+            || str_contains(mb_strtolower($model), 'galaxy');
+
+        $isWatch = str_contains(mb_strtolower($categoryEn), 'watch') 
+            || str_contains(mb_strtolower($categoryAr), 'ساعة') 
+            || str_contains(mb_strtolower($categoryAr), 'ساعات');
+
+        $isCar = str_contains(mb_strtolower($categoryEn), 'car') 
+            || str_contains(mb_strtolower($categoryAr), 'سيار');
+
+        $colorName = $color ?: 'Deep Blue';
+
+        if ($isPhone) {
+            $isModernIphone = str_contains(mb_strtolower($model), 'iphone');
+
+            if ($isModernIphone) {
+                return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. The device is shown in a professional dual-angle studio showcase: one device angled facing front showing the vibrant edge-to-edge screen with ultra-thin bezels and the distinctive centered pill-shaped Dynamic Island cutout at the top, and another device showing the rear view with the premium matte {$colorName} frosted glass back, brushed dark metallic contoured edges, and the signature modern triple-lens camera bump with large sapphire glass lenses in the top-left. The back and frame of the phone MUST be richly colored in {$colorName} (dark navy blue). Centered composition on a pure, seamless studio white background (#FFFFFF) with soft natural contact shadows beneath the phones. Crisp sharp details, commercial product lighting, 8k resolution, photorealistic. Strictly NO white or silver back, strictly NO packaging boxes, NO cables, NO chargers, NO outdated notches, NO text, NO watermarks.";
+            }
+
+            return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. Presenting the standalone device with modern contemporary design, ultra-thin bezels, vibrant display, premium {$colorName} back, centered composition on a pure clean seamless studio white background (#FFFFFF), professional studio catalog lighting, 8k resolution, sharp focus, crisp details. Strictly NO packaging boxes, NO cables, NO chargers, NO text, NO watermarks.";
+        }
+
+        if ($isWatch) {
+            return "A realistic ultra-high-resolution commercial studio product photography of authentic {$brand} {$model} luxury watch in {$colorName} finish. Centered composition on pure clean seamless white background, elegant professional studio lighting, horology catalog photography, 8k resolution, sharp focus, crisp details, strictly standalone watch without box or cables, no watermark.";
+        }
+
+        if ($isCar) {
+            return "A realistic high-resolution commercial automotive studio photograph of authentic {$brand} {$model} in {$colorName} finish. Pure white showroom studio background, professional studio lighting, sharp crisp details, 8k, no watermark.";
+        }
+
+        return "A realistic high-resolution commercial studio product photograph of authentic {$brand} {$model} ({$categoryEn}) in {$colorName} finish. Centered on pure clean white background, professional commercial studio lighting, 8k resolution, sharp focus, photorealistic catalog photo, standalone item without packaging or cables, no watermark.";
+    }
+
+    private function translateBrandToEnglish(string $brand): string
+    {
+        $b = mb_strtolower(trim($brand));
+        $map = [
+            'أبل' => 'Apple',
+            'ابل' => 'Apple',
+            'apple' => 'Apple',
+            'سامسونج' => 'Samsung',
+            'سامسونغ' => 'Samsung',
+            'samsung' => 'Samsung',
+            'هواوي' => 'Huawei',
+            'huawei' => 'Huawei',
+            'شاومي' => 'Xiaomi',
+            'xiaomi' => 'Xiaomi',
+            'سوني' => 'Sony',
+            'sony' => 'Sony',
+            'رولكس' => 'Rolex',
+            'rolex' => 'Rolex',
+            'كارتييه' => 'Cartier',
+            'cartier' => 'Cartier',
+            'أوميغا' => 'Omega',
+            'اوميغا' => 'Omega',
+            'omega' => 'Omega',
+            'تويوتا' => 'Toyota',
+            'toyota' => 'Toyota',
+            'مرسيدس' => 'Mercedes-Benz',
+            'mercedes' => 'Mercedes-Benz',
+            'بي ام دبليو' => 'BMW',
+            'bmw' => 'BMW',
+            'لكزس' => 'Lexus',
+            'lexus' => 'Lexus',
+            'هوندا' => 'Honda',
+            'honda' => 'Honda',
+            'نيسان' => 'Nissan',
+            'nissan' => 'Nissan',
+            'فورد' => 'Ford',
+            'ford' => 'Ford',
+            'هيونداي' => 'Hyundai',
+            'hyundai' => 'Hyundai',
+            'كيا' => 'Kia',
+            'kia' => 'Kia',
+        ];
+        return $map[$b] ?? $brand;
+    }
+
+    private function translateColorToEnglish(string $color): string
+    {
+        // 1. استخراج الاسم الإنجليزي الصريح إن وجد بين قوسين مثل: كحلي ألمنيوم ( Deep Blue )
+        if (preg_match('/\(\s*([a-zA-Z\s\-]+)\s*\)/', $color, $matches)) {
+            $extracted = trim($matches[1]);
+            if (!empty($extracted)) {
+                return ucwords(strtolower($extracted));
+            }
+        }
+
+        // 2. إذا كان النص يحتوي على أسماء ألوان إنجليزية صريحة
+        if (preg_match('/\b(deep\s*blue|natural\s*titanium|black\s*titanium|white\s*titanium|desert\s*titanium|blue\s*titanium|space\s*black|space\s*gray|silver|gold|midnight|starlight|graphite|sierra\s*blue|alpine\s*green)\b/i', $color, $matches)) {
+            return ucwords(strtolower($matches[1]));
+        }
+
+        $c = mb_strtolower(trim($color));
+        $isTitanium = str_contains($c, 'تيتانيوم') || str_contains($c, 'titanium');
+
+        // 3. مطابقة الكلمات المفتاحية باللغة العربية
+        if (str_contains($c, 'كحلي') || str_contains($c, 'أزرق') || str_contains($c, 'ازرق') || str_contains($c, 'blue')) {
+            return $isTitanium ? 'Deep Blue Titanium' : 'Deep Blue';
+        }
+        if (str_contains($c, 'طبيعي') || str_contains($c, 'natural')) {
+            return 'Natural Titanium';
+        }
+        if (str_contains($c, 'صحراوي') || str_contains($c, 'desert')) {
+            return 'Desert Titanium';
+        }
+        if (str_contains($c, 'أسود') || str_contains($c, 'اسود') || str_contains($c, 'black')) {
+            return $isTitanium ? 'Black Titanium' : 'Phantom Black';
+        }
+        if (str_contains($c, 'أبيض') || str_contains($c, 'ابيض') || str_contains($c, 'white')) {
+            return $isTitanium ? 'White Titanium' : 'Pure White';
+        }
+        if (str_contains($c, 'فضي') || str_contains($c, 'silver')) {
+            return 'Silver';
+        }
+        if (str_contains($c, 'ذهبي') || str_contains($c, 'gold')) {
+            return 'Gold';
+        }
+        if (str_contains($c, 'رمادي') || str_contains($c, 'gray') || str_contains($c, 'grey')) {
+            return 'Space Gray';
+        }
+        if (str_contains($c, 'أخضر') || str_contains($c, 'اخضر') || str_contains($c, 'green')) {
+            return 'Alpine Green';
+        }
+        if (str_contains($c, 'أحمر') || str_contains($c, 'احمر') || str_contains($c, 'red')) {
+            return 'Product Red';
+        }
+
+        return 'Deep Blue';
+    }
+
+    private function detectBrandFromText(string $text): ?string
+    {
+        $t = mb_strtolower($text);
+        if (str_contains($t, 'أبل') || str_contains($t, 'ابل') || str_contains($t, 'apple') || str_contains($t, 'iphone')) return 'Apple';
+        if (str_contains($t, 'سامسونج') || str_contains($t, 'samsung') || str_contains($t, 'galaxy')) return 'Samsung';
+        if (str_contains($t, 'هواوي') || str_contains($t, 'huawei')) return 'Huawei';
+        if (str_contains($t, 'شاومي') || str_contains($t, 'xiaomi')) return 'Xiaomi';
+        if (str_contains($t, 'رولكس') || str_contains($t, 'rolex')) return 'Rolex';
+        if (str_contains($t, 'تويوتا') || str_contains($t, 'toyota')) return 'Toyota';
+        return null;
     }
 }

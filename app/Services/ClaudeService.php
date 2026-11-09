@@ -92,222 +92,64 @@ class ClaudeService
 SYSTEM;
 
         // ── استدعاء Claude API ───────────────────────────────────────────────
-        $preferredModel = env('ANTHROPIC_MODEL', 'claude-3-7-sonnet-20250219');
-        if ($preferredModel === 'claude-sonnet-4-5') {
-            $preferredModel = 'claude-3-7-sonnet-20250219';
-        }
-
-        $models = array_values(array_unique(array_filter([
-            $preferredModel,
-            'claude-3-7-sonnet-20250219',
-            'claude-3-5-sonnet-latest',
-            'claude-3-5-sonnet-20241022',
-        ])));
-
-        foreach ($models as $currentModel) {
-            try {
-                $response = $this->http->post(self::API_URL, [
-                    'headers' => [
-                        'x-api-key'         => $this->key,
-                        'anthropic-version' => self::API_VERSION,
-                        'content-type'      => 'application/json',
-                    ],
-                    'json' => [
-                        'model'      => $currentModel,
-                        'max_tokens' => 2048,
-                        'system'     => $systemPrompt,
-                        'messages'   => [
-                            [
-                                'role'    => 'user',
-                                'content' => $content,
-                            ]
-                        ],
-                    ],
-                ]);
-
-                $body = json_decode((string) $response->getBody(), true);
-                $raw = $body['content'][0]['text'] ?? null;
-
-                if (!$raw) {
-                    Log::warning("Claude model {$currentModel} returned empty response");
-                    continue;
-                }
-
-                // تنظيف الرد من أي code block لو Claude أضافها
-                $raw = preg_replace('/```json\s*/i', '', $raw);
-                $raw = preg_replace('/```\s*/i', '', $raw);
-                $raw = trim($raw);
-
-                $json = json_decode($raw, true);
-
-                if (!is_array($json)) {
-                    Log::warning("Claude model {$currentModel} returned invalid JSON: {$raw}");
-                    continue;
-                }
-
-                Log::info('Claude evaluation success', [
-                    'model'        => $currentModel,
-                    'order_images' => count($imagePaths),
-                    'recommended'  => $json['recommended_price'] ?? null,
-                    'confidence'   => $json['confidence'] ?? null,
-                ]);
-
-                return $json;
-
-            } catch (\Throwable $e) {
-                Log::warning("Claude model {$currentModel} failed: " . $e->getMessage());
-                continue;
-            }
-        }
-
-        Log::error('Claude API failed across all models, falling back to OpenAI GPT-4o');
-        return app(OpenAIService::class)->evaluateProduct($prompt, $imagePaths);
-    }
-
-    /**
-     * تحليل إجابات الأسئلة واستخراج بيانات البحث عن الصورة واسم المنتج والبرومبت لأي تصنيف ديناميكياً
-     * (جوالات، سيارات، مواشي، عقارات، ساعات، إلكترونيات، إلخ)
-     */
-    public function resolveProductImageDetails(string $answersText, string $category = '', string $objectionText = ''): array
-    {
-        $system = "You are an expert product identification and catalog specialist. Your job is to analyze product questionnaire answers across ANY category (smartphones, vehicles, livestock/animals, real estate, luxury watches, electronics, equipment, etc.) and return a structured JSON.";
-
-        $user = <<<PROMPT
-Category: {$category}
-Product Questionnaire & Inspection Details:
-{$answersText}
-{$objectionText}
-
-Analyze all the answers above. Output ONLY a valid JSON object with these exact keys:
-{
-  "product_title_en": "Precise make and model/breed/property name in English",
-  "product_title_ar": "الاسم الدقيق بالعربية",
-  "search_queries": [
-    "Most specific search query for an authentic photograph of this exact item",
-    "Secondary search query",
-    "Broader fallback search query"
-  ],
-  "color": "Color/finish in English (e.g. Silver, Black, Desert Titanium, White, etc.) or null",
-  "prompt": "High-end commercial catalog studio photograph prompt in English for DALL-E/FLUX fallback. Pure seamless studio white background (#FFFFFF) for objects/vehicles/phones/watches, or clean authentic setting for livestock/real estate. Strictly NO humans, NO women, NO faces, NO packaging boxes, NO cables, NO text, NO watermarks."
-}
-PROMPT;
-
         try {
-            $models = [
-                'claude-3-7-sonnet-20250219',
-                'claude-3-5-sonnet-latest',
-                'claude-3-5-sonnet-20241022',
-                'claude-3-5-haiku-latest',
-            ];
+            $response = $this->http->post(self::API_URL, [
+                'headers' => [
+                    'x-api-key'         => $this->key,
+                    'anthropic-version' => self::API_VERSION,
+                    'content-type'      => 'application/json',
+                ],
+                'json' => [
+                    'model'      => $this->model,
+                    'max_tokens' => 2048,
+                    'system'     => $systemPrompt,
+                    'messages'   => [
+                        [
+                            'role'    => 'user',
+                            'content' => $content,
+                        ]
+                    ],
+                ],
+            ]);
 
-            foreach ($models as $model) {
-                try {
-                    $response = $this->http->post(self::API_URL, [
-                        'headers' => [
-                            'x-api-key'         => $this->key,
-                            'anthropic-version' => self::API_VERSION,
-                            'content-type'      => 'application/json',
-                        ],
-                        'json' => [
-                            'model'      => $model,
-                            'max_tokens' => 600,
-                            'system'     => $system,
-                            'messages'   => [
-                                ['role' => 'user', 'content' => $user]
-                            ],
-                        ],
-                        'timeout' => 20,
-                    ]);
+            $body = json_decode((string) $response->getBody(), true);
 
-                    $body = json_decode((string) $response->getBody(), true);
-                    $text = trim($body['content'][0]['text'] ?? '');
-                    if (!empty($text)) {
-                        $clean = preg_replace('/```json\s*/i', '', $text);
-                        $clean = preg_replace('/```\s*/i', '', $clean);
-                        $data = json_decode(trim($clean), true);
-                        if (is_array($data) && !empty($data['search_queries'])) {
-                            return $data;
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    continue;
-                }
+            // استخرج النص من الرد
+            $raw = $body['content'][0]['text'] ?? null;
+
+            if (!$raw) {
+                Log::error('Claude: empty response', ['body' => $body]);
+                return [];
             }
-        } catch (\Throwable $e) {
-            Log::warning('Claude resolveProductImageDetails failed: ' . $e->getMessage());
-        }
 
-        return app(OpenAIService::class)->resolveProductImageDetails($answersText, $category, $objectionText);
-    }
+            // تنظيف الرد من أي code block لو Claude أضافها
+            $raw = preg_replace('/```json\s*/i', '', $raw);
+            $raw = preg_replace('/```\s*/i', '', $raw);
+            $raw = trim($raw);
 
-    /**
-     * توليد برومبت إنجليزي فائق الدقة للصورة بواسطة ذكاء Claude بناءً على كافة أسئلة وأجوبة الطلب
-     */
-    public function generateImagePromptFromDetails(string $answersText, string $category = '', string $objectionText = ''): string
-    {
-        $system = "You are an expert commercial product catalog art director. Your job is to analyze full product inspection answers and generate a single, highly detailed, photorealistic studio product photography prompt in English for DALL-E 3 image generation.";
+            $json = json_decode($raw, true);
 
-        $user = <<<PROMPT
-Category: {$category}
-Product Questionnaire & Inspection Details:
-{$answersText}
-{$objectionText}
-
-Based STRICTLY on the user's inspection answers and objection details above, generate a concise, highly specific commercial studio product photograph prompt in English for DALL-E 3:
-1. Deeply analyze all answers to extract the exact product:
-   - Accurately determine the exact brand, line, specific model/edition, production year, and generation.
-   - Extract the exact manufacturing materials specified in the answers (e.g., aluminum, titanium, stainless steel, ceramic, glass, etc.).
-   - Extract the exact color, shade, and surface finish (e.g., Deep Blue, Matte, Glossy, etc.).
-   - Factor in all hardware details and user-specified features (e.g., number of camera lenses, camera layout, physical buttons, display style).
-2. Depict the authentic, genuine real-world industrial design and hardware architecture of this exact model and generation (including its authentic camera module arrangement, chassis shape, bezels, and design signature).
-3. The item must be presented as a single clean, premium standalone product centered on a seamless, pure studio white background (#FFFFFF) with high-end commercial catalog studio lighting and soft subtle contact shadows. (Do NOT generate two mismatching devices side-by-side).
-4. STRICTLY NO packaging boxes, NO cardboard boxes, NO charging cables, NO power adapters, NO accessories clutter, NO text, NO watermarks.
-
-Output ONLY the raw English prompt string, with no quotes, no markdown, and no introductory or concluding remarks.
-PROMPT;
-
-        try {
-            $models = [
-                'claude-3-7-sonnet-20250219',
-                'claude-3-5-sonnet-latest',
-                'claude-3-5-sonnet-20241022',
-                'claude-3-5-haiku-latest',
-            ];
-
-            foreach ($models as $model) {
-                try {
-                    $response = $this->http->post(self::API_URL, [
-                        'headers' => [
-                            'x-api-key'         => $this->key,
-                            'anthropic-version' => self::API_VERSION,
-                            'content-type'      => 'application/json',
-                        ],
-                        'json' => [
-                            'model'      => $model,
-                            'max_tokens' => 500,
-                            'system'     => $system,
-                            'messages'   => [
-                                ['role' => 'user', 'content' => $user]
-                            ],
-                        ],
-                        'timeout' => 30,
-                    ]);
-
-                    $body = json_decode((string) $response->getBody(), true);
-                    $text = trim($body['content'][0]['text'] ?? '');
-                    if (!empty($text)) {
-                        return $text;
-                    }
-                } catch (\Throwable $e) {
-                    continue;
-                }
+            if (!is_array($json)) {
+                Log::error('Claude: invalid JSON in response', ['raw' => $raw]);
+                return [];
             }
-        } catch (\Throwable $e) {
-            Log::error('Claude generateImagePromptFromDetails failed: ' . $e->getMessage());
-        }
 
-        // في حال تعثر Claude أو عدم تفعيل الموديل بمفتاح Anthropic، الانتقال فوراً لـ OpenAI GPT-4o
-        return app(OpenAIService::class)->generateImagePromptFromDetails($answersText, $category, $objectionText);
+            Log::info('Claude evaluation success', [
+                'order_images' => count($imagePaths),
+                'recommended'  => $json['recommended_price'] ?? null,
+                'confidence'   => $json['confidence'] ?? null,
+            ]);
+
+            return $json;
+
+        } catch (\Throwable $e) {
+            Log::error('Claude API failed', [
+                'message' => $e->getMessage(),
+                'model'   => $this->model,
+            ]);
+
+            return [];
+        }
     }
 
     /**
