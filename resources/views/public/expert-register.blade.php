@@ -336,6 +336,314 @@
                 font-size: 2.8rem;
             }
         }
+
+        /* ===== ATTACHMENTS SECTION (MANDATORY) ===== */
+        .attachments-section-wrapper {
+            background: #ffffff;
+            border: 2px solid rgba(255, 159, 10, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 30px rgba(255, 159, 10, 0.06);
+            position: relative;
+        }
+
+        .attachments-notice-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.2rem;
+            background: linear-gradient(135deg, rgba(255, 159, 10, 0.12) 0%, rgba(255, 159, 10, 0.03) 100%);
+            border: 1.5px solid rgba(255, 159, 10, 0.35);
+            border-radius: 14px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .notice-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--gold);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(255, 159, 10, 0.3);
+        }
+
+        .notice-content h4 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+        }
+
+        .notice-content p {
+            color: #444;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .badge-mandatory {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            color: #d97706;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        .dropzone-area {
+            border: 2px dashed rgba(255, 159, 10, 0.5);
+            border-radius: 16px;
+            background: var(--bg-alt);
+            padding: 2.2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropzone-area:hover,
+        .dropzone-area.dragover {
+            border-color: var(--gold);
+            background: rgba(255, 159, 10, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .dropzone-icon {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 0.8rem;
+        }
+
+        .dropzone-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .dropzone-subtitle {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .dropzone-hints {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .dropzone-hints span {
+            font-size: 0.82rem;
+            color: #666;
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-choose-files {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.75rem 1.8rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-choose-files:hover {
+            background: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(255, 159, 10, 0.3);
+        }
+
+        .uploaded-attachments-list {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .attachment-item-card {
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 1.2rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .attachment-item-card:hover {
+            border-color: rgba(255, 159, 10, 0.6);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+        }
+
+        .attachment-item-card.has-error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .attachment-item-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.9rem;
+        }
+
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .attachment-badge-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .pdf-badge {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+
+        .img-badge {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+        }
+
+        .attachment-name-meta {
+            overflow: hidden;
+        }
+
+        .attachment-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attachment-meta {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        .btn-delete-file {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-delete-file:hover {
+            background: #ef4444;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .attachment-type-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .attachment-type-label {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .attachment-type-select {
+            flex: 1;
+            min-width: 240px;
+            background: var(--bg-alt);
+            border: 1.5px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+
+        .attachment-type-select:focus {
+            border-color: var(--gold);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--gold-soft);
+        }
+
+        .btn-add-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1.5px dashed var(--gold);
+            color: var(--gold);
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-add-more:hover {
+            background: var(--gold);
+            color: #ffffff;
+        }
     </style>
 </head>
 
@@ -484,9 +792,51 @@
                         <label>الصورة الشخصية</label>
                         <input type="file" name="image" accept="image/*">
                     </div>
-                    <div class="form-group full">
-                        <label>شهادة الخبرة (PDF أو صورة)</label>
-                        <input type="file" name="experience_certificate" accept=".pdf,image/*">
+                    <!-- Attachments Section (Mandatory) -->
+                    <div class="form-group full attachments-section-wrapper" id="attachmentsSection">
+                        
+                        <!-- Alert / Notice Box -->
+                        <div class="attachments-notice-card">
+                            <div class="notice-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="notice-content">
+                                <h4>عزيزي الخبير :</h4>
+                                <p>رفعك للمرفقات يسهل عليك سرعة اعتماد العضوية وتوثيقها</p>
+                                <span class="badge-mandatory"><i class="fas fa-asterisk"></i> المرفقات إجبارية لإتمام وتوثيق العضوية</span>
+                            </div>
+                        </div>
+
+                        <!-- Upload Box / Dropzone -->
+                        <div class="dropzone-area" id="dropzoneArea">
+                            <input type="file" id="attachmentsFileInput" multiple accept=".pdf,image/jpeg,image/png,image/jpg,image/webp" style="display: none;">
+                            <div class="dropzone-icon">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3 class="dropzone-title">ارفع المرفقات هنا</h3>
+                            <p class="dropzone-subtitle">انقر لاختيار الملفات أو اسحبها وأفلتها هنا</p>
+                            <div class="dropzone-hints">
+                                <span><i class="fas fa-file-pdf"></i> ملفات PDF</span>
+                                <span><i class="fas fa-file-image"></i> صور (JPG, PNG, WEBP)</span>
+                                <span><i class="fas fa-database"></i> حتى 10 ميجابايت للمرفق</span>
+                            </div>
+                            <button type="button" class="btn-choose-files" id="btnChooseFiles">
+                                <i class="fas fa-folder-open"></i> اختيار المرفقات
+                            </button>
+                        </div>
+
+                        <!-- Uploaded Files List with Type Selector -->
+                        <div class="uploaded-attachments-list" id="uploadedAttachmentsList">
+                            <!-- Cards will be dynamically added here -->
+                        </div>
+
+                        <!-- Add More Button (visible when files are present) -->
+                        <div id="addMoreWrapper" style="display: none; margin-top: 1.2rem; text-align: right;">
+                            <button type="button" class="btn-add-more" id="btnAddMore">
+                                <i class="fas fa-plus-circle"></i> إضافة مرفق آخر
+                            </button>
+                        </div>
+
                     </div>
                     <div class="form-group full">
                         <label>الخبرات السابقة</label>
@@ -531,14 +881,240 @@
 
         const form = document.getElementById('expertRegisterForm');
         const submitBtn = document.getElementById('submitBtn');
+        const dropzoneArea = document.getElementById('dropzoneArea');
+        const fileInput = document.getElementById('attachmentsFileInput');
+        const btnChooseFiles = document.getElementById('btnChooseFiles');
+        const btnAddMore = document.getElementById('btnAddMore');
+        const addMoreWrapper = document.getElementById('addMoreWrapper');
+        const attachmentsList = document.getElementById('uploadedAttachmentsList');
 
+        // Store selected attachments: [{ id, file, type }]
+        let expertAttachments = [];
+
+        // Open file picker
+        btnChooseFiles.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        btnAddMore.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        dropzoneArea.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                fileInput.click();
+            }
+        });
+
+        // Drag & Drop handlers
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzoneArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzoneArea.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzoneArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzoneArea.classList.remove('dragover');
+            }, false);
+        });
+
+        dropzoneArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFilesSelection(files);
+        });
+
+        fileInput.addEventListener('change', () => {
+            handleFilesSelection(fileInput.files);
+            fileInput.value = ''; // Reset input to allow re-selecting same file if needed
+        });
+
+        function formatBytes(bytes, decimals = 1) {
+            if (!+bytes) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['بايت', 'ك.ب', 'م.ب', 'ج.ب'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        function handleFilesSelection(files) {
+            if (!files || files.length === 0) return;
+
+            const allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+            const maxBytes = 10 * 1024 * 1024; // 10MB
+
+            Array.from(files).forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!allowedExts.includes(ext)) {
+                    Swal.fire({
+                        title: 'نوع ملف غير مدعوم',
+                        text: `الملف "${file.name}" غير مدعوم. يرجى رفع ملفات PDF أو صور فقط.`,
+                        icon: 'warning',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#C1953E'
+                    });
+                    return;
+                }
+
+                if (file.size > maxBytes) {
+                    Swal.fire({
+                        title: 'حجم الملف كبير',
+                        text: `الملف "${file.name}" يتجاوز الحد الأقصى المسموح (10 ميجابايت).`,
+                        icon: 'warning',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#C1953E'
+                    });
+                    return;
+                }
+
+                const uniqueId = 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                expertAttachments.push({
+                    id: uniqueId,
+                    file: file,
+                    type: ''
+                });
+            });
+
+            renderAttachmentsList();
+        }
+
+        function renderAttachmentsList() {
+            attachmentsList.innerHTML = '';
+
+            if (expertAttachments.length === 0) {
+                addMoreWrapper.style.display = 'none';
+                return;
+            }
+
+            addMoreWrapper.style.display = 'block';
+
+            expertAttachments.forEach((item, index) => {
+                const isPdf = item.file.name.toLowerCase().endsWith('.pdf');
+                const card = document.createElement('div');
+                card.className = 'attachment-item-card' + (!item.type ? '' : '');
+                card.id = `card_${item.id}`;
+
+                card.innerHTML = `
+                    <div class="attachment-item-top">
+                        <div class="attachment-info">
+                            <div class="attachment-badge-icon ${isPdf ? 'pdf-badge' : 'img-badge'}">
+                                <i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-image'}"></i>
+                            </div>
+                            <div class="attachment-name-meta">
+                                <div class="attachment-name" title="${item.file.name}">${index + 1}. ${item.file.name}</div>
+                                <div class="attachment-meta">${formatBytes(item.file.size)}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-delete-file" data-id="${item.id}" title="حذف هذا المرفق">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div class="attachment-type-container">
+                        <label class="attachment-type-label">
+                            <i class="fas fa-tag" style="color: var(--gold);"></i> حدد نوع المرفق : <span style="color:red;">*</span>
+                        </label>
+                        <select class="attachment-type-select" data-id="${item.id}" required>
+                            <option value="" disabled ${!item.type ? 'selected' : ''}>-- اضغط هنا لاختيار نوع المرفق --</option>
+                            <option value="شهادة" ${item.type === 'شهادة' ? 'selected' : ''}>شهادة</option>
+                            <option value="دورة" ${item.type === 'دورة' ? 'selected' : ''}>دورة</option>
+                            <option value="وثيقة عمل حر" ${item.type === 'وثيقة عمل حر' ? 'selected' : ''}>وثيقة عمل حر</option>
+                            <option value="سجل تجاري" ${item.type === 'سجل تجاري' ? 'selected' : ''}>سجل تجاري</option>
+                            <option value="مشهد" ${item.type === 'مشهد' ? 'selected' : ''}>مشهد</option>
+                            <option value="تعريف عمل" ${item.type === 'تعريف عمل' ? 'selected' : ''}>تعريف عمل</option>
+                            <option value="خبرة" ${item.type === 'خبرة' ? 'selected' : ''}>خبرة</option>
+                            <option value="اعتماد" ${item.type === 'اعتماد' ? 'selected' : ''}>اعتماد</option>
+                            <option value="تزكية" ${item.type === 'تزكية' ? 'selected' : ''}>تزكية</option>
+                            <option value="أخرى" ${item.type === 'أخرى' ? 'selected' : ''}>أخرى</option>
+                        </select>
+                    </div>
+                `;
+
+                // Handle delete
+                card.querySelector('.btn-delete-file').addEventListener('click', () => {
+                    removeAttachment(item.id);
+                });
+
+                // Handle type change
+                const selectElem = card.querySelector('.attachment-type-select');
+                selectElem.addEventListener('change', (e) => {
+                    item.type = e.target.value;
+                    card.classList.remove('has-error');
+                });
+
+                attachmentsList.appendChild(card);
+            });
+        }
+
+        function removeAttachment(id) {
+            expertAttachments = expertAttachments.filter(item => item.id !== id);
+            renderAttachmentsList();
+        }
+
+        // Form Submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // 1. Check if at least one attachment exists (Mandatory)
+            if (expertAttachments.length === 0) {
+                Swal.fire({
+                    title: 'المرفقات إجبارية!',
+                    html: 'عزيزي الخبير : <br><strong>رفعك للمرفقات يسهل عليك سرعة اعتماد العضوية وتوثيقها.</strong><br>يرجى رفع مرفق واحد على الأقل للمتابعة.',
+                    icon: 'warning',
+                    confirmButtonText: 'حسناً، سأرفع المرفقات',
+                    confirmButtonColor: '#C1953E'
+                }).then(() => {
+                    document.getElementById('attachmentsSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+                return;
+            }
+
+            // 2. Check if all attachments have an assigned type
+            let unassigned = false;
+            expertAttachments.forEach(item => {
+                const card = document.getElementById(`card_${item.id}`);
+                if (!item.type) {
+                    unassigned = true;
+                    if (card) {
+                        card.classList.add('has-error');
+                    }
+                } else if (card) {
+                    card.classList.remove('has-error');
+                }
+            });
+
+            if (unassigned) {
+                Swal.fire({
+                    title: 'يرجى تحديد نوع المرفق',
+                    text: 'يرجى تحديد نوع المرفق (شهادة / دورة / وثيقة عمل حر / ...) لكل ملف تم رفعه.',
+                    icon: 'warning',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#C1953E'
+                }).then(() => {
+                    const firstError = document.querySelector('.attachment-item-card.has-error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+                return;
+            }
+
             submitBtn.disabled = true;
-            submitBtn.innerText = 'جاري الإرسال...';
+            submitBtn.innerText = 'جاري إرسال الطلب والمرفقات...';
 
             const formData = new FormData(form);
+
+            // Append all attachments and their types
+            expertAttachments.forEach(item => {
+                formData.append('attachments[]', item.file);
+                formData.append('attachment_types[]', item.type);
+            });
 
             try {
                 const response = await fetch("{{ route('experts.register.submit') }}", {
@@ -553,13 +1129,15 @@
 
                 if (result.status) {
                     Swal.fire({
-                        title: 'تم الإرسال!',
+                        title: 'تم إرسال الطلب بنجاح!',
                         text: result.message,
                         icon: 'success',
-                        confirmButtonText: 'حسناً',
+                        confirmButtonText: 'تم',
                         confirmButtonColor: '#C1953E'
                     });
                     form.reset();
+                    expertAttachments = [];
+                    renderAttachmentsList();
                 } else {
                     let errorMsg = result.message || 'حدث خطأ ما، يرجى المحاولة لاحقاً';
                     if (result.errors) {
@@ -577,8 +1155,8 @@
                 }
             } catch (error) {
                 Swal.fire({
-                    title: 'خطأ',
-                    text: 'فشل الاتصال بالخادم، يرجى المحقق من الإنترنت',
+                    title: 'خطأ في الاتصال',
+                    text: 'فشل الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت والمحاولة ثانية.',
                     icon: 'error',
                     confirmButtonText: 'حسناً',
                     confirmButtonColor: '#C1953E'

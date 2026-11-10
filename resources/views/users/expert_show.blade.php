@@ -487,6 +487,60 @@
                 </div>
             @endif
 
+            {{-- ===== قسم المرفقات والشهادات المعتمدة ===== --}}
+            <div class="declaration-card" style="border-color: #c1953e; background: #fffcf8; margin-top: 25px; margin-bottom: 25px;">
+                <div class="dec-header" style="border-bottom: 1px solid #f0e6d6; padding-bottom: 12px; margin-bottom: 15px;">
+                    <div class="dec-title" style="color: #c1953e; font-weight: bold; font-size: 16px;">
+                        📁 مرفقات وشهادات توثيق العضوية ({{ $user->expertAttachments->count() }})
+                    </div>
+                    <span class="dec-badge badge-signed">مرفقات الخبير</span>
+                </div>
+
+                @if($user->expertAttachments->count() > 0)
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+                        @foreach($user->expertAttachments as $att)
+                            <div style="border: 1px solid #e5ddd0; border-radius: 12px; padding: 14px; background: white; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+                                    <span style="background: rgba(193, 149, 62, 0.12); color: #c1953e; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 13px;">
+                                        🏷️ {{ $att->attachment_type }}
+                                    </span>
+                                    <small style="color: #888;">{{ $att->created_at ? $att->created_at->format('Y-m-d') : '' }}</small>
+                                </div>
+
+                                <div style="font-weight: 600; font-size: 13.5px; color: #333; word-break: break-all;">
+                                    📄 {{ $att->original_name ?: $att->file_path }}
+                                </div>
+
+                                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                                    <a href="{{ $att->url }}" target="_blank" class="btn btn-sm btn-outline-primary" style="flex: 1; text-align: center; font-size: 13px;">
+                                        <i class="fa fa-eye"></i> عرض
+                                    </a>
+                                    <a href="{{ $att->url }}" download class="btn btn-sm btn-gold" style="font-size: 13px;">
+                                        <i class="fa fa-download"></i> تحميل
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @elseif($user->experience_certificate)
+                    <div style="border: 1px solid #e5ddd0; border-radius: 12px; padding: 14px; background: white; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <span style="background: rgba(193, 149, 62, 0.12); color: #c1953e; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 13px;">
+                                🏷️ شهادة خبرة
+                            </span>
+                            <div style="margin-top: 6px; font-weight: 600;">{{ $user->experience_certificate }}</div>
+                        </div>
+                        <a href="{{ asset('uploads/experts/certificates/' . $user->experience_certificate) }}" target="_blank" class="btn-gold" style="padding: 6px 16px; font-size: 13px;">
+                            عرض الملف
+                        </a>
+                    </div>
+                @else
+                    <div style="text-align: center; color: #999; padding: 15px;">
+                        لا توجد مرفقات مرفوعة لهذا الخبير
+                    </div>
+                @endif
+            </div>
+
             <!-- Orders Table -->
             <table class="invoice-table">
                 <thead>

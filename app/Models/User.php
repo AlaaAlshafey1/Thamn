@@ -135,4 +135,9 @@ class User extends Authenticatable
         return $this->hasOne(ArbitratorDeclaration::class);
     }
 
+    public function expertAttachments()
+    {
+        return $this->hasMany(ExpertAttachment::class, 'user_id');
+    }
+
 }

@@ -68,8 +68,11 @@ class ExpertRegistrationController extends Controller
             'expertise' => 'nullable|string',
             'certificates' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'experience_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:5120',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'attachments' => 'required|array|min:1',
+            'attachments.*' => 'required|file|mimes:pdf,jpeg,png,jpg,webp|max:10240',
+            'attachment_types' => 'required|array|min:1',
+            'attachment_types.*' => 'required|string|in:شهادة,دورة,وثيقة عمل حر,سجل تجاري,مشهد,تعريف عمل,خبرة,اعتماد,تزكية,أخرى',
         ], [
             'first_name.required' => 'الاسم الأول مطلوب',
             'last_name.required' => 'اسم العائلة مطلوب',
@@ -78,6 +81,16 @@ class ExpertRegistrationController extends Controller
             'email.unique' => 'البريد الإلكتروني مُسجل مسبقاً',
             'phone.required' => 'رقم الجوال مطلوب',
             'nationality.required' => 'يرجى اختيار الجنسية',
+            'category_id.required' => 'يرجى اختيار القسم الرئيسي للتقييم',
+            'attachments.required' => 'يرجى رفع المرفقات؛ رفع المرفقات إجباري لتسهيل واعتماد عضويتك كخبير',
+            'attachments.min' => 'يرجى رفع مرفق واحد على الأقل',
+            'attachments.*.required' => 'الملف المرفوع غير صالح',
+            'attachments.*.file' => 'الملف المرفوع غير صالح',
+            'attachments.*.mimes' => 'يجب أن يكون المرفق ملف PDF أو صورة (JPG, PNG, WEBP)',
+            'attachments.*.max' => 'الحد الأقصى لحجم المرفق هو 10 ميجابايت',
+            'attachment_types.required' => 'يرجى تحديد نوع المرفق لكل ملف تم رفعه',
+            'attachment_types.*.required' => 'يرجى تحديد نوع المرفق لكل ملف تم رفعه',
+            'attachment_types.*.in' => 'نوع المرفق المحدد غير صالح',
         ]);
 
         if ($validator->fails()) {
@@ -88,7 +101,7 @@ class ExpertRegistrationController extends Controller
         }
 
         $plainPassword = \Illuminate\Support\Str::random(10);
-        $data = $request->except(['image', 'experience_certificate']);
+        $data = $request->except(['image', 'experience_certificate', 'attachments', 'attachment_types']);
         $data['password'] = Hash::make($plainPassword);
         $data['is_active'] = false; // Pending approval
 
@@ -110,8 +123,42 @@ class ExpertRegistrationController extends Controller
             $uploadedFiles[] = public_path('uploads/users/' . $name);
         }
 
-        // Handle Certificate Upload
-        if ($request->hasFile('experience_certificate')) {
+        // Handle Attachments Upload
+        $attachmentsDir = public_path('uploads/experts/attachments');
+        if (!\Illuminate\Support\Facades\File::exists($attachmentsDir)) {
+            \Illuminate\Support\Facades\File::makeDirectory($attachmentsDir, 0755, true);
+        }
+
+        $savedAttachments = [];
+        if ($request->hasFile('attachments')) {
+            $types = $request->input('attachment_types', []);
+            foreach ($request->file('attachments') as $idx => $file) {
+                if ($file && $file->isValid()) {
+                    $originalName = $file->getClientOriginalName();
+                    $ext = $file->getClientOriginalExtension();
+                    $name = time() . '_' . $idx . '_' . \Illuminate\Support\Str::random(8) . '.' . $ext;
+                    $file->move($attachmentsDir, $name);
+                    $fullPath = $attachmentsDir . '/' . $name;
+                    $uploadedFiles[] = $fullPath;
+
+                    $type = $types[$idx] ?? 'أخرى';
+                    if (!in_array($type, \App\Models\ExpertAttachment::TYPES)) {
+                        $type = 'أخرى';
+                    }
+
+                    $savedAttachments[] = [
+                        'file_path' => $name,
+                        'original_name' => $originalName,
+                        'attachment_type' => $type,
+                        'file_size' => @filesize($fullPath) ?: null,
+                        'mime_type' => $file->getClientMimeType() ?: null,
+                    ];
+                }
+            }
+        }
+
+        // Backward compatibility if single experience_certificate passed
+        if (empty($savedAttachments) && $request->hasFile('experience_certificate')) {
             $file = $request->file('experience_certificate');
             $name = time() . '_cert.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/experts/certificates'), $name);
@@ -121,6 +168,16 @@ class ExpertRegistrationController extends Controller
 
         try {
             $user = User::create($data);
+
+            // Save attachments to expert_attachments table
+            foreach ($savedAttachments as $att) {
+                $user->expertAttachments()->create($att);
+            }
+
+            // Set primary certificate for backwards compatibility
+            if (!empty($savedAttachments)) {
+                $user->update(['experience_certificate' => $savedAttachments[0]['file_path']]);
+            }
 
             // Assign expert role (Spatie)
             try {
