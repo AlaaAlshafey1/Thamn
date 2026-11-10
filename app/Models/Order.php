@@ -66,6 +66,52 @@ class Order extends Model
         'objection_replied_at' => 'datetime',
     ];
 
+    /**
+     * Bootstrap the model and its traits.
+     */
+    protected static function booted()
+    {
+        static::updated(function (Order $order) {
+            if ($order->wasChanged('status')) {
+                try {
+                    $order->sendOrderUpdatedFcm();
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Order status FCM data-only failed: ' . $e->getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * Send pure data-only FCM push to mobile device(s) when order status changes.
+     */
+    public function sendOrderUpdatedFcm(): array
+    {
+        $tokens = [];
+
+        // 1. Customer tokens
+        if ($this->user) {
+            $tokens = array_merge($tokens, $this->user->getFcmTokens());
+        }
+
+        // 2. Assigned Expert tokens (if any)
+        if ($this->expert) {
+            $tokens = array_merge($tokens, $this->expert->getFcmTokens());
+        }
+
+        $tokens = array_values(array_unique(array_filter($tokens)));
+
+        if (empty($tokens)) {
+            return ['success' => false, 'error' => 'No FCM tokens found'];
+        }
+
+        return \App\Http\Traits\FCMOperation::sendDataOnly($tokens, [
+            'type'     => 'order_updated',
+            'order_id' => (string) $this->id,
+            'refresh'  => '1',
+        ]);
+    }
+
     public function objectionReason()
     {
         return $this->belongsTo(ObjectionReason::class, 'objection_reason_id');
