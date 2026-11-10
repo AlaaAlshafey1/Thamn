@@ -46,27 +46,41 @@ class SettingController extends Controller
     }
 
     /**
-     * تحديث أرقام إصدارات تطبيقات الموبايل وروابط المتاجر
+     * تحديث أرقام إصدارات تطبيقات الموبايل وروابط المتاجر وعناوين التحديث
      */
     public function updateAppVersions(Request $request)
     {
         $request->validate([
-            'android_app_version'   => 'required|string|max:30',
-            'ios_app_version'       => 'required|string|max:30',
-            'android_store_url'     => 'nullable|string|max:500',
-            'ios_store_url'         => 'nullable|string|max:500',
-            'app_update_message_ar' => 'nullable|string|max:500',
-            'app_update_message_en' => 'nullable|string|max:500',
-            'android_force_update'  => 'nullable|in:0,1',
-            'ios_force_update'      => 'nullable|in:0,1',
+            'android_app_version'       => 'required|string|max:30',
+            'ios_app_version'           => 'required|string|max:30',
+            'android_store_url'         => 'nullable|string|max:500',
+            'ios_store_url'             => 'nullable|string|max:500',
+            'app_update_title_ar'       => 'nullable|string|max:255',
+            'app_update_title_en'       => 'nullable|string|max:255',
+            'app_update_description_ar' => 'nullable|string|max:500',
+            'app_update_description_en' => 'nullable|string|max:500',
+            'app_update_message_ar'     => 'nullable|string|max:500',
+            'app_update_message_en'     => 'nullable|string|max:500',
+            'android_force_update'      => 'nullable|in:0,1',
+            'ios_force_update'          => 'nullable|in:0,1',
         ]);
+
+        $titleAr = trim($request->app_update_title_ar ?? '');
+        $titleEn = trim($request->app_update_title_en ?? '');
+        $descAr = trim($request->app_update_description_ar ?: ($request->app_update_message_ar ?? ''));
+        $descEn = trim($request->app_update_description_en ?: ($request->app_update_message_en ?? ''));
 
         Setting::updateOrCreate(['key' => 'android_app_version'], ['value' => trim($request->android_app_version)]);
         Setting::updateOrCreate(['key' => 'ios_app_version'], ['value' => trim($request->ios_app_version)]);
         Setting::updateOrCreate(['key' => 'android_store_url'], ['value' => trim($request->android_store_url ?? '')]);
         Setting::updateOrCreate(['key' => 'ios_store_url'], ['value' => trim($request->ios_store_url ?? '')]);
-        Setting::updateOrCreate(['key' => 'app_update_message_ar'], ['value' => trim($request->app_update_message_ar ?? '')]);
-        Setting::updateOrCreate(['key' => 'app_update_message_en'], ['value' => trim($request->app_update_message_en ?? '')]);
+        Setting::updateOrCreate(['key' => 'app_update_title_ar'], ['value' => $titleAr]);
+        Setting::updateOrCreate(['key' => 'app_update_title_en'], ['value' => $titleEn]);
+        Setting::updateOrCreate(['key' => 'app_update_description_ar'], ['value' => $descAr]);
+        Setting::updateOrCreate(['key' => 'app_update_description_en'], ['value' => $descEn]);
+        // مزامنة مع المفتاح القديم للحفاظ على التوافق التام
+        Setting::updateOrCreate(['key' => 'app_update_message_ar'], ['value' => $descAr]);
+        Setting::updateOrCreate(['key' => 'app_update_message_en'], ['value' => $descEn]);
         Setting::updateOrCreate(['key' => 'android_force_update'], ['value' => $request->boolean('android_force_update') ? '1' : '0']);
         Setting::updateOrCreate(['key' => 'ios_force_update'], ['value' => $request->boolean('ios_force_update') ? '1' : '0']);
 

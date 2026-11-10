@@ -62,17 +62,26 @@ class AuthController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Send OTP via Email & WhatsApp
-        try {
-            \Log::debug("Sending OTP Email/WhatsApp to: " . $user->email . " / " . $user->phone . " with OTP: " . $otp);
-            Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
-            
-            $whatsapp = app(\App\Services\WhatsAppService::class);
-            $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك في ثمن هو: $otp . لا تشاركه مع أحد يا غالي.");
-            
-            \Log::debug("OTP sent successfully.");
-        } catch (\Exception $e) {
-            \Log::error('OTP Delivery Failed (Register): ' . $e->getMessage());
+        // Send OTP via Email & WhatsApp (isolated so failure in one channel doesn't block the other)
+        if (!empty($user->email)) {
+            try {
+                \Log::debug("Sending OTP Email to: " . $user->email . " with OTP: " . $otp);
+                Mail::to($user->email)->send(new OTPMail($otp, trim($user->first_name . ' ' . $user->last_name)));
+                \Log::debug("Register OTP Email sent successfully.");
+            } catch (\Exception $e) {
+                \Log::error('OTP Delivery Failed (Register Email): ' . $e->getMessage());
+            }
+        }
+
+        if (!empty($user->phone)) {
+            try {
+                \Log::debug("Sending OTP WhatsApp to: " . $user->phone . " with OTP: " . $otp);
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك في ثمن هو: $otp . لا تشاركه مع أحد يا غالي.");
+                \Log::debug("Register OTP WhatsApp sent successfully.");
+            } catch (\Exception $e) {
+                \Log::error('OTP Delivery Failed (Register WhatsApp): ' . $e->getMessage());
+            }
         }
 
         // هنا تبعته SMS لو عندك خدمة
@@ -321,14 +330,24 @@ class AuthController extends Controller
 
         $user = User::find($request->user_id);
 
-        // Send OTP via Email & WhatsApp
-        try {
-            Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
-            
-            $whatsapp = app(\App\Services\WhatsAppService::class);
-            $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك الجديد في ثمن هو: $otp");
-        } catch (\Exception $e) {
-            \Log::error('OTP Delivery Failed (Resend): ' . $e->getMessage());
+        // Send OTP via Email & WhatsApp (isolated so failure in one channel doesn't block the other)
+        if (!empty($user->email)) {
+            try {
+                Mail::to($user->email)->send(new OTPMail($otp, trim($user->first_name . ' ' . $user->last_name)));
+                \Log::debug("Resend OTP Email sent successfully.");
+            } catch (\Exception $e) {
+                \Log::error('OTP Delivery Failed (Resend Email): ' . $e->getMessage());
+            }
+        }
+
+        if (!empty($user->phone)) {
+            try {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك الجديد في ثمن هو: $otp");
+                \Log::debug("Resend OTP WhatsApp sent successfully.");
+            } catch (\Exception $e) {
+                \Log::error('OTP Delivery Failed (Resend WhatsApp): ' . $e->getMessage());
+            }
         }
 
         return response()->json([
@@ -427,14 +446,24 @@ class AuthController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Send OTP via WhatsApp & Email
-        try {
-            $whatsapp = app(\App\Services\WhatsAppService::class);
-            $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp . لا تشاركه مع أحد.");
-            
-            Mail::to($user->email)->send(new ResetPasswordOTPMail($otp, $user->first_name . ' ' . $user->last_name));
-        } catch (\Exception $e) {
-            \Log::error('Forgot Password Delivery Failed: ' . $e->getMessage());
+        // Send OTP via Email & WhatsApp (isolated so WhatsApp outage never blocks email OTP)
+        if (!empty($user->email)) {
+            try {
+                Mail::to($user->email)->send(new ResetPasswordOTPMail($otp, trim($user->first_name . ' ' . $user->last_name)));
+                \Log::debug("Forgot Password OTP Email sent successfully to: {$user->email}");
+            } catch (\Exception $e) {
+                \Log::error('Forgot Password Delivery Failed (Email): ' . $e->getMessage());
+            }
+        }
+
+        if (!empty($user->phone)) {
+            try {
+                $whatsapp = app(\App\Services\WhatsAppService::class);
+                $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp . لا تشاركه مع أحد.");
+                \Log::debug("Forgot Password OTP WhatsApp sent successfully to: {$user->phone}");
+            } catch (\Exception $e) {
+                \Log::error('Forgot Password Delivery Failed (WhatsApp): ' . $e->getMessage());
+            }
         }
 
 

@@ -220,18 +220,40 @@
                                 </div>
                             </div>
 
-                            <!-- رسائل التحديث للمستخدم -->
+                            <!-- نصوص وعناوين نافذة التحديث للمستخدم (Popup Title & Description) -->
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-label font-weight-bold">رسالة التنبيه بالتحديث (بالعربية)</label>
-                                    <textarea class="form-control" name="app_update_message_ar" rows="3" placeholder="يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.">{{ $settings['app_update_message_ar'] ?? 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.' }}</textarea>
+                                    <label class="form-label font-weight-bold">عنوان نافذة التحديث (بالعربية - update_title)</label>
+                                    <input type="text" class="form-control" name="app_update_title_ar" 
+                                           value="{{ $settings['app_update_title_ar'] ?? 'حدّث تطبيقك وكمل معنا' }}" 
+                                           placeholder="مثال: حدّث تطبيقك وكمل معنا">
+                                    <small class="text-muted">العنوان العريض الذي يظهر في أعلى نافذة التحديث بالموبايل.</small>
                                 </div>
                             </div>
 
                             <div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-label font-weight-bold">رسالة التنبيه بالتحديث (بالإنجليزية)</label>
-                                    <textarea class="form-control" name="app_update_message_en" rows="3" placeholder="A new version of Thamn app is available. Please update now for the best experience.">{{ $settings['app_update_message_en'] ?? 'A new version of Thamn app is available. Please update now for the best experience.' }}</textarea>
+                                    <label class="form-label font-weight-bold">عنوان نافذة التحديث (بالإنجليزية - update_title)</label>
+                                    <input type="text" class="form-control" name="app_update_title_en" 
+                                           value="{{ $settings['app_update_title_en'] ?? 'Update Your App & Continue With Us' }}" 
+                                           placeholder="e.g. Update Your App & Continue With Us">
+                                    <small class="text-muted">العنوان باللغة الإنجليزية في حال كانت لغة التطبيق إنجليزية.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-label font-weight-bold">وصف / تفاصيل التحديث (بالعربية - update_description)</label>
+                                    <textarea class="form-control" name="app_update_description_ar" rows="3" placeholder="يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.">{{ $settings['app_update_description_ar'] ?? ($settings['app_update_message_ar'] ?? 'يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.') }}</textarea>
+                                    <small class="text-muted">النص التوضيحي الذي يظهر تحت العنوان مباشرة في الموبايل.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-label font-weight-bold">وصف / تفاصيل التحديث (بالإنجليزية - update_description)</label>
+                                    <textarea class="form-control" name="app_update_description_en" rows="3" placeholder="A new version is available, please update the app to continue.">{{ $settings['app_update_description_en'] ?? ($settings['app_update_message_en'] ?? 'A new version is available, please update the app to continue.') }}</textarea>
+                                    <small class="text-muted">الوصف باللغة الإنجليزية في حال كانت لغة التطبيق إنجليزية.</small>
                                 </div>
                             </div>
                         </div>

@@ -396,8 +396,8 @@
                                 <input id="otp" type="text" name="otp" required autofocus placeholder="1234" maxlength="4" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; font-weight: bold; direction: ltr;">
                                 <i class='bx bx-key'></i>
                             </div>
-                            <div style="font-size: 0.85rem; color: #888; text-align: center; margin-top: 10px;">
-                                تم إرسال الرمز إلى حسابك.
+                            <div style="font-size: 0.85rem; color: #666; text-align: center; margin-top: 10px; line-height: 1.5;">
+                                تم إرسال الرمز إلى بريدك الإلكتروني والواتساب، أدخله للمتابعة.
                             </div>
                         </div>
 
@@ -405,6 +405,12 @@
                             <span>تأكيد وتسجيل الدخول</span>
                             <i class='bx bx-log-in-circle' style="font-size: 1.25rem;"></i>
                         </button>
+
+                        <div style="text-align: center; margin-top: 16px;">
+                            <a href="{{ route('expert.login') }}?retry=1" style="color: var(--ex-gold); font-size: 0.85rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class='bx bx-arrow-back'></i> تغيير الرقم أو إعادة المحاولة
+                            </a>
+                        </div>
                     </form>
                 @endif
             </div>

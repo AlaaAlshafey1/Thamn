@@ -495,6 +495,7 @@ class SettingsController extends Controller
     {
         $lang = strtolower($request->header('Accept-Language', 'ar'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
+        $isAr = $lang === 'ar';
 
         $androidVersion = Setting::where('key', 'android_app_version')->value('value') ?: '1.0.0';
         $iosVersion = Setting::where('key', 'ios_app_version')->value('value') ?: '1.0.0';
@@ -502,9 +503,18 @@ class SettingsController extends Controller
         $iosStoreUrl = Setting::where('key', 'ios_store_url')->value('value') ?: 'https://apps.apple.com/app/id6470000000';
         $androidForce = (bool) Setting::where('key', 'android_force_update')->value('value');
         $iosForce = (bool) Setting::where('key', 'ios_force_update')->value('value');
-        $updateMsg = $lang === 'ar'
-            ? (Setting::where('key', 'app_update_message_ar')->value('value') ?: 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.')
-            : (Setting::where('key', 'app_update_message_en')->value('value') ?: 'A new version of Thamn app is available. Please update now for the best experience.');
+
+        // نصوص العناوين والوصف مع وجود Fallback احتياطي افتراضي دائماً
+        $defaultTitle = $isAr ? 'حدّث تطبيقك وكمل معنا' : 'Update Your App & Continue With Us';
+        $defaultDesc  = $isAr ? 'يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.' : 'A new version is available, please update the app to continue.';
+
+        $updateTitle = $isAr
+            ? (Setting::where('key', 'app_update_title_ar')->value('value') ?: $defaultTitle)
+            : (Setting::where('key', 'app_update_title_en')->value('value') ?: $defaultTitle);
+
+        $updateDesc = $isAr
+            ? (Setting::where('key', 'app_update_description_ar')->value('value') ?: (Setting::where('key', 'app_update_message_ar')->value('value') ?: $defaultDesc))
+            : (Setting::where('key', 'app_update_description_en')->value('value') ?: (Setting::where('key', 'app_update_message_en')->value('value') ?: $defaultDesc));
 
         return response()->json([
             'status' => true,
@@ -521,7 +531,9 @@ class SettingsController extends Controller
                         'store_url'      => $iosStoreUrl,
                         'force_update'   => $iosForce,
                     ],
-                    'update_message' => $updateMsg,
+                    'update_title'       => $updateTitle,
+                    'update_description' => $updateDesc,
+                    'update_message'     => $updateDesc,
                 ],
             ],
         ]);
@@ -569,32 +581,39 @@ class SettingsController extends Controller
         // Force update flag
         $forceUpdate = (bool) (Setting::where('key', "{$platform}_force_update")->value('value') ?? false);
 
-        // Update message
+        // نصوص العناوين والوصف مع وجود Fallback احتياطي جاهز دائماً
         if ($needsUpdate) {
-            $defaultMsg = $isAr
-                ? 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.'
-                : 'A new version of Thamn app is available. Please update now for the best experience.';
-            $configuredMsg = $isAr
-                ? Setting::where('key', 'app_update_message_ar')->value('value')
-                : Setting::where('key', 'app_update_message_en')->value('value');
-            $updateMessage = !empty($configuredMsg) ? $configuredMsg : $defaultMsg;
+            $defaultTitle = $isAr ? 'حدّث تطبيقك وكمل معنا' : 'Update Your App & Continue With Us';
+            $defaultDesc  = $isAr ? 'يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.' : 'A new version is available, please update the app to continue.';
+
+            $configuredTitle = $isAr
+                ? Setting::where('key', 'app_update_title_ar')->value('value')
+                : Setting::where('key', 'app_update_title_en')->value('value');
+
+            $configuredDesc = $isAr
+                ? (Setting::where('key', 'app_update_description_ar')->value('value') ?: Setting::where('key', 'app_update_message_ar')->value('value'))
+                : (Setting::where('key', 'app_update_description_en')->value('value') ?: Setting::where('key', 'app_update_message_en')->value('value'));
+
+            $updateTitle = !empty(trim($configuredTitle ?? '')) ? trim($configuredTitle) : $defaultTitle;
+            $updateDescription = !empty(trim($configuredDesc ?? '')) ? trim($configuredDesc) : $defaultDesc;
         } else {
-            $updateMessage = $isAr
-                ? 'أنت تستخدم أحدث إصدار من التطبيق.'
-                : 'You are using the latest version of the app.';
+            $updateTitle = $isAr ? 'أنت تستخدم أحدث إصدار' : 'You are up to date';
+            $updateDescription = $isAr ? 'أنت تستخدم أحدث إصدار من التطبيق.' : 'You are using the latest version of the app.';
         }
 
         return response()->json([
             'status'  => true,
-            'message' => $updateMessage,
+            'message' => $updateDescription,
             'data'    => [
-                'needs_update'    => (bool) $needsUpdate,
-                'force_update'    => $needsUpdate ? (bool) $forceUpdate : false,
-                'platform'        => $platform,
-                'current_version' => $clientVersion,
-                'latest_version'  => $dashboardVersion,
-                'store_url'       => $storeUrl,
-                'update_message'  => $updateMessage,
+                'needs_update'       => (bool) $needsUpdate,
+                'force_update'       => $needsUpdate ? (bool) $forceUpdate : false,
+                'platform'           => $platform,
+                'current_version'    => $clientVersion,
+                'latest_version'     => $dashboardVersion,
+                'store_url'          => $storeUrl,
+                'update_title'       => $updateTitle,
+                'update_description' => $updateDescription,
+                'update_message'     => $updateDescription,
             ],
         ]);
     }
@@ -615,9 +634,16 @@ class SettingsController extends Controller
         $androidForce = (bool) Setting::where('key', 'android_force_update')->value('value');
         $iosForce = (bool) Setting::where('key', 'ios_force_update')->value('value');
 
-        $updateMessage = $isAr
-            ? (Setting::where('key', 'app_update_message_ar')->value('value') ?: 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.')
-            : (Setting::where('key', 'app_update_message_en')->value('value') ?: 'A new version of Thamn app is available. Please update now for the best experience.');
+        $defaultTitle = $isAr ? 'حدّث تطبيقك وكمل معنا' : 'Update Your App & Continue With Us';
+        $defaultDesc  = $isAr ? 'يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.' : 'A new version is available, please update the app to continue.';
+
+        $updateTitle = $isAr
+            ? (Setting::where('key', 'app_update_title_ar')->value('value') ?: $defaultTitle)
+            : (Setting::where('key', 'app_update_title_en')->value('value') ?: $defaultTitle);
+
+        $updateDesc = $isAr
+            ? (Setting::where('key', 'app_update_description_ar')->value('value') ?: (Setting::where('key', 'app_update_message_ar')->value('value') ?: $defaultDesc))
+            : (Setting::where('key', 'app_update_description_en')->value('value') ?: (Setting::where('key', 'app_update_message_en')->value('value') ?: $defaultDesc));
 
         return response()->json([
             'status' => true,
@@ -632,7 +658,9 @@ class SettingsController extends Controller
                     'store_url'      => $iosStoreUrl,
                     'force_update'   => $iosForce,
                 ],
-                'update_message' => $updateMessage,
+                'update_title'       => $updateTitle,
+                'update_description' => $updateDesc,
+                'update_message'     => $updateDesc,
             ],
         ]);
     }

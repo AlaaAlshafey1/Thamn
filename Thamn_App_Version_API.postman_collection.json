@@ -2,13 +2,13 @@
 	"info": {
 		"_postman_id": "thamn-app-version-check-api-v1",
 		"name": "Thamn - App Version & Update API (فحص إصدارات التطبيق)",
-		"description": "مجموعة طلبات Postman الخاصة بـ API فحص إصدار تطبيق ثمن (أندرويد وآيفون) والتحقق مما إذا كان التطبيق بحاجة إلى تحديث مع روابط المتاجر والتحديث الإجباري.",
+		"description": "مجموعة طلبات Postman الخاصة بـ API فحص إصدار تطبيق ثمن (أندرويد وآيفون) والتحقق مما إذا كان التطبيق بحاجة إلى تحديث مع عنوان ووصف نافذة التحديث وروابط المتاجر والتحديث الإجباري.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://127.0.0.1:8000/api",
+			"value": "https://www.thmmn.net/api",
 			"type": "string"
 		}
 	],
@@ -48,7 +48,7 @@
 						"check-version"
 					]
 				},
-				"description": "يرسل تطبيق الأندرويد اسم المنصة 'android' ورقم إصداره الحالي، ويرد السيرفر بـ needs_update (true/false) ورابط المتجر ورسالة التنبيه."
+				"description": "يرسل تطبيق الأندرويد اسم المنصة 'android' ورقم إصداره الحالي، ويرد السيرفر بـ needs_update و update_title و update_description ورابط المتجر."
 			},
 			"response": [
 				{
@@ -90,7 +90,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_title\": \"حدّث تطبيقك وكمل معنا\",\n        \"update_description\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\",\n        \"update_message\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\"\n    }\n}"
 				},
 				{
 					"name": "محدث لأحدث إصدار (Up to Date Example)",
@@ -131,7 +131,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"status\": true,\n    \"message\": \"أنت تستخدم أحدث إصدار من التطبيق.\",\n    \"data\": {\n        \"needs_update\": false,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.5\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_message\": \"أنت تستخدم أحدث إصدار من التطبيق.\"\n    }\n}"
+					"body": "{\n    \"status\": true,\n    \"message\": \"أنت تستخدم أحدث إصدار من التطبيق.\",\n    \"data\": {\n        \"needs_update\": false,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.5\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_title\": \"أنت تستخدم أحدث إصدار\",\n        \"update_description\": \"أنت تستخدم أحدث إصدار من التطبيق.\",\n        \"update_message\": \"أنت تستخدم أحدث إصدار من التطبيق.\"\n    }\n}"
 				}
 			]
 		},
@@ -170,7 +170,7 @@
 						"check-version"
 					]
 				},
-				"description": "يرسل تطبيق الآيفون اسم المنصة 'ios' ورقم إصداره الحالي، ويرد السيرفر بحالة التحديث ورابط App Store."
+				"description": "يرسل تطبيق الآيفون اسم المنصة 'ios' ورقم إصداره الحالي، ويرد السيرفر بـ update_title و update_description ورابط App Store."
 			},
 			"response": [
 				{
@@ -212,52 +212,12 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"ios\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"ios\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n        \"update_title\": \"حدّث تطبيقك وكمل معنا\",\n        \"update_description\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\",\n        \"update_message\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\"\n    }\n}"
 				}
 			]
 		},
 		{
-			"name": "3. فحص الإصدار عبر GET كخيار بديل (GET Check Version)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Accept-Language",
-						"value": "ar",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/settings/check-version?platform=android&version=1.0.0",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"settings",
-						"check-version"
-					],
-					"query": [
-						{
-							"key": "platform",
-							"value": "android"
-						},
-						{
-							"key": "version",
-							"value": "1.0.0"
-						}
-					]
-				},
-				"description": "إمكانية الاستدعاء بـ GET عبر Query Params للتسهيل."
-			},
-			"response": []
-		},
-		{
-			"name": "4. جلب كافة أرقام الإصدارات والمتاجر (GET All App Versions)",
+			"name": "3. جلب كافة أرقام الإصدارات والمتاجر (GET All App Versions)",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -282,7 +242,7 @@
 						"app-versions"
 					]
 				},
-				"description": "يرجع كافة بيانات إصدارات الأندرويد والآيفون مع روابط المتاجر والتحديث الإجباري دفعة واحدة."
+				"description": "يرجع كافة بيانات إصدارات الأندرويد والآيفون مع روابط المتاجر والتحديث الإجباري وعنوان ووصف التحديث دفعة واحدة."
 			},
 			"response": [
 				{
@@ -316,10 +276,9 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"status\": true,\n    \"data\": {\n        \"android\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n            \"force_update\": false\n        },\n        \"ios\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n            \"force_update\": false\n        },\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+					"body": "{\n    \"status\": true,\n    \"data\": {\n        \"android\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n            \"force_update\": false\n        },\n        \"ios\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n            \"force_update\": false\n        },\n        \"update_title\": \"حدّث تطبيقك وكمل معنا\",\n        \"update_description\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\",\n        \"update_message\": \"يتوفر إصدار جديد، يرجى تحديث التطبيق للمتابعة.\"\n    }\n}"
 				}
 			]
 		}
 	]
 }
-

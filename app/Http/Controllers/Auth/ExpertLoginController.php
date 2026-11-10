@@ -17,17 +17,21 @@ class ExpertLoginController extends Controller
     /**
      * Show the expert OTP login form.
      */
-    public function showForm()
+    public function showForm(Request $request)
     {
         if (Auth::check() && (Auth::user()->hasRole('expert') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('super-admin') || Auth::user()->hasRole('superadmin'))) {
             return redirect()->route('dashboard');
+        }
+
+        if ($request->has('retry')) {
+            session()->forget(['expert_login_user_id', 'expert_otp_via', 'otp_sent']);
         }
 
         return view('auth.expert-login');
     }
 
     /**
-     * Generate and send OTP via WhatsApp or Email based on identifier.
+     * Generate and send OTP via WhatsApp and Email.
      */
     public function sendOtp(Request $request)
     {
@@ -40,25 +44,34 @@ class ExpertLoginController extends Controller
         $identifier = trim($request->identifier);
         $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
 
-        // Find user by phone or email
+        // Find user by phone or email (supports common Saudi phone variations)
         $user = User::where(function ($q) use ($identifier, $isEmail) {
             if ($isEmail) {
                 $q->where('email', $identifier);
             } else {
-                $q->where('phone', $identifier);
+                $cleanPhone = preg_replace('/[^0-9]/', '', $identifier);
+                $phoneVariants = array_unique(array_filter([
+                    $identifier,
+                    $cleanPhone,
+                    str_starts_with($cleanPhone, '966') ? '0' . substr($cleanPhone, 3) : null,
+                    str_starts_with($cleanPhone, '0') ? '966' . substr($cleanPhone, 1) : null,
+                    str_starts_with($cleanPhone, '5') ? '0' . $cleanPhone : null,
+                    str_starts_with($cleanPhone, '5') ? '966' . $cleanPhone : null,
+                    '+' . $cleanPhone,
+                ]));
+                $q->whereIn('phone', $phoneVariants);
             }
         })->whereNull('deleted_at')->first();
 
         if (!$user) {
-            $errorKey = $isEmail ? 'identifier' : 'identifier';
             $errorMsg = $isEmail
                 ? 'البريد الإلكتروني غير مسجل لدينا'
-                : 'رقم الجوال غير مسجل لدينا';
+                : 'رقم الجوال أو البريد الإلكتروني غير مسجل لدينا';
             return back()->withErrors(['identifier' => $errorMsg])->withInput();
         }
 
         // Check expert role
-        if (!$user->hasRole('expert') && !$user->hasRole('admin') && !$user->hasRole('super-admin')) {
+        if (!$user->hasRole('expert') && !$user->hasRole('admin') && !$user->hasRole('super-admin') && !$user->hasRole('superadmin')) {
             return back()->withErrors(['identifier' => 'هذا الحساب لا يملك صلاحية الدخول كخبير'])->withInput();
         }
 
@@ -82,35 +95,59 @@ class ExpertLoginController extends Controller
             'updated_at' => now(),
         ]);
 
-        $sent = false;
+        $emailSent = false;
+        $whatsappSent = false;
 
-        if ($isEmail) {
-            // Send via Email
+        // 1. Send via Email (always attempt if user has email)
+        if (!empty($user->email) && filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
             try {
-                Mail::to($user->email)->send(new OTPMail($otp, $user->first_name . ' ' . $user->last_name));
-                $sent = true;
-                $successMsg = 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.';
+                $fullName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                Mail::to($user->email)->send(new OTPMail($otp, $fullName ?: 'عزيزنا الخبير'));
+                $emailSent = true;
+                Log::info("Expert OTP sent via Email to: {$user->email}");
             } catch (\Exception $e) {
                 Log::error('Expert OTP Email Failed: ' . $e->getMessage());
             }
-        } else {
-            // Send via WhatsApp
+        }
+
+        // 2. Send via WhatsApp (always attempt in parallel if user has phone)
+        if (!empty($user->phone)) {
             try {
                 $whatsapp = app(WhatsAppService::class);
-                $whatsapp->sendMessage($user->phone, "رمز تسجيل الدخول الخاص بك في منصة ثمن هو: $otp\nيرجى عدم مشاركته مع أحد.");
-                $sent = true;
-                $successMsg = 'تم إرسال رمز التحقق إلى رقم جوالك على الواتساب.';
+                $whatsappResult = $whatsapp->sendMessage(
+                    $user->phone,
+                    "رمز تسجيل الدخول الخاص بك في منصة ثمن هو: $otp\nيرجى عدم مشاركته مع أحد."
+                );
+                if ($whatsappResult) {
+                    $whatsappSent = true;
+                    Log::info("Expert OTP sent via WhatsApp to: {$user->phone}");
+                } else {
+                    Log::warning("Expert OTP WhatsApp failed (returned false) for: {$user->phone}");
+                }
             } catch (\Exception $e) {
                 Log::error('Expert OTP WhatsApp Failed: ' . $e->getMessage());
             }
         }
 
-        if (!$sent) {
+        // Check if at least one delivery channel succeeded
+        if (!$emailSent && !$whatsappSent) {
             return back()->withErrors(['identifier' => 'حدث خطأ أثناء إرسال الرمز، يرجى المحاولة لاحقاً'])->withInput();
         }
 
+        // Construct informative message for the user
+        if ($emailSent && $whatsappSent) {
+            $successMsg = 'تم إرسال رمز التحقق إلى بريدك الإلكتروني ورقم جوالك على الواتساب.';
+        } elseif ($emailSent) {
+            $successMsg = 'تم إرسال رمز التحقق إلى بريدك الإلكتروني (' . $user->email . ').';
+        } else {
+            $successMsg = 'تم إرسال رمز التحقق إلى رقم جوالك على الواتساب.';
+        }
+
         // Store user id in session for the verify step
-        session(['expert_login_user_id' => $user->id, 'expert_otp_via' => $isEmail ? 'email' : 'phone']);
+        session([
+            'expert_login_user_id' => $user->id,
+            'expert_otp_via'       => ($emailSent && $whatsappSent) ? 'both' : ($emailSent ? 'email' : 'phone')
+        ]);
 
         return back()
             ->with('otp_sent', true)
