@@ -31,38 +31,84 @@ public function notifyByFirebase($title, $body, $tokens, array $data = [], bool 
                 ->count();
         }
 
-        $android = AndroidConfig::fromArray([
+        $androidConfig = [
             'priority' => 'high',
-            'notification' => [
-                'sound' => 'default',
-                'channel_id' => 'default',
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'notification_count' => $unreadCount,
-            ],
-        ]);
+        ];
+
+        if ($withNotification) {
+            $androidConfig['notification'] = [
+                'sound'                   => 'default',
+                'channel_id'              => 'default',
+                'click_action'            => 'FLUTTER_NOTIFICATION_CLICK',
+                'notification_count'      => $unreadCount,
+                'notification_priority'   => 'PRIORITY_HIGH',
+                'default_sound'           => true,
+                'default_vibrate_timings' => true,
+            ];
+        }
+
+        $android = AndroidConfig::fromArray($androidConfig);
+
+        // إعدادات APNs الخاصة بـ iOS لتشغيل وتحديث الخلفية
+        $apsPayload = [
+            'content-available' => 1,
+            'badge'             => $unreadCount,
+        ];
+        if ($withNotification) {
+            $apsPayload['sound'] = 'default';
+        }
+
+        $apnsHeaders = [
+            'apns-priority'  => $withNotification ? '10' : '5',
+            'apns-push-type' => $withNotification ? 'alert' : 'background',
+        ];
+
+        // بناء حزمة الـ Data وضمان وجود refresh: "1" مع تحويل كافة القيم لنصوص
+        $fcmData = [
+            'refresh'      => '1',
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            'unread_count' => (string) $unreadCount,
+        ];
+
+        if (isset($data['data']) && is_array($data['data'])) {
+            $data['data']['refresh'] = '1';
+            foreach ($data['data'] as $k => $v) {
+                if (is_scalar($v) || is_null($v)) {
+                    $fcmData[(string) $k] = (string) ($v ?? '');
+                }
+            }
+        } elseif (!empty($data) && is_array($data)) {
+            $data['refresh'] = '1';
+            foreach ($data as $k => $v) {
+                if (is_scalar($v) || is_null($v)) {
+                    $fcmData[(string) $k] = (string) ($v ?? '');
+                }
+            }
+        }
+
+        $fcmData['refresh'] = '1';
+        $fcmData['payload'] = json_encode($data);
+
+        // تمرير البيانات المخصصة في APNs أيضاً لسرعة التقاطها في خلفية iOS
+        $apnsPayloadData = [
+            'aps'     => $apsPayload,
+            'refresh' => '1',
+        ];
+        foreach ($fcmData as $k => $v) {
+            if ($k !== 'payload') {
+                $apnsPayloadData[$k] = $v;
+            }
+        }
 
         $apns = ApnsConfig::fromArray([
-            'payload' => [
-                'aps' => [
-                    'sound' => 'default',
-                    'content-available' => 1,
-                    'badge' =>$unreadCount,
-                ],
-            ],
+            'headers' => $apnsHeaders,
+            'payload' => $apnsPayloadData,
         ]);
-
-        if (isset($data['data']) && is_object($data['data'])) {
-            $data['data'] = json_encode($data['data']);
-        }
 
         $message = CloudMessage::new()
             ->withAndroidConfig($android)
             ->withApnsConfig($apns)
-            ->withData([
-                'payload' => json_encode($data),
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'unread_count' => (string)$unreadCount,
-            ]);
+            ->withData($fcmData);
 
         if ($withNotification) {
             $message = $message->withNotification(Notification::create($title, $body));
