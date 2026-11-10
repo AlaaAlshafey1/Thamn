@@ -76,8 +76,12 @@ Route::get('marketplace/products', [MarketplaceController::class, 'index']);
 Route::get('marketplace/products/{productId}', [MarketplaceController::class, 'show']);
 
 // ------------------ SETTINGS ENDPOINTS ------------------
+Route::match(['get', 'post'], 'check-version', [SettingsController::class, 'checkVersion']);
+
 Route::prefix('settings')->group(function () {
     Route::get('/', [SettingsController::class, 'index']);
+    Route::match(['get', 'post'], 'check-version', [SettingsController::class, 'checkVersion']);
+    Route::get('app-versions', [SettingsController::class, 'appVersions']);
     Route::get('objection-reasons', [SettingsController::class, 'objectionReasons']);
     Route::get('re-evaluation-reasons', [SettingsController::class, 'objectionReasons']);
     Route::get('colors', [SettingsController::class, 'colors']);

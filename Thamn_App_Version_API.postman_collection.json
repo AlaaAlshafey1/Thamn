@@ -1,0 +1,325 @@
+{
+	"info": {
+		"_postman_id": "thamn-app-version-check-api-v1",
+		"name": "Thamn - App Version & Update API (فحص إصدارات التطبيق)",
+		"description": "مجموعة طلبات Postman الخاصة بـ API فحص إصدار تطبيق ثمن (أندرويد وآيفون) والتحقق مما إذا كان التطبيق بحاجة إلى تحديث مع روابط المتاجر والتحديث الإجباري.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. فحص إصدار التطبيق - أندرويد (POST Check Version - Android)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"platform\": \"android\",\n    \"version\": \"1.0.0\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/settings/check-version",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"settings",
+						"check-version"
+					]
+				},
+				"description": "يرسل تطبيق الأندرويد اسم المنصة 'android' ورقم إصداره الحالي، ويرد السيرفر بـ needs_update (true/false) ورابط المتجر ورسالة التنبيه."
+			},
+			"response": [
+				{
+					"name": "يحتاج تحديث (Needs Update Example)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"platform\": \"android\",\n    \"version\": \"1.0.0\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/settings/check-version",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"check-version"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+				},
+				{
+					"name": "محدث لأحدث إصدار (Up to Date Example)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"platform\": \"android\",\n    \"version\": \"1.0.5\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/settings/check-version",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"check-version"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": true,\n    \"message\": \"أنت تستخدم أحدث إصدار من التطبيق.\",\n    \"data\": {\n        \"needs_update\": false,\n        \"force_update\": false,\n        \"platform\": \"android\",\n        \"current_version\": \"1.0.5\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n        \"update_message\": \"أنت تستخدم أحدث إصدار من التطبيق.\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "2. فحص إصدار التطبيق - آيفون (POST Check Version - iOS)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"platform\": \"ios\",\n    \"version\": \"1.0.0\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/settings/check-version",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"settings",
+						"check-version"
+					]
+				},
+				"description": "يرسل تطبيق الآيفون اسم المنصة 'ios' ورقم إصداره الحالي، ويرد السيرفر بحالة التحديث ورابط App Store."
+			},
+			"response": [
+				{
+					"name": "رد آيفون يحتاج تحديث",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"platform\": \"ios\",\n    \"version\": \"1.0.0\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/settings/check-version",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"check-version"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": true,\n    \"message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\",\n    \"data\": {\n        \"needs_update\": true,\n        \"force_update\": false,\n        \"platform\": \"ios\",\n        \"current_version\": \"1.0.0\",\n        \"latest_version\": \"1.0.5\",\n        \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "3. فحص الإصدار عبر GET كخيار بديل (GET Check Version)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/settings/check-version?platform=android&version=1.0.0",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"settings",
+						"check-version"
+					],
+					"query": [
+						{
+							"key": "platform",
+							"value": "android"
+						},
+						{
+							"key": "version",
+							"value": "1.0.0"
+						}
+					]
+				},
+				"description": "إمكانية الاستدعاء بـ GET عبر Query Params للتسهيل."
+			},
+			"response": []
+		},
+		{
+			"name": "4. جلب كافة أرقام الإصدارات والمتاجر (GET All App Versions)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "ar",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/settings/app-versions",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"settings",
+						"app-versions"
+					]
+				},
+				"description": "يرجع كافة بيانات إصدارات الأندرويد والآيفون مع روابط المتاجر والتحديث الإجباري دفعة واحدة."
+			},
+			"response": [
+				{
+					"name": "رد تفاصيل الإصدارات",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/settings/app-versions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"settings",
+								"app-versions"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": true,\n    \"data\": {\n        \"android\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://play.google.com/store/apps/details?id=com.thamn.app\",\n            \"force_update\": false\n        },\n        \"ios\": {\n            \"latest_version\": \"1.0.0\",\n            \"store_url\": \"https://apps.apple.com/app/id6470000000\",\n            \"force_update\": false\n        },\n        \"update_message\": \"يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.\"\n    }\n}"
+				}
+			]
+		}
+	]
+}
+

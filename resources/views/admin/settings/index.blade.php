@@ -135,6 +135,114 @@
                 </div>
             </div>
 
+            <!-- بطاقة إصدارات وتحديثات تطبيق الموبايل (Android & iOS) -->
+            <div class="card mb-4" id="app-versions-card">
+                <div class="card-body">
+                    <div class="main-content-label mg-b-5">
+                        <i class="fas fa-mobile-alt text-primary ml-2"></i> إصدارات وتحديثات تطبيق الموبايل (App Versions & Updates)
+                    </div>
+                    <p class="mg-b-20 text-muted">إدارة أرقام الإصدارات الرسمية لتطبيق أندرويد وآيفون، روابط المتاجر، والتحديث الإجباري للمستخدمين.</p>
+
+                    <form action="{{ route('admin.settings.app-versions') }}" method="POST">
+                        @csrf
+                        <div class="row row-sm">
+                            <!-- قسم أندرويد (Google Play) -->
+                            <div class="col-lg-6 mb-3">
+                                <div class="p-3 border rounded bg-light h-100">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fab fa-android text-success fa-2x ml-2"></i>
+                                        <div>
+                                            <h6 class="mb-0 font-weight-bold text-success">تطبيق أندرويد (Google Play)</h6>
+                                            <small class="text-muted">إعدادات إصدار الأندرويد ورابط المتجر</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label font-weight-bold">رقم أحدث إصدار (Android Version) <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="android_app_version" 
+                                               value="{{ $settings['android_app_version'] ?? '1.0.0' }}" 
+                                               placeholder="مثال: 1.0.0 أو 1.2.5" required>
+                                        <small class="text-muted">لو رقم إصدار جهاز المستخدم أقل من هذا الرقم، سيطلب منه التطبيق التحديث.</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label font-weight-bold">رابط التطبيق في Google Play</label>
+                                        <input type="url" class="form-control" name="android_store_url" 
+                                               value="{{ $settings['android_store_url'] ?? 'https://play.google.com/store/apps/details?id=com.thamn.app' }}" 
+                                               placeholder="https://play.google.com/store/apps/details?id=...">
+                                        <small class="text-muted">الرابط الذي سيتم توجيه المستخدم إليه عند الضغط على زر التحديث في أندرويد.</small>
+                                    </div>
+
+                                    <div class="form-group mb-0">
+                                        <label class="ckbox">
+                                            <input type="checkbox" name="android_force_update" value="1" {{ ($settings['android_force_update'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            <span class="font-weight-bold text-danger">تحديث إجباري (Force Update)</span>
+                                        </label>
+                                        <small class="text-muted d-block mt-1">عند تفعيله، لن يتمكن مستخدم الأندرويد من استخدام التطبيق حتى يقوم بالتحديث.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- قسم آبل (Apple App Store) -->
+                            <div class="col-lg-6 mb-3">
+                                <div class="p-3 border rounded bg-light h-100">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fab fa-apple text-dark fa-2x ml-2"></i>
+                                        <div>
+                                            <h6 class="mb-0 font-weight-bold text-dark">تطبيق آيفون (Apple iOS)</h6>
+                                            <small class="text-muted">إعدادات إصدار الآيفون ورابط المتجر</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label font-weight-bold">رقم أحدث إصدار (iOS Version) <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="ios_app_version" 
+                                               value="{{ $settings['ios_app_version'] ?? '1.0.0' }}" 
+                                               placeholder="مثال: 1.0.0 أو 1.2.5" required>
+                                        <small class="text-muted">لو رقم إصدار جهاز المستخدم أقل من هذا الرقم، سيطلب منه التطبيق التحديث.</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label font-weight-bold">رابط التطبيق في App Store</label>
+                                        <input type="url" class="form-control" name="ios_store_url" 
+                                               value="{{ $settings['ios_store_url'] ?? 'https://apps.apple.com/app/id6470000000' }}" 
+                                               placeholder="https://apps.apple.com/app/id...">
+                                        <small class="text-muted">الرابط الذي سيتم توجيه المستخدم إليه عند الضغط على زر التحديث في آيفون.</small>
+                                    </div>
+
+                                    <div class="form-group mb-0">
+                                        <label class="ckbox">
+                                            <input type="checkbox" name="ios_force_update" value="1" {{ ($settings['ios_force_update'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            <span class="font-weight-bold text-danger">تحديث إجباري (Force Update)</span>
+                                        </label>
+                                        <small class="text-muted d-block mt-1">عند تفعيله، لن يتمكن مستخدم الآيفون من استخدام التطبيق حتى يقوم بالتحديث.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- رسائل التحديث للمستخدم -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-label font-weight-bold">رسالة التنبيه بالتحديث (بالعربية)</label>
+                                    <textarea class="form-control" name="app_update_message_ar" rows="3" placeholder="يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.">{{ $settings['app_update_message_ar'] ?? 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.' }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-label font-weight-bold">رسالة التنبيه بالتحديث (بالإنجليزية)</label>
+                                    <textarea class="form-control" name="app_update_message_en" rows="3" placeholder="A new version of Thamn app is available. Please update now for the best experience.">{{ $settings['app_update_message_en'] ?? 'A new version of Thamn app is available. Please update now for the best experience.' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-main-primary pd-x-25 mt-2" type="submit">
+                            <i class="fas fa-save ml-1"></i> حفظ إعدادات الإصدارات
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <!-- بطاقة أسباب الاحتجاج على التقييم -->
             <div class="card" id="objection-reasons-card">
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center flex-wrap">

@@ -249,6 +249,7 @@ Route::middleware('auth')->group(function () {
     // General Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('admin.settings.store');
+    Route::post('/settings/app-versions', [\App\Http\Controllers\Admin\SettingController::class, 'updateAppVersions'])->name('admin.settings.app-versions');
 
     // Objection Reasons Management (أسباب الاحتجاج)
     Route::post('/settings/objection-reasons/form-title', [\App\Http\Controllers\Admin\ObjectionReasonController::class, 'updateFormTitle'])->name('admin.objection-reasons.form-title');

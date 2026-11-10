@@ -45,6 +45,34 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'تم حفظ الإعدادات بنجاح');
     }
 
+    /**
+     * تحديث أرقام إصدارات تطبيقات الموبايل وروابط المتاجر
+     */
+    public function updateAppVersions(Request $request)
+    {
+        $request->validate([
+            'android_app_version'   => 'required|string|max:30',
+            'ios_app_version'       => 'required|string|max:30',
+            'android_store_url'     => 'nullable|string|max:500',
+            'ios_store_url'         => 'nullable|string|max:500',
+            'app_update_message_ar' => 'nullable|string|max:500',
+            'app_update_message_en' => 'nullable|string|max:500',
+            'android_force_update'  => 'nullable|in:0,1',
+            'ios_force_update'      => 'nullable|in:0,1',
+        ]);
+
+        Setting::updateOrCreate(['key' => 'android_app_version'], ['value' => trim($request->android_app_version)]);
+        Setting::updateOrCreate(['key' => 'ios_app_version'], ['value' => trim($request->ios_app_version)]);
+        Setting::updateOrCreate(['key' => 'android_store_url'], ['value' => trim($request->android_store_url ?? '')]);
+        Setting::updateOrCreate(['key' => 'ios_store_url'], ['value' => trim($request->ios_store_url ?? '')]);
+        Setting::updateOrCreate(['key' => 'app_update_message_ar'], ['value' => trim($request->app_update_message_ar ?? '')]);
+        Setting::updateOrCreate(['key' => 'app_update_message_en'], ['value' => trim($request->app_update_message_en ?? '')]);
+        Setting::updateOrCreate(['key' => 'android_force_update'], ['value' => $request->boolean('android_force_update') ? '1' : '0']);
+        Setting::updateOrCreate(['key' => 'ios_force_update'], ['value' => $request->boolean('ios_force_update') ? '1' : '0']);
+
+        return redirect()->back()->with('success', 'تم حفظ إعدادات إصدارات تطبيق الموبايل بنجاح');
+    }
+
     private function notifyExperts($type, $value)
     {
         try {

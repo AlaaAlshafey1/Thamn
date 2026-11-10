@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\HomeStep;
 use App\Models\Intro;
 use App\Models\TapPayment;
+use App\Models\Setting;
 use App\Http\Resources\InvoiceResource;
 
 class SettingsController extends Controller
@@ -495,10 +496,143 @@ class SettingsController extends Controller
         $lang = strtolower($request->header('Accept-Language', 'ar'));
         $lang = in_array($lang, ['ar', 'en']) ? $lang : 'ar';
 
+        $androidVersion = Setting::where('key', 'android_app_version')->value('value') ?: '1.0.0';
+        $iosVersion = Setting::where('key', 'ios_app_version')->value('value') ?: '1.0.0';
+        $androidStoreUrl = Setting::where('key', 'android_store_url')->value('value') ?: 'https://play.google.com/store/apps/details?id=com.thamn.app';
+        $iosStoreUrl = Setting::where('key', 'ios_store_url')->value('value') ?: 'https://apps.apple.com/app/id6470000000';
+        $androidForce = (bool) Setting::where('key', 'android_force_update')->value('value');
+        $iosForce = (bool) Setting::where('key', 'ios_force_update')->value('value');
+        $updateMsg = $lang === 'ar'
+            ? (Setting::where('key', 'app_update_message_ar')->value('value') ?: 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.')
+            : (Setting::where('key', 'app_update_message_en')->value('value') ?: 'A new version of Thamn app is available. Please update now for the best experience.');
+
         return response()->json([
             'status' => true,
             'data' => [
                 'objection_reasons' => \App\Models\ObjectionReason::getFormattedData($lang),
+                'app_versions' => [
+                    'android' => [
+                        'latest_version' => $androidVersion,
+                        'store_url'      => $androidStoreUrl,
+                        'force_update'   => $androidForce,
+                    ],
+                    'ios' => [
+                        'latest_version' => $iosVersion,
+                        'store_url'      => $iosStoreUrl,
+                        'force_update'   => $iosForce,
+                    ],
+                    'update_message' => $updateMsg,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Check if mobile app needs update
+     * POST or GET /settings/check-version or /check-version
+     *
+     * Request parameters:
+     * - platform: 'android' or 'ios' (required)
+     * - version: string, e.g. '1.0.0' (required)
+     */
+    public function checkVersion(Request $request)
+    {
+        $request->validate([
+            'platform' => 'required|string|in:android,ios,Android,iOS,IOS,Ios',
+            'version'  => 'required|string',
+        ]);
+
+        $lang = strtolower($request->header('Accept-Language', $request->input('lang', 'ar')));
+        $isAr = str_starts_with($lang, 'ar');
+
+        $platform = strtolower(trim($request->platform));
+        // Strip any leading 'v' or 'V' (e.g. 'v1.0.1' -> '1.0.1')
+        $clientVersion = ltrim(trim($request->version), 'vV');
+
+        // Fetch latest version configured in Dashboard
+        $dashboardVersion = Setting::where('key', "{$platform}_app_version")->value('value') ?: '1.0.0';
+        $dashboardVersion = ltrim(trim($dashboardVersion), 'vV');
+
+        // Comparison:
+        // If clientVersion < dashboardVersion => needs_update = true
+        // If clientVersion >= dashboardVersion => needs_update = false
+        $needsUpdate = version_compare($clientVersion, $dashboardVersion, '<');
+
+        // Store URL
+        $storeUrl = Setting::where('key', "{$platform}_store_url")->value('value') ?: '';
+        if (empty($storeUrl)) {
+            $storeUrl = $platform === 'android'
+                ? 'https://play.google.com/store/apps/details?id=com.thamn.app'
+                : 'https://apps.apple.com/app/id6470000000';
+        }
+
+        // Force update flag
+        $forceUpdate = (bool) (Setting::where('key', "{$platform}_force_update")->value('value') ?? false);
+
+        // Update message
+        if ($needsUpdate) {
+            $defaultMsg = $isAr
+                ? 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.'
+                : 'A new version of Thamn app is available. Please update now for the best experience.';
+            $configuredMsg = $isAr
+                ? Setting::where('key', 'app_update_message_ar')->value('value')
+                : Setting::where('key', 'app_update_message_en')->value('value');
+            $updateMessage = !empty($configuredMsg) ? $configuredMsg : $defaultMsg;
+        } else {
+            $updateMessage = $isAr
+                ? 'أنت تستخدم أحدث إصدار من التطبيق.'
+                : 'You are using the latest version of the app.';
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => $updateMessage,
+            'data'    => [
+                'needs_update'    => (bool) $needsUpdate,
+                'force_update'    => $needsUpdate ? (bool) $forceUpdate : false,
+                'platform'        => $platform,
+                'current_version' => $clientVersion,
+                'latest_version'  => $dashboardVersion,
+                'store_url'       => $storeUrl,
+                'update_message'  => $updateMessage,
+            ],
+        ]);
+    }
+
+    /**
+     * Get all app versions and store URLs
+     * GET /settings/app-versions
+     */
+    public function appVersions(Request $request)
+    {
+        $lang = strtolower($request->header('Accept-Language', $request->input('lang', 'ar')));
+        $isAr = str_starts_with($lang, 'ar');
+
+        $androidVersion = Setting::where('key', 'android_app_version')->value('value') ?: '1.0.0';
+        $iosVersion = Setting::where('key', 'ios_app_version')->value('value') ?: '1.0.0';
+        $androidStoreUrl = Setting::where('key', 'android_store_url')->value('value') ?: 'https://play.google.com/store/apps/details?id=com.thamn.app';
+        $iosStoreUrl = Setting::where('key', 'ios_store_url')->value('value') ?: 'https://apps.apple.com/app/id6470000000';
+        $androidForce = (bool) Setting::where('key', 'android_force_update')->value('value');
+        $iosForce = (bool) Setting::where('key', 'ios_force_update')->value('value');
+
+        $updateMessage = $isAr
+            ? (Setting::where('key', 'app_update_message_ar')->value('value') ?: 'يتوفر إصدار جديد من تطبيق ثمن، يرجى التحديث الآن للاستمرار في الاستمتاع بأفضل تجربة.')
+            : (Setting::where('key', 'app_update_message_en')->value('value') ?: 'A new version of Thamn app is available. Please update now for the best experience.');
+
+        return response()->json([
+            'status' => true,
+            'data'   => [
+                'android' => [
+                    'latest_version' => $androidVersion,
+                    'store_url'      => $androidStoreUrl,
+                    'force_update'   => $androidForce,
+                ],
+                'ios' => [
+                    'latest_version' => $iosVersion,
+                    'store_url'      => $iosStoreUrl,
+                    'force_update'   => $iosForce,
+                ],
+                'update_message' => $updateMessage,
             ],
         ]);
     }

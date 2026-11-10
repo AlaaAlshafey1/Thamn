@@ -933,10 +933,6 @@ PROMPT;
             $brand = 'Apple';
         }
 
-        $brand = $brand ?: 'Apple';
-        $model = $model ?: 'iPhone 17 Pro';
-        $model = preg_replace('/[^\w\s\-\+]/u', '', $model);
-
         $isPhone = str_contains(mb_strtolower($categoryEn), 'phone') 
             || str_contains(mb_strtolower($categoryAr), 'جوال') 
             || str_contains(mb_strtolower($model), 'iphone')
@@ -949,16 +945,29 @@ PROMPT;
         $isCar = str_contains(mb_strtolower($categoryEn), 'car') 
             || str_contains(mb_strtolower($categoryAr), 'سيار');
 
-        $colorName = $color ?: 'Deep Blue';
+        if (empty($brand)) {
+            $brand = $isPhone ? 'Apple' : ($isCar ? 'Toyota' : ($isWatch ? 'Rolex' : 'Commercial'));
+        }
+        if (empty($model)) {
+            $model = $isPhone ? 'iPhone 16 Pro Max' : ($isCar ? 'Sedan' : ($isWatch ? 'Luxury Watch' : $categoryEn));
+        }
+        $model = preg_replace('/[^\w\s\-\+]/u', '', $model);
+
+        $colorName = $color ?: 'Natural Titanium';
 
         if ($isPhone) {
             $isModernIphone = str_contains(mb_strtolower($model), 'iphone');
 
             if ($isModernIphone) {
-                return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. The device is shown in a professional dual-angle studio showcase: one device angled facing front showing the vibrant edge-to-edge screen with ultra-thin bezels and the distinctive centered pill-shaped Dynamic Island cutout at the top, and another device showing the rear view with the premium matte {$colorName} frosted glass back, brushed dark metallic contoured edges, and the signature modern triple-lens camera bump with large sapphire glass lenses in the top-left. The back and frame of the phone MUST be richly colored in {$colorName} (dark navy blue). Centered composition on a pure, seamless studio white background (#FFFFFF) with soft natural contact shadows beneath the phones. Crisp sharp details, commercial product lighting, 8k resolution, photorealistic. Strictly NO white or silver back, strictly NO packaging boxes, NO cables, NO chargers, NO outdated notches, NO text, NO watermarks.";
+                $isPro = str_contains(mb_strtolower($model), 'pro');
+                $cameraDesc = $isPro 
+                    ? "signature modern triple-lens sapphire camera array on the frosted matte glass back" 
+                    : "dual-lens camera module on the sleek glass back";
+
+                return "A high-end commercial studio product catalog photograph of the flagship {$brand} {$model} smartphone in {$colorName} finish. Pristine standalone device centered at an elegant angle showcasing the premium sculpted titanium frame, {$cameraDesc}, edge-to-edge OLED display with centered Dynamic Island. Seamless pure white studio background with subtle soft ambient contact shadows, razor-sharp focus, commercial studio lighting, 8k resolution, authentic flagship smartphone photography.";
             }
 
-            return "A photorealistic commercial catalog studio photograph of the flagship {$brand} {$model} smartphone in stunning {$colorName} finish. Presenting the standalone device with modern contemporary design, ultra-thin bezels, vibrant display, premium {$colorName} back, centered composition on a pure clean seamless studio white background (#FFFFFF), professional studio catalog lighting, 8k resolution, sharp focus, crisp details. Strictly NO packaging boxes, NO cables, NO chargers, NO text, NO watermarks.";
+            return "A high-end commercial studio product catalog photograph of the flagship {$brand} {$model} smartphone in {$colorName} finish. Pristine standalone device centered at an elegant angle showcasing the ultra-thin bezels, vibrant display, premium {$colorName} back. Seamless pure white studio background with subtle soft ambient contact shadows, razor-sharp focus, commercial studio lighting, 8k resolution, authentic flagship smartphone photography.";
         }
 
         if ($isWatch) {
@@ -1010,6 +1019,7 @@ PROMPT;
             'فورد' => 'Ford',
             'ford' => 'Ford',
             'هيونداي' => 'Hyundai',
+            'هونداي' => 'Hyundai',
             'hyundai' => 'Hyundai',
             'كيا' => 'Kia',
             'kia' => 'Kia',
@@ -1067,7 +1077,7 @@ PROMPT;
             return 'Product Red';
         }
 
-        return 'Deep Blue';
+        return 'Natural Titanium';
     }
 
     private function detectBrandFromText(string $text): ?string

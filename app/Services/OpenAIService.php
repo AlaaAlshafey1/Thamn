@@ -200,7 +200,19 @@ class OpenAIService
             }
         }
 
-        Log::error('OpenAI Image Generation failed across all models', ['prompt' => $prompt]);
+        Log::warning('OpenAI Image Generation failed across all models, attempting fallback engine', ['prompt' => $prompt]);
+
+        // شبكة أمان بديلة في حال انتهاء رصيد OpenAI أو نقص صلاحيات المفتاح
+        try {
+            $fallbackUrl = 'https://image.pollinations.ai/prompt/' . urlencode($prompt) . '?model=flux&width=1024&height=1024&nologo=true';
+            $res = \Illuminate\Support\Facades\Http::timeout(35)->get($fallbackUrl);
+            if ($res->successful() && strlen($res->body()) > 5000) {
+                return 'data:image/png;base64,' . base64_encode($res->body());
+            }
+        } catch (\Throwable $e) {
+            Log::error('Fallback image generation failed: ' . $e->getMessage());
+        }
+
         return null;
     }
 }
