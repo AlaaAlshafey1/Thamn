@@ -159,9 +159,11 @@
         div.mysr-form-methodButtons {
             display: flex !important;
             flex-direction: column !important;
-            gap: 16px !important;
-            margin-bottom: 24px !important;
-            padding: 2px !important;
+            gap: 14px !important;
+            margin: 0 0 20px 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
             -webkit-tap-highlight-color: transparent !important;
         }
 
@@ -180,10 +182,11 @@
         /* كل زر في حاوية منعزلة ومتباعدة تماماً لمنع التداخل والضغط المزدوج */
         #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons .mysr-form-methodButton,
         div.mysr-form-methodButtons .mysr-form-methodButton {
-            margin-bottom: 16px !important;
-            -webkit-margin-after: 16px !important;
-            margin-block-end: 16px !important;
+            margin: 0 0 14px 0 !important;
+            padding: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
             position: relative !important;
             isolation: isolate !important;
             contain: layout !important;
@@ -193,22 +196,24 @@
         #mysr-form-form-el.mysr-form-moyasarForm div.mysr-form-methodButtons .mysr-form-methodButton:last-of-type,
         div.mysr-form-methodButtons .mysr-form-methodButton:last-of-type {
             margin-bottom: 0 !important;
-            -webkit-margin-after: 0 !important;
-            margin-block-end: 0 !important;
         }
 
-        /* 1. زر Apple Pay - حواف واضحة وظل وتأثير اختيار مميز */
+        /* 1. زر Apple Pay - متطابق 100% في الطول والعرض والحواف */
         apple-pay-button,
         .mysr-form-applePayButton,
         #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-applePayButton {
             display: block !important;
+            box-sizing: border-box !important;
             width: 100% !important;
-            height: 52px !important;
-            min-height: 52px !important;
-            max-height: 52px !important;
-            border-radius: 14px !important;
-            border: 2.5px solid #000000 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+            max-width: 100% !important;
+            height: 48px !important;
+            min-height: 48px !important;
+            max-height: 48px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 12px !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12) !important;
             cursor: pointer !important;
             position: relative !important;
             z-index: 10 !important;
@@ -220,7 +225,7 @@
         apple-pay-button:hover,
         .mysr-form-applePayButton:hover {
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.22) !important;
         }
 
         apple-pay-button:active,
@@ -228,25 +233,29 @@
         .mysr-form-applePayButton.selected-payment,
         apple-pay-button.selected-payment {
             transform: scale(0.98) !important;
-            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3) !important;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3) !important;
             border-color: #000 !important;
         }
 
-        /* 2. زر STC Pay - لون بنفسجي وحواف بارزة وظل مستقل مطابق تماماً لـ Apple Pay في المقاس */
+        /* 2. زر STC Pay - متطابق 100% في الطول والعرض والحواف مع Apple Pay */
         .mysr-form-stcPayButton,
         #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton,
         button.mysr-form-stcPayButton {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            box-sizing: border-box !important;
             width: 100% !important;
-            height: 52px !important;
-            min-height: 52px !important;
-            max-height: 52px !important;
-            border-radius: 14px !important;
+            max-width: 100% !important;
+            height: 48px !important;
+            min-height: 48px !important;
+            max-height: 48px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 12px !important;
             background-color: #5f1896 !important;
-            border: 2.5px solid #4a1077 !important;
-            box-shadow: 0 4px 14px rgba(95, 24, 150, 0.25) !important;
+            border: 2px solid #4a1077 !important;
+            box-shadow: 0 3px 10px rgba(95, 24, 150, 0.25) !important;
             cursor: pointer !important;
             position: relative !important;
             z-index: 10 !important;
@@ -259,18 +268,18 @@
         #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton:hover {
             transform: translateY(-2px) !important;
             background-color: #50137f !important;
-            box-shadow: 0 6px 20px rgba(95, 24, 150, 0.4) !important;
+            box-shadow: 0 5px 15px rgba(95, 24, 150, 0.4) !important;
         }
 
         .mysr-form-stcPayButton:active,
         #mysr-form-form-el.mysr-form-moyasarForm .mysr-form-stcPayButton:active,
         .mysr-form-stcPayButton.selected-payment {
             transform: scale(0.98) !important;
-            box-shadow: 0 0 0 4px rgba(95, 24, 150, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(95, 24, 150, 0.4) !important;
             border-color: #4a1077 !important;
         }
 
-        /* شعار STC Pay داخل الزر: إظهار لوجو واحد فقط واضح باللون الأبيض والفيروزي بنفس ارتفاع ومقاس أيقونة Apple Pay */
+        /* شعار STC Pay داخل الزر: متطابق بصرياً 100% مع حجم وأبعاد أيقونة Apple Pay */
         .mysr-form-stcPayButton .mysr-form-stcPayLogo {
             display: none !important;
         }
@@ -283,12 +292,14 @@
         .mysr-form-stcPayButton > *:first-child,
         .mysr-form-stcPayButton .mysr-form-stcPayLogoLight {
             display: block !important;
-            width: 68px !important;
-            min-width: 68px !important;
-            max-width: 68px !important;
-            height: 20px !important;
-            min-height: 20px !important;
-            max-height: 20px !important;
+            box-sizing: border-box !important;
+            width: 60px !important;
+            min-width: 60px !important;
+            max-width: 60px !important;
+            height: 18px !important;
+            min-height: 18px !important;
+            max-height: 18px !important;
+            padding: 0 !important;
             background-size: contain !important;
             background-position: center !important;
             background-repeat: no-repeat !important;
