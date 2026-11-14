@@ -96,6 +96,26 @@ Route::get('/moyasar/checkout/{orderId}', function ($orderId) {
     return view('payment.moyasar_checkout', compact('order', 'callbackUrl'));
 })->name('moyasar.checkout')->middleware('signed');
 
+// Moyasar: صفحة معاينة واختبار التصميم للتطوير (بدون قيود التوقيع وتدعم الأوردرات التجريبية)
+Route::get('/test/moyasar-preview/{orderId?}', function ($orderId = 10) {
+    try {
+        $order = \App\Models\Order::with('user')->find($orderId);
+    } catch (\Throwable $e) {
+        $order = null;
+    }
+
+    if (!$order) {
+        $order = new \App\Models\Order([
+            'total_price' => 30.00,
+            'status' => 'notPaid',
+        ]);
+        $order->id = $orderId;
+    }
+
+    $callbackUrl = url("/moyasar/callback");
+    return view('payment.moyasar_checkout', compact('order', 'callbackUrl'));
+})->name('test.moyasar.preview');
+
 // Routes قديمة محفوظة للتوافق (يمكن حذفها لاحقاً)
 Route::get('/payment/callback/package_sucess', [PaymentController::class, 'callback'])->name('payment.callback');
 Route::get('/payment/callback/package_error', [PaymentController::class, 'callback_error'])->name('payment.callback.failure');
