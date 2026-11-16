@@ -1,7 +1,7 @@
 @php
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'فاتورة طلبك – ثمن' : 'Your Invoice – Thamn';
+  $emailTitle = $isRtl ? 'فاتورة طلبك – ثمّن' : 'Your Invoice – Thamn';
   $payload = is_array($order->payload) ? $order->payload : json_decode($order->payload, true);
   $orderName = $payload['order_name'] ?? ($order->category?->name_ar ?? 'N/A');
 @endphp
@@ -13,7 +13,7 @@
   </h1>
 
   <p style="margin:0 0 20px;font-size:14px;color:#666;line-height:1.85;">
-    {{ $isRtl ? 'شكراً لثقتك بثمن. تجد أدناه تفاصيل فاتورة طلبك.' : 'Thank you for using Thamn. Find your invoice details below.' }}
+    {{ $isRtl ? 'شكراً لثقتك بثمّن. تجد أدناه تفاصيل فاتورة طلبك.' : 'Thank you for using Thamn. Find your invoice details below.' }}
   </p>
 
   <table cellpadding="0" cellspacing="0" border="0" width="100%"

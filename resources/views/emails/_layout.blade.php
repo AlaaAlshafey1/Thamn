@@ -44,7 +44,7 @@ Wrap content in $slot variable before including.
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <meta name="x-apple-disable-message-reformatting">
-  <title>{{ $emailTitle ?? 'ثمن' }}</title>
+  <title>{{ $emailTitle ?? 'ثمّن' }}</title>
   <!--[if !mso]><!-->
   <style type="text/css">
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
@@ -139,7 +139,7 @@ Wrap content in $slot variable before including.
           {{-- TOP LOGO --}}
           <tr>
             <td align="center" style="padding:20px 32px 0;border-bottom:1px solid #F0F0F0;">
-              <img src="{{ $logoSrc }}" width="56" alt="ثمن" style="display:block;margin:0 auto 16px;border:0;">
+              <img src="{{ $logoSrc }}" width="56" alt="ثمّن" style="display:block;margin:0 auto 16px;border:0;">
             </td>
           </tr>
 
@@ -165,7 +165,7 @@ Wrap content in $slot variable before including.
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="direction:{{ $dir }};">
                 <tr>
                   <td align="{{ $txtAlign }}" valign="middle">
-                    <img src="{{ $logoWht }}" width="44" alt="ثمن"
+                    <img src="{{ $logoWht }}" width="44" alt="ثمّن"
                       style="display:block;border:0;opacity:.85;margin-bottom:5px;">
                     <p
                       style="margin:0;font-size:11px;color:#888;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">

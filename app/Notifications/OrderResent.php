@@ -26,10 +26,10 @@ class OrderResent extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - تم إعادة إرسال الطلب')
+            ->subject('تطبيق ثمّن - تم إعادة إرسال الطلب')
             ->line("تم إعادة إرسال طلبك: طلب رقم {$this->order->id}")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
-            ->line('شكراً لاستخدامك تطبيق ثمن');
+            ->line('شكراً لاستخدامك تطبيق ثمّن');
     }
 
     public function toDatabase($notifiable)
@@ -43,6 +43,6 @@ class OrderResent extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم {$this->order->id}";
+        return "تطبيق ثمّن 🔔\n" . "تم إعادة إرسال طلبك: طلب رقم {$this->order->id}";
     }
 }

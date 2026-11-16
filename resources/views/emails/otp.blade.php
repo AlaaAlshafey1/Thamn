@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <title>{{ $isRtl ? 'رمز التحقق — ثمن' : 'Verification Code — Thamn' }}</title>
+  <title>{{ $isRtl ? 'رمز التحقق — ثمّن' : 'Verification Code — Thamn' }}</title>
   <!--[if !mso]><!-->
   <style type="text/css">
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
@@ -139,7 +139,7 @@
           <!-- ===== LOGO ===== -->
           <tr>
             <td align="center" style="padding:28px 40px 0;">
-              <img src="{{ $baseUrl }}/assets/emails/Logo-black.png" width="64" alt="ثمن"
+              <img src="{{ $baseUrl }}/assets/emails/Logo-black.png" width="64" alt="ثمّن"
                 style="display:block;margin:0 auto;border:0;">
             </td>
           </tr>
@@ -199,7 +199,7 @@
                 <tr>
                   <!-- Logo + location -->
                   <td align="{{ $textAlign }}" valign="middle">
-                    <img src="{{ $baseUrl }}/assets/emails/logo_white.png" width="48" alt="ثمن"
+                    <img src="{{ $baseUrl }}/assets/emails/logo_white.png" width="48" alt="ثمّن"
                       style="display:block;border:0;opacity:.85;margin-bottom:6px;">
                     <p
                       style="margin:0;font-size:11px;color:#888888;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;">

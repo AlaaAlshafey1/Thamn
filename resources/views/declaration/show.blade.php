@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الاتفاقية القانونية للتعاون مع الخبير - تطبيق ثمن</title>
+    <title>الاتفاقية القانونية للتعاون مع الخبير - تطبيق ثمّن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
@@ -43,9 +43,9 @@
             border-bottom: 3px solid #c9933a;
         }
 
-        /* Watermark "ثمن" large text behind */
+        /* Watermark "ثمّن" large text behind */
         .doc-top::before {
-            content: 'ثمن';
+            content: 'ثمّن';
             position: absolute;
             left: 20px;
             top: -10px;
@@ -602,7 +602,7 @@
 
             {{-- Logo top-right --}}
             <div class="barcode-logo">
-                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن" style="height:70px; width:auto;">
+                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمّن" style="height:70px; width:auto;">
             </div>
 
             <div class="doc-title-block">
@@ -915,7 +915,7 @@
         </div>{{-- doc-content --}}
 
         <div class="doc-footer">
-            هذه الوثيقة صادرة رسمياً من <strong>تطبيق ثمن</strong> للتثمين المهني — جميع الحقوق محفوظة © {{ date('Y') }}
+            هذه الوثيقة صادرة رسمياً من <strong>تطبيق ثمّن</strong> للتثمين المهني — جميع الحقوق محفوظة © {{ date('Y') }}
         </div>
 
     </div>{{-- doc-shell --}}

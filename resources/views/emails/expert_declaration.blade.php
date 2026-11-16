@@ -1,7 +1,7 @@
 @php
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'وثيقة الإقرار للخبير – ثمن' : 'Expert Declaration – Thamn';
+  $emailTitle = $isRtl ? 'وثيقة الإقرار للخبير – ثمّن' : 'Expert Declaration – Thamn';
 @endphp
 @php $banner = 'declaration_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -13,7 +13,7 @@
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
     @if($isRtl)
       مرحباً <strong style="color:#1A1A1A;">{{ $arbitrator->full_name ?? '' }}</strong>،<br>
-      يرجى مراجعة وثيقة إقرار الخبير الخاصة بمنصة ثمن والتوقيع عليها للمتابعة.
+      يرجى مراجعة وثيقة إقرار الخبير الخاصة بمنصة ثمّن والتوقيع عليها للمتابعة.
     @else
       Hi <strong style="color:#1A1A1A;">{{ $arbitrator->full_name ?? '' }}</strong>,<br>
       Please review and sign your Expert Declaration document for the Thamn platform.

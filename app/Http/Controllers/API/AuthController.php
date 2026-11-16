@@ -77,7 +77,7 @@ class AuthController extends Controller
             try {
                 \Log::debug("Sending OTP WhatsApp to: " . $user->phone . " with OTP: " . $otp);
                 $whatsapp = app(\App\Services\WhatsAppService::class);
-                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك في ثمن هو: $otp . لا تشاركه مع أحد يا غالي.");
+                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك في ثمّن هو: $otp . لا تشاركه مع أحد يا غالي.");
                 \Log::debug("Register OTP WhatsApp sent successfully.");
             } catch (\Exception $e) {
                 \Log::error('OTP Delivery Failed (Register WhatsApp): ' . $e->getMessage());
@@ -207,7 +207,7 @@ class AuthController extends Controller
 
         // Send Welcome Mail
         try {
-            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request)));
+            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمّن', 'Welcome to Thamn', $request)));
         } catch (\Exception $e) {
             \Log::error('Welcome Mail Failed: ' . $e->getMessage());
         }
@@ -232,7 +232,7 @@ class AuthController extends Controller
         if (!empty($tokens)) {
             $this->notifyByFirebase(
                 lang('تسجيل الخروج بأمان', 'Logged out safely', $request),
-                lang('تم تسجيل الخروج بنجاح من حسابك في ثمن. نراك قريباً!', 'Successfully logged out from your Thamn account. See you soon!', $request),
+                lang('تم تسجيل الخروج بنجاح من حسابك في ثمّن. نراك قريباً!', 'Successfully logged out from your Thamn account. See you soon!', $request),
                 $tokens,
                 ['data' => ['user_id' => $user->id, 'type' => 'logout_success']]
             );
@@ -282,7 +282,7 @@ class AuthController extends Controller
         $tokens = $user->getFcmTokens();
         if (!empty($tokens)) {
             $this->notifyByFirebase(
-                lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request),
+                lang('مرحباً بك في ثمّن', 'Welcome to Thamn', $request),
                 lang('تم تفعيل حسابك بنجاح، استكشف عالم التثمين الآن', 'Account verified successfully, explore the world of evaluation now', $request),
                 $tokens,
                 ['data' => ['user_id' => $user->id, 'type' => 'register_success']]
@@ -291,7 +291,7 @@ class AuthController extends Controller
 
         // Send Welcome Mail
         try {
-            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمن', 'Welcome to Thamn', $request)));
+            Mail::to($user->email)->send(new WelcomeMail($user, lang('مرحباً بك في ثمّن', 'Welcome to Thamn', $request)));
         } catch (\Exception $e) {
             \Log::error('Welcome Mail Failed (Register): ' . $e->getMessage());
         }
@@ -343,7 +343,7 @@ class AuthController extends Controller
         if (!empty($user->phone)) {
             try {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
-                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك الجديد في ثمن هو: $otp");
+                $whatsapp->sendMessage($user->phone, "كود تفعيل حسابك الجديد في ثمّن هو: $otp");
                 \Log::debug("Resend OTP WhatsApp sent successfully.");
             } catch (\Exception $e) {
                 \Log::error('OTP Delivery Failed (Resend WhatsApp): ' . $e->getMessage());
@@ -459,7 +459,7 @@ class AuthController extends Controller
         if (!empty($user->phone)) {
             try {
                 $whatsapp = app(\App\Services\WhatsAppService::class);
-                $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمن هو: $otp . لا تشاركه مع أحد.");
+                $whatsapp->sendMessage($user->phone, "رمز إعادة تعيين كلمة المرور الخاصة بك في ثمّن هو: $otp . لا تشاركه مع أحد.");
                 \Log::debug("Forgot Password OTP WhatsApp sent successfully to: {$user->phone}");
             } catch (\Exception $e) {
                 \Log::error('Forgot Password Delivery Failed (WhatsApp): ' . $e->getMessage());

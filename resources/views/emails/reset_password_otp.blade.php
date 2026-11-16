@@ -1,7 +1,7 @@
 @php
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'إعادة تعيين كلمة المرور – ثمن' : 'Reset Password – Thamn';
+  $emailTitle = $isRtl ? 'إعادة تعيين كلمة المرور – ثمّن' : 'Reset Password – Thamn';
 @endphp
 @php $banner = 'reset_password.png'; @endphp
 @php ob_start(); @endphp
@@ -44,7 +44,7 @@
     style="background:#FFF8EC;border-radius:10px;border:1px solid #F5DFA0;">
     <tr>
       <td style="padding:13px 18px;font-size:12px;color:#7A5B00;text-align:center;line-height:1.7;">
-        ⚠️&nbsp;{{ $isRtl ? 'لا تشارك هذا الرمز. فريق ثمن لن يطلبه منك أبداً.' : "Never share this code. Thamn's team will never ask for it." }}
+        ⚠️&nbsp;{{ $isRtl ? 'لا تشارك هذا الرمز. فريق ثمّن لن يطلبه منك أبداً.' : "Never share this code. Thamn's team will never ask for it." }}
       </td>
     </tr>
   </table>

@@ -24,12 +24,24 @@ class Intro extends Model
     ];
 
     /**
+     * Ensure 'ثمّن' always has shaddah on the meem
+     */
+    public static function formatThamnWithShaddah(?string $text): ?string
+    {
+        if (empty($text)) {
+            return $text;
+        }
+        return preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $text);
+    }
+
+    /**
      * Get localized title
      */
     public function getTitle($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->title_ar : $this->title_en;
-        return !empty($val) ? $val : $this->title_ar;
+        $result = !empty($val) ? $val : $this->title_ar;
+        return $lang === 'ar' ? self::formatThamnWithShaddah($result) : $result;
     }
 
     /**
@@ -38,7 +50,8 @@ class Intro extends Model
     public function getSubTitle($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
-        return !empty($val) ? $val : $this->sub_title_ar;
+        $result = !empty($val) ? $val : $this->sub_title_ar;
+        return $lang === 'ar' ? self::formatThamnWithShaddah($result) : $result;
     }
 
     /**
@@ -47,6 +60,7 @@ class Intro extends Model
     public function getDescription($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->description_ar : $this->description_en;
-        return !empty($val) ? $val : $this->description_ar;
+        $result = !empty($val) ? $val : $this->description_ar;
+        return $lang === 'ar' ? self::formatThamnWithShaddah($result) : $result;
     }
 }

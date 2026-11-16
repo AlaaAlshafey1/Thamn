@@ -44,7 +44,7 @@
   @endif
 
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
-    {{ $isRtl ? 'شكرا لاستخدامك ثمن' : 'Thank you for using Thamn' }}
+    {{ $isRtl ? 'شكرا لاستخدامك ثمّن' : 'Thank you for using Thamn' }}
   </p>
 
 @php $slot = ob_get_clean(); @endphp

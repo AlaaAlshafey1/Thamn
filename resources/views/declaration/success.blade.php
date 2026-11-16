@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تم التوقيع بنجاح - الاتفاقية القانونية - تطبيق ثمن</title>
+    <title>تم التوقيع بنجاح - الاتفاقية القانونية - تطبيق ثمّن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -174,7 +174,7 @@
         <div class="divider"></div>
         <p class="subtitle">
             شكراً {{ $declaration->full_name }}،<br>
-            تم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمن بنجاح.<br>
+            تم حفظ توقيعك على الاتفاقية القانونية للتعاون مع تطبيق ثمّن بنجاح.<br>
             📧 تم إرسال نسخة PDF موقّعة إلى بريدك الإلكتروني.
         </p>
 
@@ -200,7 +200,7 @@
         @endif
 
         <p class="close-note">يمكنك إغلاق هذه النافذة</p>
-        <div class="logo">ثمن</div>
+        <div class="logo">ثمّن</div>
     </div>
 </body>
 

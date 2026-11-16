@@ -26,24 +26,24 @@ class OrderThamnPriceCalculated extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - تم تثمين منتجك')
-            ->line("تم تثمين ثمن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي")
+            ->subject('تطبيق ثمّن - تم تثمين منتجك')
+            ->line("تم تثمين ثمّن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
-            ->line('شكراً لاستخدامك تطبيق ثمن');
+            ->line('شكراً لاستخدامك تطبيق ثمّن');
     }
 
     public function toDatabase($notifiable)
     {
         return [
             'order_id' => $this->order->id,
-            'title' => 'تم حساب سعر ثمن',
-            'message' => "تم تثمين ثمن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي",
+            'title' => 'تم حساب سعر ثمّن',
+            'message' => "تم تثمين ثمّن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي",
             'thamn_price' => $this->order->thamn_price,
         ];
     }
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم تثمين ثمن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي";
+        return "تطبيق ثمّن 🔔\n" . "تم تثمين ثمّن منتجك: طلب رقم {$this->order->id} ← السعر النهائي: {$this->order->thamn_price} ريال سعودي";
     }
 }

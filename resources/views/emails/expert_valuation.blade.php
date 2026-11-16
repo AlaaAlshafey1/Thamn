@@ -61,7 +61,7 @@
 
   <p style="margin:0;font-size:14px;color:#666;line-height:1.85;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
     {{ $isRtl ? 'شاكرين تعاونكم' : 'Thank you for your cooperation' }}<br>
-    <strong>{{ $isRtl ? 'فريق تطبيق ثمن' : 'Thamn App Team' }}</strong>
+    <strong>{{ $isRtl ? 'فريق تطبيق ثمّن' : 'Thamn App Team' }}</strong>
   </p>
 
 @php $slot = ob_get_clean(); @endphp

@@ -26,8 +26,8 @@ class OrderAssignedToExpert extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - طلب تثمين احترافي جديد')
-            ->line("هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن.")
+            ->subject('تطبيق ثمّن - طلب تثمين احترافي جديد')
+            ->line("هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمّن.")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
             ->line('نرجو منك الدخول وتقييم الطلب في أسرع وقت.');
     }
@@ -37,7 +37,7 @@ class OrderAssignedToExpert extends Notification
         return [
             'order_id' => $this->order->id,
             'title' => 'هلا بك خبير ( التثمين ) 👋 طلب تثمين احترافي جديد',
-            'message' => "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
+            'message' => "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمّن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.",
             'user_id' => $this->order->user_id,
             'type' => 'new_expert_order',
         ];
@@ -45,6 +45,6 @@ class OrderAssignedToExpert extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.";
+        return "تطبيق ثمّن 🔔\n" . "هلا بك خبير ( التثمين ) 👋 وصل طلب تثمين احترافي جديد رقم {$this->order->id} وهو متاح الآن في منصة الخبراء في ثمّن. نرجو منك الدخول وتقييم الطلب في أسرع وقت.";
     }
 }

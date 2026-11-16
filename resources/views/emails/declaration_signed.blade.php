@@ -1,7 +1,7 @@
 @php
   $locale = app()->getLocale();
   $isRtl  = $locale === 'ar';
-  $emailTitle = $isRtl ? 'نسختك من الاتفاقية القانونية – ثمن' : 'Your Legal Agreement Copy – Thamn';
+  $emailTitle = $isRtl ? 'نسختك من الاتفاقية القانونية – ثمّن' : 'Your Legal Agreement Copy – Thamn';
 @endphp
 @php $banner = 'declaration_banner.jpg'; @endphp
 @php ob_start(); @endphp
@@ -12,7 +12,7 @@
 
   <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.85;">
     مرحباً <strong style="color:#1A1A1A;">{{ $declaration->full_name ?? '' }}</strong><br>
-    استلمنا طلب انضمامك لفريق الخبراء في ثمن وسنقوم بمراجعة طلبك والتواصل معك قريباً
+    استلمنا طلب انضمامك لفريق الخبراء في ثمّن وسنقوم بمراجعة طلبك والتواصل معك قريباً
   </p>
 
   <a href="{{ $downloadUrl }}"

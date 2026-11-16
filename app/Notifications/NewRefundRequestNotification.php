@@ -26,7 +26,7 @@ class NewRefundRequestNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - طلب استرداد جديد')
+            ->subject('تطبيق ثمّن - طلب استرداد جديد')
             ->line("قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}")
             ->line('يرجى مراجعة لوحة التحكم لاتخاذ الإجراء المناسب.');
     }
@@ -43,6 +43,6 @@ class NewRefundRequestNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}";
+        return "تطبيق ثمّن 🔔\n" . "قام العميل {$this->refund->user->first_name} بتقديم طلب استرداد لمبلغ " . number_format($this->refund->amount, 2) . " ريال للطلب رقم {$this->refund->order_id}";
     }
 }

@@ -18,9 +18,9 @@ class AccountDeletedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - تم حذف الحساب')
+            ->subject('تطبيق ثمّن - تم حذف الحساب')
             ->line('تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً')
-            ->line('شكراً لاستخدامك تطبيق ثمن');
+            ->line('شكراً لاستخدامك تطبيق ثمّن');
     }
 
     public function toDatabase($notifiable)
@@ -37,6 +37,6 @@ class AccountDeletedNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً';
+        return "تطبيق ثمّن 🔔\n" . 'تم حذف حسابك بنجاح ويمكنك استعادته لاحقاً';
     }
 }

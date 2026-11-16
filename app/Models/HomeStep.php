@@ -30,7 +30,11 @@ class HomeStep extends Model
     public function getTitle($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->title_ar : $this->title_en;
-        return !empty($val) ? $val : $this->title_ar;
+        $result = !empty($val) ? $val : $this->title_ar;
+        if ($lang === 'ar' && !empty($result)) {
+            return preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $result);
+        }
+        return $result;
     }
 
     /**
@@ -39,7 +43,11 @@ class HomeStep extends Model
     public function getSubTitle($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->sub_title_ar : $this->sub_title_en;
-        return !empty($val) ? $val : $this->sub_title_ar;
+        $result = !empty($val) ? $val : $this->sub_title_ar;
+        if ($lang === 'ar' && !empty($result)) {
+            return preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $result);
+        }
+        return $result;
     }
 
     /**
@@ -48,7 +56,11 @@ class HomeStep extends Model
     public function getDesc($lang = 'ar')
     {
         $val = $lang === 'ar' ? $this->desc_ar : $this->desc_en;
-        return !empty($val) ? $val : $this->desc_ar;
+        $result = !empty($val) ? $val : $this->desc_ar;
+        if ($lang === 'ar' && !empty($result)) {
+            return preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $result);
+        }
+        return $result;
     }
 
     /**

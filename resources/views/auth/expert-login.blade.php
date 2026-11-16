@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>دخول الخبراء - ثمن</title>
+    <title>دخول الخبراء - ثمّن</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- BoxIcons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -334,7 +334,7 @@
         <!-- Top Navigation -->
         <header class="top-nav">
             <a href="{{ url('/') }}" class="logo-link">
-                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمن">
+                <img src="{{ asset('assets/img/Logo-black.png') }}" alt="ثمّن">
             </a>
 
             <a href="{{ url('/') }}" class="back-link">

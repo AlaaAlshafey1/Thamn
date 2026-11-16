@@ -26,10 +26,10 @@ class OrderExpiredNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - لم يتم قبول الطلب')
+            ->subject('تطبيق ثمّن - لم يتم قبول الطلب')
             ->line("لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم {$this->order->id}")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
-            ->line('شكراً لاستخدامك تطبيق ثمن');
+            ->line('شكراً لاستخدامك تطبيق ثمّن');
     }
 
     public function toDatabase($notifiable)
@@ -43,6 +43,6 @@ class OrderExpiredNotification extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم {$this->order->id}";
+        return "تطبيق ثمّن 🔔\n" . "لم يتم قبول الطلب بتاعك من قبل اى خبير وبامكانك استرداد الطلب للطلب رقم {$this->order->id}";
     }
 }

@@ -1251,7 +1251,7 @@ class OrderController extends Controller
             ?? '';
 
         /* ===================== CUSTOMER & PACKAGE & SERVICE PRICE ===================== */
-        $customerName = $order->user ? trim($order->user->first_name . ' ' . $order->user->last_name) : 'عميل منصة ثمن';
+        $customerName = $order->user ? trim($order->user->first_name . ' ' . $order->user->last_name) : 'عميل منصة ثمّن';
 
         $rateTypeAnswer = $order->details()->whereHas('question', function ($q) {
             $q->where('type', 'rateTypeSelection');
@@ -1830,7 +1830,7 @@ class OrderController extends Controller
             $newPriceFormatted = number_format((float) $newPrice, 0);
             $previousPriceFormatted = $previousPrice ? number_format((float) $previousPrice, 0) . ' ريال' : null;
             $customerFirstName = $order->user?->first_name ?: 'عميلنا العزيز';
-            $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمن';
+            $customerFullName = $order->user ? ($order->user->first_name . ' ' . $order->user->last_name) : 'عميل ثمّن';
 
             // إرسال رسالة واتساب للعميل بالسعر الجديد وتوجيهه للدخول للتطبيق مباشرة
             if ($order->user && $order->user->phone) {
@@ -1838,8 +1838,8 @@ class OrderController extends Controller
                     $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. تم الانتهاء من مراجعة وتعديل تقييم طلبك رقم {$order->id} بنجاح 🔄\n\n"
                         . "بناءً على " . ($isInputModified ? "تعديلك للمدخلات" : "اعتراضك على التقييم السابق") . "، قام نظام الذكاء الاصطناعي بتدقيق المعطيات وتحديث السعر العادل وفق أسعار السوق:\n"
                         . "💰 *السعر الجديد بعد المراجعة: {$newPriceFormatted} ريال*" . ($previousPriceFormatted ? " (السعر السابق: {$previousPriceFormatted})\n\n" : "\n\n")
-                        . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
-                        . "- فريق ثمن";
+                        . "📱 تفضل بالدخول على تطبيق ثمّن وشوف تفاصيل التقييم المحدث والتقرير كاملاً الآن.\n\n"
+                        . "- فريق ثمّن";
 
                     app(\App\Services\WhatsAppService::class)->sendMessage($order->user->phone, $customerWhatsappMsg);
                 } catch (\Exception $e) {
@@ -2016,8 +2016,8 @@ class OrderController extends Controller
                 $customerFirstName = $order->user->first_name ?: 'عميلنا العزيز';
                 $customerWhatsappMsg = "يا هلا والله بك يا {$customerFirstName} .. استلمنا " . ($isInputModified ? "تعديلاتك وطلب إعادة التقييم" : "احتجاجك على تقييم") . " طلبك رقم {$order->id} بنجاح 🔄\n\n"
                     . "ولا تشيل هم .. فريقنا والخبير المختص بيراجعون السعر وتفاصيل السلعة بدقة، ونبشرك بالنتيجة بأقرب وقت بإذن الله 🤝\n\n"
-                    . "📱 تقدر تتابع حالة طلبك وتفاصيل التقييم أولاً بأول من داخل تطبيق ثمن.\n\n"
-                    . "- فريق ثمن";
+                    . "📱 تقدر تتابع حالة طلبك وتفاصيل التقييم أولاً بأول من داخل تطبيق ثمّن.\n\n"
+                    . "- فريق ثمّن";
 
                 app(\App\Services\WhatsAppService::class)->sendMessage($order->user->phone, $customerWhatsappMsg);
             } catch (\Exception $e) {

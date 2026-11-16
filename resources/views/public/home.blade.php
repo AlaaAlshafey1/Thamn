@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
-    <meta name="description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <title>ثمّن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )</title>
+    <meta name="description" content="ثمّن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo-black.png') }}">
-    <meta property="og:title" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
-    <meta property="og:description" content="ثمن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:title" content="ثمّن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
+    <meta property="og:description" content="ثمّن ( التثمين الاسترشادي للممتلكات والسلع المستعملة )">
     <meta property="og:image" content="{{ asset('assets/img/Logo-black.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1084,7 +1084,7 @@
                                 </div>
                             @else
                                 <div class="banner-media">
-                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'ثمن سلعتك المستعملة' }}"
+                                    <img src="{{ $banner->file }}" alt="{{ $banner->getTitle($lang) ?? 'ثمّن سلعتك المستعملة' }}"
                                         class="banner-img">
                                 </div>
                             @endif
@@ -1116,7 +1116,7 @@
     <nav id="navbar">
         <a href="{{ route('home') }}" class="logo">
             <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamn Logo">
-            <span>ثمن</span>
+            <span>ثمّن</span>
         </a>
         <ul>
             <li><a href="#hero">الرئيسية</a></li>
@@ -1142,18 +1142,18 @@
                 </div>
                 <h1>
                     @if($welcomeIntro && $welcomeIntro->getTitle($lang))
-                        {{ $welcomeIntro->getTitle($lang) }}
+                        {{ preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $welcomeIntro->getTitle($lang)) }}
                     @else
                         قيمة مقتنياتك <em style="font-style: normal; color: var(--gold);">تستحق</em> المعرفة الحقيقية
                     @endif
                 </h1>
                 <p class="hero-sub">
                     @if($welcomeIntro && $welcomeIntro->getDescription($lang))
-                        {{ $welcomeIntro->getDescription($lang) }}
+                        {{ preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $welcomeIntro->getDescription($lang)) }}
                     @elseif($welcomeIntro && $welcomeIntro->getSubTitle($lang))
-                        {{ $welcomeIntro->getSubTitle($lang) }}
+                        {{ preg_replace('/(?<![^\s\p{P}])([وبفلك]?)(ث[\x{064E}]?م[\x{064E}]?ن)(?![^\s\p{P}])/u', '$1ثمّن', $welcomeIntro->getSubTitle($lang)) }}
                     @else
-                        تطبيق ثمن تمنحك الثقة في معرفة قيمة أصولك الفاخرة عبر دمج عبقرية الذكاء الاصطناعي مع خبرة نخبة
+                        تطبيق ثمّن يمنحك الثقة في معرفة قيمة أصولك الفاخرة عبر دمج عبقرية الذكاء الاصطناعي مع خبرة نخبة
                         المثمنين المعتمدين.
                     @endif
                 </p>
@@ -1197,12 +1197,12 @@
     <section id="features">
         <div class="section-header" data-aos="fade-up">
             <span
-                class="section-label">{{ $featureSteps && $featureSteps->getSubTitle($lang) ? $featureSteps->getSubTitle($lang) : 'لماذا ثمن؟' }}</span>
+                class="section-label">{{ $featureSteps && $featureSteps->getSubTitle($lang) ? $featureSteps->getSubTitle($lang) : 'لماذا ثمّن؟' }}</span>
             <h2 class="section-title">
                 @if($featureSteps && $featureSteps->getTitle($lang))
                     {{ $featureSteps->getTitle($lang) }}
                 @else
-                    لماذا منصة <em>ثمن؟</em>
+                    لماذا منصة <em>ثمّن؟</em>
                 @endif
             </h2>
         </div>
@@ -1358,7 +1358,7 @@
 
     <!-- APP SECTION -->
     <div class="app-section" id="download-app" data-aos="zoom-out">
-        <h2>ابدأ رحلتك مع ثمن</h2>
+        <h2>ابدأ رحلتك مع ثمّن</h2>
         <p>انضم إلى آلاف المستخدمين الذين يثقون بنا لمعرفة قيمة أصولهم. حمل التطبيق الآن واستمتع بالدقة.</p>
         <div class="app-btns">
             <a href="https://apps.apple.com/eg/app/thmmn-%D8%AB%D9%85%D9%86/id6758052199" target="_blank" rel="noopener noreferrer">
@@ -1374,7 +1374,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-brand">
-                <h2 style="font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 800;">ثمن</h2>
+                <h2 style="font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 800;">ثمّن</h2>
                 <p>منصة تطبيق سعودي في مجال التثمين الاسترشادي للسلع المستعملة باستخدام معايير فنية وتقنية.</p>
             </div>
             <div class="footer-links">
@@ -1416,7 +1416,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; {{ date('Y') }} تطبيق ثمن. جميع الحقوق محفوظة.
+            &copy; {{ date('Y') }} تطبيق ثمّن. جميع الحقوق محفوظة.
         </div>
     </footer>
 

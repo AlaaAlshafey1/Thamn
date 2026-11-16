@@ -48,6 +48,6 @@ class OrderEvaluated extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن\n" . "تم تقييم طلبك رقم {$this->order->id} بنجاح";
+        return "تطبيق ثمّن\n" . "تم تقييم طلبك رقم {$this->order->id} بنجاح";
     }
 }

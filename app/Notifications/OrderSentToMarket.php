@@ -26,10 +26,10 @@ class OrderSentToMarket extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('تطبيق ثمن - تم إرسال الطلب للسوق')
+            ->subject('تطبيق ثمّن - تم إرسال الطلب للسوق')
             ->line("تم إرسال منتجك للسوق: طلب رقم {$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي")
             ->action('عرض الطلب', url(route('orders.show', $this->order->id)))
-            ->line('شكراً لاستخدامك تطبيق ثمن');
+            ->line('شكراً لاستخدامك تطبيق ثمّن');
     }
 
     public function toDatabase($notifiable)
@@ -43,6 +43,6 @@ class OrderSentToMarket extends Notification
 
     public function toWhatsApp($notifiable)
     {
-        return "تطبيق ثمن 🔔\n" . "تم إرسال منتجك للسوق: طلب رقم {$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي";
+        return "تطبيق ثمّن 🔔\n" . "تم إرسال منتجك للسوق: طلب رقم {$this->order->id}، السعر: {$this->order->thamn_price} ريال سعودي";
     }
 }

@@ -1,7 +1,7 @@
 @php
   $locale = app()->getLocale();
   $isRtl = true; // بريد موجه للإدارة: عربي دائماً
-  $emailTitle = $isRtl ? 'طلب سحب رصيد جديد – ثمن (للإدارة)' : 'New Withdrawal Request – Thamn (Admin)';
+  $emailTitle = $isRtl ? 'طلب سحب رصيد جديد – ثمّن (للإدارة)' : 'New Withdrawal Request – Thamn (Admin)';
 
   // رابط مراجعة الطلب: نضمن توجيهه مباشرة لتفاصيل الطلب على الرابط الفعلي
   $appUrl = config('app.url');

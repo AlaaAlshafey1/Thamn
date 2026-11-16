@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انضم كخبير — تطبيق ثمن</title>
+    <title>انضم كخبير — تطبيق ثمّن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
@@ -98,6 +98,47 @@
 
         nav ul a:hover {
             color: var(--gold)
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .nav-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.55rem 1.1rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            background: var(--primary);
+            color: #ffffff;
+            border: 1.5px solid var(--primary);
+        }
+
+        .nav-cta:hover {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 159, 10, 0.25);
+        }
+
+        .nav-cta-outline {
+            background: transparent !important;
+            border: 1.5px solid var(--gold) !important;
+            color: var(--primary) !important;
+        }
+
+        .nav-cta-outline:hover {
+            background: var(--gold) !important;
+            color: #ffffff !important;
         }
 
         /* REGISTRATION SECTION */
@@ -300,41 +341,22 @@
             font-size: 0.9rem;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .reg-section {
-                grid-template-columns: 1fr;
-            }
-
-            .reg-info {
-                text-align: center;
-            }
-
-            .benefit-item {
-                text-align: right;
-            }
-
-            .form-card {
-                padding: 3rem 2rem;
-            }
+        /* FILE INPUT STYLING */
+        input[type="file"] {
+            background: #ffffff;
+            padding: 0.75rem 1rem;
+            border: 1.5px dashed var(--border);
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            transition: all 0.25s ease;
+            width: 100%;
         }
 
-        @media (max-width: 768px) {
-            nav ul {
-                display: none;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group.full {
-                grid-column: span 1;
-            }
-
-            .reg-info h1 {
-                font-size: 2.8rem;
-            }
+        input[type="file"]:hover {
+            border-color: var(--gold);
+            background: rgba(255, 159, 10, 0.02);
         }
 
         /* ===== ATTACHMENTS SECTION (MANDATORY) ===== */
@@ -348,59 +370,80 @@
             position: relative;
         }
 
+        /* Notice Card */
         .attachments-notice-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 1.2rem;
             background: linear-gradient(135deg, rgba(255, 159, 10, 0.12) 0%, rgba(255, 159, 10, 0.03) 100%);
             border: 1.5px solid rgba(255, 159, 10, 0.35);
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 1.2rem 1.4rem;
             margin-bottom: 1.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .notice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .notice-title-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .notice-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             background: var(--gold);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.15rem;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(255, 159, 10, 0.3);
+            box-shadow: 0 4px 10px rgba(255, 159, 10, 0.25);
         }
 
-        .notice-content h4 {
+        .notice-title-box h4 {
             font-size: 1.15rem;
             color: var(--primary);
             font-weight: 800;
-            margin-bottom: 0.3rem;
-        }
-
-        .notice-content p {
-            color: #444;
-            font-size: 0.98rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            line-height: 1.5;
+            margin: 0;
+            white-space: nowrap;
         }
 
         .badge-mandatory {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #fff;
+            background: #ffffff;
             color: #d97706;
-            border: 1px solid rgba(217, 119, 6, 0.3);
-            padding: 3px 10px;
+            border: 1px solid rgba(217, 119, 6, 0.35);
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 800;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08);
+            flex-shrink: 0;
         }
 
+        .notice-desc {
+            color: #475569;
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.6;
+            margin: 0;
+            width: 100%;
+        }
+
+        /* Dropzone */
         .dropzone-area {
             border: 2px dashed rgba(255, 159, 10, 0.5);
             border-radius: 16px;
@@ -644,6 +687,277 @@
             background: var(--gold);
             color: #ffffff;
         }
+
+        /* ===== RESPONSIVE STYLES ===== */
+        @media (max-width: 1024px) {
+            .reg-section {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .reg-info {
+                text-align: center;
+            }
+
+            .benefit-item {
+                text-align: right;
+            }
+
+            .form-card {
+                padding: 3rem 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 0.65rem 4%;
+                background: #ffffff;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            nav ul {
+                display: none;
+            }
+
+            .logo {
+                gap: 0.5rem;
+            }
+
+            .logo img {
+                height: 36px;
+            }
+
+            .logo span {
+                font-size: 1.4rem;
+            }
+
+            .nav-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .nav-cta {
+                padding: 0.45rem 0.75rem;
+                font-size: 0.78rem;
+                border-radius: 8px;
+                white-space: nowrap;
+            }
+
+            .reg-section {
+                padding: 85px 12px 40px;
+                gap: 2rem;
+            }
+
+            .reg-info {
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .reg-info h1 {
+                font-size: 2.1rem;
+                margin-bottom: 1rem;
+                line-height: 1.3;
+            }
+
+            .reg-info p {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .benefit-item {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 14px;
+            }
+
+            .form-card {
+                padding: 1.6rem 1rem;
+                border-radius: 20px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            }
+
+            .form-header {
+                margin-bottom: 1.8rem;
+            }
+
+            .form-header h2 {
+                font-size: 1.65rem;
+            }
+
+            .form-header p {
+                font-size: 0.88rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1.1rem;
+            }
+
+            .form-group {
+                margin-bottom: 0;
+            }
+
+            .form-group.full {
+                grid-column: span 1;
+            }
+
+            label {
+                font-size: 0.88rem;
+                margin-bottom: 0.4rem;
+            }
+
+            input,
+            select,
+            textarea {
+                font-size: 16px; /* Prevents iOS auto-zoom */
+                padding: 0.8rem 0.95rem;
+                border-radius: 10px;
+            }
+
+            /* Responsive Attachments Section */
+            .attachments-section-wrapper {
+                padding: 1.1rem 0.85rem;
+                border-radius: 16px;
+                margin: 1.2rem 0;
+            }
+
+            .attachments-notice-card {
+                padding: 1rem 0.85rem;
+                border-radius: 14px;
+                margin-bottom: 1.2rem;
+                gap: 0.65rem;
+            }
+
+            .notice-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+            }
+
+            .notice-title-box h4 {
+                font-size: 1rem;
+            }
+
+            .notice-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                border-radius: 8px;
+            }
+
+            .badge-mandatory {
+                font-size: 0.72rem;
+                padding: 3px 8px;
+            }
+
+            .notice-desc {
+                font-size: 0.86rem;
+                line-height: 1.55;
+            }
+
+            .dropzone-area {
+                padding: 1.5rem 0.85rem;
+                border-radius: 14px;
+            }
+
+            .dropzone-icon {
+                font-size: 2.2rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .dropzone-title {
+                font-size: 1.15rem;
+            }
+
+            .dropzone-subtitle {
+                font-size: 0.82rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .dropzone-hints {
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .dropzone-hints span {
+                font-size: 0.74rem;
+                padding: 3px 8px;
+                background: rgba(0, 0, 0, 0.03);
+                border-radius: 12px;
+            }
+
+            .btn-choose-files {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .attachment-item-card {
+                padding: 0.85rem;
+                border-radius: 12px;
+            }
+
+            .attachment-name {
+                font-size: 0.88rem;
+                max-width: 170px;
+            }
+
+            .attachment-type-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.4rem;
+            }
+
+            .attachment-type-label {
+                font-size: 0.82rem;
+            }
+
+            .attachment-type-select {
+                min-width: 100%;
+                width: 100%;
+                font-size: 0.88rem;
+                padding: 0.65rem 0.8rem;
+            }
+
+            .btn-add-more {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.88rem;
+            }
+
+            .submit-btn {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .notice-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .reg-section {
+                padding: 80px 8px 30px;
+            }
+
+            .form-card {
+                padding: 1.3rem 0.75rem;
+            }
+
+            .logo span {
+                font-size: 1.2rem;
+            }
+
+            .nav-cta {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.74rem;
+            }
+        }
     </style>
 </head>
 
@@ -652,22 +966,22 @@
     <nav>
         <a href="{{ route('home') }}" class="logo">
             <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamn Logo">
-            <span>ثمن</span>
+            <span>ثمّن</span>
         </a>
         <ul>
             <li><a href="{{ route('home') }}">الرئيسية</a></li>
             <li><a href="{{ route('home') }}#features">المميزات</a></li>
             <li><a href="{{ route('home') }}#how-it-works">كيف نعمل</a></li>
         </ul>
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <a href="{{ route('expert.login') }}" class="nav-cta" style="background: transparent; border: 1.5px solid var(--gold); color: var(--primary);">دخول الخبراء</a>
-            <a href="{{ route('home') }}" class="nav-cta">العودة للرئيسية</a>
+        <div class="nav-actions">
+            <a href="{{ route('expert.login') }}" class="nav-cta nav-cta-outline">دخول الخبراء</a>
+            <a href="{{ route('home') }}" class="nav-cta">الرئيسية</a>
         </div>
     </nav>
 
     <section class="reg-section">
         <div class="reg-info" data-aos="fade-left">
-            <h1>انضم إلى فريق <em>خبراء ثمن</em></h1>
+            <h1>انضم إلى فريق <em>خبراء ثمّن</em></h1>
             <p>نحن نبحث عن أفضل الكفاءات في مجالات التقييم الفني والتقني. انضم إلينا وساهم في بناء مستقبل التثمين الذكي.
             </p>
 
@@ -797,14 +1111,16 @@
                         
                         <!-- Alert / Notice Box -->
                         <div class="attachments-notice-card">
-                            <div class="notice-icon">
-                                <i class="fas fa-certificate"></i>
+                            <div class="notice-header">
+                                <div class="notice-title-box">
+                                    <div class="notice-icon">
+                                        <i class="fas fa-certificate"></i>
+                                    </div>
+                                    <h4>عزيزي الخبير :</h4>
+                                </div>
+                                <span class="badge-mandatory"><i class="fas fa-asterisk"></i> المرفقات إجبارية للتوثيق</span>
                             </div>
-                            <div class="notice-content">
-                                <h4>عزيزي الخبير :</h4>
-                                <p>رفعك للمرفقات يسهل عليك سرعة اعتماد العضوية وتوثيقها</p>
-                                <span class="badge-mandatory"><i class="fas fa-asterisk"></i> المرفقات إجبارية لإتمام وتوثيق العضوية</span>
-                            </div>
+                            <p class="notice-desc">رفعك للمرفقات والشهادات يسهل ويسرّع مراجعة طلبك واعتماد وتوثيق عضويتك بدقة.</p>
                         </div>
 
                         <!-- Upload Box / Dropzone -->
@@ -870,8 +1186,8 @@
     </section>
 
     <footer>
-        <a href="{{ route('home') }}" class="footer-logo">ثمن</a>
-        <p class="footer-copy">&copy; 2025 تطبيق ثمن. جميع الحقوق محفوظة.</p>
+        <a href="{{ route('home') }}" class="footer-logo">ثمّن</a>
+        <p class="footer-copy">&copy; 2025 تطبيق ثمّن. جميع الحقوق محفوظة.</p>
     </footer>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>

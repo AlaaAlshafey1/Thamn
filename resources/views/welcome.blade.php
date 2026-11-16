@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'ثمن - Thamn') }} — التثمين الاسترشادي للممتلكات والسلع المستعملة</title>
-    <meta name="description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
-    <meta name="keywords" content="ثمن, تقييم, تثمين, مقتنيات فاخرة, ذكاء اصطناعي, Thamn">
+    <title>{{ config('app.name', 'ثمّن - Thamn') }} — التثمين الاسترشادي للممتلكات والسلع المستعملة</title>
+    <meta name="description" content="ثمّن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta name="keywords" content="ثمّن, تقييم, تثمين, مقتنيات فاخرة, ذكاء اصطناعي, Thamn">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ URL::asset('assets/img/Logo-black.png') }}" />
@@ -17,12 +17,12 @@
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="ثمن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
-    <meta property="og:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta property="og:title" content="ثمّن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta property="og:description" content="ثمّن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
     <meta property="og:image" content="{{ URL::asset('assets/img/Logo-black.png') }}">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="ثمن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
-    <meta name="twitter:description" content="ثمن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta name="twitter:title" content="ثمّن — التثمين الاسترشادي للممتلكات والسلع المستعملة">
+    <meta name="twitter:description" content="ثمّن - التثمين الاسترشادي للممتلكات والسلع المستعملة">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,15 +67,15 @@
                         <div class="w-[2px] h-2 bg-white"></div>
                     </div>
                     <div class="w-full h-[2px] bg-white"></div>
-                    <div class="text-[10px] font-black tracking-widest text-white leading-none">ثمن</div>
+                    <div class="text-[10px] font-black tracking-widest text-white leading-none">ثمّن</div>
                 </div>
                 <span class="text-white text-2xl font-black tracking-tight"
-                    style="font-family: 'IBM Plex Sans Arabic';">ثمن</span>
+                    style="font-family: 'IBM Plex Sans Arabic';">ثمّن</span>
             </div>
             <nav class="hidden md:flex items-center gap-8 text-white/90">
                 <a href="#" class="hover:text-primary transition-colors">الرئيسية</a>
                 <a href="#" class="hover:text-primary transition-colors">خدماتنا</a>
-                <a href="#" class="hover:text-primary transition-colors">عن ثمن</a>
+                <a href="#" class="hover:text-primary transition-colors">عن ثمّن</a>
                 <a href="#" class="hover:text-primary transition-colors">اتصل بنا</a>
             </nav>
             <div class="flex items-center gap-4">
@@ -216,7 +216,7 @@
 
                 <h2 class="text-3xl md:text-5xl font-black mb-8 relative z-10">جاهز لتقييم منتجك؟</h2>
                 <p class="text-white/60 mb-12 max-w-xl mx-auto text-lg relative z-10">انضم إلى آلاف المستخدمين الذين
-                    يثقون في ثمن للحصول على تقييمات عادلة ودقيقة.</p>
+                    يثقون في ثمّن للحصول على تقييمات عادلة ودقيقة.</p>
                 <a href="{{ route('register') }}"
                     class="inline-block px-12 py-5 rounded-full bg-primary text-white font-black text-xl hover:bg-orange-500 transition-all shadow-2xl shadow-primary/40 relative z-10">سجل
                     الآن مجاناً</a>
@@ -229,7 +229,7 @@
         <div class="container mx-auto px-6 text-center">
             <img src="{{ asset('assets/img/Logo-black.png') }}" alt="Thamn Logo"
                 class="h-12 mx-auto mb-6 opacity-30 grayscale">
-            <p class="text-gray-400">&copy; {{ date('Y') }} ثمن. جميع الحقوق محفوظة.</p>
+            <p class="text-gray-400">&copy; {{ date('Y') }} ثمّن. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 

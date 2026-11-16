@@ -12,7 +12,7 @@
   $hasArabic = preg_match('/\p{Arabic}/u', $cleanTitle . $cleanBody) === 1;
   $locale = app()->getLocale();
   $isRtl  = $hasArabic ? true : ($locale === 'ar');
-  $emailTitle = $cleanTitle ?: ($isRtl ? 'إشعار من ثمن' : 'Notification from Thamn');
+  $emailTitle = $cleanTitle ?: ($isRtl ? 'إشعار من ثمّن' : 'Notification from Thamn');
 
   $isOrderLink = !empty($actionUrl) && preg_match('#/orders?(/|$)#', (string) $actionUrl) === 1;
   $btnLabel = !empty($actionLabel) ? $actionLabel : ($isRtl

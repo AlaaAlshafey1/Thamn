@@ -427,7 +427,7 @@ PROMPT;
 
         if ($isAiObjection) {
             // إشعار الخبراء بالاعتراض الجديد لتمكينهم من المراجعة والتعليق أو اتخاذ قرار
-            $objectionMsg = "تنبيه خبير ثمن ⚖️\nوصل اعتراض جديد من العميل على الطلب{$categoryText} رقم {$order->id}\n📌 سبب الاحتجاج: {$order->objection_reason}\nتم تحديث معطيات التقييم وإعادة توليد الصورة، وبإمكانك الآن الدخول لمراجعة الطلب والتعليق أو اعتماد التعديل أو تثبيت السعر السابق وإغلاق الطلب.";
+            $objectionMsg = "تنبيه خبير ثمّن ⚖️\nوصل اعتراض جديد من العميل على الطلب{$categoryText} رقم {$order->id}\n📌 سبب الاحتجاج: {$order->objection_reason}\nتم تحديث معطيات التقييم وإعادة توليد الصورة، وبإمكانك الآن الدخول لمراجعة الطلب والتعليق أو اعتماد التعديل أو تثبيت السعر السابق وإغلاق الطلب.";
             foreach ($experts as $expert) {
                 $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
                     'expert.auto-login',
@@ -440,7 +440,7 @@ PROMPT;
                 }
             }
         } elseif ($order->evaluation_type === 'ai' && !$order->expert_id) {
-            $msg = "ياهلا خبير التثمين\nوصلك طلب تثمين ذكي{$categoryText} رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر وفق رؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمن";
+            $msg = "ياهلا خبير التثمين\nوصلك طلب تثمين ذكي{$categoryText} رقم {$order->id}\nالمرجو منك سرعة الدخول على الطلب والاطلاع على التقرير واعتماد السعر وفق رؤيتكم واعتمادكم\n\nشاكرين تعاونكم\nفريق تطبيق ثمّن";
 
             foreach ($experts as $expert) {
                 // رابط دخول تلقائي آمن للخبير للداشبورد مباشرة
@@ -584,7 +584,7 @@ PROMPT;
                 $this->notifyByFirebase(
                     $isAr ? 'تم حساب السعر العادل' : 'Fair price calculated',
                     $isAr 
-                        ? "قام فريق ثمن بحساب السعر العادل لمنتجك {$thamnPrice} ريال" 
+                        ? "قام فريق ثمّن بحساب السعر العادل لمنتجك {$thamnPrice} ريال" 
                         : "Thamn team has calculated the fair price for your product: {$thamnPrice} SAR",
                     $tokens,
                     ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'thamn_ready']]
@@ -636,7 +636,7 @@ PROMPT;
 
             // Send WhatsApp
             if ($expert->phone) {
-                $expertMsg = "هلا بك خبير ثمن .. وصل طلب تثمين احترافي جديد{$categoryText} رقم {$order->id} وهو متاح الآن في منصة الخبراء .. نرجو منك الدخول وتقييم الطلب في أسرع وقت";
+                $expertMsg = "هلا بك خبير ثمّن .. وصل طلب تثمين احترافي جديد{$categoryText} رقم {$order->id} وهو متاح الآن في منصة الخبراء .. نرجو منك الدخول وتقييم الطلب في أسرع وقت";
                 $expertMsg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
                 $whatsapp->sendMessage($expert->phone, $expertMsg);
             }
@@ -645,7 +645,7 @@ PROMPT;
                 try {
                     Mail::to($expert->email)->send(new \App\Mail\SystemNotificationMail(
                         'طلب تقييم جديد بقسمك',
-                        "يوجد طلب جديد رقم {$order->id} متاح الآن للتقييم .. بادر بالدخول لمنصة الخبراء في ثمن لاستلامه قبل الخبراء الآخرين",
+                        "يوجد طلب جديد رقم {$order->id} متاح الآن للتقييم .. بادر بالدخول لمنصة الخبراء في ثمّن لاستلامه قبل الخبراء الآخرين",
                         $expertLink,
                         'عرض الطلب واستلامه'
                     ));

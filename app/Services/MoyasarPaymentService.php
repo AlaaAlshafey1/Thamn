@@ -181,7 +181,7 @@ class MoyasarPaymentService
                 'mobile' => $phone ?? '',
                 'country' => 'SA',
             ],
-            'comment' => 'تحويل مستحقات خبير - منصة ثمن #' . ($metadata['withdrawal_id'] ?? ''),
+            'comment' => 'تحويل مستحقات خبير - منصة ثمّن #' . ($metadata['withdrawal_id'] ?? ''),
             'metadata' => $metadata,
         ];
 
