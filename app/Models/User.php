@@ -47,7 +47,16 @@ class User extends Authenticatable
         'category_id',
         'preferred_language', // 'ar' or 'en', set by mobile app on login/register
         'membership_number',  // رقم العضوية - يُولَّد تلقائياً عند التسجيل
+        'city',
     ];
+
+    /**
+     * الحصول على المدينة مع التراجع لبيانات وثيقة الإقرار إن وجدت
+     */
+    public function getCityAttribute($value)
+    {
+        return !empty($value) ? $value : ($this->declaration?->city ?? null);
+    }
 
     /**
      * توليد رقم عضوية فريد مكوّن من 4-8 أرقام عشوائية.

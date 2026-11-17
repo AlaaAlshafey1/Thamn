@@ -388,12 +388,15 @@
             <!-- Expert Info -->
             <div class="invoice-info">
                 <div>
+                    <p><strong>رقم العضوية:</strong> <span class="badge" style="background:#c1953e; color:#fff; font-size:14px; font-weight:700; padding:4px 10px; border-radius:6px;">#{{ $user->membership_number ?? 'غير متوفر' }}</span></p>
                     <p><strong>اسم الخبير:</strong> {{ $user->first_name }} {{ $user->last_name }}</p>
                     <p><strong>الجنسية:</strong> {{ $user->nationality ?? ($declaration->nationality ?? '-') }}</p>
+                    <p><strong>المدينة:</strong> {{ $user->city ?? ($declaration->city ?? 'غير محدد') }}</p>
                     <p><strong>البريد:</strong> {{ $user->email }}</p>
                     <p><strong>الهاتف:</strong> {{ $user->phone ?? '-' }}</p>
                 </div>
                 <div>
+                    <p><strong>القسم / التخصص:</strong> {{ $user->category->name_ar ?? ($user->expertise ?? 'عام') }}</p>
                     <p><strong>عدد الطلبات التي قيمها:</strong> {{ $ordersCount }}</p>
                     <p><strong>الأرباح (4 ريال لكل طلب):</strong> {{ $totalEarned }} SAR</p>
                     <p><strong>الرصيد الحالي:</strong> {{ $user->balance ?? 0 }} SAR</p>
@@ -418,6 +421,14 @@
                             <div class="dec-info-item">
                                 <div class="dec-info-label">رقم الهوية</div>
                                 <div class="dec-info-value">{{ $declaration->national_id }}</div>
+                            </div>
+                            <div class="dec-info-item">
+                                <div class="dec-info-label">المدينة</div>
+                                <div class="dec-info-value">{{ $declaration->city ?? ($user->city ?? '-') }}</div>
+                            </div>
+                            <div class="dec-info-item">
+                                <div class="dec-info-label">الجنسية</div>
+                                <div class="dec-info-value">{{ $declaration->nationality ?? ($user->nationality ?? '-') }}</div>
                             </div>
                             <div class="dec-info-item">
                                 <div class="dec-info-label">رقم الجوال</div>

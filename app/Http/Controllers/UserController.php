@@ -22,7 +22,9 @@ public function index()
 public function experts()
 {
     $users = User::role('expert')
+        ->with(['declaration', 'category'])
         ->withCount('expertOrders') // عدد الطلبات اللي قيمها
+        ->latest()
         ->get();
 
     return view('users.experts.index', compact('users'));
@@ -107,6 +109,10 @@ public function storeExpert(UserRequest $request)
         $data['experience_certificate'] = $name;
     }
 
+    if (empty($data['membership_number'])) {
+        unset($data['membership_number']);
+    }
+
     $data['password'] = Hash::make($data['password']);
 
     $user = User::create($data);
@@ -176,8 +182,18 @@ public function updateExpert(UserRequest $request, User $user)
         unset($data['password']);
     }
 
+    if (empty($data['membership_number'])) {
+        unset($data['membership_number']);
+    }
+
     $wasActive = $user->is_active;
     $user->update($data);
+
+    // مزامنة المدينة مع وثيقة الإقرار إن وجدت
+    if ($user->declaration && !empty($data['city'])) {
+        $user->declaration->update(['city' => $data['city']]);
+    }
+
     $user->syncRoles(['expert']); 
 
     // If activated now, send WhatsApp

@@ -136,6 +136,14 @@
                         </optgroup>
                     </select>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" name="city" class="form-control" placeholder="مثال: الرياض / جدة / الدمام" value="{{ old('city') }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">رقم العضوية (اختياري)</label>
+                    <input type="text" name="membership_number" class="form-control" placeholder="يُولَّد تلقائياً إن ترك فارغاً" value="{{ old('membership_number') }}">
+                </div>
             </div>
         </div>
 

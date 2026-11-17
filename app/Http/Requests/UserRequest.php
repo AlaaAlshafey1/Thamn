@@ -21,6 +21,8 @@ class UserRequest extends FormRequest
             'email' => 'required|email|unique:users,email,' . $userId,
             'phone' => 'nullable|string|max:20',
             'nationality' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+            'membership_number' => 'nullable|string|max:50|unique:users,membership_number,' . $userId,
             'password' => $this->isMethod('post') ? 'required|min:6' : 'nullable|min:6',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',

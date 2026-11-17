@@ -61,6 +61,8 @@
                         <th>#</th>
                         <th>الصورة</th>
                         <th>الاسم</th>
+                        <th>رقم العضوية</th>
+                        <th>المدينة</th>
                         <th>البريد الإلكتروني</th>
                         <th>القسم</th>
                         <th>عدد الطلبات</th>
@@ -77,7 +79,18 @@
                                 <img src="{{ $user->image ? asset('uploads/users/' . $user->image) : URL::asset('assets/img/faces/default.png') }}"
                                     width="40" height="40" class="rounded-circle" alt="user">
                             </td>
-                            <td>{{ $user->first_name }} {{ $user->last_name }}</td>
+                            <td>
+                                <div class="fw-bold">{{ $user->first_name }} {{ $user->last_name }}</div>
+                                @if($user->phone)<small class="text-muted d-block" style="direction:ltr;">{{ $user->phone }}</small>@endif
+                            </td>
+                            <td>
+                                <span class="badge" style="background: rgba(193, 149, 62, 0.12); color: #c1953e; font-weight: 700; border: 1px solid rgba(193, 149, 62, 0.3); font-size: 13px; padding: 5px 8px;">
+                                    #{{ $user->membership_number ?? '-' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-dark fw-medium">{{ $user->city ?? ($user->declaration?->city ?? '-') }}</span>
+                            </td>
                             <td>{{ $user->email }}</td>
                             <td>
                                 @if($user->category)

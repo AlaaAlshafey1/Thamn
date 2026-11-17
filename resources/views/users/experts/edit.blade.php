@@ -138,6 +138,14 @@
                         </optgroup>
                     </select>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" name="city" class="form-control" value="{{ old('city', $user->city) }}" placeholder="مثال: الرياض / جدة / الدمام">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">رقم العضوية</label>
+                    <input type="text" name="membership_number" class="form-control" value="{{ old('membership_number', $user->membership_number) }}" placeholder="رقم العضوية (يُولَّد تلقائياً إن ترك فارغاً)">
+                </div>
             </div>
         </div>
 
