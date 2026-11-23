@@ -9,8 +9,10 @@ use App\Notifications\ExpertEvaluationWarningNotification;
 use App\Notifications\ExpertEvaluationWithdrawnNotification;
 use App\Mail\SystemNotificationMail;
 use App\Http\Traits\FCMOperation;
-
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Carbon\Carbon;
 
 class CheckExpertDelays extends Command
@@ -29,7 +31,7 @@ class CheckExpertDelays extends Command
      *
      * @var string
      */
-    protected $description = 'Send warning to experts after 1 hour, withdraw order after 2 hours of no evaluation';
+    protected $description = 'Send 30-min WhatsApp reminders to expert and customer, and handle delayed orders';
 
     /**
      * Execute the console command.
@@ -37,232 +39,273 @@ class CheckExpertDelays extends Command
     public function handle()
     {
         $now = Carbon::now();
-        $oneHourAgo = $now->copy()->subHour();
-        $twoHoursAgo = $now->copy()->subHours(2);
+        $maxWithdrawHours = 3; // سحب الطلب بعد 3 ساعات في حال عدم التقييم
+        $maxWithdrawTime = $now->copy()->subHours($maxWithdrawHours);
 
-        $warningCount = 0;
+        $expertRemindersCount = 0;
+        $customerReassureCount = 0;
         $withdrawnCount = 0;
 
+        $whatsapp = app(WhatsAppService::class);
+
         // ──────────────────────────────────────────────────────────
-        // 1. سحب الطلبات المتأخرة أكثر من ساعتين (يتم أولاً حتى لا نرسل إنذاراً لطلب سيُسحب)
+        // 1. سحب الطلبات المتأخرة أكثر من الحد الأقصى وإعادتها للمنافسة
         // ──────────────────────────────────────────────────────────
         $ordersToWithdraw = Order::where('status', 'beingEstimated')
             ->whereNotNull('expert_id')
             ->where(function ($q) {
                 $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
             })
-            ->where('accepted_at', '<=', $twoHoursAgo)
+            ->whereNotNull('accepted_at')
+            ->where('accepted_at', '<=', $maxWithdrawTime)
             ->get();
 
         foreach ($ordersToWithdraw as $order) {
             $expert = User::find($order->expert_id);
 
-            // سحب الطلب من الخبير وإعادته للمنافسة
+            // حفظ بيانات الخبير المسحوب منه الطلب في السجل للرجوع إليها وللأدمن
+            $withdrawnList = is_array($order->withdrawn_experts) ? $order->withdrawn_experts : [];
+            if ($expert) {
+                $withdrawnList[] = [
+                    'expert_id'         => $expert->id,
+                    'name'              => trim(($expert->first_name ?? '') . ' ' . ($expert->last_name ?? '')) ?: ($expert->name ?? 'خبير #' . $expert->id),
+                    'membership_number' => $expert->membership_number ?? ('#' . $expert->id),
+                    'phone'             => $expert->phone ?? '-',
+                    'city'              => $expert->city ?? '-',
+                    'accepted_at'       => $order->accepted_at ? $order->accepted_at->toDateTimeString() : null,
+                    'withdrawn_at'      => $now->toDateTimeString(),
+                    'reason'            => "تأخر في إنجاز التقييم وتجاوز مهلة الـ {$maxWithdrawHours} ساعات دون رد",
+                ];
+            }
+
+            // سحب الطلب من الخبير وإعادته للمنافسة وتصفير عدادات التذكيرات وحفظ السجل
             $order->update([
-                'expert_id' => null,
-                'accepted_at' => null,
-                'expert_warning_sent' => false,
-                'status' => 'orderReceived', // يرجع متاح للخبراء
+                'expert_id'                  => null,
+                'accepted_at'                 => null,
+                'expert_warning_sent'        => false,
+                'expert_progress_notified'   => 0,
+                'customer_progress_notified' => 0,
+                'status'                     => 'orderReceived',
+                'withdrawn_experts'          => $withdrawnList,
             ]);
 
-            // إشعار الخبير بسحب الطلب
+            // إشعار الخبير بسحب الطلب عبر الواتساب والإيميل مع رجاء سرعة الرد في المرات القادمة
             if ($expert) {
-                $expert->notify(new ExpertEvaluationWithdrawnNotification($order));
-
-                // WhatsApp للخبير
                 try {
-                    if ($expert->phone) {
-                        $whatsapp = app(\App\Services\WhatsAppService::class);
-                        $msg = \App\Services\WhatsAppService::getTemplate('expert_order_withdrawn', ['id' => $order->id]);
-                        $whatsapp->sendMessage($expert->phone, $msg);
-                    }
+                    $expert->notify(new ExpertEvaluationWithdrawnNotification($order));
                 } catch (\Throwable $e) {
-                    \Log::error('Expert Withdrawal WhatsApp Failed: ' . $e->getMessage());
+                    Log::error("Withdrawal Notification DB failed: " . $e->getMessage());
                 }
 
+                if ($expert->phone) {
+                    try {
+                        $msg = WhatsAppService::getTemplate('expert_order_withdrawn', ['id' => $order->id]);
+                        $whatsapp->sendMessage($expert->phone, $msg);
+                    } catch (\Throwable $e) {
+                        Log::error('Expert Withdrawal WhatsApp Failed: ' . $e->getMessage());
+                    }
+                }
 
-                // إيميل للخبير
-                try {
-                    if ($expert->email) {
+                if ($expert->email) {
+                    try {
                         Mail::to($expert->email)->send(new SystemNotificationMail(
                             'سحب الطلب لتأخر التقييم',
-                            "لقد تم سحب الطلب رقم : {$order->id} نظراً لعدم إنجازك للتقييم في الوقت المحدد نتمنى مشاركتك بشكل أسرع في الطلبات القادمة",
+                            "لقد تم سحب الطلب رقم : {$order->id} منك نظراً لتجاوز المهلة المحددة دون إنجاز التقييم. نرجو منك سرعة الرد وإنجاز الطلبات القادمة في وقتها حرصاً على استمرار عضويتك في منصة الخبراء.",
                             route('orders.index')
                         ));
+                    } catch (\Throwable $e) {
+                        Log::error('Expert Withdrawal Email Failed: ' . $e->getMessage());
                     }
-                } catch (\Throwable $e) {
-                    \Log::error('Expert Withdrawal Email Failed: ' . $e->getMessage());
                 }
             }
 
-            // إعلام باقي خبراء نفس القسم بتوفر الطلب مجدداً
+            // إعلام باقي خبراء القسم بتوفر الطلب من جديد (باستثناء الخبير المسحوب منه والخبراء السابقين)
             try {
+                $excludedExpertIds = collect($withdrawnList)->pluck('expert_id')->filter()->map(fn($id) => (int)$id)->all();
+                if ($expert) {
+                    $excludedExpertIds[] = (int) $expert->id;
+                }
+                $excludedExpertIds = array_values(array_unique($excludedExpertIds));
+
                 $categoryExperts = User::role('expert')
                     ->where('category_id', $order->category_id)
-                    ->when($expert, fn($q) => $q->where('id', '!=', $expert->id))
+                    ->whereNotIn('id', $excludedExpertIds)
                     ->get();
 
-                $whatsapp = app(\App\Services\WhatsAppService::class);
                 foreach ($categoryExperts as $otherExpert) {
-                    // WhatsApp
-                    try {
-                        if ($otherExpert->phone) {
-                            $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    if ($otherExpert->phone) {
+                        try {
+                            $expertLink = URL::temporarySignedRoute(
                                 'expert.auto-login',
                                 now()->addDays(7),
                                 ['user' => $otherExpert->id, 'redirect' => route('orders.show', $order->id)]
                             );
-                            $msg = \App\Services\WhatsAppService::getTemplate('new_order_expert', [
-                                'name' => $otherExpert->first_name ?? '',
-                                'category' => $order->category->name_ar ?? 'القسم',
+                            $categoryName = $order->category->name_ar ?? 'القسم';
+                            $msg = WhatsAppService::getTemplate('order_reopened_for_experts', [
+                                'name'     => $otherExpert->first_name ?? '',
+                                'category' => $categoryName,
+                                'id'       => $order->id,
                             ]);
-                            $msg .= \App\Services\WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '🔐');
+                            $msg .= WhatsAppService::formatActionLink('تسجيل الدخول واستلام الطلب', $expertLink, '⚡');
                             $whatsapp->sendMessage($otherExpert->phone, $msg);
+                        } catch (\Throwable $e) {
+                            Log::error('Re-notify expert WhatsApp Failed: ' . $e->getMessage());
                         }
-                    } catch (\Throwable $e) {
-                        \Log::error('Expert Re-notify WhatsApp Failed: ' . $e->getMessage());
                     }
-
-
                 }
             } catch (\Throwable $e) {
-                \Log::error('Re-notify Category Experts Failed: ' . $e->getMessage());
+                Log::error('Re-notify Category Experts Failed: ' . $e->getMessage());
             }
 
             $withdrawnCount++;
         }
 
         // ──────────────────────────────────────────────────────────
-        // 2. إنذار الخبراء المتأخرين (أكثر من ساعة ولم يتم إنذارهم بعد)
+        // 2. تذكير الخبير وتطمين العميل كل 30 دقيقة أثناء فترة التقييم
         // ──────────────────────────────────────────────────────────
-        $ordersToWarn = Order::where('status', 'beingEstimated')
-            ->whereNotNull('expert_id')
-            ->where(function ($q) {
-                $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
-            })
-            ->where('expert_warning_sent', false)
-            ->where('accepted_at', '<=', $oneHourAgo)
-            ->where('accepted_at', '>', $twoHoursAgo) // لم تتجاوز الساعتين (تلك تُسحب)
-            ->get();
-
-        foreach ($ordersToWarn as $order) {
-            $expert = User::find($order->expert_id);
-            if (!$expert) {
-                continue;
-            }
-
-            // تحديث حالة الإنذار
-            $order->update(['expert_warning_sent' => true]);
-
-            // إشعار Database
-            $expert->notify(new ExpertEvaluationWarningNotification($order));
-
-            // WhatsApp للخبير
-            try {
-                if ($expert->phone) {
-                    $expertLink = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-                        'expert.auto-login',
-                        now()->addDays(2),
-                        ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
-                    );
-                    $whatsapp = app(\App\Services\WhatsAppService::class);
-                    $msg = \App\Services\WhatsAppService::getTemplate('expert_evaluation_warning', ['id' => $order->id]);
-                    $msg .= \App\Services\WhatsAppService::formatActionLink('إكمال تقييم الطلب الآن', $expertLink, '⚡');
-                    $whatsapp->sendMessage($expert->phone, $msg);
-                }
-            } catch (\Throwable $e) {
-                \Log::error('Expert Warning WhatsApp Failed: ' . $e->getMessage());
-            }
-
-
-            // إيميل للخبير
-            try {
-                if ($expert->email) {
-                    Mail::to($expert->email)->send(new SystemNotificationMail(
-                        "تنبيه: تأخر في تقييم الطلب : {$order->id}",
-                        "نود تنبيهك بأن الطلب رقم : {$order->id} الذي قمت باستلامه لم يتم تقييمه حتى الآن يرجى الإسراع قبل سحب الطلب",
-                        route('orders.show', $order->id)
-                    ));
-                }
-            } catch (\Throwable $e) {
-                \Log::error('Expert Warning Email Failed: ' . $e->getMessage());
-            }
-
-            $warningCount++;
-        }
-
-        // ──────────────────────────────────────────────────────────
-        // 3. إشعارات تطمينية للعميل كل ~30 دقيقة أثناء فترة التقييم
-        // ──────────────────────────────────────────────────────────
-        $customerNotifyCount = 0;
-
-        // رسائل تطمينية متنوعة للعميل
-        $customerMessages = [
-            [
-                'title' => 'خبيرنا شغال على طلبك 🎯',
-                'body'  => "يا هلا! خبيرنا المختص بدأ يشتغل على طلبك رقم {ORDER_ID} ويدقق على كل التفاصيل. شوي وتوصلك النتيجة إن شاء الله.",
-            ],
-            [
-                'title' => 'لا تشيل هم، التقييم ماشي تمام 💪',
-                'body'  => "طلبك رقم {ORDER_ID} تحت التقييم الحين من خبيرنا. يبي يعطيك أدق نتيجة عشان كذا ياخذ وقته. ترقب البشارة قريب!",
-            ],
-            [
-                'title' => 'باقي شوي وتوصلك النتيجة 🔍',
-                'body'  => "خبيرنا يدقق على كل التفاصيل في طلبك رقم {ORDER_ID} عشان يعطيك تقييم دقيق ومضبوط. النتيجة قربت توصلك!",
-            ],
-            [
-                'title' => 'طلبك في آخر المراحل ✨',
-                'body'  => "تقييم طلبك رقم {ORDER_ID} في آخر مراحله. جهّز نفسك للنتيجة يا بطل! بنبشرك قريب جداً إن شاء الله 🚀",
-            ],
-        ];
-
         $ordersInProgress = Order::where('status', 'beingEstimated')
             ->whereNotNull('expert_id')
             ->where(function ($q) {
                 $q->where('expert_evaluated', 0)->orWhereNull('expert_evaluated');
             })
             ->whereNotNull('accepted_at')
-            ->where('accepted_at', '<=', $now->copy()->subMinutes(30)) // مر على الأقل 30 دقيقة
-            ->where('accepted_at', '>', $twoHoursAgo) // لم تتجاوز الساعتين
+            ->where('accepted_at', '<=', $now->copy()->subMinutes(30)) // مر 30 دقيقة على الأقل
+            ->where('accepted_at', '>', $maxWithdrawTime)              // لم يتجاوز مهلة السحب
+            ->with(['expert', 'user', 'category'])
             ->get();
 
         foreach ($ordersInProgress as $order) {
-            // حساب المرحلة الحالية بناءً على الوقت المنقضي (كل 30 دقيقة = مرحلة)
             $minutesElapsed = $now->diffInMinutes($order->accepted_at);
-            $currentPhase = min(intval(floor($minutesElapsed / 30)), 4); // من 1 إلى 4
+            $currentPhase = intval(floor($minutesElapsed / 30)); // 1 = 30m, 2 = 60m, 3 = 90m, 4 = 120m, 5 = 150m
 
-            // لو العميل استلم إشعار هذه المرحلة بالفعل، نتخطاه
-            if ($order->customer_progress_notified >= $currentPhase) {
+            if ($currentPhase < 1) {
                 continue;
             }
 
-            // اختيار الرسالة المناسبة للمرحلة
-            $messageIndex = min($currentPhase - 1, count($customerMessages) - 1);
-            $message = $customerMessages[$messageIndex];
+            $categoryName = $order->category ? ' بقسم [' . ($order->category->name_ar ?? $order->category->name_en) . ']' : '';
 
-            $title = $message['title'];
-            $body = str_replace('{ORDER_ID}', $order->id, $message['body']);
+            // ── أ. رسائل الواتساب والتنبيهات للخبير (حث على سرعة الإنجاز) ──
+            $expertNotified = (int) ($order->expert_progress_notified ?? 0);
+            if ($expertNotified < $currentPhase && $order->expert) {
+                $expert = $order->expert;
 
-            // إرسال FCM للعميل
-            try {
-                $tokens = $order->user->getFcmTokens();
-                if (!empty($tokens)) {
-                    $this->notifyByFirebase(
-                        $title,
-                        $body,
-                        $tokens,
-                        ['data' => ['user_id' => $order->user_id, 'order_id' => $order->id, 'type' => 'customer_evaluation_progress']]
-                    );
+                $expertTemplate = match ($currentPhase) {
+                    1 => 'expert_reminder_30m',
+                    2 => 'expert_reminder_60m',
+                    3 => 'expert_reminder_90m',
+                    default => 'expert_reminder_repeat',
+                };
+
+                // إرسال واتساب للخبير مع رابط الدخول المباشر
+                if ($expert->phone) {
+                    try {
+                        $expertLink = URL::temporarySignedRoute(
+                            'expert.auto-login',
+                            now()->addDays(2),
+                            ['user' => $expert->id, 'redirect' => route('orders.show', $order->id)]
+                        );
+                        $expertMsg = WhatsAppService::getTemplate($expertTemplate, [
+                            'id'       => $order->id,
+                            'category' => $categoryName,
+                        ]);
+                        $expertMsg .= WhatsAppService::formatActionLink('إكمال تقييم الطلب الآن', $expertLink, '⚡');
+                        $whatsapp->sendMessage($expert->phone, $expertMsg);
+                    } catch (\Throwable $e) {
+                        Log::error("Expert 30m Reminder WhatsApp Failed (Order {$order->id}): " . $e->getMessage());
+                    }
                 }
-            } catch (\Throwable $e) {
-                \Log::error('Customer Progress FCM Failed: ' . $e->getMessage());
+
+                // إشعار Database للخبير
+                try {
+                    $expert->notify(new ExpertEvaluationWarningNotification($order));
+                } catch (\Throwable $e) {
+                    Log::error("Expert Warning DB Notification Failed: " . $e->getMessage());
+                }
+
+                // إيميل للخبير في المراحل المتقدمة (ساعة وما بعد)
+                if ($currentPhase >= 2 && $expert->email) {
+                    try {
+                        Mail::to($expert->email)->send(new SystemNotificationMail(
+                            "تنبيه: سرعة إنجاز تقييم الطلب رقم {$order->id}",
+                            "نود تذكيرك بأن الطلب رقم {$order->id} الذي قمت باستلامه بانتظار اعتمادك النهائي. يرجى الدخول وإنهاء التقييم لتفادي سحب الطلب.",
+                            route('orders.show', $order->id)
+                        ));
+                    } catch (\Throwable $e) {
+                        Log::error("Expert Warning Email Failed: " . $e->getMessage());
+                    }
+                }
+
+                $order->update([
+                    'expert_progress_notified' => $currentPhase,
+                    'expert_warning_sent'      => true,
+                ]);
+                $expertRemindersCount++;
             }
 
-            // تحديث عداد الإشعارات
-            $order->update(['customer_progress_notified' => $currentPhase]);
-            $customerNotifyCount++;
+            // ── ب. رسائل الواتساب والتطمين للعميل (الخبير مشغول بطلبات أخرى وأرجو تحلي الصبر) ──
+            $customerNotified = (int) ($order->customer_progress_notified ?? 0);
+            if ($customerNotified < $currentPhase && $order->user) {
+                $customer = $order->user;
+                $customerName = trim($customer->first_name . ' ' . $customer->last_name) ?: 'عميلنا العزيز';
+
+                $customerTemplate = match ($currentPhase) {
+                    1 => 'customer_reassurance_30m',
+                    2 => 'customer_reassurance_60m',
+                    3 => 'customer_reassurance_90m',
+                    default => 'customer_reassurance_repeat',
+                };
+
+                // إرسال رسالة واتساب للعميل
+                if ($customer->phone) {
+                    try {
+                        $customerWhatsappMsg = WhatsAppService::getTemplate($customerTemplate, [
+                            'id'   => $order->id,
+                            'name' => $customerName,
+                        ]);
+                        $whatsapp->sendMessage($customer->phone, $customerWhatsappMsg);
+                    } catch (\Throwable $e) {
+                        Log::error("Customer 30m Reassurance WhatsApp Failed (Order {$order->id}): " . $e->getMessage());
+                    }
+                }
+
+                // إرسال إشعار FCM للتطبيق الجوال للعميل
+                try {
+                    $fcmTitles = [
+                        1 => 'خبيرنا شغال على فحص طلبك 🔍',
+                        2 => 'لا تشيل هم، التقييم ماشي تمام 💪',
+                        3 => 'طلبك في مراحله النهائية ✨',
+                        4 => 'جاري المراجعة والاعتماد النهائي 🚀',
+                    ];
+                    $fcmBodies = [
+                        1 => "خبيرنا المعتمد يقوم حالياً بتدقيق تفاصيل طلبك رقم {$order->id} ولديه بعض الفحوصات الجارية، نشكر لك صبرك وقريباً تكتمل النتيجة.",
+                        2 => "طلبك رقم {$order->id} قيد الفحص المتأني لضمان مطابقة المعايير وأسعار السوق العادلة، ترقب البشارة قريباً!",
+                        3 => "طلبك رقم {$order->id} في اللمسات الأخيرة لدى الخبير المعتمد، ثواني أو دقائق وتكون النتيجة بين يديك.",
+                        4 => "طلبك رقم {$order->id} في مرحلة الاعتماد النهائي وسنوافيك بالتقرير فور صدوره بإذن الله.",
+                    ];
+
+                    $title = $fcmTitles[$currentPhase] ?? 'طلبك قيد المتابعة والتدقيق 🔍';
+                    $body = $fcmBodies[$currentPhase] ?? "طلبك رقم {$order->id} يخضع للمراجعة الدقيقة لدى الخبير المعتمد.";
+
+                    $tokens = $customer->getFcmTokens();
+                    if (!empty($tokens)) {
+                        $this->notifyByFirebase(
+                            $title,
+                            $body,
+                            $tokens,
+                            ['data' => ['user_id' => $customer->id, 'order_id' => $order->id, 'type' => 'customer_evaluation_progress']]
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    Log::error("Customer Progress FCM Failed (Order {$order->id}): " . $e->getMessage());
+                }
+
+                $order->update([
+                    'customer_progress_notified' => $currentPhase,
+                ]);
+                $customerReassureCount++;
+            }
         }
 
-        $this->info("✅ Warnings sent: {$warningCount} | Orders withdrawn: {$withdrawnCount} | Customer progress: {$customerNotifyCount}");
+        $this->info("✅ Expert reminders: {$expertRemindersCount} | Customer reassurances: {$customerReassureCount} | Orders withdrawn: {$withdrawnCount}");
     }
 }

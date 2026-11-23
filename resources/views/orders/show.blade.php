@@ -2611,6 +2611,160 @@
                 </div>
             </div>
 
+            {{-- كرت متابعة الخبراء وسجل الاستلام والسحب (للأدمن) --}}
+            @hasanyrole('admin|superadmin')
+            @php
+                $withdrawnList = is_array($order->withdrawn_experts) ? $order->withdrawn_experts : (json_decode($order->withdrawn_experts, true) ?? []);
+            @endphp
+            <div class="card order-card shadow-sm border-0 mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-bottom">
+                    <h5 class="mb-0 font-weight-bold d-flex align-items-center gap-2">
+                        <i class="bx bx-user-pin text-warning font-size-20"></i>
+                        <span>حالة خبير التثمين ومتابعة الردود</span>
+                    </h5>
+                    @if($order->expert)
+                        <span class="badge bg-warning text-dark font-weight-bold px-3 py-2">
+                            <i class="bx bx-time-five"></i> مستلم حالياً: قيد التقييم
+                        </span>
+                    @elseif(!empty($withdrawnList))
+                        <span class="badge bg-danger-transparent text-danger font-weight-bold px-3 py-2">
+                            <i class="bx bx-error-alt"></i> سُحب من خبير سابق (متاح للمنافسة)
+                        </span>
+                    @else
+                        <span class="badge bg-info-transparent text-info font-weight-bold px-3 py-2">
+                            <i class="bx bx-broadcast"></i> متاح للمنافسة بين الخبراء
+                        </span>
+                    @endif
+                </div>
+                <div class="card-body">
+                    {{-- أ. الخبير الحالي المستلم للطلب --}}
+                    @if($order->expert)
+                        <div class="p-3 mb-3 rounded" style="background: rgba(0, 150, 136, 0.05); border: 1px solid rgba(0, 150, 136, 0.2);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="font-weight-bold text-teal mb-0">
+                                    <i class="bx bx-check-shield"></i> الخبير الحالي المستلم للطلب:
+                                </h6>
+                                @if($order->expert_evaluated)
+                                    <span class="badge bg-success text-white"><i class="bx bx-check-double"></i> تم إنجاز التقييم</span>
+                                @else
+                                    <span class="badge bg-warning text-dark"><i class="bx bx-loader-alt bx-spin"></i> استلم ولم يرسل التقييم بعد</span>
+                                @endif
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <span class="text-muted small d-block">اسم الخبير</span>
+                                    <strong class="text-dark">{{ $order->expert->first_name . ' ' . $order->expert->last_name }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted small d-block">رقم العضوية</span>
+                                    <span class="badge bg-light text-primary font-weight-bold border">
+                                        #{{ $order->expert->membership_number ?? $order->expert->id }}
+                                    </span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted small d-block">رقم الجوال</span>
+                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $order->expert->phone) }}" target="_blank" class="text-success font-weight-bold text-ltr d-inline-block">
+                                        <i class="bx bxl-whatsapp"></i> {{ $order->expert->phone ?? '-' }}
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted small d-block">المدينة</span>
+                                    <strong class="text-dark">{{ $order->expert->city ?? 'غير محدد' }}</strong>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <span class="text-muted small d-block">تاريخ الاستلام</span>
+                                    <span class="text-dark">{{ $order->accepted_at ? $order->accepted_at->format('Y-m-d H:i') : '-' }}</span>
+                                    @if($order->accepted_at)
+                                        <small class="text-muted">({{ $order->accepted_at->diffForHumans() }})</small>
+                                    @endif
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <span class="text-muted small d-block">رسائل التذكير المرسلة</span>
+                                    <span class="badge bg-secondary text-white">
+                                        {{ $order->expert_progress_notified ?? 0 }} تذكيرات واتساب
+                                    </span>
+                                </div>
+                                <div class="col-md-4 mt-2">
+                                    <span class="text-muted small d-block">حالة الرد</span>
+                                    @if($order->expert_evaluated)
+                                        <span class="text-success font-weight-bold"><i class="bx bx-check"></i> قام بالتقييم بنجاح</span>
+                                    @else
+                                        <span class="text-danger font-weight-bold"><i class="bx bx-time"></i> بانتظار إدخال التقييم</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="alert alert-light border d-flex align-items-center gap-2 mb-3 py-2">
+                            <i class="bx bx-info-circle text-info font-size-20"></i>
+                            <div>
+                                <strong>الطلب غير مستلم حالياً:</strong> الطلب متاح في شاشة جميع خبراء القسم ({{ $order->category->name_ar ?? 'القسم' }}) للاستلام والتقييم.
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- ب. سجل الخبراء السابقين الذين استلموا الطلب ولم يردوا وتم سحب الطلب منهم --}}
+                    @if(!empty($withdrawnList))
+                        <div class="mt-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-danger text-white px-2 py-1">سجل التأخير وعدم الرد</span>
+                                <h6 class="font-weight-bold text-danger mb-0">
+                                    <i class="bx bx-error-circle"></i> خبراء استلموا هذا الطلب وتأخروا في الرد (تم سحب الطلب منهم تلقائياً):
+                                </h6>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm mb-0 align-middle text-center" style="font-size: 0.88rem;">
+                                    <thead class="bg-light text-muted">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الخبير</th>
+                                            <th>رقم العضوية</th>
+                                            <th>الجوال / المدينة</th>
+                                            <th>تاريخ الاستلام</th>
+                                            <th>تاريخ وساعة السحب</th>
+                                            <th>سبب السحب</th>
+                                            <th>الإجراء التلقائي</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($withdrawnList as $idx => $withdrawn)
+                                            <tr style="background: rgba(239, 68, 68, 0.03);">
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td class="font-weight-bold text-dark">{{ $withdrawn['name'] ?? '-' }}</td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border">
+                                                        {{ $withdrawn['membership_number'] ?? '-' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="text-ltr text-muted">{{ $withdrawn['phone'] ?? '-' }}</div>
+                                                    <small class="text-muted">{{ $withdrawn['city'] ?? '-' }}</small>
+                                                </td>
+                                                <td>
+                                                    <span class="text-dark">{{ $withdrawn['accepted_at'] ?? '-' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="text-danger font-weight-bold">{{ $withdrawn['withdrawn_at'] ?? '-' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="small text-danger">{{ $withdrawn['reason'] ?? 'تأخر في الرد' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-danger-transparent text-danger">
+                                                        <i class="bx bx-block"></i> استُبعد من إعادة الاستلام
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endhasanyrole
+
             {{-- كرت صور المنتج --}}
             <div class="card order-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -2853,6 +3007,21 @@
                                     class="bx bx-user"></i></span>
                             تقييم الخبير الحالي
                         </h6>
+                        @if($order->expert)
+                            <div class="small text-muted mb-2 d-flex align-items-center justify-content-between p-2 rounded bg-light border">
+                                <div>
+                                    <i class="bx bx-id-card text-warning font-size-16 align-middle"></i>
+                                    <strong class="text-dark">{{ $order->expert->first_name . ' ' . $order->expert->last_name }}</strong>
+                                    <span class="badge bg-white text-primary border ms-1">#{{ $order->expert->membership_number ?? $order->expert->id }}</span>
+                                </div>
+                                <span class="badge bg-info-transparent text-info">{{ $order->expert->city ?? 'خبير معتمد' }}</span>
+                            </div>
+                        @elseif(!empty($order->withdrawn_experts))
+                            <div class="alert alert-danger py-2 px-3 small mb-2 d-flex align-items-center gap-2 border-0" style="background: rgba(239, 68, 68, 0.1);">
+                                <i class="bx bx-error-alt font-size-18 text-danger"></i>
+                                <div class="text-danger">سُحب من خبير سابق لتأخر الرد وهو متاح للمنافسة حالياً</div>
+                            </div>
+                        @endif
                         @if($order->expert_price)
                             <div class="evaluation-result border-warning-transparent bg-warning-transparent">
                                 <div class="h4 font-weight-bold text-warning mb-1">{{ number_format($order->expert_price, 2) }}

@@ -22,10 +22,18 @@ class OrderController extends Controller
     public function index()
     {
         if (auth()->user()->hasRole('expert')) {
-            // الطلبات النشطة: اللي متاح (expert_id null) أو اللي هو مسكه وشغال عليه
-            $activeOrders = Order::where(function ($q) {
-                $q->where('expert_id', Auth::id())
-                    ->orWhereNull('expert_id');
+            $expertId = Auth::id();
+
+            // الطلبات النشطة: اللي مسكه وشغال عليه، أو المتاح (مع استبعاد الطلبات التي سُحبت من هذا الخبير سابقاً)
+            $activeOrders = Order::where(function ($q) use ($expertId) {
+                $q->where('expert_id', $expertId)
+                    ->orWhere(function ($sub) use ($expertId) {
+                        $sub->whereNull('expert_id')
+                            ->where(function ($w) use ($expertId) {
+                                $w->whereNull('withdrawn_experts')
+                                  ->orWhereJsonDoesntContain('withdrawn_experts', ['expert_id' => $expertId]);
+                            });
+                    });
             })
                 ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
                 ->where(function ($q) {
@@ -49,6 +57,11 @@ class OrderController extends Controller
                 ->with('user')
                 ->latest()
                 ->get();
+
+            // استبعاد إضافي في PHP لضمان عدم ظهور أي طلب مسحوب من هذا الخبير في قائمة الطلبات المتاحة
+            $activeOrders = $activeOrders->reject(function ($o) use ($expertId) {
+                return empty($o->expert_id) && $o->isExpertWithdrawn($expertId);
+            })->values();
 
             // الطلبات السابقة: اللي هو خلصها
             $completedOrders = Order::where('expert_id', Auth::id())
@@ -557,11 +570,21 @@ class OrderController extends Controller
             return response()->json(['status' => false, 'message' => 'هذا الطلب تم استلامه بالفعل من قبل خبير آخر']);
         }
 
+        if ($order->isExpertWithdrawn(auth()->id())) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'عذراً، لقد تم سحب هذا الطلب منك سابقاً نظراً لتجاوز المهلة المحددة دون رد، ولا يمكنك استلامه مجدداً.'
+            ], 403);
+        }
+
         // تعيين الخبير الحالي على الأوردر
         $order->update([
             'expert_id' => auth()->id(),
             'status' => 'beingEstimated',
             'accepted_at' => now(),
+            'expert_warning_sent' => false,
+            'expert_progress_notified' => 0,
+            'customer_progress_notified' => 0,
         ]);
 
         // Notify Other Experts & Customer & Current Expert
@@ -582,10 +605,12 @@ class OrderController extends Controller
             $expertMsg .= \App\Services\WhatsAppService::formatActionLink('الدخول لتقييم الطلب', $expertLink, '📝');
             $whatsapp->sendMessage(auth()->user()->phone, $expertMsg);
 
-            // 3. Notify Other Experts in same category
+            // 3. Notify Other Experts in same category (exclude current expert and any previously withdrawn experts)
+            $excludedIds = $order->getWithdrawnExpertIds();
+            $excludedIds[] = auth()->id();
             $others = \App\Models\User::role('expert')
                 ->where('category_id', $order->category_id)
-                ->where('id', '!=', auth()->id())
+                ->whereNotIn('id', array_unique($excludedIds))
                 ->get();
 
             $othersMsg = \App\Services\WhatsAppService::getTemplate('order_accepted_other', ['id' => $order->id]);

@@ -611,6 +611,7 @@
 
 @section('js')
 @php
+    $currentExpertId = auth()->id();
     $unassignedOrder = \App\Models\Order::with('category')->whereNull('expert_id')
         ->whereIn('status', ['pending', 'orderReceived', 'beingEstimated', 'paid', 'beingReEstimated'])
         ->where(function ($q) {
@@ -622,8 +623,15 @@
                     ->orWhereNull('category_id');
             });
         })
+        ->where(function ($w) use ($currentExpertId) {
+            $w->whereNull('withdrawn_experts')
+              ->orWhereJsonDoesntContain('withdrawn_experts', ['expert_id' => $currentExpertId]);
+        })
         ->orderBy('created_at', 'asc')
-        ->first();
+        ->get()
+        ->first(function ($order) use ($currentExpertId) {
+            return !$order->isExpertWithdrawn($currentExpertId);
+        });
 @endphp
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

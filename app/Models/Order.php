@@ -27,6 +27,8 @@ class Order extends Model
         'expert_evaluated',
         'expert_warning_sent',
         'customer_progress_notified',
+        'expert_progress_notified',
+        'withdrawn_experts',
         'expert_price',
         'expert_min_price',
         'expert_max_price',
@@ -59,6 +61,7 @@ class Order extends Model
         'create_image_ai' => 'boolean',
         'can_send_to_market' => 'boolean',
         'ai_features' => 'array',
+        'withdrawn_experts' => 'array',
         'evaluated_at' => 'datetime',
         'accepted_at' => 'datetime',
         'thamn_at' => 'datetime',
@@ -203,5 +206,42 @@ class Order extends Model
     public function refundRequest()
     {
         return $this->hasOne(RefundRequest::class);
+    }
+
+    /**
+     * Check if a specific expert ID was previously withdrawn from this order.
+     */
+    public function isExpertWithdrawn($expertId): bool
+    {
+        if (empty($this->withdrawn_experts) || !is_array($this->withdrawn_experts)) {
+            return false;
+        }
+
+        $expertId = (int) $expertId;
+        foreach ($this->withdrawn_experts as $record) {
+            if (isset($record['expert_id']) && (int) $record['expert_id'] === $expertId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get array of all expert IDs who were withdrawn from this order.
+     */
+    public function getWithdrawnExpertIds(): array
+    {
+        if (empty($this->withdrawn_experts) || !is_array($this->withdrawn_experts)) {
+            return [];
+        }
+
+        return collect($this->withdrawn_experts)
+            ->pluck('expert_id')
+            ->filter()
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

@@ -52,6 +52,7 @@ class ResetOrdersForReevaluation extends Command
                 'expert_evaluated'           => 0,
                 'expert_warning_sent'        => 0,
                 'customer_progress_notified' => 0,
+                'expert_progress_notified'   => 0,
                 'expert_price'               => null,
                 'expert_min_price'           => null,
                 'expert_max_price'           => null,
