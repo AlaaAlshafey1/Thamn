@@ -27,6 +27,7 @@ class Order extends Model
         'expert_evaluated',
         'expert_warning_sent',
         'customer_progress_notified',
+        'survey_sent_at',
         'expert_progress_notified',
         'withdrawn_experts',
         'expert_price',
@@ -62,6 +63,7 @@ class Order extends Model
         'can_send_to_market' => 'boolean',
         'ai_features' => 'array',
         'withdrawn_experts' => 'array',
+        'survey_sent_at' => 'datetime',
         'evaluated_at' => 'datetime',
         'accepted_at' => 'datetime',
         'thamn_at' => 'datetime',
@@ -206,6 +208,11 @@ class Order extends Model
     public function refundRequest()
     {
         return $this->hasOne(RefundRequest::class);
+    }
+
+    public function rating()
+    {
+        return $this->hasOne(OrderRating::class);
     }
 
     /**

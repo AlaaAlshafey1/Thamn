@@ -353,6 +353,9 @@ class OrderController extends Controller
                     }
 
                     $whatsapp->sendMessage($order->user->phone, $msg);
+
+                // إرسال استبيان رضا العميل عبر الواتساب فور اعتماد ثمن
+                $this->sendCustomerSatisfactionSurvey($order);
                 }
             } catch (\Throwable $e) {
                 \Log::error('Best-type Customer WhatsApp Failed: ' . $e->getMessage());
@@ -402,6 +405,9 @@ class OrderController extends Controller
                 }
 
                 $whatsapp->sendMessage($order->user->phone, $msg);
+
+                // إرسال استبيان رضا العميل عبر الواتساب فور إنجاز التقييم
+                $this->sendCustomerSatisfactionSurvey($order);
 
                 // الإيميل للمستخدم مع النتيجة والفاتورة المعنية
                 if ($order->user->email) {
@@ -507,6 +513,9 @@ class OrderController extends Controller
                     . "📱 تفضل بالدخول على تطبيق ثمن وشوف تفاصيل التقييم والتقرير المعتمد.\n\n"
                     . "- فريق ثمن";
                 $whatsapp->sendMessage($order->user->phone, $msg);
+
+                // إرسال استبيان رضا العميل عبر الواتساب فور اعتماد ثمن
+                $this->sendCustomerSatisfactionSurvey($order);
             }
         } catch (\Throwable $e) {
             \Log::error('Thamn Evaluation WhatsApp Failed: ' . $e->getMessage());
@@ -845,6 +854,37 @@ class OrderController extends Controller
                     ['data' => ['order_id' => $order->id, 'type' => 'objection_resolved']]
                 );
             }
+        }
+    }
+
+    /**
+     * Send Customer Satisfaction Survey via WhatsApp.
+     */
+    public function sendCustomerSatisfactionSurvey(Order $order): void
+    {
+        try {
+            if (!$order->user || empty($order->user->phone) || $order->survey_sent_at) {
+                return;
+            }
+
+            $whatsapp = app(\App\Services\WhatsAppService::class);
+            $customerName = trim($order->user->first_name . ' ' . $order->user->last_name) ?: 'عميلنا العزيز';
+
+            // Generate signed quick-rating link valid for 30 days
+            $rateUrl = \Illuminate\Support\Facades\URL::signedRoute('orders.rate.show', ['order' => $order->id]);
+
+            $msg = \App\Services\WhatsAppService::getTemplate('customer_satisfaction_survey', [
+                'id'   => $order->id,
+                'name' => $customerName,
+            ]);
+
+            $msg .= \App\Services\WhatsAppService::formatActionLink('التقييم السريع خلال 5 ثوانٍ', $rateUrl, '⚡');
+
+            $whatsapp->sendMessage($order->user->phone, $msg);
+
+            $order->update(['survey_sent_at' => now()]);
+        } catch (\Throwable $e) {
+            \Log::error("Sending Customer Survey WhatsApp Failed (Order {$order->id}): " . $e->getMessage());
         }
     }
 }

@@ -48,6 +48,12 @@ Route::get('/expert/auto-login/{user}', [App\Http\Controllers\Auth\ExpertLoginCo
 // Short links used in WhatsApp messages (redirect to the original signed URL)
 Route::get('/l/{code}', [App\Http\Controllers\ShortLinkController::class, 'redirect'])->name('short.link')->where('code', '[a-z0-9]+');
 
+// Customer Satisfaction Survey 1-Click Rating
+Route::get('/rate/order/{order}', [\App\Http\Controllers\OrderRatingController::class, 'show'])
+    ->name('orders.rate.show');
+Route::post('/rate/order/{order}', [\App\Http\Controllers\OrderRatingController::class, 'submit'])
+    ->name('orders.rate.submit');
+
 // ======= إقرار السرية للمحكمين المستقلين =======
 Route::prefix('declaration')->group(function () {
     Route::get('/{token}', [ArbitratorDeclarationController::class, 'show'])->name('declaration.show');
@@ -258,6 +264,10 @@ Route::middleware('auth')->group(function () {
     // WhatsApp Settings
     Route::get('/whatsapp', [\App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('admin.whatsapp.index');
     Route::post('/whatsapp/logout', [\App\Http\Controllers\Admin\WhatsAppController::class, 'logout'])->name('admin.whatsapp.logout');
+
+    // Customer Satisfaction & Ratings (CSAT)
+    Route::get('/ratings', [\App\Http\Controllers\Admin\RatingController::class, 'index'])->name('admin.ratings.index');
+    Route::post('/ratings/{rating}/resolve', [\App\Http\Controllers\Admin\RatingController::class, 'resolve'])->name('admin.ratings.resolve');
 
     // Manual Notifications Center
     Route::get('/notifications-center', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifications.index');

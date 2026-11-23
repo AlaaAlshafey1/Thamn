@@ -51,6 +51,10 @@ Route::get('valuation-orders/{order}/invoice-pdf', [OrderController::class, 'gen
 Route::post('/payment/webhook/moyasar', [PaymentController::class, 'moyasarWebhook'])
     ->name('payment.webhook.moyasar');
 
+// ─── UltraMsg WhatsApp Inbound Messages Webhook ───
+Route::post('/whatsapp/webhook', [\App\Http\Controllers\OrderRatingController::class, 'handleWhatsAppWebhook'])
+    ->name('whatsapp.webhook');
+
 // ─── Moyasar Redirect Callback (المستخدم يُوجَّه هنا بعد الدفع) ───
 Route::get('/payment/order/{orderId}', [PaymentController::class, 'redirect'])
     ->name('payment.redirect.api');

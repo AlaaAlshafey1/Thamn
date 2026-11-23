@@ -254,6 +254,20 @@
                             @endif
                         </a>
                     </li>
+                    @php
+                        $unresolvedRatingsCount = \Illuminate\Support\Facades\Schema::hasTable('order_ratings') ? \App\Models\OrderRating::where('is_resolved', false)->whereIn('rating', [1, 2])->count() : 0;
+                    @endphp
+                    <li class="slide">
+                        <a class="side-menu__item {{ request()->routeIs('admin.ratings.*') ? 'active' : '' }}" href="{{ route('admin.ratings.index') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span class="side-menu__label">تقييمات ورضا العملاء</span>
+                            @if($unresolvedRatingsCount > 0)
+                                <span class="badge badge-warning side-badge" style="border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0 4px;">{{ $unresolvedRatingsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
                 @endif
                 @endcan
                  @can('payments_view')
