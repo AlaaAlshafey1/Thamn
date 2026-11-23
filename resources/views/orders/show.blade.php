@@ -2873,34 +2873,6 @@
                             </div>
                         </div>
                     @endif
-                                                        {{ $withdrawn['membership_number'] ?? '-' }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="text-ltr text-muted">{{ $withdrawn['phone'] ?? '-' }}</div>
-                                                    <small class="text-muted">{{ $withdrawn['city'] ?? '-' }}</small>
-                                                </td>
-                                                <td>
-                                                    <span class="text-dark">{{ $withdrawn['accepted_at'] ?? '-' }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="text-danger font-weight-bold">{{ $withdrawn['withdrawn_at'] ?? '-' }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="small text-danger">{{ $withdrawn['reason'] ?? 'تأخر في الرد' }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-danger-transparent text-danger">
-                                                        <i class="bx bx-block"></i> استُبعد من إعادة الاستلام
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
             @endhasanyrole
