@@ -68,8 +68,8 @@ class CheckExpertDelays extends Command
             if ($expert) {
                 $withdrawnList[] = [
                     'expert_id'         => $expert->id,
-                    'name'              => trim(($expert->first_name ?? '') . ' ' . ($expert->last_name ?? '')) ?: ($expert->name ?? 'خبير #' . $expert->id),
-                    'membership_number' => $expert->membership_number ?? ('#' . $expert->id),
+                    'name'              => trim(($expert->first_name ?? '') . ' ' . ($expert->last_name ?? '')) ?: ($expert->name ?? 'خبير ' . $expert->id),
+                    'membership_number' => $expert->membership_number ?? ((string) $expert->id),
                     'phone'             => $expert->phone ?? '-',
                     'city'              => $expert->city ?? '-',
                     'accepted_at'       => $order->accepted_at ? $order->accepted_at->toDateTimeString() : null,

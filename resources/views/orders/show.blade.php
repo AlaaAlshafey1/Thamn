@@ -2708,7 +2708,7 @@
                                                 {{ $order->expert->first_name . ' ' . $order->expert->last_name }}
                                             </h6>
                                             <span class="badge bg-light text-primary border font-weight-bold">
-                                                عضوية #{{ $order->expert->membership_number ?? $order->expert->id }}
+                                                عضوية {{ $order->expert->membership_number ?? $order->expert->id }}
                                             </span>
                                         </div>
                                         <div class="small text-muted mt-1">
@@ -3124,7 +3124,7 @@
                                 <div>
                                     <i class="bx bx-id-card text-warning font-size-16 align-middle"></i>
                                     <strong class="text-dark">{{ $order->expert->first_name . ' ' . $order->expert->last_name }}</strong>
-                                    <span class="badge bg-white text-primary border ms-1">#{{ $order->expert->membership_number ?? $order->expert->id }}</span>
+                                    <span class="badge bg-white text-primary border ms-1">{{ $order->expert->membership_number ?? $order->expert->id }}</span>
                                 </div>
                                 <span class="badge bg-info-transparent text-info">{{ $order->expert->city ?? 'خبير معتمد' }}</span>
                             </div>

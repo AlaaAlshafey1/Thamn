@@ -194,7 +194,7 @@
     <div class="rating-header">
         <div class="brand-title">ثَمِّن | Thmmn</div>
         <div class="order-pill">
-            <i class="bx bx-receipt align-middle"></i> طلب رقم #{{ $order->id }}
+            <i class="bx bx-receipt align-middle"></i> طلب رقم {{ $order->id }}
         </div>
         <p class="small text-white-50 mt-2 mb-0">نحرص دائماً على تقديم أعلى معايير الدقة والاحترافية</p>
     </div>

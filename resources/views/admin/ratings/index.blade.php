@@ -179,7 +179,7 @@
                                     <tr>
                                         <td class="font-weight-bold text-dark text-right pr-3">
                                             {{ $stat->expert->first_name . ' ' . $stat->expert->last_name }}
-                                            <span class="badge bg-light text-dark border">#{{ $stat->expert->membership_number ?? $stat->expert->id }}</span>
+                                            <span class="badge bg-light text-dark border">{{ $stat->expert->membership_number ?? $stat->expert->id }}</span>
                                         </td>
                                         <td>{{ $stat->total_reviews }}</td>
                                         <td>
@@ -238,7 +238,7 @@
                                 <tr style="{{ $item->isDissatisfied() && !$item->is_resolved ? 'background: rgba(239, 68, 68, 0.05);' : '' }}">
                                     <td>
                                         <a href="{{ route('orders.show', $item->order_id) }}" class="font-weight-bold text-primary" target="_blank">
-                                            #{{ $item->order_id }}
+                                            {{ $item->order_id }}
                                         </a>
                                         <div class="small text-muted">{{ $item->created_at->diffForHumans() }}</div>
                                     </td>
@@ -251,7 +251,7 @@
                                     <td>
                                         @if($item->expert)
                                             <div class="text-dark small font-weight-bold">{{ $item->expert->first_name . ' ' . $item->expert->last_name }}</div>
-                                            <span class="badge bg-light text-muted border">#{{ $item->expert->membership_number ?? $item->expert->id }}</span>
+                                            <span class="badge bg-light text-muted border">{{ $item->expert->membership_number ?? $item->expert->id }}</span>
                                         @else
                                             <span class="text-muted small">-</span>
                                         @endif
@@ -299,7 +299,7 @@
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title font-weight-bold text-dark">
-                                                                    متابعة عدم رضا العميل للطلب #{{ $item->order_id }}
+                                                                    متابعة عدم رضا العميل للطلب {{ $item->order_id }}
                                                                 </h5>
                                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                     <span aria-hidden="true">&times;</span>
