@@ -31,7 +31,7 @@ Expected variables: $dir, $isRtl, $assetBase (public https base URL)
       <tr>
         <td align="center" style="text-align:center;">
           <p style="margin:0;font-size:12px;line-height:1.6;color:#9A9A9A;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;text-align:center;">
-            {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
+            {{ $isRtl ? 'المملكة العربية السعودية' : 'Kingdom of Saudi Arabia' }}
           </p>
         </td>
       </tr>
