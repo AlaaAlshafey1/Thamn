@@ -39,21 +39,21 @@ class ContactSocialMediaSeeder extends Seeder
                 'match' => ['tiktok', 'تيك توك', 'تيكتوك', 'تك توك'],
                 'name'  => 'TikTok',
                 'icon'  => 'fab fa-tiktok',
-                'url'   => 'https://www.tiktok.com/@thmmn',
+                'url'   => 'https://www.tiktok.com/@thmmn.applic?_r=1&_t=ZS-996Z89PAmqT',
             ],
             [
                 'key'   => 'instagram',
-                'match' => ['instagram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
+                'match' => ['instagram', 'instgram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
                 'name'  => 'Instagram',
                 'icon'  => 'fab fa-instagram',
-                'url'   => 'https://www.instagram.com/thmmn.sa',
+                'url'   => 'https://www.instagram.com/thmmnapp?utm_source=qr&igsi=MTN3aDV3YWM4djViMg==',
             ],
             [
                 'key'   => 'x',
                 'match' => ['x', 'x.com', 'twitter', 'تويتر', 'اكس', 'إكس'],
                 'name'  => 'X',
-                'icon'  => 'fab fa-twitter',
-                'url'   => 'https://www.x.com/',
+                'icon'  => 'fa-brands fa-x-twitter',
+                'url'   => 'https://x.com/thmm_app',
             ],
             [
                 'key'   => 'whatsapp',
@@ -67,8 +67,18 @@ class ContactSocialMediaSeeder extends Seeder
                 'match' => ['youtube', 'youtu.be', 'يوتيوب'],
                 'name'  => 'YouTube',
                 'icon'  => 'fab fa-youtube',
-                'url'   => 'https://www.youtube.com/@thmmn',
+                'url'   => 'https://www.youtube.com/@thmmnapplic',
             ],
+        ];
+
+        $placeholders = [
+            '#',
+            'https://www.x.com/',
+            'https://www.x.com',
+            'https://x.com/',
+            'https://www.tiktok.com/@thmmn',
+            'https://www.instagram.com/thmmn.sa',
+            'https://www.youtube.com/@thmmn',
         ];
 
         $seeded = [];
@@ -77,6 +87,9 @@ class ContactSocialMediaSeeder extends Seeder
             $existingItem = null;
 
             foreach ($existing as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
                 $name = mb_strtolower(trim((string) ($item['name'] ?? '')));
                 $url  = mb_strtolower(trim((string) ($item['url'] ?? '')));
 
@@ -100,8 +113,10 @@ class ContactSocialMediaSeeder extends Seeder
 
             if ($def['key'] === 'whatsapp') {
                 $resolvedUrl = Contact::normalizeWhatsappUrl($existingUrl, $contact->phone);
+            } elseif ($existingUrl === '' || in_array(mb_strtolower($existingUrl), $placeholders, true)) {
+                $resolvedUrl = $def['url'];
             } else {
-                $resolvedUrl = $existingUrl !== '' ? $existingUrl : $def['url'];
+                $resolvedUrl = $existingUrl;
             }
 
             $seeded[] = [

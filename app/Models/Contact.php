@@ -26,7 +26,7 @@ class Contact extends Model
      * Each rule: platform key => keywords (matched against name, then url, then icon class).
      */
     private const SOCIAL_PLATFORMS = [
-        'instagram' => ['instagram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
+        'instagram' => ['instagram', 'instgram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
         'youtube'   => ['youtube', 'youtu.be', 'يوتيوب'],
         'facebook'  => ['facebook', 'fb.com', 'fb.me', 'فيسبوك', 'فيس بوك'],
         'whatsapp'  => ['whatsapp', 'wa.me', 'واتساب', 'واتس اب', 'واتس'],
@@ -60,14 +60,7 @@ class Contact extends Model
         $byPlatform = [];
 
         foreach ($items as $item) {
-            $url = trim((string) ($item['url'] ?? ''));
-            if ($url === '') {
-                continue;
-            }
-            if (!preg_match('#^(https?://|mailto:|tel:)#i', $url)) {
-                $url = 'https://' . ltrim($url, '/');
-            }
-
+            $url      = trim((string) ($item['url'] ?? ''));
             $name     = trim((string) ($item['name'] ?? ''));
             $platform = static::detectPlatform($name, $url, (string) ($item['icon'] ?? ''));
             if ($platform === 'twitter') {
@@ -79,6 +72,10 @@ class Contact extends Model
 
             if ($platform === 'whatsapp') {
                 $url = static::normalizeWhatsappUrl($url, $contact?->phone);
+            } elseif ($url === '' || $url === '#') {
+                continue;
+            } elseif (!preg_match('#^(https?://|mailto:|tel:)#i', $url)) {
+                $url = 'https://' . ltrim($url, '/');
             }
 
             if (isset($byPlatform[$platform])) {
