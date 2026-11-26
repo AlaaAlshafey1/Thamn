@@ -1621,9 +1621,10 @@
                 box-shadow: 0 10px 28px rgba(0, 102, 68, 0.4), 0 4px 10px rgba(0, 0, 0, 0.08);
                 display: flex;
                 align-items: center;
-                justify-content: center;
-                gap: 22px;
-                padding: 8px 24px;
+                justify-content: space-between;
+                gap: 26px;
+                /* left padding clears the orange accent so the check badge sits well away from the text */
+                padding: 8px 22px 8px 64px;
                 cursor: pointer;
                 transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
                 text-decoration: none;
@@ -1658,8 +1659,12 @@
             .btn-evaluate-submit .btn-evaluate-text {
                 position: relative;
                 z-index: 2;
+                flex: 1 1 auto;
+                min-width: 0;
+                text-align: center;
+                white-space: nowrap;
                 color: #ffffff;
-                font-size: 1.65rem;
+                font-size: 1.5rem;
                 font-weight: 900;
                 letter-spacing: -0.5px;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
@@ -1670,6 +1675,7 @@
             .btn-evaluate-submit .btn-check-badge {
                 position: relative;
                 z-index: 2;
+                flex: 0 0 auto;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -1733,11 +1739,11 @@
                 .btn-evaluate-submit {
                     height: 68px;
                     max-width: 100%;
-                    padding: 6px 18px;
-                    gap: 16px;
+                    padding: 6px 14px 6px 56px;
+                    gap: 14px;
                 }
                 .btn-evaluate-submit .btn-evaluate-text {
-                    font-size: 1.35rem;
+                    font-size: 1.18rem;
                 }
                 .btn-evaluate-submit .badge-glow-ring {
                     width: 46px;
@@ -2463,7 +2469,7 @@
                                 <!-- زر اعتماد التقييم (مطابق للصورة 4 تماماً) -->
                                 <button type="submit" id="btnEvaluateSubmit" class="btn btn-evaluate-submit">
                                     <span class="btn-orange-accent"></span>
-                                    <span class="btn-evaluate-text" id="btnEvaluateText">اعتماد التقييم</span>
+                                    <span class="btn-evaluate-text" id="btnEvaluateText">اعتماد وإرسال التثمين</span>
                                     <span class="btn-check-badge" id="btnCheckBadge">
                                         <span class="badge-glow-ring">
                                             <span class="badge-inner-circle">
@@ -3543,7 +3549,7 @@
                             icon.style.color = '#ff7a00';
                             icon.style.fontSize = '24px';
                         }
-                        if (text) text.innerText = 'جاري اعتماد التقييم...';
+                        if (text) text.innerText = 'جاري الاعتماد والإرسال...';
                     }
                 });
             }

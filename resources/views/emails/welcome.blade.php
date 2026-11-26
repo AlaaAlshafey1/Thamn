@@ -7,7 +7,7 @@
 @php ob_start(); @endphp
 
   <h1 class="h1" style="margin:0 0 14px;font-size:22px;font-weight:800;color:#1A1A1A;line-height:1.4;">
-    {{ $isRtl ? 'مرحباً بك في ثمّن 🎉' : 'Welcome to Thamn! 🎉' }}
+    {{ $isRtl ? 'مرحباً بك في ثمّن' : 'Welcome to Thamn' }}
   </h1>
 
   <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.85;">

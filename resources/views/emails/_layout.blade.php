@@ -10,27 +10,17 @@ Wrap content in $slot variable before including.
   $txtAlign = $isRtl ? 'right' : 'left';
   $oppAlign = $isRtl ? 'left' : 'right';
 
-  $contact = \App\Models\Contact::first();
-  $socials = $contact ? ($contact->social_media ?? []) : [];
-  $fbUrl = $ytUrl = $igUrl = '#';
-  foreach ($socials as $s) {
-    $n = strtolower($s['name'] ?? '');
-    if (str_contains($n, 'facebook'))
-      $fbUrl = $s['url'] ?? '#';
-    if (str_contains($n, 'youtube'))
-      $ytUrl = $s['url'] ?? '#';
-    if (str_contains($n, 'instagram'))
-      $igUrl = $s['url'] ?? '#';
-  }
-
   $base = rtrim(config('app.url', 'https://thmmn.net'), '/');
   if (str_contains($base, 'localhost') || str_contains($base, '127.0.0.1')) {
     $base = 'https://thmmn.net';
   }
 
   $bannerSrc = $customBanner ?? ($base . '/assets/emails/' . ($banner ?? 'otp_banner.png'));
-  $logoSrc = $base . '/assets/emails/Logo-black.png';
-  $logoWht = $base . '/assets/emails/logo_white.png';
+  $canEmbed = isset($message) && is_object($message) && method_exists($message, 'embed');
+  $logoPath = public_path('assets/emails/logo.png');
+  $logoSrc  = ($canEmbed && is_file($logoPath))
+    ? $message->embed($logoPath)
+    : ($base . '/assets/emails/logo.png');
 @endphp
 <!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -159,47 +149,8 @@ Wrap content in $slot variable before including.
             </td>
           </tr>
 
-          {{-- FOOTER --}}
-          <tr>
-            <td class="footer-cell" style="background:#1A1A1A;padding:20px 36px;border-radius:0 0 20px 20px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="direction:{{ $dir }};">
-                <tr>
-                  <td align="{{ $txtAlign }}" valign="middle">
-                    <img src="{{ $logoWht }}" width="44" alt="ثمّن"
-                      style="display:block;border:0;opacity:.85;margin-bottom:5px;">
-                    <p
-                      style="margin:0;font-size:11px;color:#888;font-family:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Tahoma,Arial,sans-serif;">
-                      {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
-                    </p>
-                  </td>
-                  <td align="{{ $oppAlign }}" valign="middle">
-                    <table cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="padding:0 5px;">
-                          <a href="{{ $fbUrl }}" style="text-decoration:none;">
-                            <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20"
-                              style="display:block;filter:brightness(0) invert(1);opacity:.5;border:0;">
-                          </a>
-                        </td>
-                        <td style="padding:0 5px;">
-                          <a href="{{ $ytUrl }}" style="text-decoration:none;">
-                            <img src="https://cdn-icons-png.flaticon.com/512/733/733590.png" width="20"
-                              style="display:block;filter:brightness(0) invert(1);opacity:.5;border:0;">
-                          </a>
-                        </td>
-                        <td style="padding:0 5px;">
-                          <a href="{{ $igUrl }}" style="text-decoration:none;">
-                            <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="20"
-                              style="display:block;filter:brightness(0) invert(1);opacity:.5;border:0;">
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+          {{-- FOOTER (logo + address + social icons from the dashboard) --}}
+          @include('emails._footer', ['dir' => $dir, 'isRtl' => $isRtl, 'assetBase' => $base])
 
         </table>
       </td>

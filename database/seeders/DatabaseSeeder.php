@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call(IntroSeeder::class);
         $this->call(AiValuationRatingSeeder::class);
         $this->call(CategoryExpertOpinionSeeder::class);
+        $this->call(ContactSocialMediaSeeder::class);
         // User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
