@@ -8,8 +8,8 @@ use Illuminate\Database\Seeder;
 class ContactSocialMediaSeeder extends Seeder
 {
     /**
-     * Populate the contacts table with Thamn's social media accounts
-     * without overwriting any existing URLs or custom entries.
+     * Populate contacts.social_media strictly with Thamn's 5 subscribed platforms:
+     * TikTok, Instagram, X, WhatsApp, YouTube.
      */
     public function run(): void
     {
@@ -31,102 +31,89 @@ class ContactSocialMediaSeeder extends Seeder
             $existing = [];
         }
 
-        $defaults = [
+        $whatsappFallback = Contact::normalizeWhatsappUrl(null, $contact->phone);
+
+        $platforms = [
             [
-                'key'     => 'instagram',
-                'match'   => ['instagram', 'انستغرام', 'انستجرام'],
-                'name'    => 'Instagram',
-                'icon'    => 'fab fa-instagram',
-                'url'     => 'https://www.instagram.com/thmmn.sa',
+                'key'   => 'tiktok',
+                'match' => ['tiktok', 'تيك توك', 'تيكتوك', 'تك توك'],
+                'name'  => 'TikTok',
+                'icon'  => 'fab fa-tiktok',
+                'url'   => 'https://www.tiktok.com/@thmmn',
             ],
             [
-                'key'     => 'youtube',
-                'match'   => ['youtube', 'youtu.be', 'يوتيوب'],
-                'name'    => 'YouTube',
-                'icon'    => 'fab fa-youtube',
-                'url'     => 'https://www.youtube.com/@thmmn',
+                'key'   => 'instagram',
+                'match' => ['instagram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
+                'name'  => 'Instagram',
+                'icon'  => 'fab fa-instagram',
+                'url'   => 'https://www.instagram.com/thmmn.sa',
             ],
             [
-                'key'     => 'facebook',
-                'match'   => ['facebook', 'fb.com', 'فيسبوك'],
-                'name'    => 'Facebook',
-                'icon'    => 'fab fa-facebook-f',
-                'url'     => 'https://www.facebook.com/thmmn.sa',
+                'key'   => 'x',
+                'match' => ['x', 'x.com', 'twitter', 'تويتر', 'اكس', 'إكس'],
+                'name'  => 'X',
+                'icon'  => 'fab fa-twitter',
+                'url'   => 'https://www.x.com/',
             ],
             [
-                'key'     => 'x',
-                'match'   => ['x', 'x.com', 'twitter', 'تويتر', 'اكس'],
-                'name'    => 'X',
-                'icon'    => 'fab fa-twitter',
-                'url'     => 'https://www.x.com/',
+                'key'   => 'whatsapp',
+                'match' => ['whatsapp', 'wa.me', 'واتساب', 'واتس اب', 'واتس'],
+                'name'  => 'WhatsApp',
+                'icon'  => 'fab fa-whatsapp',
+                'url'   => $whatsappFallback,
             ],
             [
-                'key'     => 'snapchat',
-                'match'   => ['snapchat', 'سناب'],
-                'name'    => 'Snapchat',
-                'icon'    => 'fab fa-snapchat-ghost',
-                'url'     => 'https://www.snapchat.com/add/thmmn',
-            ],
-            [
-                'key'     => 'tiktok',
-                'match'   => ['tiktok', 'تيك توك', 'تيكتوك'],
-                'name'    => 'TikTok',
-                'icon'    => 'fab fa-tiktok',
-                'url'     => 'https://www.tiktok.com/@thmmn',
+                'key'   => 'youtube',
+                'match' => ['youtube', 'youtu.be', 'يوتيوب'],
+                'name'  => 'YouTube',
+                'icon'  => 'fab fa-youtube',
+                'url'   => 'https://www.youtube.com/@thmmn',
             ],
         ];
 
-        $usedIndexes = [];
-        $merged      = [];
+        $seeded = [];
 
-        foreach ($defaults as $def) {
-            $foundIndex = null;
+        foreach ($platforms as $def) {
+            $existingItem = null;
 
-            foreach ($existing as $idx => $item) {
+            foreach ($existing as $item) {
                 $name = mb_strtolower(trim((string) ($item['name'] ?? '')));
                 $url  = mb_strtolower(trim((string) ($item['url'] ?? '')));
 
                 foreach ($def['match'] as $kw) {
-                    if ($name === $kw || ($kw !== 'x' && ($name !== '' && str_contains($name, $kw) || ($url !== '' && str_contains($url, $kw))))) {
-                        $foundIndex = $idx;
+                    if ($name === $kw) {
+                        $existingItem = $item;
+                        break 2;
+                    }
+                    if (!in_array($kw, ['x', 'x.com'], true) && (($name !== '' && str_contains($name, $kw)) || ($url !== '' && str_contains($url, $kw)))) {
+                        $existingItem = $item;
                         break 2;
                     }
                     if ($kw === 'x.com' && $url !== '' && str_contains($url, 'x.com')) {
-                        $foundIndex = $idx;
+                        $existingItem = $item;
                         break 2;
                     }
                 }
             }
 
-            if ($foundIndex !== null) {
-                $usedIndexes[] = $foundIndex;
-                $existingItem  = $existing[$foundIndex];
-                $existingUrl   = trim((string) ($existingItem['url'] ?? ''));
+            $existingUrl = trim((string) ($existingItem['url'] ?? ''));
 
-                $merged[] = [
-                    'name' => trim((string) ($existingItem['name'] ?? '')) ?: $def['name'],
-                    'icon' => $def['icon'],
-                    'url'  => $existingUrl !== '' ? $existingUrl : $def['url'],
-                ];
+            if ($def['key'] === 'whatsapp') {
+                $resolvedUrl = Contact::normalizeWhatsappUrl($existingUrl, $contact->phone);
             } else {
-                $merged[] = [
-                    'name' => $def['name'],
-                    'icon' => $def['icon'],
-                    'url'  => $def['url'],
-                ];
+                $resolvedUrl = $existingUrl !== '' ? $existingUrl : $def['url'];
             }
+
+            $seeded[] = [
+                'name' => $def['name'],
+                'icon' => $def['icon'],
+                'url'  => $resolvedUrl,
+            ];
         }
 
-        // Preserve any extra custom platforms already configured in the dashboard
-        foreach ($existing as $idx => $item) {
-            if (!in_array($idx, $usedIndexes, true) && trim((string) ($item['url'] ?? '')) !== '') {
-                $merged[] = $item;
-            }
-        }
-
-        $contact->social_media = $merged;
+        $contact->social_media = $seeded;
         $contact->save();
 
-        $this->command?->info('Contact social_media seeded (' . count($merged) . ' platforms).');
+        $this->command?->info('Contact social_media seeded (' . count($seeded) . ' platforms).');
     }
 }

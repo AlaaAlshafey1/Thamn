@@ -17,6 +17,11 @@ class Contact extends Model
     ];
 
     /**
+     * Subscribed platforms shown in the email footer, in display order.
+     */
+    private const EMAIL_ALLOWED_PLATFORMS = ['tiktok', 'instagram', 'x', 'whatsapp', 'youtube'];
+
+    /**
      * Platform detection rules, checked in order.
      * Each rule: platform key => keywords (matched against name, then url, then icon class).
      */
@@ -24,10 +29,10 @@ class Contact extends Model
         'instagram' => ['instagram', 'انستغرام', 'انستجرام', 'إنستغرام', 'إنستجرام'],
         'youtube'   => ['youtube', 'youtu.be', 'يوتيوب'],
         'facebook'  => ['facebook', 'fb.com', 'fb.me', 'فيسبوك', 'فيس بوك'],
-        'whatsapp'  => ['whatsapp', 'wa.me', 'واتساب', 'واتس اب'],
+        'whatsapp'  => ['whatsapp', 'wa.me', 'واتساب', 'واتس اب', 'واتس'],
         'telegram'  => ['telegram', 't.me', 'تيليجرام', 'تليجرام', 'تيليغرام'],
         'snapchat'  => ['snapchat', 'سناب'],
-        'tiktok'    => ['tiktok', 'تيك توك', 'تيكتوك'],
+        'tiktok'    => ['tiktok', 'تيك توك', 'تيكتوك', 'تك توك'],
         'linkedin'  => ['linkedin', 'لينكد'],
         'pinterest' => ['pinterest', 'بنترست'],
         'twitter'   => ['twitter', 'تويتر'],
@@ -35,7 +40,7 @@ class Contact extends Model
 
     /**
      * Social links for the e-mail footer, read from the dashboard (Contacts > social media).
-     * Returns only entries that have a URL, each with a hosted brand icon.
+     * Keeps only the 5 subscribed platforms, fixes invalid/Google WhatsApp links, and orders them cleanly.
      *
      * @return array<int, array{name:string, url:string, platform:string, icon:string, icon_path:string}>
      */
@@ -52,7 +57,7 @@ class Contact extends Model
         }
 
         $assetBase = rtrim($assetBase, '/');
-        $links     = [];
+        $byPlatform = [];
 
         foreach ($items as $item) {
             $url = trim((string) ($item['url'] ?? ''));
@@ -65,8 +70,22 @@ class Contact extends Model
 
             $name     = trim((string) ($item['name'] ?? ''));
             $platform = static::detectPlatform($name, $url, (string) ($item['icon'] ?? ''));
+            if ($platform === 'twitter') {
+                $platform = 'x';
+            }
+            if (!in_array($platform, self::EMAIL_ALLOWED_PLATFORMS, true)) {
+                continue;
+            }
 
-            $links[] = [
+            if ($platform === 'whatsapp') {
+                $url = static::normalizeWhatsappUrl($url, $contact?->phone);
+            }
+
+            if (isset($byPlatform[$platform])) {
+                continue;
+            }
+
+            $byPlatform[$platform] = [
                 'name'      => $name !== '' ? $name : ucfirst($platform),
                 'url'       => $url,
                 'platform'  => $platform,
@@ -75,7 +94,45 @@ class Contact extends Model
             ];
         }
 
-        return $links;
+        $ordered = [];
+        foreach (self::EMAIL_ALLOWED_PLATFORMS as $platform) {
+            if (isset($byPlatform[$platform])) {
+                $ordered[] = $byPlatform[$platform];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Ensures WhatsApp links resolve to a real wa.me link rather than Google or a broken URL.
+     */
+    public static function normalizeWhatsappUrl(?string $rawUrl, ?string $fallbackPhone): string
+    {
+        $raw   = trim((string) $rawUrl);
+        $lower = mb_strtolower($raw);
+
+        if ($raw !== '' && !str_contains($lower, 'google.com') && (str_contains($lower, 'wa.me/') || str_contains($lower, 'whatsapp.com'))) {
+            return preg_match('#^https?://#i', $raw) ? $raw : 'https://' . ltrim($raw, '/');
+        }
+
+        $onlyDigitsCandidate = preg_replace('#^https?://#i', '', $raw);
+        $digits = preg_match('/^[+\d\s\-()]+$/', $onlyDigitsCandidate)
+            ? preg_replace('/\D/', '', $onlyDigitsCandidate)
+            : '';
+
+        if (strlen($digits) < 9) {
+            $digits = preg_replace('/\D/', '', (string) $fallbackPhone);
+        }
+        if ($digits === '') {
+            $digits = '966555212555';
+        } elseif (str_starts_with($digits, '05') && strlen($digits) === 10) {
+            $digits = '966' . substr($digits, 1);
+        } elseif (str_starts_with($digits, '5') && strlen($digits) === 9) {
+            $digits = '966' . $digits;
+        }
+
+        return 'https://wa.me/' . $digits;
     }
 
     /**

@@ -1,12 +1,10 @@
 {{--
-Shared e-mail footer (dark bar): logo + address on one side, brand-coloured social icons on the other.
+Shared e-mail footer (dark bar): centred logo + address on top, sleek dark-outlined social icons in a centred row below.
 Social links come from the dashboard (Contacts > social media) via Contact::emailSocialLinks().
 
 Expected variables: $dir, $isRtl, $assetBase (public https base URL)
 --}}
 @php
-  $footerTxtAlign = $isRtl ? 'right' : 'left';
-  $footerOppAlign = $isRtl ? 'left' : 'right';
   $canEmbed = isset($message) && is_object($message) && method_exists($message, 'embed');
   $footerLogoPath = public_path('assets/emails/logo_white.png');
   $footerLogo = ($canEmbed && is_file($footerLogoPath))
@@ -14,39 +12,44 @@ Expected variables: $dir, $isRtl, $assetBase (public https base URL)
     : rtrim($assetBase, '/') . '/assets/emails/logo_white.png';
   $footerSocials = $socialLinks ?? \App\Models\Contact::emailSocialLinks($assetBase);
   $socialCount = count($footerSocials);
-
-  if ($socialCount <= 3) {
-    $perRow = 3;
-    $iconSize = 38;
-    $iconRadius = 10;
-  } elseif ($socialCount === 4) {
-    $perRow = 2;
-    $iconSize = 34;
-    $iconRadius = 9;
-  } else {
-    $perRow = 3;
-    $iconSize = 34;
-    $iconRadius = 9;
-  }
-  $socialRows = $socialCount > 0 ? array_chunk($footerSocials, $perRow) : [];
+  $iconSize = 30;
+  $iconRadius = 8;
+  $socialRows = $socialCount > 0 ? array_chunk($footerSocials, 6) : [];
 @endphp
 <tr>
-  <td class="footer-cell" style="background:#1A1A1A;padding:22px 28px;border-radius:0 0 20px 20px;">
+  <td class="footer-cell" style="background:#161820;padding:24px 24px 22px;border-radius:0 0 20px 20px;text-align:center;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="direction:{{ $dir }};">
+      {{-- Centred logo --}}
       <tr>
-        {{-- Logo + address --}}
-        <td align="{{ $footerTxtAlign }}" valign="middle" style="padding-{{ $isRtl ? 'left' : 'right' }}:14px;">
-          <img src="{{ $footerLogo }}" width="64" height="62" alt="ثمّن"
-            style="display:block;border:0;margin-bottom:8px;">
-          <p style="margin:0;font-size:12px;line-height:1.6;color:#9A9A9A;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;">
+        <td align="center" style="text-align:center;">
+          <img src="{{ $footerLogo }}" width="54" height="52" alt="ثمّن"
+            style="display:block;border:0;margin:0 auto 8px;">
+        </td>
+      </tr>
+
+      {{-- Centred address --}}
+      <tr>
+        <td align="center" style="text-align:center;">
+          <p style="margin:0;font-size:12px;line-height:1.6;color:#9A9A9A;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;text-align:center;">
             {{ $isRtl ? 'المملكة العربية السعودية، الجبيل' : 'Saudi Arabia, Al Jubail' }}
           </p>
         </td>
+      </tr>
 
-        {{-- Social icons (from the dashboard, 1 row for <=3, clean grid for 4+) --}}
-        @if($socialCount > 0)
-          <td align="{{ $footerOppAlign }}" valign="middle">
-            <table cellpadding="0" cellspacing="0" border="0" style="direction:ltr;">
+      {{-- Subtle divider + centred compact social icons --}}
+      @if($socialCount > 0)
+        <tr>
+          <td align="center" style="padding:14px 0 14px;">
+            <table width="140" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+              <tr>
+                <td style="border-top:1px solid #2A2D38;font-size:0;line-height:0;height:1px;">&nbsp;</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td align="center">
+            <table cellpadding="0" cellspacing="0" border="0" align="center" style="direction:ltr;margin:0 auto;">
               @foreach($socialRows as $row)
                 <tr>
                   <td align="center" style="padding-bottom:{{ $loop->last ? '0' : '8px' }};">
@@ -59,7 +62,7 @@ Expected variables: $dir, $isRtl, $assetBase (public https base URL)
                               ? $message->embed($socialIconPath)
                               : $social['icon'];
                           @endphp
-                          <td style="padding:0 {{ $loop->last ? '0' : '4px' }} 0 {{ $loop->first ? '0' : '4px' }};">
+                          <td style="padding:0 5px;">
                             <a href="{{ $social['url'] }}" target="_blank" title="{{ $social['name'] }}" style="text-decoration:none;">
                               <img src="{{ $socialIconSrc }}" width="{{ $iconSize }}" height="{{ $iconSize }}" alt="{{ $social['name'] }}"
                                 style="display:block;border:0;width:{{ $iconSize }}px;height:{{ $iconSize }}px;border-radius:{{ $iconRadius }}px;">
@@ -73,8 +76,8 @@ Expected variables: $dir, $isRtl, $assetBase (public https base URL)
               @endforeach
             </table>
           </td>
-        @endif
-      </tr>
+        </tr>
+      @endif
     </table>
   </td>
 </tr>
